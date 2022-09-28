@@ -36,6 +36,14 @@ pub fn create_executable_query<'a>(
                 sys1: left.compile(dim)?,
                 sys2: right.compile(dim)?,
             }))},
+            QueryExpression::Reachability(left_side, right_side) => {
+                let mut quotient_index = None;
+                let left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
+                let right =get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
+                Ok(Box::new(RefinementExecutor {
+                sys1: left.compile(dim)?,
+                sys2: right.compile(dim)?,
+            }))},
             QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
                 recipe: get_system_recipe(
                     query_expression,

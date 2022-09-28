@@ -69,6 +69,7 @@ pub fn build_query_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpressi
 
     match pair.as_rule() {
         Rule::refinement => build_refinement_from_pair(pair),
+        Rule::reachability => build_reachability_from_pair(pair),
         Rule::getComponent => {
             let inner_pair = pair.into_inner().next().unwrap();
             QueryExpression::GetComponent(Box::new(build_expression_from_pair(inner_pair)))
@@ -81,7 +82,6 @@ pub fn build_query_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpressi
             let inner_pair = pair.into_inner().next().unwrap();
             QueryExpression::BisimMinimize(Box::new(build_expression_from_pair(inner_pair)))
         }
-
         Rule::consistency => {
             let inner_pair = pair.into_inner().next().unwrap();
             QueryExpression::Consistency(Box::new(build_expression_from_pair(inner_pair)))
@@ -181,6 +181,17 @@ fn build_refinement_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpress
     let rside = build_expression_from_pair(right_side_pair);
 
     QueryExpression::Refinement(Box::new(lside), Box::new(rside))
+}
+
+fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
+    let mut inner_pair = pair.into_inner();
+    let left_side_pair = inner_pair.next().unwrap();
+    let right_side_pair = inner_pair.next().unwrap();
+
+    let lside = build_expression_from_pair(left_side_pair);
+    let rside = build_expression_from_pair(right_side_pair);
+
+    QueryExpression::Reachability(Box::new(lside), Box::new(rside))
 }
 
 fn build_term_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {

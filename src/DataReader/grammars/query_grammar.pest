@@ -2,12 +2,14 @@ queries = {SOI ~ queryList? ~ EOI}
 
 queryList = {query ~ ";" ~ queryList | query}
 
-query = {refinement | consistency | implementation | determinism | specification | getComponent | prune | bisim | logicFormulas}
+query = {refinement | consistency | reachability | implementation | determinism | specification | getComponent | prune | bisim | logicFormulas}
 
 
 refinement = {"refinement:" ~ expr ~ "<=" ~ expr}
 
 consistency = {"consistency:" ~ expr}
+
+reachability = {"reachability:" ~ expr ~ "->" ~ expr}
 
 implementation = {"implementation:" ~ expr}
 
@@ -62,7 +64,7 @@ variable_name = @{(ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")*) ~ !"-"}
 
 int = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
 
-operator = {">=" | "<=" | "<" | ">" }
+operator = {">=" | "<=" | "<" | ">"}
 
 featureOperator = _{ qoutient_op | conjunction_op | composition_op }
 
