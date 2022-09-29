@@ -9,8 +9,6 @@ refinement = {"refinement:" ~ expr ~ "<=" ~ expr}
 
 consistency = {"consistency:" ~ expr}
 
-reachability = {"reachability:" ~ expr ~ "->" ~ expr}
-
 implementation = {"implementation:" ~ expr}
 
 getComponent = {"get-component:" ~ saveExpr}
@@ -73,3 +71,8 @@ conjunction_op = { "&&" }
 composition_op = { "||" }
 
 WHITESPACE = _{ " " | "\n" | "\r\n" | "\t"}
+
+loc = { "L" ~ int }                                             // A loc is the id of a location in an automaton of format e.g. "L20".
+clock = { boolExpr | "" }                                       // Is used for inputs like x>0 or y<=3
+clocks = { clock ~ "," ~ clocks | clock }                       // Introduces the concept of recursion as done in BNF
+reachability = { "reachability:" ~ expr ~ "->" ~ loc ~ "(" ~ clocks ~ ")" ~ "," ~ loc ~ "(" ~ clocks ~ ")" } // This is the format for reachability
