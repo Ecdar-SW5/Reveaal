@@ -10,7 +10,7 @@ use crate::EdgeEval::updater::CompiledUpdate;
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 
-use crate::ModelObjects::representations::BoolExpression;
+use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
 use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
 use edbm::zones::OwnedFederation;
@@ -257,20 +257,109 @@ impl Component {
     }
 
     pub fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
+        let clocks = self.declarations.get_clocks();
+        let mut out: Vec<ClockReason> = vec![];
+        let mut seen_clocks: Vec<String> = vec![];
+        for (index, expr) in self
+            .edges
+            .iter()
+            .enumerate()
+            .filter(|(_, x)| x.guard.is_some())
+            .map(|(i, e)| (i, e.guard.as_ref().unwrap()))
+        {
+            
+        }
 
         todo!()
     }
 }
 
-enum Reason {
-    Duplicate(String),
-    Unused
+fn find_varname_bool(expr: &BoolExpression) -> Vec<&str> {
+    match expr {
+        BoolExpression::Parentheses(p) => find_varname_bool(p),
+        BoolExpression::AndOp(p1, p2) => find_varname_bool(p1)
+            .iter()
+            .chain(find_varname_bool(p2).iter())
+            .map(|x| *x)
+            .collect(),
+        BoolExpression::OrOp(p1, p2) => find_varname_bool(p1)
+            .iter()
+            .chain(find_varname_bool(p2).iter())
+            .map(|x| *x)
+            .collect(),
+        BoolExpression::LessEQ(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        BoolExpression::GreatEQ(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        BoolExpression::LessT(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        BoolExpression::GreatT(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        BoolExpression::EQ(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        BoolExpression::Bool(_) => vec![],
+        BoolExpression::Arithmetic(a) => find_varname_arith(a),
+    }
 }
 
-struct RedundantClock {
+fn find_varname_arith(expr: &ArithExpression) -> Vec<&str> {
+    match expr {
+        ArithExpression::Parentheses(p) => find_varname_arith(p),
+        ArithExpression::Difference(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        ArithExpression::Addition(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        ArithExpression::Multiplication(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        ArithExpression::Division(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        ArithExpression::Modulo(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        ArithExpression::Clock(_) => vec![],
+        ArithExpression::VarName(name) => vec![name.as_str()],
+        ArithExpression::Int(_) => vec![],
+    }
+}
+
+pub enum ClockReason {
+    Duplicate(String),
+    Unused,
+}
+
+pub struct RedundantClock {
     clock: String,
-    edges: Vec<usize>,
-    locs: Vec<usize>,
+    edge_indices: Vec<usize>,
+    location_indices: Vec<usize>,
     reason: ClockReason,
 }
 
