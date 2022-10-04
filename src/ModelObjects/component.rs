@@ -268,19 +268,37 @@ impl Component {
             .filter(|(_, x)| x.guard.is_some())
             .map(|(i, e)| (i, e.guard.as_ref().unwrap()))
         {
-            for name in find_varname_bool(expr){
-               if let Some((clock, _)) = clocks.get_key_value(name){
-                    if seen_clocks.contains_key(clock){
-                       if let Some((clock_edges, _)) = seen_clocks.get_mut(clock){
-                           clock_edges.push(index);
-                       } else {
-                           seen_clocks.insert(clock.clone(), (vec![index], vec![]));
-                       }
+            for name in find_varname_bool(expr) {
+                if let Some((clock, _)) = clocks.get_key_value(name) {
+                    if let Some((clock_edges, _)) = seen_clocks.get_mut(clock) {
+                        clock_edges.push(index);
+                    } else {
+                        seen_clocks.insert(clock.clone(), (vec![index], vec![]));
                     }
-               }
+                }
+            }
+        }
+        for (index, expr) in self
+            .locations
+            .iter()
+            .enumerate()
+            .filter(|(_, x)| x.invariant.is_some())
+            .map(|(i, l)| (i, l.invariant.as_ref().unwrap()))
+        {
+            for name in find_varname_bool(expr) {
+                if let Some((clock, _)) = clocks.get_key_value(name) {
+                    if let Some((_, clock_locs)) = seen_clocks.get_mut(clock) {
+                        clock_locs.push(index);
+                    } else {
+                        seen_clocks.insert(clock.clone(), (vec![], vec![]));
+                    }
+                }
             }
         }
 
+        for contain in clocks.keys().filter(|k| !seen_clocks.contains_key(*k)) {
+            out.push(RedundantClock::unused(contain.clone()))
+        }
         out
     }
 }
@@ -288,37 +306,16 @@ impl Component {
 fn find_varname_bool(expr: &BoolExpression) -> Vec<&str> {
     match expr {
         BoolExpression::Parentheses(p) => find_varname_bool(p),
-        BoolExpression::AndOp(p1, p2) => find_varname_bool(p1)
+        BoolExpression::AndOp(p1, p2) | BoolExpression::OrOp(p1, p2) => find_varname_bool(p1)
             .iter()
             .chain(find_varname_bool(p2).iter())
             .map(|x| *x)
             .collect(),
-        BoolExpression::OrOp(p1, p2) => find_varname_bool(p1)
-            .iter()
-            .chain(find_varname_bool(p2).iter())
-            .map(|x| *x)
-            .collect(),
-        BoolExpression::LessEQ(a1, a2) => find_varname_arith(a1)
-            .iter()
-            .chain(find_varname_arith(a2).iter())
-            .map(|x| *x)
-            .collect(),
-        BoolExpression::GreatEQ(a1, a2) => find_varname_arith(a1)
-            .iter()
-            .chain(find_varname_arith(a2).iter())
-            .map(|x| *x)
-            .collect(),
-        BoolExpression::LessT(a1, a2) => find_varname_arith(a1)
-            .iter()
-            .chain(find_varname_arith(a2).iter())
-            .map(|x| *x)
-            .collect(),
-        BoolExpression::GreatT(a1, a2) => find_varname_arith(a1)
-            .iter()
-            .chain(find_varname_arith(a2).iter())
-            .map(|x| *x)
-            .collect(),
-        BoolExpression::EQ(a1, a2) => find_varname_arith(a1)
+        BoolExpression::LessEQ(a1, a2)
+        | BoolExpression::GreatEQ(a1, a2)
+        | BoolExpression::LessT(a1, a2)
+        | BoolExpression::GreatT(a1, a2)
+        | BoolExpression::EQ(a1, a2) => find_varname_arith(a1)
             .iter()
             .chain(find_varname_arith(a2).iter())
             .map(|x| *x)
@@ -331,47 +328,61 @@ fn find_varname_bool(expr: &BoolExpression) -> Vec<&str> {
 fn find_varname_arith(expr: &ArithExpression) -> Vec<&str> {
     match expr {
         ArithExpression::Parentheses(p) => find_varname_arith(p),
-        ArithExpression::Difference(a1, a2) => find_varname_arith(a1)
+        ArithExpression::Difference(a1, a2)
+        | ArithExpression::Addition(a1, a2)
+        | ArithExpression::Multiplication(a1, a2)
+        | ArithExpression::Division(a1, a2)
+        | ArithExpression::Modulo(a1, a2) => find_varname_arith(a1)
             .iter()
             .chain(find_varname_arith(a2).iter())
             .map(|x| *x)
             .collect(),
-        ArithExpression::Addition(a1, a2) => find_varname_arith(a1)
-            .iter()
-            .chain(find_varname_arith(a2).iter())
-            .map(|x| *x)
-            .collect(),
-        ArithExpression::Multiplication(a1, a2) => find_varname_arith(a1)
-            .iter()
-            .chain(find_varname_arith(a2).iter())
-            .map(|x| *x)
-            .collect(),
-        ArithExpression::Division(a1, a2) => find_varname_arith(a1)
-            .iter()
-            .chain(find_varname_arith(a2).iter())
-            .map(|x| *x)
-            .collect(),
-        ArithExpression::Modulo(a1, a2) => find_varname_arith(a1)
-            .iter()
-            .chain(find_varname_arith(a2).iter())
-            .map(|x| *x)
-            .collect(),
-        ArithExpression::Clock(_) => vec![],
+        ArithExpression::Clock(_) | ArithExpression::Int(_) => vec![],
         ArithExpression::VarName(name) => vec![name.as_str()],
-        ArithExpression::Int(_) => vec![],
     }
 }
 
+#[derive(Debug)]
 pub enum ClockReason {
     Duplicate(String),
     Unused,
 }
 
+#[derive(Debug)]
 pub struct RedundantClock {
     clock: String,
     edge_indices: Vec<usize>,
     location_indices: Vec<usize>,
     reason: ClockReason,
+}
+
+impl RedundantClock {
+    fn new(clock: String, e: Vec<usize>, l: Vec<usize>, reason: ClockReason) -> RedundantClock {
+        RedundantClock {
+            clock,
+            edge_indices: e,
+            location_indices: l,
+            reason,
+        }
+    }
+
+    fn duplicate(clock: String, e: Vec<usize>, l: Vec<usize>, duplicate: String) -> RedundantClock {
+        RedundantClock {
+            clock,
+            edge_indices: e,
+            location_indices: l,
+            reason: ClockReason::Duplicate(duplicate),
+        }
+    }
+
+    fn unused(clock: String) -> RedundantClock {
+        RedundantClock {
+            clock,
+            edge_indices: vec![],
+            location_indices: vec![],
+            reason: ClockReason::Unused,
+        }
+    }
 }
 
 pub fn contain(channels: &[Channel], channel: &str) -> bool {
