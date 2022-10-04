@@ -5,3 +5,4 @@ pub mod local_consistency;
 pub mod pruning;
 pub mod refine;
 pub mod save_component;
+pub mod reachability;
