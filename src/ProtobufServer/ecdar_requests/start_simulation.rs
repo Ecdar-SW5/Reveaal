@@ -28,13 +28,22 @@ impl ConcreteEcdarBackend {
         let components = self.get_components_lock()?;
         let component_container = self.get_components_lock()?;
 
-        for proto_component in &start_simulation_request.component {
-            let component = self.parse_component_if_some(proto_component)?;
-
+        for proto_component in &start_simulation_request.start_component {
+            let startcomponent = self.parse_component_if_some(proto_component)?;
+        }
+        for proto_component in &start_simulation_request.sim_component {
+            let simcomponent = self.parse_component_if_some(proto_component)?;
         }
 
 
-        Ok(Response::new(()));
+        let reply = {
+            start_component= &start_simulation_request.start_component
+            sim_component = &start_simulation_request.sim_component
+        };
+
+
+
+        Ok(Response::new((reply));
     }
 
     fn parse_component_if_some(
