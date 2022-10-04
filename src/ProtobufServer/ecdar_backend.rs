@@ -1,6 +1,6 @@
 use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
 
-use crate::ProtobufServer::services::{ComponentsUpdateRequest, Query, QueryResponse};
+use crate::ProtobufServer::services::{ComponentsUpdateRequest, Query, QueryResponse, SimulationStepRequest, SimulationStartRequest, SimulationStepResponse};
 use futures::FutureExt;
 use std::cell::RefCell;
 use std::panic::UnwindSafe;
@@ -68,14 +68,14 @@ impl EcdarBackend for ConcreteEcdarBackend {
         request: Request<SimulationStartRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
         let request = std::panic::AssertUnwindSafe(request);
-        catch_unwind(self.handle_send_query(request)).await
+        catch_unwind(self.handle_start_simulation(request)).await
     }
 
     async fn take_simulation_step(
         &self,
         request: Request<SimulationStepRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        let request = std::panic:AssertUnwindSafe(request);
-        catch_unwind(self.handle_send_query(request)).await
+        let request = std::panic::AssertUnwindSafe(request);
+        catch_unwind(self.handle_step_simulation(request)).await
     }
 }
