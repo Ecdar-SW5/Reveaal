@@ -259,7 +259,6 @@ impl Component {
     pub fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
         let clocks = self.declarations.get_clocks();
         let mut out: Vec<RedundantClock> = vec![];
-
         let mut seen_clocks: HashMap<String, (Vec<usize>, Vec<usize>)> = HashMap::new();
         for (index, expr) in self
             .edges
@@ -269,11 +268,11 @@ impl Component {
             .map(|(i, e)| (i, e.guard.as_ref().unwrap()))
         {
             for name in find_varname_bool(expr) {
-                if let Some((clock, _)) = clocks.get_key_value(name) {
-                    if let Some((clock_edges, _)) = seen_clocks.get_mut(clock) {
+                if clocks.contains_key(name) {
+                    if let Some((clock_edges, _)) = seen_clocks.get_mut(name) {
                         clock_edges.push(index);
                     } else {
-                        seen_clocks.insert(clock.clone(), (vec![index], vec![]));
+                        seen_clocks.insert(name.to_string(), (vec![index], vec![]));
                     }
                 }
             }
@@ -286,11 +285,11 @@ impl Component {
             .map(|(i, l)| (i, l.invariant.as_ref().unwrap()))
         {
             for name in find_varname_bool(expr) {
-                if let Some((clock, _)) = clocks.get_key_value(name) {
-                    if let Some((_, clock_locs)) = seen_clocks.get_mut(clock) {
+                if clocks.contains_key(name) {
+                    if let Some((_, clock_locs)) = seen_clocks.get_mut(name) {
                         clock_locs.push(index);
                     } else {
-                        seen_clocks.insert(clock.clone(), (vec![], vec![]));
+                        seen_clocks.insert(name.to_string(), (vec![], vec![index]));
                     }
                 }
             }
