@@ -258,8 +258,9 @@ impl Component {
 
     pub fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
         let clocks = self.declarations.get_clocks();
-        let mut out: Vec<ClockReason> = vec![];
-        let mut seen_clocks: Vec<String> = vec![];
+        let mut out: Vec<RedundantClock> = vec![];
+
+        let mut seen_clocks: HashMap<String, (Vec<usize>, Vec<usize>)> = HashMap::new();
         for (index, expr) in self
             .edges
             .iter()
@@ -267,10 +268,20 @@ impl Component {
             .filter(|(_, x)| x.guard.is_some())
             .map(|(i, e)| (i, e.guard.as_ref().unwrap()))
         {
-            
+            for name in find_varname_bool(expr){
+               if let Some((clock, _)) = clocks.get_key_value(name){
+                    if seen_clocks.contains_key(clock){
+                       if let Some((clock_edges, _)) = seen_clocks.get_mut(clock){
+                           clock_edges.push(index);
+                       } else {
+                           seen_clocks.insert(clock.clone(), (vec![index], vec![]));
+                       }
+                    }
+               }
+            }
         }
 
-        todo!()
+        out
     }
 }
 
