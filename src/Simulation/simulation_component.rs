@@ -3,12 +3,11 @@ use crate::ModelObjects::component::{
 };
 use crate::DataReader::json_reader;
 
-// Tager en path & component navn, og returner en CompiledComponent til næste step.
+// Takes a path string & component name, and returns a SimulationComponent.
 pub fn start_simulation(project_path: &str, component_name: &str) -> SimulationComponent {
     let start_component: Component = json_reader::read_json_component(project_path, component_name);
     let sim_component: SimulationComponent = build_simulation_component(start_component);
 
-    // Returner
     sim_component
 
 }
@@ -21,7 +20,6 @@ pub struct SimulationComponent {
     component: Component,
     actions: Vec<Channel>,
     location: Location,
-    // actions: get_actions(component);
 }
 
 fn build_simulation_component(component: Component) -> SimulationComponent {
