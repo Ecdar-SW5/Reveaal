@@ -72,8 +72,11 @@ composition_op = { "||" }
 
 WHITESPACE = _{ " " | "\n" | "\r\n" | "\t"}
 
-behavior_specification = { "$" ~ int ~ }                                                                     // Used for specifying behavior for machines i.e. "(M1$1 \\ M2) || M1$2)"
-loc = { expr ~ (behavior_specification)? [L" ~ int ~ "]" ~ (featureOperator ~ loc)? }                        // Can take locations of format "M1[L1] && M2[L4]"
-clock = { boolExpr | "" }                                                                                    // Is used for inputs like x>0 or y<=3
-clocks = { clock ~ "," ~ clocks | clock }                                                                    // Introduces the concept of recursion as done in BNF
-reachability = { "reachability:" ~ expr ~ "->" ~ loc ~ "(" ~ clocks ~ ")" ~ "," ~ loc ~ "(" ~ clocks ~ ")" } // This is the format for reachability
+
+behavior_specification = { "$" ~ int }                                                    // Used for specifying behavior for machines i.e. "(M1$1 \\ M2) || M1$2)"
+loc = { expr ~ (behavior_specification)? ~ "[L" ~ int ~ "]" ~ (featureOperator ~ loc)? }  // Can take locations of format "M1[L1] && M2[L4]" 
+clock = { boolExpr | "" }                                                                 // Is used for inputs like x>0 or y<=3  
+clocks = { clock ~ "," ~ clocks | clock }                                                 // Introduces the concept of recursion as done in BNF   
+
+// This is the format for reachability
+reachability = { "reachability:" ~ expr ~ "->" ~ loc ~ "(" ~ clocks ~ ")" ~ "," ~ loc ~ "(" ~ clocks ~ ")" } 
