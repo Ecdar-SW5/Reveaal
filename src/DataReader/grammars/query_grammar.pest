@@ -53,12 +53,12 @@ terms = { term | parenthesizedExp  }
 
 parenthesizedExp = { "(" ~ expr ~ ")"}
 
-term = {atom | var}
-atom = {int | "true" | "false" }
+term = {atom | var }
+atom = {int | "true" | "false"}
 
 var = {variable ~ ":" ~ logicFormulas | variable}
 variable = { (variable_name ~ "."?)+ ~ (int | variable_name)?}
-variable_name = @{(ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")*) ~ !"-"}
+variable_name = @{(ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_" | "$")*) ~ !"-"}
 
 int = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
 
@@ -72,11 +72,13 @@ composition_op = { "||" }
 
 WHITESPACE = _{ " " | "\n" | "\r\n" | "\t"}
 
+//behavior_specification = { "$" ~ int }                                                    // Used for specifying behavior for machines i.e. "(M1$1 \\ M2) || M1$2)"
 
-behavior_specification = { "$" ~ int }                                                    // Used for specifying behavior for machines i.e. "(M1$1 \\ M2) || M1$2)"
-loc = { expr ~ (behavior_specification)? ~ "[L" ~ int ~ "]" ~ (featureOperator ~ loc)? }  // Can take locations of format "M1[L1] && M2[L4]" 
-clock = { boolExpr | "" }                                                                 // Is used for inputs like x>0 or y<=3  
-clocks = { clock ~ "," ~ clocks | clock }                                                 // Introduces the concept of recursion as done in BNF   
+clock = { boolExpr | "" }                              // Is used for inputs like x>0 or y<=3  
+clocks = { clock ~ "," ~ clocks | clock }              // Introduces the concept of recursion as done in BNF
+
+loc = { "L" ~ int ~ ("," ~ loc)? }                     // Can take locations of format "L20, L21 ..."
+// loc = { expr ~ (behavior_specification)? ~ "[L" ~ int ~ "]" ~ (featureOperator ~ loc)? } 
 
 // This is the format for reachability
-reachability = { "reachability:" ~ expr ~ "->" ~ loc ~ "(" ~ clocks ~ ")" ~ "," ~ loc ~ "(" ~ clocks ~ ")" } 
+reachability = { "reachability:" ~ expr ~ "->" ~ "[" ~ loc ~ "]" ~ "(" ~ clocks ~ ")" ~ ";" ~ "[" ~ loc ~ "]" ~ "(" ~ clocks ~ ")" } 
