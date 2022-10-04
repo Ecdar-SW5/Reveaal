@@ -10,6 +10,7 @@ use crate::EdgeEval::updater::CompiledUpdate;
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 
+use crate::DataReader::parse_edge::Update;
 use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
 use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
@@ -256,7 +257,7 @@ impl Component {
         self.input_edges = Some(i_edges);
     }
 
-    pub fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
+    pub(crate) fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
         let clocks = self.declarations.get_clocks();
         let mut out: Vec<RedundantClock> = vec![];
         let mut seen_clocks: HashMap<String, (Vec<usize>, Vec<usize>)> = HashMap::new();
@@ -294,10 +295,26 @@ impl Component {
                 }
             }
         }
-
         for contain in clocks.keys().filter(|k| !seen_clocks.contains_key(*k)) {
             out.push(RedundantClock::unused(contain.clone()))
         }
+        let mut global: Option<String> = None;
+        let updates = self.edges.iter().filter(|x| x.update.is_some()).map(|y| y.update.as_ref().unwrap()).flatten().map(|u| u.variable.clone()).collect::<Vec<String>>();
+        for clock in seen_clocks.iter().map(|(k, _)| k).filter(|x| !updates.contains(x))
+        {
+            if let Some(global_clock) = &global {
+                out.push(RedundantClock::duplicate(clock.clone(), global_clock.clone()));
+            } else {
+                global = Some(clock.clone());
+            }
+        }
+
+        /*
+        for (edge_index, upd) in self.edges.iter().enumerate().filter(|(_, x)| x.update.is_some()).map(|(i, y)| (i, y.update.unwrap())).flatten() {
+
+        }
+         */
+        println!("{:?}", out);
         out
     }
 }
@@ -353,6 +370,7 @@ pub struct RedundantClock {
     edge_indices: Vec<usize>,
     location_indices: Vec<usize>,
     reason: ClockReason,
+    //updates: Option<Vec<Update>>,
 }
 
 impl RedundantClock {
@@ -362,15 +380,17 @@ impl RedundantClock {
             edge_indices: e,
             location_indices: l,
             reason,
+            //      updates
         }
     }
 
-    fn duplicate(clock: String, e: Vec<usize>, l: Vec<usize>, duplicate: String) -> RedundantClock {
+    fn duplicate(clock: String, duplicate: String) -> RedundantClock {
         RedundantClock {
             clock,
-            edge_indices: e,
-            location_indices: l,
+            edge_indices: vec![],
+            location_indices: vec![],
             reason: ClockReason::Duplicate(duplicate),
+            //updates: None,
         }
     }
 
@@ -380,6 +400,7 @@ impl RedundantClock {
             edge_indices: vec![],
             location_indices: vec![],
             reason: ClockReason::Unused,
+            //updates: None,
         }
     }
 }
