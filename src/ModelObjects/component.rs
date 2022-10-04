@@ -299,21 +299,29 @@ impl Component {
             out.push(RedundantClock::unused(contain.clone()))
         }
         let mut global: Option<String> = None;
-        let updates = self.edges.iter().filter(|x| x.update.is_some()).map(|y| y.update.as_ref().unwrap()).flatten().map(|u| u.variable.clone()).collect::<Vec<String>>();
-        for clock in seen_clocks.iter().map(|(k, _)| k).filter(|x| !updates.contains(x))
+        let updates = self
+            .edges
+            .iter()
+            .filter(|x| x.update.is_some())
+            .map(|y| y.update.as_ref().unwrap())
+            .flatten()
+            .map(|u| u.variable.clone())
+            .collect::<Vec<String>>();
+        for clock in seen_clocks
+            .iter()
+            .map(|(k, _)| k)
+            .filter(|x| !updates.contains(x))
         {
             if let Some(global_clock) = &global {
-                out.push(RedundantClock::duplicate(clock.clone(), global_clock.clone()));
+                out.push(RedundantClock::duplicate(
+                    clock.clone(),
+                    global_clock.clone(),
+                ));
             } else {
                 global = Some(clock.clone());
             }
         }
 
-        /*
-        for (edge_index, upd) in self.edges.iter().enumerate().filter(|(_, x)| x.update.is_some()).map(|(i, y)| (i, y.update.unwrap())).flatten() {
-
-        }
-         */
         println!("{:?}", out);
         out
     }
