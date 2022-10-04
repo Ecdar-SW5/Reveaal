@@ -1,6 +1,6 @@
 use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
 
-use crate::ProtobufServer::services::{ComponentsUpdateRequest, Query, QueryResponse};
+use crate::ProtobufServer::services::{ComponentsUpdateRequest, Query, QueryResponse, SimulationStartRequest, SimulationStepRequest, SimulationStepResponse};
 use futures::FutureExt;
 use std::cell::RefCell;
 use std::panic::UnwindSafe;
@@ -62,4 +62,19 @@ impl EcdarBackend for ConcreteEcdarBackend {
         let request = std::panic::AssertUnwindSafe(request);
         catch_unwind(self.handle_update_components(request)).await
     }
+
+    async fn start_simulation(
+        &self,
+        request: Request<SimulationStartRequest>,
+    ) -> Result<Response<SimulationStepResponse>, tonic::Status> {
+        panic!("not implemented")
+    }
+
+    async fn take_simulation_step(
+        &self,
+        request: Request<SimulationStepRequest>,
+    ) -> Result<Response<SimulationStepResponse>, tonic::Status> {
+        panic!("not implemented")
+    }
+
 }
