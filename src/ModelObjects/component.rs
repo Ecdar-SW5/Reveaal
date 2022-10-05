@@ -309,16 +309,17 @@ impl Component {
             .collect::<Vec<String>>();
         for clock in seen_clocks
             .iter()
-            .map(|(k, _)| k)
-            .filter(|x| !updates.contains(x))
+            .filter(|x| !updates.contains(x.0))
         {
             if let Some(global_clock) = &global {
                 out.push(RedundantClock::duplicate(
-                    clock.clone(),
+                    clock.0.clone(),
+                    clock.1.0.clone(),
+                    clock.1.1.clone(),
                     global_clock.clone(),
                 ));
             } else {
-                global = Some(clock.clone());
+                global = Some(clock.0.clone());
             }
         }
 
@@ -382,21 +383,21 @@ pub struct RedundantClock {
 }
 
 impl RedundantClock {
-    fn new(clock: String, e: Vec<usize>, l: Vec<usize>, reason: ClockReason) -> RedundantClock {
+    fn new(clock: String, edge_indices: Vec<usize>, location_indices: Vec<usize>, reason: ClockReason) -> RedundantClock {
         RedundantClock {
             clock,
-            edge_indices: e,
-            location_indices: l,
+            edge_indices,
+            location_indices,
             reason,
             //      updates
         }
     }
 
-    fn duplicate(clock: String, duplicate: String) -> RedundantClock {
+    fn duplicate(clock: String, edge_indices: Vec<usize>, location_indices: Vec<usize>, duplicate: String) -> RedundantClock {
         RedundantClock {
             clock,
-            edge_indices: vec![],
-            location_indices: vec![],
+            edge_indices,
+            location_indices,
             reason: ClockReason::Duplicate(duplicate),
             //updates: None,
         }
