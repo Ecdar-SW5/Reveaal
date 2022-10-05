@@ -1,7 +1,5 @@
-use edbm::zones::OwnedFederation;
-
 use crate::ModelObjects::component::{State, Transition};
-use crate::TransitionSystems::{TransitionSystem, LocationTuple};
+use crate::TransitionSystems::{TransitionSystem, LocationID};
 use std::collections::HashMap;
 
 pub struct SubPath {
@@ -42,12 +40,12 @@ pub fn search_algorithm(
 
     // hashmap linking every location to all its current zones
     // TODO: figure out a way to hash a location
-    let mut visited_states:HashMap<LocationTuple, Option<OwnedFederation>>= HashMap::new();
+    let mut visited_states:HashMap<LocationID, Vec<State>> = HashMap::new();
 
     // List of states that are to be visited
-    let frontier_states: &mut Vec<State> = &mut Vec::new();
+    let mut frontier_states: &mut Vec<&State> = &mut Vec::new();
 
-    frontier_states.push(start_state);
+    frontier_states.push(&start_state);
     loop{
         let next_state = frontier_states.pop();
         // All has been explored if no next state exist
@@ -63,14 +61,15 @@ pub fn search_algorithm(
         // Take all input transitions
         for input in system.get_input_actions(){
             for transition in &system.next_inputs(&next_state.decorated_locations, &input){
-                take_transition(&next_state, &transition, &mut frontier_states, visited_states, system);
+                take_transition(&next_state, &transition, &mut frontier_states, &mut visited_states, system);
+            
             }
         }
 
         // Take all output transitions
         for output in system.get_output_actions(){
             for transition in &system.next_outputs(&next_state.decorated_locations, &output){
-                take_transition(&next_state, &transition, &mut frontier_states, visited_states, system);
+                take_transition(&next_state, &transition, &mut frontier_states, &mut visited_states, system);
             }
         }
     };
@@ -79,16 +78,20 @@ pub fn search_algorithm(
     return None;
 }
 
-
-fn take_transition(next_state:  &State, transition: &Transition, frontier_states: &mut Vec<State> , visited_states: HashMap<LocationTuple, Option<OwnedFederation>>, system: &dyn TransitionSystem){
+fn take_transition(
+    next_state:  &State, 
+    transition: &Transition, 
+    frontier_states: &mut Vec<&State>, 
+    visited_states: &mut HashMap<LocationID, Vec<State>>, 
+    system: &dyn TransitionSystem) {
     let mut new_state = next_state.clone();
     if transition.use_transition(&mut new_state){
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
-        let mut existing_states: &mut Vec<State> = visited_states.entry(new_state.get_location()).or_insert(Vec::new());
+        let existing_states: &mut Vec<State> = visited_states.entry(new_state.get_location().id.clone()).or_insert(Vec::new());
         if !state_subset_of_existing_state(&new_state, existing_states) {
             remove_existing_subsets_of_state(&new_state, existing_states);
-            visited_states.insert(new_state.get_location(), new_state.zone_ref());
-            frontier_states.push(new_state);
+            visited_states.get_mut(&new_state.get_location().id).unwrap().push(new_state);
+            frontier_states.push(&new_state);
         }
     }
 }
