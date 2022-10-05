@@ -255,6 +255,10 @@ impl Component {
         self.output_edges = Some(o_edges);
         self.input_edges = Some(i_edges);
     }
+
+    pub fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
+        todo!();
+    }
 }
 
 pub fn contain(channels: &[Channel], channel: &str) -> bool {
@@ -267,16 +271,16 @@ pub fn contain(channels: &[Channel], channel: &str) -> bool {
     false
 }
 
-enum ClockReductionReason {
+pub enum ClockReductionReason {
     Duplicate(String),
     Unused
 }
 
-struct RedundantClock {
-    clock: String,
+pub struct RedundantClock {
+    pub clock: String,
     edges: Vec<usize>,
     locs: Vec<usize>,
-    reason: ClockReductionReason,
+    pub reason: ClockReductionReason,
 }
 
 /// FullState is a struct used for initial verification of consistency, and determinism as a state that also hols a dbm
