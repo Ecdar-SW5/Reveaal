@@ -13,17 +13,30 @@ pub struct SubPath {
 //    It returns a path
 // }
 
-/// Returns a path from a start state to an end state in a transition system.
-/// If it is reachable, it returns a path
-/// If it is not reachable, it returns None
+///# Find path
 /// 
-/// Example:
-/// ```rust
-/// let is_reachable: bool = match find_path(start_state, end_state, transition_system) {
+/// Returns a path from a start state to an end state in a transition system.
+/// 
+/// If it is reachable, it returns a path.
+/// 
+/// If it is not reachable, it returns None.
+/// 
+/// The start state can be omitted with None to use the start state of the transition system.
+/// 
+///## Checking if a state can reach another:
+/// 
+/// let is_reachable: bool = match find_path(Some(start_state), end_state, transition_system) {
 ///     Some(path) => true,
 ///     None => false
 /// };
-/// ```
+/// 
+///## Omitting start state:
+/// 
+/// let is_reachable: bool = match find_path(None, end_state, transition_system) {
+///     Some(path) => true,
+///     None => false
+/// };
+/// 
 pub fn find_path(
     begin_state: Option<State>,
     end_state: State,
