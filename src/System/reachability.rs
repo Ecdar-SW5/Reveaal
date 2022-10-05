@@ -38,7 +38,7 @@ pub fn search_algorithm(
     end_state: State,
     system: &dyn TransitionSystem,
 ) -> Option<Vec<SubPath>> {
-    panic!("No implementation");
+    //panic!("No implementation");
 
     // hashmap linking every location to all its current zones
     // TODO: figure out a way to hash a location
@@ -55,38 +55,61 @@ pub fn search_algorithm(
             break;
         }
         let next_state = next_state.unwrap();
-        if false/* next_state reaches end_state, possible check overlap of zones?*/{
-            return None/* Return the path success? */
+        // If there is a overlap with the end state, it has been reached.
+        if next_state.zone_ref().has_intersection(end_state.zone_ref()){
+            return None/* TODO: Return the path success? */
         }
+
+        // Take all input transitions
         for input in system.get_input_actions(){
             for transition in &system.next_inputs(&next_state.decorated_locations, &input){
-                let mut new_state = next_state.clone();
-                if transition.use_transition(&mut new_state){
-                    new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
-                    let mut existing_states: &mut Vec<State> = visited_states.entry(new_state.get_location()).or_insert(Vec::new());
-                    if !state_subset_of_existing_state(&new_state, existing_states) {
-                        remove_existing_subsets_of_state(&new_state, existing_states);
-                        visited_states.insert(new_state.get_location(), new_state.zone_ref());
-                        frontier_states.push(new_state);
-                    }
-                }
+                take_transition(&next_state, &transition, &mut frontier_states, visited_states, system);
             }
         }
-        // TODO: ADD OUTPUT ALSO
+
+        // Take all output transitions
+        for output in system.get_output_actions(){
+            for transition in &system.next_outputs(&next_state.decorated_locations, &output){
+                take_transition(&next_state, &transition, &mut frontier_states, visited_states, system);
+            }
+        }
     };
 
     // If nothing has been found, it is not reachable
     return None;
 }
+
+
+fn take_transition(next_state:  &State, transition: &Transition, frontier_states: &mut Vec<State> , visited_states: HashMap<LocationTuple, Option<OwnedFederation>>, system: &dyn TransitionSystem){
+    let mut new_state = next_state.clone();
+    if transition.use_transition(&mut new_state){
+        new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
+        let mut existing_states: &mut Vec<State> = visited_states.entry(new_state.get_location()).or_insert(Vec::new());
+        if !state_subset_of_existing_state(&new_state, existing_states) {
+            remove_existing_subsets_of_state(&new_state, existing_states);
+            visited_states.insert(new_state.get_location(), new_state.zone_ref());
+            frontier_states.push(new_state);
+        }
+    }
+}
+
 fn state_subset_of_existing_state(
-    state: &State,
+    new_state: &State,
     existing_states: & Vec<State>
 ) -> bool {
-    panic!("No implementation"); // Check whether the state is new or just a subset 
+    for existing_state in existing_states {
+        if new_state.is_subset_of(existing_state) {
+            return true
+        }
+    }
+    false
 }
+
+/// Removes everything in existing_states that is a subset of state
 fn remove_existing_subsets_of_state(
-    state: &State,
+    new_state: &State,
     existing_states: &mut Vec<State>
 ) {
-    panic!("No implementation"); // delete everything in existing_states that is a subset of state
+    existing_states
+        .retain(|existing_state| !existing_state.is_subset_of(new_state));
 }
