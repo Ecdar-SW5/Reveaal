@@ -1,0 +1,10 @@
+[
+  {
+    "query": "consistency: Component1",
+    "comment": "",
+    "isPeriodic": false,
+    "ignoredInputs": {},
+    "ignoredOutputs": {},
+    "backend": "ivi"
+  }
+]
