@@ -19,7 +19,7 @@ use std::collections::HashMap;
 use std::fmt;
 
 /// The basic struct used to represent components read from either Json or xml
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[serde(into = "DummyComponent")]
 pub struct Component {
     pub name: String,
