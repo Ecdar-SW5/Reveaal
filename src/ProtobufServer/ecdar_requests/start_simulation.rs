@@ -21,55 +21,17 @@ impl ConcreteEcdarBackend {
     pub async fn handle_start_simulation(
         &self,
         request: AssertUnwindSafe<Request<()>>,
-    ) -> Result<Response<SimulationStepResponse>, tonic::Status> {
+    ) -> Result<Response<SimulationStartResponse>, tonic::Status> {
         trace!("Recieved query: {:?}", request);
-        let start_simulation_request = request.0.into_inner();
-
-        let components = self.get_components_lock()?;
-        let component_container = self.get_components_lock()?;
-
-        for proto_component in &start_simulation_request.start_component {
-            let startcomponent = self.parse_component_if_some(proto_component)?;
-        }
-        for proto_component in &start_simulation_request.sim_component {
-            let simcomponent = self.parse_component_if_some(proto_component)?;
-        }
+        let start_simulation_request = request.0.into_inner()?;
+        let mut id = 0;
 
 
         let reply = {
-            start_component= &start_simulation_request.start_component
-            sim_component = &start_simulation_request.sim_component
+            simulationid = id++
+            initialdecisionpoint = &start_simulation_request.components_info.components.component.locations
         };
-
-
 
         Ok(Response::new((reply));
     }
-
-    fn parse_component_if_some(
-        &self,
-        proto_component: &ProtobufComponent,
-    ) -> Result<Vec<Component>, tonic::Status> {
-        if let Some(rep) = &proto_component.rep {
-            match rep {
-                Rep::Json(json) => parse_json_component(json),
-                Rep::Xml(xml) => Ok(parse_xml_components(xml)),
-            }
-        } else {
-            Ok(vec![])
-        }
-    }
-}
-fn parse_json_component(json: &str) -> Result<Vec<Component>, tonic::Status> {
-    match json_to_component(json) {
-        Ok(comp) => Ok(vec![comp]),
-        Err(_) => Err(tonic::Status::invalid_argument(
-            "Failed to parse json component",
-        )),
-    }
-}
-
-fn parse_xml_components(xml: &str) -> Vec<Component> {
-    let (comps, _, _) = parse_xml_from_str(xml);
-    comps
 }

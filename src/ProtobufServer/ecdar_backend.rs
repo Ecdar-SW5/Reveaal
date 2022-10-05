@@ -50,7 +50,10 @@ where
 
 #[tonic::async_trait]
 impl EcdarBackend for ConcreteEcdarBackend {
-    async fn send_query(&self, request: Request<Query>) -> Result<Response<QueryResponse>, Status> {
+    async fn send_query(
+        &self,
+        request: Request<Query>,
+        ) -> Result<Response<QueryResponse>, Status> {
         let request = std::panic::AssertUnwindSafe(request);
         catch_unwind(self.handle_send_query(request)).await
     }
@@ -78,4 +81,12 @@ impl EcdarBackend for ConcreteEcdarBackend {
         let request = std::panic::AssertUnwindSafe(request);
         catch_unwind(self.handle_step_simulation_step(request)).await
     }
+
+    async fn stop_simulation (
+        &self,
+        request: Request<SimulationStopRequest>,
+     ) -> Result<Response<()>, tonic::Status> {
+        let request = std::panic::AssertUnwindSafe(request);
+        catch_unwind(self.handle_stop_simuation(request)).await
+     }
 }
