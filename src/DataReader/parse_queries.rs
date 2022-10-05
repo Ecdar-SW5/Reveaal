@@ -1,4 +1,7 @@
 extern crate pest;
+
+use std::vec;
+
 use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::representations::QueryExpression;
 
@@ -172,6 +175,37 @@ fn build_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpress
     }
 }
 
+fn build_reachability_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
+    let inner_pair = pair.into_inner().next().unwrap();
+
+    match inner_pair.as_rule() {
+        Rule::variable_name => {
+            QueryExpression::VarName(inner_pair.as_str().trim().to_string());
+            build_reachability_expression_from_pair(inner_pair)
+        }
+        Rule::clock => {
+            QueryExpression::VarName(inner_pair.as_str().trim().to_string());
+            build_reachability_expression_from_pair(inner_pair)
+            }
+        err => panic!("Unable to match: {:?} as rule atom or variable", err)
+        }
+            
+    
+}
+
+fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
+    let mut inner_pair = pair.into_inner();
+    let left_side_pair = inner_pair.next().unwrap();
+    let right_side_pair = inner_pair.next().unwrap();
+
+    println!("{:?}", right_side_pair);
+
+    let lside = build_expression_from_pair(left_side_pair);
+    let rside = build_reachability_expression_from_pair(right_side_pair);
+
+    QueryExpression::Reachability(Box::new(lside), Box::new(rside))
+}
+
 fn build_refinement_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     let mut inner_pair = pair.into_inner();
     let left_side_pair = inner_pair.next().unwrap();
@@ -181,17 +215,6 @@ fn build_refinement_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpress
     let rside = build_expression_from_pair(right_side_pair);
 
     QueryExpression::Refinement(Box::new(lside), Box::new(rside))
-}
-
-fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
-    let mut inner_pair = pair.into_inner();
-    let left_side_pair = inner_pair.next().unwrap();
-    let right_side_pair = inner_pair.next().unwrap();
-
-    let lside = build_expression_from_pair(left_side_pair);
-    let rside = build_expression_from_pair(right_side_pair);
-
-    QueryExpression::Reachability(Box::new(lside), Box::new(rside))
 }
 
 fn build_term_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
