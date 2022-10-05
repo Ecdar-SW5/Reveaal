@@ -77,5 +77,7 @@ clocks = { clock ~ "," ~ clocks | clock }              // Introduces the concept
 
 loc = { variable_name ~ ("," ~ loc)? }                 // Can take locations of format "L20, L21 ..."
 
+state = { "[" ~ loc ~ "]" ~ "(" ~ clocks ~ ")" }       
+
 // This is the format for reachability
-reachability = { "reachability:" ~ expr ~ "->" ~ "[" ~ loc ~ "]" ~ "(" ~ clocks ~ ")" ~ ";" ~ "[" ~ loc ~ "]" ~ "(" ~ clocks ~ ")" }
+reachability = { "reachability:" ~ expr ~ "->" ~ state ~ ";" ~ state }

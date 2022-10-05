@@ -70,6 +70,26 @@ impl ExecutableQuery for RefinementExecutor {
     }
 }
 
+pub struct ReachabilityExecutor {
+    pub sys1: TransitionSystemPtr,
+    pub sys2: TransitionSystemPtr,
+    pub sys3: TransitionSystemPtr,
+}
+
+impl ExecutableQuery for ReachabilityExecutor {
+    fn execute(self: Box<Self>) -> QueryResult {
+        let (sys1, sys2, sys3) = (self.sys1, self.sys2, self.sys3);
+
+        //match refine::check_refinement(sys1, sys2, sys3) {
+            //Ok(res) => {
+            //    info!("Refinement result: {:?}", res);
+            //    QueryResult::Refinement(res)
+            //}  
+        //}
+        QueryResult::Error("Not implemented yet".to_string())
+    }
+}
+
 pub struct GetComponentExecutor<'a> {
     pub system: TransitionSystemPtr,
     pub comp_name: String,

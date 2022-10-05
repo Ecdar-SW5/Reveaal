@@ -4,7 +4,7 @@ use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::representations::QueryExpression;
 
 use pest::prec_climber::{Assoc, Operator, PrecClimber};
-use pest::Parser;
+use pest::{Parser, iterators};
 
 #[derive(Parser)]
 #[grammar = "DataReader/grammars/query_grammar.pest"]
@@ -173,35 +173,54 @@ fn build_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpress
     }
 }
 
-fn build_reachability_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
+fn build_clocks_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     let inner_pair = pair.into_inner().next().unwrap();
-
+    //println!("test: {}", inner_pair);
     match inner_pair.as_rule() {
-        Rule::variable_name => {
-            QueryExpression::VarName(inner_pair.as_str().trim().to_string());
-            build_reachability_expression_from_pair(inner_pair)
-        }
         Rule::clock => {
             QueryExpression::VarName(inner_pair.as_str().trim().to_string());
-            build_reachability_expression_from_pair(inner_pair)
+            build_clocks_from_pair(inner_pair)
+        }
+        Rule::clocks => {
+            build_clocks_from_pair(inner_pair)
             }
         err => panic!("Unable to match: {:?} as rule atom or variable", err)
         }
-            
-    
+}
+
+fn build_reachability_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
+    let inner_pair = pair.into_inner().next().unwrap();
+    //println!("test: {}", inner_pair);
+    match inner_pair.as_rule() {
+        Rule::loc => {
+            println!("{:?}", inner_pair);
+            QueryExpression::VarName(inner_pair.as_str().trim().to_string());
+            build_reachability_expression_from_pair(inner_pair)
+        }
+        Rule::clocks => {
+            println!("{:?}", inner_pair);
+            build_clocks_from_pair(inner_pair)
+            }
+        err => panic!("Unable to match: {:?} as rule atom or variable", err)
+        }   
 }
 
 fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
+    //println!("{:?}",pair);
     let mut inner_pair = pair.into_inner();
-    let left_side_pair = inner_pair.next().unwrap();
-    let right_side_pair = inner_pair.next().unwrap();
+    let automata_pair = inner_pair.next().unwrap();
+    let s_state_pair = inner_pair.next().unwrap();
+    let e_state_pair = inner_pair.next().unwrap();
 
-    println!("{:?}", right_side_pair);
+    //println!("{}", left_side_pair);
+    //println!("{:?}", middle_side_pair);
+    //println!("{:?}", right_side_pair);
 
-    let lside = build_expression_from_pair(left_side_pair);
-    let rside = build_reachability_expression_from_pair(right_side_pair);
+    let lside = build_expression_from_pair(automata_pair);
+    let mside = build_reachability_expression_from_pair(s_state_pair);
+    let rside = build_reachability_expression_from_pair(e_state_pair);
 
-    QueryExpression::Reachability(Box::new(lside), Box::new(rside))
+    QueryExpression::Reachability(Box::new(lside), Box::new(mside), Box::new(rside))
 }
 
 fn build_refinement_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {

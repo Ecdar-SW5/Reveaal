@@ -1170,7 +1170,7 @@ fn get_op(exp: &BoolExpression) -> Option<String> {
 pub enum QueryExpression {
     Refinement(Box<QueryExpression>, Box<QueryExpression>),
     Consistency(Box<QueryExpression>),
-    Reachability(Box<QueryExpression>, Box<QueryExpression>),
+    Reachability(Box<QueryExpression>, Box<QueryExpression>, Box<QueryExpression>),
     Implementation(Box<QueryExpression>),
     Determinism(Box<QueryExpression>),
     Specification(Box<QueryExpression>),
@@ -1207,9 +1207,10 @@ impl QueryExpression {
                 left.pretty_string(),
                 right.pretty_string()
             ),
-            QueryExpression::Reachability(left, right) => format!(
-                "reachability: {} -> {}",
+            QueryExpression::Reachability(left, middle, right) => format!(
+                "reachability: {} -> {} {}",
                 left.pretty_string(),
+                middle.pretty_string(),
                 right.pretty_string()
             ),
             QueryExpression::Consistency(system) => {

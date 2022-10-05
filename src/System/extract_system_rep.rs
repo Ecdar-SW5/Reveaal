@@ -4,7 +4,7 @@ use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::representations::QueryExpression;
 use crate::System::executable_query::{
     ConsistencyExecutor, DeterminismExecutor, ExecutableQuery, GetComponentExecutor,
-    RefinementExecutor,
+    RefinementExecutor, ReachabilityExecutor,
 };
 
 use crate::TransitionSystems::{
@@ -36,13 +36,15 @@ pub fn create_executable_query<'a>(
                 sys1: left.compile(dim)?,
                 sys2: right.compile(dim)?,
             }))},
-            QueryExpression::Reachability(left_side, right_side) => {
+            QueryExpression::Reachability(left_side, middle_side, right_side) => {
                 let mut quotient_index = None;
                 let left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
+                let middle = get_system_recipe(middle_side, component_loader, &mut dim, &mut quotient_index);
                 let right =get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
-                Ok(Box::new(RefinementExecutor {
+                Ok(Box::new(ReachabilityExecutor {
                 sys1: left.compile(dim)?,
-                sys2: right.compile(dim)?,
+                sys2: middle.compile(dim)?,
+                sys3: right.compile(dim)?,
             }))},
             QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
                 recipe: get_system_recipe(
