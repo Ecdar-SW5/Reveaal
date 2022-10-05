@@ -10,7 +10,6 @@ use crate::EdgeEval::updater::CompiledUpdate;
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 
-use crate::DataReader::parse_edge::Update;
 use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
 use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
@@ -259,7 +258,7 @@ impl Component {
 
     ///Used to find redundant clocks - checks for unused and duplicates clocks.
     ///
-    /// Returns [`vec<RedundantClock>`] with all found redundant clock.
+    /// Returns [`Vec<RedundantClock>`] with all found redundant clock.
     /// If no redundant clocks found the vector will be empty
     pub(crate) fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
         let clocks = self.declarations.get_clocks();
@@ -281,7 +280,7 @@ impl Component {
         {
             for name in find_varname_bool(expr) {
                 if clocks.contains_key(name) {
-                    if let Some(mut clock_indices) = seen_clocks.get_mut(name) {
+                    if let Some(clock_indices) = seen_clocks.get_mut(name) {
                         clock_indices.get_mut(which).unwrap().push(index);
                     } else {
                         seen_clocks.insert(name.to_string(), Box::new([vec![], vec![]]));
@@ -391,6 +390,7 @@ pub struct RedundantClock {
 
 impl RedundantClock {
     ///Creates a new [`RedundantClock`]
+    #[allow(unused)]
     fn new(
         clock: String,
         edge_indices: Vec<usize>,
