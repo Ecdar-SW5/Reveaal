@@ -260,37 +260,33 @@ impl Component {
     pub(crate) fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
         let clocks = self.declarations.get_clocks();
         let mut out: Vec<RedundantClock> = vec![];
-        let mut seen_clocks: HashMap<String, (Vec<usize>, Vec<usize>)> = HashMap::new();
-        for (index, expr) in self
+        let mut seen_clocks: HashMap<String, Box<[Vec<usize>; 2]>> = HashMap::new();
+        for (index, expr, which) in self
             .edges
             .iter()
             .enumerate()
             .filter(|(_, x)| x.guard.is_some())
-            .map(|(i, e)| (i, e.guard.as_ref().unwrap()))
+            .map(|(i, e)| (i, e.guard.as_ref().unwrap(), 0))
+            .chain(
+                self.locations
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, x)| x.invariant.is_some())
+                    .map(|(i, l)| (i, l.invariant.as_ref().unwrap(), 1)),
+            )
         {
             for name in find_varname_bool(expr) {
                 if clocks.contains_key(name) {
-                    if let Some((clock_edges, _)) = seen_clocks.get_mut(name) {
-                        clock_edges.push(index);
+                    if let Some(mut clock_indices) = seen_clocks.get_mut(name) {
+                        clock_indices.get_mut(which).unwrap().push(index);
                     } else {
-                        seen_clocks.insert(name.to_string(), (vec![index], vec![]));
-                    }
-                }
-            }
-        }
-        for (index, expr) in self
-            .locations
-            .iter()
-            .enumerate()
-            .filter(|(_, x)| x.invariant.is_some())
-            .map(|(i, l)| (i, l.invariant.as_ref().unwrap()))
-        {
-            for name in find_varname_bool(expr) {
-                if clocks.contains_key(name) {
-                    if let Some((_, clock_locs)) = seen_clocks.get_mut(name) {
-                        clock_locs.push(index);
-                    } else {
-                        seen_clocks.insert(name.to_string(), (vec![], vec![index]));
+                        seen_clocks.insert(name.to_string(), Box::new([vec![], vec![]]));
+                        seen_clocks
+                            .get_mut(name)
+                            .unwrap()
+                            .get_mut(which)
+                            .unwrap()
+                            .push(index);
                     }
                 }
             }
@@ -307,15 +303,12 @@ impl Component {
             .flatten()
             .map(|u| u.variable.clone())
             .collect::<Vec<String>>();
-        for clock in seen_clocks
-            .iter()
-            .filter(|x| !updates.contains(x.0))
-        {
+        for clock in seen_clocks.iter().filter(|x| !updates.contains(x.0)) {
             if let Some(global_clock) = &global {
                 out.push(RedundantClock::duplicate(
                     clock.0.clone(),
-                    clock.1.0.clone(),
-                    clock.1.1.clone(),
+                    clock.1[0].clone(),
+                    clock.1[1].clone(),
                     global_clock.clone(),
                 ));
             } else {
@@ -383,7 +376,12 @@ pub struct RedundantClock {
 }
 
 impl RedundantClock {
-    fn new(clock: String, edge_indices: Vec<usize>, location_indices: Vec<usize>, reason: ClockReason) -> RedundantClock {
+    fn new(
+        clock: String,
+        edge_indices: Vec<usize>,
+        location_indices: Vec<usize>,
+        reason: ClockReason,
+    ) -> RedundantClock {
         RedundantClock {
             clock,
             edge_indices,
@@ -393,7 +391,12 @@ impl RedundantClock {
         }
     }
 
-    fn duplicate(clock: String, edge_indices: Vec<usize>, location_indices: Vec<usize>, duplicate: String) -> RedundantClock {
+    fn duplicate(
+        clock: String,
+        edge_indices: Vec<usize>,
+        location_indices: Vec<usize>,
+        duplicate: String,
+    ) -> RedundantClock {
         RedundantClock {
             clock,
             edge_indices,
