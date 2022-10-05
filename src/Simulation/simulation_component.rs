@@ -1,5 +1,5 @@
 use crate::ModelObjects::component::{
-    Component, DeclarationProvider, Declarations, State, Transition, Channel, Location,
+    Component, DeclarationProvider, Declarations, State, Transition, Channel, Location, Edge,
 };
 use crate::DataReader::json_reader;
 use crate::TransitionSystems::{TransitionSystem, TransitionSystemPtr};
@@ -7,26 +7,49 @@ use crate::TransitionSystems::{TransitionSystem, TransitionSystemPtr};
 #[derive(Clone)]
 pub struct SimulationComponent {
     component: Component,
-    actions: Vec<Channel>,
     location: Location,
+   // valid_transitions: Vec<&'a Edge>,
 }
 
-// Takes a path string & component name, creates a component, converts the component into a SimulationComponent.
-// Tested [X], Not tested []
-pub fn start_simulation(project_path: &str, component_name: &str) -> SimulationComponent {
-    let start_component: Component = json_reader::read_json_component(project_path, component_name);
-    let sim_component: SimulationComponent = build_simulation_component(start_component);
+impl SimulationComponent {
 
-    sim_component
+    pub fn new(project_path: &str, component_name: &str) -> Self {
+        // This should probably get refactored later but not important for now
+        // This is utterly fucking retarded.
+        let temp_component: Component = json_reader::read_json_component(project_path, component_name);
+        Self { 
+            location: match temp_component.get_initial_location()
+            {
+                None => panic!("no initial location found"),
+                Some(x) => x.clone(),
+            },
+            component: temp_component,
+        }
+    }
+
+    pub fn take_edge(&self, edge: <Edge>) -> Self 
+    {
+        
+    }
 }
+
+
 
 
 pub fn continue_simulation(simulation_component: SimulationComponent, action: Channel) -> SimulationComponent {
+   // let start_location: Location = input_component.location;
+    //let action_taken: Channel = action;
+
+    // Check the allowed actions from start location to edges.
+    // Can this be done with the intersection Casper explained?
+   // let new_edges: Vec<SimulationComponent::component::Edge> = vec![];
+    //let input_edges = simulation_component.get_next_edges(start_location, action_taken.to_string(), SimulationComponent:component::SyncType::Input);
+
 
     simulation_component
 }
 
-//
+// Takes component as input, converts it into a SimulationComponent and returns.
 // Tested [X], Not tested []
 fn build_simulation_component(component: Component) -> SimulationComponent {
     let t_actions: Vec<Channel> = component.get_actions();
@@ -35,10 +58,12 @@ fn build_simulation_component(component: Component) -> SimulationComponent {
         None => panic!("no initial location found"),
         Some(x) => x.clone(),
     };
+    //let t_valid_transitions: Vec<&Edge> = component.get_all_edges_from(&t_location);
+    
     SimulationComponent {
         component,
-        actions: t_actions,
         location: t_location,
+        // valid_transitions: t_valid_transitions,
     }
 }
 
@@ -66,28 +91,27 @@ mod tests {
         let should_equal: Component = json_reader::read_json_component("samples/json/AG", "A");
 
         // Act
-        let output: simulation_component::SimulationComponent = simulation_component::start_simulation("samples/json/AG", "A");
+        let output = simulation_component::SimulationComponent::new("samples/json/AG", "A");
+        //let output: simulation_component::SimulationComponent = simulation_component::start_simulation("samples/json/AG", "A");
 
         // Assert
         assert_eq!(should_equal, output.component);
     }
 
     #[test]
-    fn JsonObject_NotEqualTo_Simulation_Component()
-    {
+    fn JsonObject_NotEqualTo_Simulation_Component() {
         // Arrange
         let should_equal: Component = json_reader::read_json_component("samples/json/AG", "A");
 
         // Act
-        let output: simulation_component::SimulationComponent = simulation_component::start_simulation("samples/json/AG", "AA");
+        let output = simulation_component::SimulationComponent::new("samples/json/AG", "AA");
 
         // Assert
         assert_ne!(should_equal, output.component);
     }
 
     #[test]
-    fn Moved_To_New_Location()
-    {
+    fn Moved_To_New_Location() {
         // Arrange
         let test_component: Component = json_reader::read_json_component("samples/json/AG", "Imp");
         let should_equal: Location = test_component.get_location_by_name("L1").clone();
@@ -96,7 +120,7 @@ mod tests {
         };
         
         // Act
-        let test_simulation_component: simulation_component::SimulationComponent = simulation_component::start_simulation("samples/json/AG", "Imp");
+        let test_simulation_component = simulation_component::SimulationComponent::new("samples/json/AG", "A");
         let output: simulation_component::SimulationComponent = simulation_component::continue_simulation(test_simulation_component, t_struct);
 
 
@@ -128,3 +152,43 @@ mod tests {
 //⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠻⢷⣦⣀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠓⠒⠒⠒⠊⠁⠀⠀⠀⢠⣿⠃⠀
 //⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠛⠛⠷⠶⣶⣦⣄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣴⠟⠁⠀⠀
 //⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠙⠛⠛⠷⠶⠶⠶⠶⠶⠾⠛⠛⠉⠀⠀⠀⠀⠀
+
+
+// {                                , /                                             
+//                              *//******,******/*//*/*,                           
+//                         ./********,/*,,************/////(*                      
+//                     .***//***,***************,,,*//////*////*                   
+//                  ******//*/**///**/*****///***,***//(((////**/,                 
+//                *******/***,****/*///////****/((/(###%%%##(//**/.                
+//               *,***,,,,,****/*////((########%%%%%%%%%%%%%##(/**//#.             
+//              ,****,,,,,,**/(((((#######%%%%%%%%%%%%%%%%######///(((/            
+//              */*,,,,,****/(((###%%%%%%%%%%%%%%%%%%%%%%%%%####(((((//(           
+//             */*,,,,,****///((####%%%%%%%%%%%%%%%%%%%%%%%%%%###(/**/(/.          
+//             ,*,,,,,,,**///(((####%%%%%%%%%%%%%%%%%%%%%%%%%%%###//(**//          
+//            *.,,,,,,,,*/////(((####%%%%%%%%%%%%%%%%%%%%%%%%%%###(*//,*,*         
+//            *,,,*..,,,**//((((#####%%%%%%%%%%%%%%%%%%%%%%%%%%###//(//**//        
+//            *..**,.,,,,*/((((########%%%#%%%%%%%%########%%%%###//(**##((        
+//           **..,,,....,,*/////(/****//(##(%%%#(,//((######(((,*.,**,(#%##/       
+//            *,,..........,,/((#(**//***../(#//######/**//*/(#/###///((##%        
+//             ....  ....,*,,**///(((#(,..*##%%#,/##(((#%%###%*%%###//#%%%#        
+//             ,.........,*/****/((###/*,,,/#%%%%#*#%%%%#(*#%%%%%%##/(##%%         
+//             ,.........,*////****//##(*,,/(#%%%##%%%%%%%%%%%%%%%#((%##%/         
+//               ...  . ..,//((((######(,,*/(#%&%%%%###%%%%%%%%%%%###%%%%          
+//                ,.. ....,*///((##%%%/.,*,,*/(#(###%%%#(%%%%%%%%%##%%&%           
+//                 ,.......,,*/((##%#(((//*/(((#%%%%%%%%%##%%%%%%%###%*            
+//                   ,,,...,,,*((###((//(((##%##%%%%%%%%%%#(%%%%%###               
+//                     . ,..,,*//#%///////*////((((////(##%#%%#%###                
+//                        ....,**(%##(//**/**/#//(#####%%#%#%#####                 
+//                         ....,**(#((/*,*//(######%###%#%######(                  
+//                         ......,*///(/////((((#####%##%####(((.                  
+//                         .......,,**//(((((###%%%%%%%####((/((                   
+//                          ..........,*//((((####%######(///(((                   
+//                          ,.,.,........*///(((((((((//((//((((                   
+//                          ,*,****,...,..,,,**/////////((((###                    
+//                    ...,*,,,*///////******///((//((##########                    
+//                 ...,///*,,*//(((((((((((((((#%%%##%%%######(***                 
+//              ,......(((/***/(((((((#(((((((###%%%%%#########*,,%&@@@@@@(**      
+//         ,........... .((**/(((((((#####((((((((##############.,,,,,,,,,,,,,*%##%
+//     ................  ..**//((#((((######((##(((#############*.,,.,,..,,,..,,,,.
+// ............. ........   ..*((########%%%#########%####(#####..,,.,....,....,,,,
+// ............. ......... .   ...(#######%%%##################,.,...,.....,.....,,}

@@ -684,7 +684,7 @@ impl Edge {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, PartialEq)]
 pub struct Channel {
     pub name: String,
 }
