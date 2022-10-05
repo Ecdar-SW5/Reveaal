@@ -257,6 +257,10 @@ impl Component {
         self.input_edges = Some(i_edges);
     }
 
+    ///Used to find redundant clocks - checks for unused and duplicates clocks.
+    ///
+    /// Returns [`vec<RedundantClock>`] with all found redundant clock.
+    /// If no redundant clocks found the vector will be empty
     pub(crate) fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
         let clocks = self.declarations.get_clocks();
         let mut out: Vec<RedundantClock> = vec![];
@@ -328,6 +332,7 @@ impl Component {
     }
 }
 
+///Finds the clock names used in an bool expression
 fn find_varname_bool(expr: &BoolExpression) -> Vec<&str> {
     match expr {
         BoolExpression::Parentheses(p) => find_varname_bool(p),
@@ -350,6 +355,7 @@ fn find_varname_bool(expr: &BoolExpression) -> Vec<&str> {
     }
 }
 
+///Finds the clock names used in an arithmetic expression
 fn find_varname_arith(expr: &ArithExpression) -> Vec<&str> {
     match expr {
         ArithExpression::Parentheses(p) => find_varname_arith(p),
@@ -367,22 +373,32 @@ fn find_varname_arith(expr: &ArithExpression) -> Vec<&str> {
     }
 }
 
+///Enum to hold the reason for why a clock is declared redundant.
 #[derive(Debug)]
 pub enum ClockReason {
+    ///Which clock is it a duplicate of.
     Duplicate(String),
+    ///If a clock is not used by a guard or invariant it is unused.
     Unused,
 }
 
+///Datastructure to hold the found redundant clocks, where they are used and their reason for being redundant.
 #[derive(Debug)]
 pub struct RedundantClock {
+    ///Name of the redundant clock.
     clock: String,
+    ///Indices of which edges the clock are being used on.
     edge_indices: Vec<usize>,
+    ///Indices of which locations the clock are being used in.
     location_indices: Vec<usize>,
+    ///Reason for why the clock is declared redundant.
     reason: ClockReason,
     //updates: Option<Vec<Update>>,
 }
 
+
 impl RedundantClock {
+    ///Creates a new [`RedundantClock`]
     fn new(clock: String, edge_indices: Vec<usize>, location_indices: Vec<usize>, reason: ClockReason) -> RedundantClock {
         RedundantClock {
             clock,
@@ -393,6 +409,7 @@ impl RedundantClock {
         }
     }
 
+    ///Shorthand function to create a duplicated [`RedundantClock`]
     fn duplicate(clock: String, edge_indices: Vec<usize>, location_indices: Vec<usize>, duplicate: String) -> RedundantClock {
         RedundantClock {
             clock,
@@ -403,6 +420,7 @@ impl RedundantClock {
         }
     }
 
+    ///Shorthand function to create a unused [`RedundantClock`]
     fn unused(clock: String) -> RedundantClock {
         RedundantClock {
             clock,
