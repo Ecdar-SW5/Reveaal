@@ -1,0 +1,26 @@
+[
+  {
+    "query": "reachability: Component1.L3",
+    "comment": "Is L3 reachable?",
+    "isPeriodic": false,
+    "ignoredInputs": {},
+    "ignoredOutputs": {},
+    "backend": "AAAAAAAAA"
+  },
+  {
+    "query": "consistency: Component1",
+    "comment": "",
+    "isPeriodic": false,
+    "ignoredInputs": {},
+    "ignoredOutputs": {},
+    "backend": "AAAAAAAAA"
+  },
+  {
+    "query": "reachability: Component1.L0 \u003c\u003e L3",
+    "comment": "Is L3 reachable?",
+    "isPeriodic": false,
+    "ignoredInputs": {},
+    "ignoredOutputs": {},
+    "backend": "AAAAAAAAA"
+  }
+]
