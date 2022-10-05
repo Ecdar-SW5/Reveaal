@@ -87,32 +87,33 @@ fn take_transition(
     let mut new_state = next_state.clone();
     if transition.use_transition(&mut new_state){
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
-        let existing_states: &mut Vec<OwnedFederation> = visited_states.entry(new_state.get_location().id.clone()).or_insert(Vec::new());
-        if !state_subset_of_existing_state(&new_state, existing_states) {
-            remove_existing_subsets_of_state(&new_state, existing_states);
+        let existing_zones: &mut Vec<OwnedFederation> = visited_states.entry(new_state.get_location().id.clone()).or_insert(Vec::new());
+        if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
+            remove_existing_subsets_of_zone(&new_state.zone_ref(), existing_zones);
             visited_states.get_mut(&new_state.get_location().id).unwrap().push(new_state.zone_ref().clone());
             frontier_states.push(new_state);
         }
     }
 }
 
-fn state_subset_of_existing_state(
-    new_state: &State,
+/// Checks if this zone is redundant by being a subset of any other zone
+fn zone_subset_of_existing_zones(
+    new_state: &OwnedFederation,
     existing_states: & Vec<OwnedFederation>
 ) -> bool {
     for existing_state in existing_states {
-        if new_state.zone_ref().subset_eq(existing_state) {
+        if new_state.subset_eq(existing_state) {
             return true
         }
     }
     false
 }
 
-/// Removes everything in existing_states that is a subset of state
-fn remove_existing_subsets_of_state(
-    new_state: &State,
-    existing_states: &mut Vec<OwnedFederation>
+/// Removes everything in existing_zones that is a subset of zone
+fn remove_existing_subsets_of_zone(
+    new_zone: &OwnedFederation,
+    existing_zones: &mut Vec<OwnedFederation>
 ) {
-    existing_states
-        .retain(|existing_state| !existing_state.subset_eq(new_state.zone_ref()));
+    existing_zones
+        .retain(|existing_zone| !existing_zone.subset_eq(new_zone));
 }
