@@ -71,8 +71,7 @@ fn parse_query(query_request: &ProtobufQuery) -> Result<Query, Status> {
 fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
     match query_result {
         QueryResult::Refinement(refines) => Some(ProtobufResult::Refinement(RefinementResult {
-            success: *refines,
-            relation: vec![],
+            success: *refines
         })),
         QueryResult::GetComponent(comp) => Some(ProtobufResult::Component(ComponentResult {
             component: Some(Component {

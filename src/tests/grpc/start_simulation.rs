@@ -3,11 +3,11 @@ mod refinements {
     use crate::ProtobufServer::{
         self,
         services::{
-            component::Rep, ecdar_backend_server::EcdarBackend, state_tuple::LocationTuple,
-            Component, SimulationStartRequest, SimulationStepResponse, StateTuple, DecisionPoint, State, Edge, state::Location, simulation_zone::DifferenceBound, SimulationZone,
+            component::Rep, ecdar_backend_server::EcdarBackend,
+            Component, SimulationStartRequest, SimulationStepResponse, DecisionPoint, State, Edge, state::Location, zone::DifferenceBound, Zone,
         },
     };
-    use tonic::{self, Request, Response};
+    use tonic::{self, Request};
 
     //static CONJUN: &str = "samples/xml/conjun.xml";
     static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
@@ -26,7 +26,7 @@ mod refinements {
             }),
         });
 
-        let expected_response = Response::new(SimulationStepResponse {
+        let expected_response = SimulationStepResponse {
             new_decision_points: vec![
                 DecisionPoint {
                     source: Some(State {
@@ -34,24 +34,28 @@ mod refinements {
                             id: String::from("L5"),
                             component_name: String::from("Machine")
                         }),
-                        zone: Some(SimulationZone {
+                        zone: Some(Zone {
                             dimensions: 2,
                             matrix: vec![
                                 DifferenceBound {
                                     bound: 0,
-                                    is_infinite: false
+                                    is_infinite: false,
+                                    is_strict: false,
                                 },
                                 DifferenceBound {
                                     bound: 1,
-                                    is_infinite: true
+                                    is_infinite: true,
+                                    is_strict: true
                                 },
                                 DifferenceBound {
                                     bound: 0,
-                                    is_infinite: false
+                                    is_infinite: false,
+                                    is_strict: false
                                 },
                                 DifferenceBound {
                                     bound: 0,
-                                    is_infinite: false
+                                    is_infinite: false,
+                                    is_strict: false
                                 },
                             ]
                         })
@@ -68,12 +72,15 @@ mod refinements {
                     ]
                 }
             ] 
-        });
+        };
 
         // Act
-        let actual_response = backend.start_simulation(request).await.unwrap();
-
+        let actual_response = 
+            backend.start_simulation(request).await
+                                             .unwrap()
+                                             .into_inner();
         // Assert
-        assert_eq!(expected_response.into_inner(), actual_response.into_inner());
+        assert_eq!(actual_response, expected_response);
     }
+
 }
