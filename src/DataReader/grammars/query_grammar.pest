@@ -58,7 +58,7 @@ atom = {int | "true" | "false"}
 
 var = {variable ~ ":" ~ logicFormulas | variable}
 variable = { (variable_name ~ "."?)+ ~ (int | variable_name)?}
-variable_name = @{(ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_" | "$")*) ~ !"-"}
+variable_name = @{(ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_" )*) ~ !"-"}
 
 int = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
 
