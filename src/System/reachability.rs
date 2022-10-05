@@ -1,3 +1,5 @@
+use edbm::zones::OwnedFederation;
+
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{TransitionSystem, LocationID};
 use std::collections::HashMap;
@@ -28,24 +30,22 @@ pub fn is_reachable(
         panic!("No state to start with");
     }
 
-    search_algorithm(start_state, end_state, system)
+    search_algorithm(&start_state, &end_state, system)
 }
 
 pub fn search_algorithm(
-    start_state: State,
-    end_state: State,
+    start_state: &State,
+    end_state: &State,
     system: &dyn TransitionSystem,
 ) -> Option<Vec<SubPath>> {
-    //panic!("No implementation");
 
     // hashmap linking every location to all its current zones
-    // TODO: figure out a way to hash a location
-    let mut visited_states:HashMap<LocationID, Vec<State>> = HashMap::new();
+    let mut visited_states:HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
 
     // List of states that are to be visited
-    let mut frontier_states: &mut Vec<&State> = &mut Vec::new();
+    let mut frontier_states: &mut Vec<State> = &mut Vec::new();
 
-    frontier_states.push(&start_state);
+    frontier_states.push(start_state.clone());
     loop{
         let next_state = frontier_states.pop();
         // All has been explored if no next state exist
@@ -81,27 +81,27 @@ pub fn search_algorithm(
 fn take_transition(
     next_state:  &State, 
     transition: &Transition, 
-    frontier_states: &mut Vec<&State>, 
-    visited_states: &mut HashMap<LocationID, Vec<State>>, 
+    frontier_states: &mut Vec<State>, 
+    visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>, 
     system: &dyn TransitionSystem) {
     let mut new_state = next_state.clone();
     if transition.use_transition(&mut new_state){
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
-        let existing_states: &mut Vec<State> = visited_states.entry(new_state.get_location().id.clone()).or_insert(Vec::new());
+        let existing_states: &mut Vec<OwnedFederation> = visited_states.entry(new_state.get_location().id.clone()).or_insert(Vec::new());
         if !state_subset_of_existing_state(&new_state, existing_states) {
             remove_existing_subsets_of_state(&new_state, existing_states);
-            visited_states.get_mut(&new_state.get_location().id).unwrap().push(new_state);
-            frontier_states.push(&new_state);
+            visited_states.get_mut(&new_state.get_location().id).unwrap().push(new_state.zone_ref().clone());
+            frontier_states.push(new_state);
         }
     }
 }
 
 fn state_subset_of_existing_state(
     new_state: &State,
-    existing_states: & Vec<State>
+    existing_states: & Vec<OwnedFederation>
 ) -> bool {
     for existing_state in existing_states {
-        if new_state.is_subset_of(existing_state) {
+        if new_state.zone_ref().subset_eq(existing_state) {
             return true
         }
     }
@@ -111,8 +111,8 @@ fn state_subset_of_existing_state(
 /// Removes everything in existing_states that is a subset of state
 fn remove_existing_subsets_of_state(
     new_state: &State,
-    existing_states: &mut Vec<State>
+    existing_states: &mut Vec<OwnedFederation>
 ) {
     existing_states
-        .retain(|existing_state| !existing_state.is_subset_of(new_state));
+        .retain(|existing_state| !existing_state.subset_eq(new_state.zone_ref()));
 }
