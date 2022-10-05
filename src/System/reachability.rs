@@ -24,7 +24,6 @@ pub struct SubPath {
 ///     None => false
 /// };
 /// ```
-
 pub fn find_path(
     begin_state: Option<State>,
     end_state: State,
