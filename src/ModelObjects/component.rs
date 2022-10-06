@@ -259,28 +259,6 @@ impl Component {
     }
 }
 
-impl ComposedTransitionSystem for Component {
-    fn next_transitions(&self, location: &LocationTuple, action: &str) -> Vec<Transition> { 
-        /*assert!(self.actions_contain(action));
-
-        let loc_left = location.get_left();
-        let loc_right = location.get_right();
-
-        let left = self.left.next_transitions(loc_left, action);
-        let right = self.right.next_transitions(loc_right, action);
-
-        Transition::combinations(&left, &right, CompositionType::Conjunction)*/
-
-        todo!();
-    }
-    fn is_locally_consistent(&self) -> bool { todo!() }
-    fn get_children(&self) -> (&Box<(dyn TransitionSystem + 'static)>, &Box<(dyn TransitionSystem + 'static)>) { todo!() }
-    fn get_composition_type(&self) -> CompositionType { todo!() }
-    fn get_dim(&self) -> usize { todo!() }
-    fn get_input_actions(&self) -> HashSet<std::string::String> { todo!() }
-    fn get_output_actions(&self) -> HashSet<std::string::String> { todo!() }
-}
-
 pub fn contain(channels: &[Channel], channel: &str) -> bool {
     for c in channels {
         if c.name == channel {

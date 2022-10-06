@@ -151,9 +151,34 @@ fn remove_existing_subsets_of_zone(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::refinement::Helper::json_run_query;
-    use crate::System::executable_query::QueryResult;
-    use crate::DataReader::component_loader::{JsonProjectLoader, XmlProjectLoader};
+    use crate::DataReader::component_loader::JsonProjectLoader;
+    use crate::TransitionSystems::LocationTuple;
+    use edbm::util::constraints::ClockIndex;
+    use crate::extract_system_rep::SystemRecipe;
+
+    #[test]
+    fn Reachability_TestIfSearchAlgorithmeReturnsTrueForReachableState() {
+        const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
+        let project_loader = JsonProjectLoader::new(String::from(PATH));
+        let mut comp_loader = project_loader.to_comp_loader();
+        let mut component = comp_loader.get_component("Machine").to_owned();
+        let mut dim1: ClockIndex = 0;
+        let dim2: ClockIndex = 0;
+        component.set_clock_indices(&mut dim1);
+        let sr = Box::new(SystemRecipe::Component(Box::new(component.clone()))).compile(dim2).unwrap();
+
+        let locations: Vec<LocationTuple> = sr.get_all_locations();
+        let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
+        let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
+
+        let path: Option<Vec<SubPath>> = search_algorithm(&state0, &state1, &(*sr));
+
+        match path {
+            Some(_) => assert!(true),
+            None => assert!(false),
+        }
+    }
+
 
     #[test]
     #[ignore = "Cannot compile"]
@@ -161,10 +186,15 @@ mod tests {
         const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
         let project_loader = JsonProjectLoader::new(String::from(PATH));
         let mut comp_loader = project_loader.to_comp_loader();
-        let component = comp_loader.get_component("Machine").to_owned();
-        let mut result = false;
-        let locationId = "L5";
-        result = ExistLocation(component, locationId);
-        assert!(result);
+        let mut component = comp_loader.get_component("Machine").to_owned();
+        let mut dim1: ClockIndex = 0;
+        let dim2: ClockIndex = 0;
+        component.set_clock_indices(&mut dim1);
+
+        let sr = Box::new(SystemRecipe::Component(Box::new(component.clone()))).compile(dim2).unwrap();
+        let locations: Vec<LocationTuple> = sr.get_all_locations();
+        let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
+        let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
+        assert!(preliminary_check(&state0, &state1, &(*sr)).is_ok());
     }
 }
