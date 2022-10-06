@@ -1,86 +1,84 @@
 #[cfg(test)]
 mod refinements {
-    use crate::ProtobufServer::{
-        self,
-        services::{
-            component::Rep, ecdar_backend_server::EcdarBackend, Component, DecisionPoint, Edge,
-            SimulationStartRequest, SimulationStepResponse, State,
-        },
-    };
-    use tonic::{self, Request};
+    use crate::ProtobufServer::{self, services::{self, ecdar_backend_server::EcdarBackend}};
+    use std::fs;
+    use tonic;
 
     //static CONJUN: &str = "samples/xml/conjun.xml";
     static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
 
     #[tokio::test]
     async fn start_simulation__normal_json__respondes_correct_decision_points() {
-        // // Arrange
-        // let backend = ProtobufServer::ConcreteEcdarBackend::default();
+        // Arrange
+        let backend = ProtobufServer::ConcreteEcdarBackend::default();
 
-        // let json =
-        //     std::fs::read_to_string(format!("{}/Components/Machine.json", ECDAR_UNI)).unwrap();
+        let component_json =
+            fs::read_to_string(format!("{}/Components/Machine.json", ECDAR_UNI)).unwrap();
 
-        // let request: Request<SimulationStartRequest> = Request::new(SimulationStartRequest {
-        //     component: Some(Component {
-        //         rep: Some(Rep::Json(json)),
-        //     }),
-        // });
+        let request: tonic::Request<services::SimulationStartRequest> = tonic::Request::new(
+            services::SimulationStartRequest {
+                component_composition: String::from("Machine"),
+                components_info: Some(services::ComponentsInfo {
+                    components: vec![
+                        services::Component {
+                            rep: Some(
+                                services::component::Rep::Json(component_json.clone())
+                            )
+                        }
+                    ],
+                    components_hash: 0 // TODO: this is not correct, but will do for now
+                })
+            }
+        );
 
-        // let expected_response = SimulationStepResponse {
-        //     new_decision_points: vec![
-        //         DecisionPoint {
-        //             source: Some(State {
-        //                 location: Some(Location {
-        //                     id: String::from("L5"),
-        //                     component_name: String::from("Machine")
-        //                 }),
-        //                 zone: Some(Zone {
-        //                     dimensions: 2,
-        //                     matrix: vec![
-        //                         DifferenceBound {
-        //                             bound: 0,
-        //                             is_infinite: false,
-        //                             is_strict: false,
-        //                         },
-        //                         DifferenceBound {
-        //                             bound: 1,
-        //                             is_infinite: true,
-        //                             is_strict: true
-        //                         },
-        //                         DifferenceBound {
-        //                             bound: 0,
-        //                             is_infinite: false,
-        //                             is_strict: false
-        //                         },
-        //                         DifferenceBound {
-        //                             bound: 0,
-        //                             is_infinite: false,
-        //                             is_strict: false
-        //                         },
-        //                     ]
-        //                 })
-        //             }),
-        //             edges: vec![
-        //                 Edge {
-        //                     id: String::from("E3"),
-        //                     component_name: String::from("Machine")
-        //                 },
-        //                 Edge {
-        //                     id: String::from("E5"),
-        //                     component_name: String::from("Machine")
-        //                 }
-        //             ]
-        //         }
-        //     ]
-        // };
+        // the expected respones is the same component (no composition takes place), and the
+        // decision point drawn below: 
+        //
+        //          ----coin?---->
+        //         /
+        // <L5,Ø>-------tea!----->
+        //
+        //
+        let expected_response = services::SimulationStepResponse {
+            new_state: Some(services::SimulationState {
+                component: Some(services::Component {
+                    rep: Some(services::component::Rep::Json(component_json.clone()))
+                }),
+                decision_points: vec![
+                    services::DecisionPoint {
+                        source: Some(services::State {
+                            location_id: "L5".to_string(),
+                            zone: Some(services::Zone {
+                                disjunction: Some(services::Disjunction {
+                                    conjunctions: vec![
+                                        services::Conjunction {
+                                            constraints: vec![]
+                                        }
+                                    ]
+                                })
+                            })
+                        }),
+                        edges: vec![
+                            services::Edge {
+                                id: "E3".to_string(),
+                                specific_component: None
+                            },
+                            services::Edge {
+                                id: "E5".to_string(),
+                                specific_component: None
+                            }
+                        ]
+                    }
+                ]
+            })
+        };
 
-        // // Act
-        // let actual_response =
-        //     backend.start_simulation(request).await
-        //                                      .unwrap()
-        //                                      .into_inner();
-        // // Assert
-        // assert_eq!(actual_response, expected_response);
-        assert!(false);
+        // Act
+        let actual_response =
+            backend.start_simulation(request).await
+                                             .unwrap()
+                                             .into_inner();
+        // Assert
+        assert_eq!(actual_response, expected_response);
     }
 }
