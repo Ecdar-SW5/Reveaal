@@ -1238,7 +1238,12 @@ impl QueryExpression {
             }
             QueryExpression::Parentheses(system) => format!("({})", system.pretty_string()),
             QueryExpression::VarName(name) => name.clone(),
-
+            QueryExpression::State(location_names, bool_exp) => {
+                format!("State[{}]({})", location_names.pretty_string(), bool_exp.to_string())
+            }
+            QueryExpression::LocName(loc_name) => {
+                format!("Locname({})", loc_name)
+            }
             _ => panic!("Rule not implemented yet"),
         }
     }
