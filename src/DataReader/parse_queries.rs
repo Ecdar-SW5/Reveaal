@@ -189,7 +189,7 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     };
 
     match pair.as_rule() {
-        Rule::state => {            
+        Rule::state => {
             QueryExpression::State(Box::new(QueryExpression::LocName(locPair.as_str().trim().to_string())), Box::new(invariantVersion))
         }
         err => panic!("Unable to match: {:?} as rule loc or clocks", err),
