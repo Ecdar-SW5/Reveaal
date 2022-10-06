@@ -4,7 +4,7 @@ mod refinements {
         self,
         services::{
             component::Rep, ecdar_backend_server::EcdarBackend,
-            Component, SimulationStartRequest, SimulationStepResponse, DecisionPoint, State, Edge, state::Location, zone::DifferenceBound, Zone,
+            Component, SimulationStartRequest, SimulationStepResponse, DecisionPoint, State, Edge,
         },
     };
     use tonic::{self, Request};
