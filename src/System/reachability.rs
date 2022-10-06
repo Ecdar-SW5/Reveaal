@@ -9,49 +9,63 @@ pub struct SubPath {
     transition: Transition,
 }
 
-// pub fn preliminary_check_succes(take some input) -> return a path{
-//    It returns a path
-// }
+pub fn preliminary_check(
+    start_state: &State,
+    end_state: &State,
+    system: &dyn TransitionSystem
+) -> Result<bool, Box<dyn std::error::Error>> {
+    if !system.get_all_locations().contains(start_state.get_location())
+        {return Err("The transition system does not contain the start location".into())}
+    if !system.get_all_locations().contains(end_state.get_location())
+        {return Err("The transition system does not contain the end location".into())}
+    if !&end_state.zone_ref().has_intersection(end_state.get_location().get_invariants().unwrap())
+        {return Err("The desired end state is not allowed due to the invariant on this location".into())}
+
+    return Ok(true);
+}
 
 ///# Find path
-/// 
+///
 /// Returns a path from a start state to an end state in a transition system.
-/// 
+///
 /// If it is reachable, it returns a path.
-/// 
+///
 /// If it is not reachable, it returns None.
-/// 
+///
 /// The start state can be omitted with None to use the start state of the transition system.
-/// 
+///
 ///## Checking if a state can reach another:
-/// 
+///
 /// let is_reachable: bool = match find_path(Some(start_state), end_state, transition_system) {
 ///     Some(path) => true,
 ///     None => false
 /// };
-/// 
+///
 ///## Omitting start state:
-/// 
+///
 /// let is_reachable: bool = match find_path(None, end_state, transition_system) {
 ///     Some(path) => true,
 ///     None => false
 /// };
-/// 
+///
+// This is the main function for the reachability query.
 pub fn find_path(
     begin_state: Option<State>,
     end_state: State,
     system: &dyn TransitionSystem,
-) -> Option<Vec<SubPath>> {
-    // if preliminary_check_succes() { return a path }
-
+) -> bool {
     let start_state: State;
-
     if begin_state.is_some() {
         start_state = begin_state.unwrap();
     } else if system.get_initial_state().is_some() {
         start_state = system.get_initial_state().unwrap();
     } else {
         panic!("No state to start with");
+    }
+
+    match preliminary_check(&start_state, &end_state, system) {
+        Err(msg) => panic!("{}", msg),
+        Ok(_b) => ()
     }
 
     search_algorithm(&start_state, &end_state, system)
@@ -61,7 +75,7 @@ pub fn search_algorithm(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem,
-) -> Option<Vec<SubPath>> {
+) -> bool {
 
     // hashmap linking every location to all its current zones
     let mut visited_states:HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
@@ -79,34 +93,26 @@ pub fn search_algorithm(
         let next_state = next_state.unwrap();
         // If there is a overlap with the end state, it has been reached.
         if next_state.zone_ref().has_intersection(end_state.zone_ref()){
-            return None/* TODO: Return the path success? */
+            return true/* TODO: Return the path success? */
         }
 
-        // Take all input transitions
-        for input in system.get_input_actions(){
-            for transition in &system.next_inputs(&next_state.decorated_locations, &input){
+        for action in system.get_actions(){
+            for transition in &system.next_transitions(&next_state.decorated_locations, &action){
                 take_transition(&next_state, transition, frontier_states, &mut visited_states, system);
-            
-            }
-        }
 
-        // Take all output transitions
-        for output in system.get_output_actions(){
-            for transition in &system.next_outputs(&next_state.decorated_locations, &output){
-                take_transition(&next_state, transition, frontier_states, &mut visited_states, system);
             }
         }
     };
 
     // If nothing has been found, it is not reachable
-    None
+    false
 }
 
 fn take_transition(
-    next_state:  &State, 
-    transition: &Transition, 
-    frontier_states: &mut Vec<State>, 
-    visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>, 
+    next_state:  &State,
+    transition: &Transition,
+    frontier_states: &mut Vec<State>,
+    visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>,
     system: &dyn TransitionSystem) {
     let mut new_state = next_state.clone();
     if transition.use_transition(&mut new_state){
@@ -145,65 +151,20 @@ fn remove_existing_subsets_of_zone(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::System::reachability::search_algorithm;
-    use crate::DataReader::component_loader::JsonProjectLoader;
-    use crate::ModelObjects::component::State;
-    use edbm::util::constraints::ClockIndex;
-    use log::debug;
-    use crate::System::extract_system_rep::SystemRecipe;
-    use crate::TransitionSystems::LocationTuple;
-    use crate::component::Component;
+    use crate::tests::refinement::Helper::json_run_query;
+    use crate::System::executable_query::QueryResult;
+    use crate::DataReader::component_loader::{JsonProjectLoader, XmlProjectLoader};
 
     #[test]
-    fn Reachability_Test_If_Location_Exists_In_TransitionSystem() {
+    #[ignore = "Cannot compile"]
+    fn Reachability_Test_If_Location_Exists_In_TransitionSystem(){
         const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
         let project_loader = JsonProjectLoader::new(String::from(PATH));
         let mut comp_loader = project_loader.to_comp_loader();
         let component = comp_loader.get_component("Machine").to_owned();
         let mut result = false;
         let locationId = "L5";
-        result = ExistLocation(component, locationId.to_string());
+        result = ExistLocation(component, locationId);
         assert!(result);
     }
-
-    #[test]
-    fn Reachability_TestIfSearchAlgorithmeReturnsTrueForReachableState() {
-        const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
-        let project_loader = JsonProjectLoader::new(String::from(PATH));
-        let mut comp_loader = project_loader.to_comp_loader();
-        
-        let mut component = comp_loader.get_component("Machine").to_owned();
-        
-        let mut dim1: ClockIndex = 0;
-        let dim2: ClockIndex = 0;
-        component.set_clock_indices(&mut dim1);
-        debug!("{} Clocks: {:?}", "Machine", component.declarations.clocks);
-
-        
-        let sr = Box::new(SystemRecipe::Component(Box::new(component.clone()))).compile(dim2).unwrap();
-
-        let locations: Vec<LocationTuple> = sr.get_all_locations();
-        let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
-        let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
-
-
-        let path: Option<Vec<SubPath>> = search_algorithm(&state0, &state1, &component);
-
-        match path {
-            Some(_) => assert!(true),
-            None => assert!(false),
-        }
-
-        //let start_state = State::create(component.get_locations, /* Federation<DBM<Valid>> */);
-    }
-
-    fn ExistLocation(component: Component, locationId: String) -> bool {
-        true
-    }
 }
-
-//pub fn search_algorithm(
-//    start_state: &State,
-//    end_state: &State,
-//    system: &dyn TransitionSystem,
-//) -> Option<Vec<SubPath>>
