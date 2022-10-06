@@ -1,11 +1,13 @@
 extern crate pest;
 
 use crate::ModelObjects::queries::Query;
-use crate::ModelObjects::representations::QueryExpression;
+use crate::ModelObjects::representations::{QueryExpression, BoolExpression};
 
 use pest::prec_climber::{Assoc, Operator, PrecClimber};
 use pest::{Parser, iterators};
 use serde::de::value::Error;
+
+use super::parse_invariant::parse;
 
 #[derive(Parser)]
 #[grammar = "DataReader/grammars/query_grammar.pest"]
@@ -178,6 +180,16 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     let mut inner_pair = pair.clone().into_inner();
     let locPair = inner_pair.next().unwrap();
     let clockPair = inner_pair.next().unwrap();
+
+    let clockString = clockPair.as_str().trim().to_string();
+    let invariantVersion = clockString.replace(",", "&&");
+    
+    let result = parse(&invariantVersion);
+
+    let boolExpr: BoolExpression = result.unwrap();
+
+    println!("Hello world test test {}", boolExpr.encode_expr());
+
 
     match pair.as_rule() {
         Rule::state => {            
