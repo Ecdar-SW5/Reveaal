@@ -96,18 +96,10 @@ pub fn search_algorithm(
             return true/* TODO: Return the path success? */
         }
 
-        // Take all input transitions
-        for input in system.get_input_actions(){
-            for transition in &system.next_inputs(&next_state.decorated_locations, &input){
+        for action in system.get_actions(){
+            for transition in &system.next_transitions(&next_state.decorated_locations, &action){
                 take_transition(&next_state, transition, frontier_states, &mut visited_states, system);
 
-            }
-        }
-
-        // Take all output transitions
-        for output in system.get_output_actions(){
-            for transition in &system.next_outputs(&next_state.decorated_locations, &output){
-                take_transition(&next_state, transition, frontier_states, &mut visited_states, system);
             }
         }
     };
