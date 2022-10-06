@@ -67,7 +67,7 @@ pub fn search_algorithm(
     let mut visited_states:HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
 
     // List of states that are to be visited
-    let mut frontier_states: &mut Vec<State> = &mut Vec::new();
+    let frontier_states: &mut Vec<State> = &mut Vec::new();
 
     frontier_states.push(start_state.clone());
     loop{
@@ -85,7 +85,7 @@ pub fn search_algorithm(
         // Take all input transitions
         for input in system.get_input_actions(){
             for transition in &system.next_inputs(&next_state.decorated_locations, &input){
-                take_transition(&next_state, &transition, &mut frontier_states, &mut visited_states, system);
+                take_transition(&next_state, transition, frontier_states, &mut visited_states, system);
             
             }
         }
@@ -93,13 +93,13 @@ pub fn search_algorithm(
         // Take all output transitions
         for output in system.get_output_actions(){
             for transition in &system.next_outputs(&next_state.decorated_locations, &output){
-                take_transition(&next_state, &transition, &mut frontier_states, &mut visited_states, system);
+                take_transition(&next_state, transition, frontier_states, &mut visited_states, system);
             }
         }
     };
 
     // If nothing has been found, it is not reachable
-    return None;
+    None
 }
 
 fn take_transition(
@@ -113,7 +113,7 @@ fn take_transition(
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
         let existing_zones: &mut Vec<OwnedFederation> = visited_states.entry(new_state.get_location().id.clone()).or_insert(Vec::new());
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
-            remove_existing_subsets_of_zone(&new_state.zone_ref(), existing_zones);
+            remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
             visited_states.get_mut(&new_state.get_location().id).unwrap().push(new_state.zone_ref().clone());
             frontier_states.push(new_state);
         }
