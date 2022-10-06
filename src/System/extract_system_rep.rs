@@ -6,6 +6,7 @@ use crate::System::executable_query::{
     ConsistencyExecutor, DeterminismExecutor, ExecutableQuery, GetComponentExecutor,
     RefinementExecutor, ReachabilityExecutor,
 };
+use crate::System::extract_state::get_state;
 
 use crate::TransitionSystems::{
     CompiledComponent, Composition, Conjunction, Quotient, TransitionSystemPtr,
@@ -36,15 +37,13 @@ pub fn create_executable_query<'a>(
                 sys1: left.compile(dim)?,
                 sys2: right.compile(dim)?,
             }))},
-            QueryExpression::Reachability(left_side, middle_side, right_side) => {
+            QueryExpression::Reachability(automata, start, end) => {
                 let mut quotient_index = None;
-                let left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
-                let middle = get_system_recipe(middle_side, component_loader, &mut dim, &mut quotient_index);
-                let right =get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
+                let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
                 Ok(Box::new(ReachabilityExecutor {
-                sys1: left.compile(dim)?,
-                sys2: middle.compile(dim)?,
-                sys3: right.compile(dim)?,
+                sys: machine.compile(dim)?,
+                s_state: get_state(start), //Få s og e state til at være states
+                e_state: get_state(end),
             }))},
             QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
                 recipe: get_system_recipe(

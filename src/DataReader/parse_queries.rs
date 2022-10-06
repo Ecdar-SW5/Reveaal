@@ -5,6 +5,7 @@ use crate::ModelObjects::representations::QueryExpression;
 
 use pest::prec_climber::{Assoc, Operator, PrecClimber};
 use pest::{Parser, iterators};
+use serde::de::value::Error;
 
 #[derive(Parser)]
 #[grammar = "DataReader/grammars/query_grammar.pest"]
@@ -173,53 +174,62 @@ fn build_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpress
     }
 }
 
-fn build_clocks_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
-    let inner_pair = pair.into_inner().next().unwrap();
-    //println!("test: {}", inner_pair);
-    match inner_pair.as_rule() {
-        Rule::clock => {
-            QueryExpression::VarName(inner_pair.as_str().trim().to_string());
-            build_clocks_from_pair(inner_pair)
+fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
+    //println!("{:?}", pair);
+    match pair.as_rule() {
+        Rule::state => {
+            let loc = build_loc_from_pair(pair.clone());
+            QueryExpression::State(Box::new(loc), Box::new(build_clock_from_pair(pair.into_inner().next().unwrap())))
         }
-        Rule::clocks => {
-            build_clocks_from_pair(inner_pair)
-            }
-        err => panic!("Unable to match: {:?} as rule atom or variable", err)
-        }
+        err => panic!("Unable to match: {:?} as rule loc or clocks", err),
+    }
 }
 
-fn build_reachability_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
+fn build_loc_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     let inner_pair = pair.into_inner().next().unwrap();
-    //println!("test: {}", inner_pair);
     match inner_pair.as_rule() {
         Rule::loc => {
-            println!("{:?}", inner_pair);
-            QueryExpression::VarName(inner_pair.as_str().trim().to_string());
-            build_reachability_expression_from_pair(inner_pair)
-        }
-        Rule::clocks => {
-            println!("{:?}", inner_pair);
-            build_clocks_from_pair(inner_pair)
+            if inner_pair.as_str().trim().len() != 0  {
+                QueryExpression::VarName(inner_pair.as_str().trim().to_string()) //Locations bliver fortolket som componenets
             }
-        err => panic!("Unable to match: {:?} as rule atom or variable", err)
-        }   
+            else {
+                panic!("Unable to match: {:?} as rule loc", inner_pair)
+            } 
+        }
+        err => panic!("Unable to match: {:?} as rule loc", err),
+    }
+}
+
+fn build_clock_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
+    let inner_pair = pair.into_inner().next().unwrap();
+    print!("{:?}",inner_pair);
+    match inner_pair.as_rule() {
+        Rule::boolExpr => {
+            build_boolExpr_from_pair(inner_pair)
+        }
+        Rule::loc => {
+            build_clock_from_pair(inner_pair)
+        }
+        Rule::variable_name => {
+            build_clock_from_pair(inner_pair)
+        }
+        err => panic!("Unable to match: {:?} as rule clocks", err),
+    }
 }
 
 fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
-    //println!("{:?}",pair);
     let mut inner_pair = pair.into_inner();
     let automata_pair = inner_pair.next().unwrap();
     let s_state_pair = inner_pair.next().unwrap();
+    //println!("{:?}", s_state_pair);
     let e_state_pair = inner_pair.next().unwrap();
 
-    //println!("{}", left_side_pair);
-    //println!("{:?}", middle_side_pair);
-    //println!("{:?}", right_side_pair);
-
     let lside = build_expression_from_pair(automata_pair);
-    let mside = build_reachability_expression_from_pair(s_state_pair);
-    let rside = build_reachability_expression_from_pair(e_state_pair);
+    let mside = build_state_from_pair(s_state_pair);
+    let rside = build_state_from_pair(e_state_pair);
 
+    println!("l: {:?} m: {:?} r:{:?}", lside, mside, rside);
+    //QueryExpression::Reachability(Box::new(lside.clone()), Box::new(mside.clone()), Box::new(rside.clone())).pretty_string();
     QueryExpression::Reachability(Box::new(lside), Box::new(mside), Box::new(rside))
 }
 

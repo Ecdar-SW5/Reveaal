@@ -47,6 +47,16 @@ impl LocationTuple {
         }
     }
 
+    pub fn test() -> Self {
+        LocationTuple {
+            id: LocationID::Simple("1".to_string()),
+            invariant: None,
+            loc_type: LocationType::Normal,
+            left: None,
+            right: None,
+        }
+    }
+
     //Merge two locations keeping the invariants seperate
     pub fn merge_as_quotient(left: &Self, right: &Self) -> Self {
         let id = LocationID::Quotient(Box::new(left.id.clone()), Box::new(right.id.clone()));

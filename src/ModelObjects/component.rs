@@ -284,6 +284,13 @@ impl State {
         }
     }
 
+    pub fn test(decorated_locations: LocationTuple) -> Self {
+        State {
+            decorated_locations,
+            zone_sentinel: None,
+        }
+    }
+
     pub fn is_contained_in_list(&self, list: &[State]) -> bool {
         list.iter().any(|s| self.is_subset_of(s))
     }

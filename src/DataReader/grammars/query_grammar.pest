@@ -72,12 +72,11 @@ composition_op = { "||" }
 
 WHITESPACE = _{ " " | "\n" | "\r\n" | "\t"}
 
-clock = { boolExpr | "" }                              // Is used for inputs like x>0 or y<=3  
-clocks = { clock ~ "," ~ clocks | clock }              // Introduces the concept of recursion as done in BNF
+clock = { boolExpr ~ ("," ~ boolExpr)* | "" }                              // Is used for inputs like x>0 or y<=3  
 
-loc = { variable_name ~ ("," ~ loc)? }                 // Can take locations of format "L20, L21 ..."
+loc = { variable_name ~ ("," ~ variable_name)* }                 // Can take locations of format "L20, L21 ..."
 
-state = { "[" ~ loc ~ "]" ~ "(" ~ clocks ~ ")" }       
+state = { "[" ~ loc ~ "]" ~ "(" ~ clock ~ ")" }       
 
 // This is the format for reachability
 reachability = { "reachability:" ~ expr ~ "->" ~ state ~ ";" ~ state }

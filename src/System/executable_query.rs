@@ -6,6 +6,7 @@ use crate::ModelObjects::component::Component;
 use crate::System::refine;
 use crate::System::save_component::combine_components;
 use crate::TransitionSystems::TransitionSystemPtr;
+use crate::ModelObjects::component::State;
 
 use super::extract_system_rep::SystemRecipe;
 use super::save_component::PruningStrategy;
@@ -71,14 +72,14 @@ impl ExecutableQuery for RefinementExecutor {
 }
 
 pub struct ReachabilityExecutor {
-    pub sys1: TransitionSystemPtr,
-    pub sys2: TransitionSystemPtr,
-    pub sys3: TransitionSystemPtr,
+    pub sys: TransitionSystemPtr,
+    pub s_state: State,
+    pub e_state: State,
 }
 
 impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
-        let (sys1, sys2, sys3) = (self.sys1, self.sys2, self.sys3);
+        let (sys, s_state, e_state) = (self.sys, self.s_state, self.e_state);
 
         //match refine::check_refinement(sys1, sys2, sys3) {
             //Ok(res) => {

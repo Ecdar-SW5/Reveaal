@@ -1171,6 +1171,7 @@ pub enum QueryExpression {
     Refinement(Box<QueryExpression>, Box<QueryExpression>),
     Consistency(Box<QueryExpression>),
     Reachability(Box<QueryExpression>, Box<QueryExpression>, Box<QueryExpression>),
+    State(Box<QueryExpression>, Box<QueryExpression>),
     Implementation(Box<QueryExpression>),
     Determinism(Box<QueryExpression>),
     Specification(Box<QueryExpression>),
