@@ -1,4 +1,5 @@
 use crate::DataReader::parse_edge;
+use std::collections::HashSet;
 
 use crate::DataReader::serialization::{
     decode_declarations, decode_guard, decode_invariant, decode_location_type, decode_sync,
@@ -12,7 +13,8 @@ use edbm::util::constraints::ClockIndex;
 
 use crate::ModelObjects::representations::BoolExpression;
 use crate::TransitionSystems::LocationTuple;
-use crate::TransitionSystems::{CompositionType, TransitionSystem};
+use crate::TransitionSystems::{CompositionType, TransitionSystem, ComposedTransitionSystem};
+
 use edbm::zones::OwnedFederation;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -255,6 +257,28 @@ impl Component {
         self.output_edges = Some(o_edges);
         self.input_edges = Some(i_edges);
     }
+}
+
+impl ComposedTransitionSystem for Component {
+    fn next_transitions(&self, location: &LocationTuple, action: &str) -> Vec<Transition> { 
+        /*assert!(self.actions_contain(action));
+
+        let loc_left = location.get_left();
+        let loc_right = location.get_right();
+
+        let left = self.left.next_transitions(loc_left, action);
+        let right = self.right.next_transitions(loc_right, action);
+
+        Transition::combinations(&left, &right, CompositionType::Conjunction)*/
+
+        todo!();
+    }
+    fn is_locally_consistent(&self) -> bool { todo!() }
+    fn get_children(&self) -> (&Box<(dyn TransitionSystem + 'static)>, &Box<(dyn TransitionSystem + 'static)>) { todo!() }
+    fn get_composition_type(&self) -> CompositionType { todo!() }
+    fn get_dim(&self) -> usize { todo!() }
+    fn get_input_actions(&self) -> HashSet<std::string::String> { todo!() }
+    fn get_output_actions(&self) -> HashSet<std::string::String> { todo!() }
 }
 
 pub fn contain(channels: &[Channel], channel: &str) -> bool {
