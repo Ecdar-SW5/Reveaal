@@ -175,53 +175,23 @@ fn build_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpress
 }
 
 fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
-    //println!("{:?}", pair);
+    let mut inner_pair = pair.clone().into_inner();
+    let locPair = inner_pair.next().unwrap();
+    let clockPair = inner_pair.next().unwrap();
+
     match pair.as_rule() {
-        Rule::state => {
-            let loc = build_loc_from_pair(pair.clone());
-            QueryExpression::State(Box::new(loc), Box::new(build_clock_from_pair(pair.into_inner().next().unwrap())))
+        Rule::state => {            
+            QueryExpression::State(Box::new(QueryExpression::VarName(locPair.as_str().trim().to_string())), Box::new(QueryExpression::VarName(clockPair.as_str().trim().to_string())))
         }
         err => panic!("Unable to match: {:?} as rule loc or clocks", err),
     }
 }
 
-fn build_loc_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
-    let inner_pair = pair.into_inner().next().unwrap();
-    match inner_pair.as_rule() {
-        Rule::loc => {
-            if inner_pair.as_str().trim().len() != 0  {
-                QueryExpression::VarName(inner_pair.as_str().trim().to_string()) //Locations bliver fortolket som componenets
-            }
-            else {
-                panic!("Unable to match: {:?} as rule loc", inner_pair)
-            } 
-        }
-        err => panic!("Unable to match: {:?} as rule loc", err),
-    }
-}
-
-fn build_clock_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
-    let inner_pair = pair.into_inner().next().unwrap();
-    print!("{:?}",inner_pair);
-    match inner_pair.as_rule() {
-        Rule::boolExpr => {
-            build_boolExpr_from_pair(inner_pair)
-        }
-        Rule::loc => {
-            build_clock_from_pair(inner_pair)
-        }
-        Rule::variable_name => {
-            build_clock_from_pair(inner_pair)
-        }
-        err => panic!("Unable to match: {:?} as rule clocks", err),
-    }
-}
 
 fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     let mut inner_pair = pair.into_inner();
     let automata_pair = inner_pair.next().unwrap();
     let s_state_pair = inner_pair.next().unwrap();
-    //println!("{:?}", s_state_pair);
     let e_state_pair = inner_pair.next().unwrap();
 
     let lside = build_expression_from_pair(automata_pair);
@@ -229,7 +199,6 @@ fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpre
     let rside = build_state_from_pair(e_state_pair);
 
     println!("l: {:?} m: {:?} r:{:?}", lside, mside, rside);
-    //QueryExpression::Reachability(Box::new(lside.clone()), Box::new(mside.clone()), Box::new(rside.clone())).pretty_string();
     QueryExpression::Reachability(Box::new(lside), Box::new(mside), Box::new(rside))
 }
 
