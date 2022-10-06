@@ -36,7 +36,7 @@ mod refinements {
         //
         //          ----coin?---->
         //         /
-        // <L5,Ø>-------tea!----->
+        // <L5,y>=0>-------tea!----->
         //
         //
         let expected_response = services::SimulationStepResponse {
@@ -52,7 +52,7 @@ mod refinements {
                                 disjunction: Some(services::Disjunction {
                                     conjunctions: vec![
                                         services::Conjunction {
-                                            constraints: vec![]
+                                            constraints: vec![] // TODO: constraint (0 - y <= 0) missing maybe 
                                         }
                                     ]
                                 })
@@ -80,5 +80,6 @@ mod refinements {
                                              .into_inner();
         // Assert
         assert_eq!(actual_response, expected_response);
+        assert!(false);
     }
 }
