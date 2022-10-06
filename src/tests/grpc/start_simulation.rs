@@ -3,8 +3,8 @@ mod refinements {
     use crate::ProtobufServer::{
         self,
         services::{
-            component::Rep, ecdar_backend_server::EcdarBackend,
-            Component, SimulationStartRequest, SimulationStepResponse, DecisionPoint, State, Edge,
+            component::Rep, ecdar_backend_server::EcdarBackend, Component, DecisionPoint, Edge,
+            SimulationStartRequest, SimulationStepResponse, State,
         },
     };
     use tonic::{self, Request};
@@ -71,11 +71,11 @@ mod refinements {
         //                 }
         //             ]
         //         }
-        //     ] 
+        //     ]
         // };
 
         // // Act
-        // let actual_response = 
+        // let actual_response =
         //     backend.start_simulation(request).await
         //                                      .unwrap()
         //                                      .into_inner();
@@ -83,5 +83,4 @@ mod refinements {
         // assert_eq!(actual_response, expected_response);
         assert!(false);
     }
-
 }

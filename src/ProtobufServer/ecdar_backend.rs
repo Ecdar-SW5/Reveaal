@@ -1,8 +1,8 @@
 use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
 
 use crate::ProtobufServer::services::{
-    QueryRequest, QueryResponse, SimulationStartRequest,
-    SimulationStepRequest, SimulationStepResponse, UserTokenResponse,
+    QueryRequest, QueryResponse, SimulationStartRequest, SimulationStepRequest,
+    SimulationStepResponse, UserTokenResponse,
 };
 use futures::FutureExt;
 use std::cell::RefCell;
