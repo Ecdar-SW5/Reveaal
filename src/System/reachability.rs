@@ -141,3 +141,23 @@ fn remove_existing_subsets_of_zone(
     existing_zones
         .retain(|existing_zone| !existing_zone.subset_eq(new_zone));
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::refinement::Helper::json_run_query;
+    use crate::System::executable_query::QueryResult;
+    use crate::DataReader::component_loader::{JsonProjectLoader, XmlProjectLoader};
+
+    #[test]
+    fn Reachability_Test_If_Location_Exists_In_TransitionSystem(){
+        const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
+        let project_loader = JsonProjectLoader::new(String::from(PATH));
+        let mut comp_loader = project_loader.to_comp_loader();
+        let component = comp_loader.get_component("Machine").to_owned();
+        let mut result = false;
+        let locationId = "L5";
+        result = ExistLocation(component, locationId);
+        assert!(result);
+    }
+}
