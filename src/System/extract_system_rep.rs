@@ -13,6 +13,7 @@ use crate::TransitionSystems::{
 };
 
 use crate::System::pruning;
+use crate::component::State;
 use edbm::util::constraints::ClockIndex;
 use log::debug;
 use simple_error::bail;
@@ -40,10 +41,16 @@ pub fn create_executable_query<'a>(
             QueryExpression::Reachability(automata, start, end) => {
                 let mut quotient_index = None;
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
+                let system = machine.clone().compile(dim)?;
+
+                let s_state: State = get_state(start, &machine);
+                let e_state: State = get_state(end, &machine);
+                
+                
                 Ok(Box::new(ReachabilityExecutor {
-                sys: machine.compile(dim)?,
-                s_state: get_state(start), //Få s og e state til at være states
-                e_state: get_state(end),
+                sys: system,
+                s_state, //Få s og e state til at være states
+                e_state,
             }))},
             QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
                 recipe: get_system_recipe(

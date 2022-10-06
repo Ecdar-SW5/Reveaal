@@ -181,19 +181,16 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     let locPair = inner_pair.next().unwrap();
     let clockPair = inner_pair.next().unwrap();
 
-    let clockString = clockPair.as_str().trim().to_string();
-    let invariantVersion = clockString.replace(",", "&&");
-    
-    let result = parse(&invariantVersion);
+    let clockString = clockPair.as_str().trim().to_string().replace(",", "&&");
 
-    let boolExpr: BoolExpression = result.unwrap();
-
-    println!("Hello world test test {}", boolExpr.encode_expr());
-
+    let invariantVersion = match parse(&clockString) {
+        Ok(result) => result,
+        Err(result) => panic!("{:?}", result),
+    };
 
     match pair.as_rule() {
         Rule::state => {            
-            QueryExpression::State(Box::new(QueryExpression::VarName(locPair.as_str().trim().to_string())), Box::new(QueryExpression::VarName(clockPair.as_str().trim().to_string())))
+            QueryExpression::State(Box::new(QueryExpression::LocName(locPair.as_str().trim().to_string())), Box::new(invariantVersion))
         }
         err => panic!("Unable to match: {:?} as rule loc or clocks", err),
     }
