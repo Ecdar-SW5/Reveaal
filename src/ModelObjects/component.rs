@@ -762,6 +762,13 @@ pub struct Declarations {
 
 #[allow(dead_code)]
 impl Declarations {
+    pub fn test(clocks : HashMap<String,ClockIndex>) -> Declarations{
+        Declarations {
+            ints: HashMap::new(),
+            clocks : clocks.clone(),
+        }
+    }
+
     pub fn empty() -> Declarations {
         Declarations {
             ints: HashMap::new(),

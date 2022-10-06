@@ -43,8 +43,8 @@ pub fn create_executable_query<'a>(
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
                 let system = machine.clone().compile(dim)?;
 
-                let s_state: State = get_state(start, &machine);
-                let e_state: State = get_state(end, &machine);
+                let s_state: State = get_state(start, &machine, &system);
+                let e_state: State = get_state(end, &machine, &system);
                 
                 
                 Ok(Box::new(ReachabilityExecutor {
