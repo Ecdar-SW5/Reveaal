@@ -41,7 +41,7 @@ pub fn find_path(
     begin_state: Option<State>,
     end_state: State,
     system: &dyn TransitionSystem,
-) -> Option<Vec<SubPath>> {
+) -> bool {
     // if preliminary_check_succes() { return a path }
 
     let start_state: State;
@@ -61,7 +61,7 @@ pub fn search_algorithm(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem,
-) -> Option<Vec<SubPath>> {
+) -> bool {
 
     // hashmap linking every location to all its current zones
     let mut visited_states:HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
@@ -79,7 +79,7 @@ pub fn search_algorithm(
         let next_state = next_state.unwrap();
         // If there is a overlap with the end state, it has been reached.
         if next_state.zone_ref().has_intersection(end_state.zone_ref()){
-            return None/* TODO: Return the path success? */
+            return true/* TODO: Return the path success? */
         }
 
         // Take all input transitions
@@ -99,7 +99,7 @@ pub fn search_algorithm(
     };
 
     // If nothing has been found, it is not reachable
-    None
+    false
 }
 
 fn take_transition(
