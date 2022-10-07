@@ -4,7 +4,7 @@ use crate::DataReader::json_reader::json_to_component;
 use crate::DataReader::xml_parser::parse_xml_from_str;
 use crate::ModelObjects::component::Component;
 use crate::ProtobufServer::services::component::Rep;
-use crate::ProtobufServer::services::{Component as ProtobufComponent, ComponentsUpdateRequest};
+use crate::ProtobufServer::services::Component as ProtobufComponent;
 use crate::ProtobufServer::ConcreteEcdarBackend;
 use crate::System::input_enabler;
 use log::trace;
@@ -13,21 +13,21 @@ use std::panic::AssertUnwindSafe;
 use tonic::{Request, Response};
 
 impl ConcreteEcdarBackend {
-    pub async fn handle_update_components(
-        &self,
-        request: AssertUnwindSafe<Request<ComponentsUpdateRequest>>,
-    ) -> Result<Response<()>, tonic::Status> {
-        let update = request.0.into_inner();
+    // pub async fn handle_update_components(
+    //     &self,
+    //     request: AssertUnwindSafe<Request<ComponentsUpdateRequest>>,
+    // ) -> Result<Response<()>, tonic::Status> {
+    //     let update = request.0.into_inner();
 
-        let component_container = self.get_components_lock()?;
-        for proto_component in &update.components {
-            let components = self.parse_components_if_some(proto_component)?;
+    //     let component_container = self.get_components_lock()?;
+    //     for proto_component in &update.components {
+    //         let components = self.parse_components_if_some(proto_component)?;
 
-            save_components(&component_container, components);
-        }
+    //         save_components(&component_container, components);
+    //     }
 
-        Ok(Response::new(()))
-    }
+    //     Ok(Response::new(()))
+    // }
 
     fn parse_components_if_some(
         &self,
