@@ -13,22 +13,17 @@ pub struct SimulationComponent {
 
 impl SimulationComponent {
 
-    pub fn new(project_path: &str, component_name: &str) -> Self {
-        // This should probably get refactored later but not important for now
-        // This is utterly fucking retarded.
-        let temp_component: Component = json_reader::read_json_component(project_path, component_name);
+    pub fn new(input_component: Component) -> Self {
         Self { 
-            location: match temp_component.get_initial_location()
+            location: match input_component.get_initial_location()
             {
                 None => panic!("no initial location found"),
                 Some(x) => x.clone(),
             },
-            component: temp_component,
+            component: input_component,
         }
     }
-
-    pub fn take_edge(&self, edge: <Edge>) -> Self 
-    {
+    pub fn new(take_edge) -> Self {
         
     }
 }
@@ -49,23 +44,7 @@ pub fn continue_simulation(simulation_component: SimulationComponent, action: Ch
     simulation_component
 }
 
-// Takes component as input, converts it into a SimulationComponent and returns.
-// Tested [X], Not tested []
-fn build_simulation_component(component: Component) -> SimulationComponent {
-    let t_actions: Vec<Channel> = component.get_actions();
-    let t_location: Location = match component.get_initial_location()
-    {
-        None => panic!("no initial location found"),
-        Some(x) => x.clone(),
-    };
-    //let t_valid_transitions: Vec<&Edge> = component.get_all_edges_from(&t_location);
-    
-    SimulationComponent {
-        component,
-        location: t_location,
-        // valid_transitions: t_valid_transitions,
-    }
-}
+
 
 
 
@@ -85,13 +64,14 @@ mod tests {
 
     
     #[test]
-    fn Convert_GivenJSONComponent_ReturnsSimulationComponent() {
+    fn Convert_GivenComponent_ReturnsSimulationComponent() {
 
         // Arrange
         let should_equal: Component = json_reader::read_json_component("samples/json/AG", "A");
 
         // Act
-        let output = simulation_component::SimulationComponent::new("samples/json/AG", "A");
+        let input_component: Component = json_reader::read_json_component("samples/json/AG", "A");
+        let output = simulation_component::SimulationComponent::new(input_component);
         //let output: simulation_component::SimulationComponent = simulation_component::start_simulation("samples/json/AG", "A");
 
         // Assert
@@ -104,7 +84,8 @@ mod tests {
         let should_equal: Component = json_reader::read_json_component("samples/json/AG", "A");
 
         // Act
-        let output = simulation_component::SimulationComponent::new("samples/json/AG", "AA");
+        let input_component: Component = json_reader::read_json_component("samples/json/AG", "AA");
+        let output = simulation_component::SimulationComponent::new(input_component);
 
         // Assert
         assert_ne!(should_equal, output.component);
@@ -120,13 +101,21 @@ mod tests {
         };
         
         // Act
-        let test_simulation_component = simulation_component::SimulationComponent::new("samples/json/AG", "A");
+        let input_component: Component = json_reader::read_json_component("samples/json/AG", "Imp");
+        let test_simulation_component = simulation_component::SimulationComponent::new(input_component);
         let output: simulation_component::SimulationComponent = simulation_component::continue_simulation(test_simulation_component, t_struct);
 
 
         // Assert
         assert_eq!(should_equal, output.location);
     }
+
+
+
+
+
+
+    
 }
 
 
