@@ -48,7 +48,7 @@ impl ComponentContainer {
                 parsed_components.push(component);
             }
         }
-        let mut component_container = Self::create_component_container(parsed_components);
+        let component_container = Self::create_component_container(parsed_components);
         Ok(component_container)
     }
 

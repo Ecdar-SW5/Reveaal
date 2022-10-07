@@ -1,10 +1,9 @@
 use crate::ModelObjects::component::{
-    Component, DeclarationProvider, Declarations, State, Transition, Channel, Location, Edge,
+    Component, Channel, Location,
 };
-use crate::DataReader::json_reader;
-use crate::TransitionSystems::{TransitionSystem, TransitionSystemPtr};
 
 #[derive(Clone)]
+#[allow(dead_code)]
 pub struct SimulationComponent {
     component: Component,
     location: Location,
@@ -28,7 +27,7 @@ impl SimulationComponent {
 
 
 
-pub fn continue_simulation(simulation_component: SimulationComponent, action: Channel) -> SimulationComponent {
+pub fn continue_simulation(simulation_component: SimulationComponent, _action: Channel) -> SimulationComponent {
    // let start_location: Location = input_component.location;
     //let action_taken: Channel = action;
 
@@ -53,10 +52,10 @@ pub fn continue_simulation(simulation_component: SimulationComponent, action: Ch
 #[cfg(test)]
 mod tests {
     use crate::ModelObjects::component::{
-        Component, DeclarationProvider, Declarations, State, Transition, Channel, Location,
+        Component, State, Transition, Channel, Location,
     };
     use crate::DataReader::json_reader;
-    use crate::TransitionSystems::{TransitionSystem, TransitionSystemPtr, LocationTuple};
+    use crate::TransitionSystems::LocationTuple;
     use crate::Simulation::simulation_component;
 
     

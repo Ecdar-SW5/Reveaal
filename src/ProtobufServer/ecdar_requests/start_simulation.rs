@@ -18,7 +18,7 @@ impl ConcreteEcdarBackend {
         let request_message = request.0.into_inner();
         let component_info = request_message.components_info.unwrap();
 
-        let component_container= 
+        let _component_container= 
             ComponentContainer::from(&component_info);
 
         // Combine components as specified in the composition string

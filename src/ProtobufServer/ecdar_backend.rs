@@ -38,7 +38,7 @@ where
 impl EcdarBackend for ConcreteEcdarBackend {
     async fn get_user_token(
         &self,
-        request: Request<()>,
+        _request: Request<()>,
     ) -> Result<Response<UserTokenResponse>, Status> {
         panic!("not implemented")
     }
@@ -61,7 +61,7 @@ impl EcdarBackend for ConcreteEcdarBackend {
 
     async fn take_simulation_step(
         &self,
-        request: Request<SimulationStepRequest>,
+        _request: Request<SimulationStepRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
         Err(Status::unimplemented(""))
         // let request = std::panic::AssertUnwindSafe(request);

@@ -1,10 +1,6 @@
-use std::collections::HashMap;
 use std::panic::AssertUnwindSafe;
 
-use crate::component::Component;
-use crate::xml_parser::parse_xml_from_str;
 use crate::DataReader::component_loader::ComponentContainer;
-use crate::DataReader::json_reader::json_to_component;
 use crate::DataReader::json_writer::component_to_json;
 use crate::DataReader::parse_queries;
 use crate::ModelObjects::queries::Query;
@@ -19,7 +15,7 @@ use crate::ProtobufServer::services::{
     Component as ProtobufComponent, QueryRequest, QueryResponse,
 };
 use crate::System::executable_query::QueryResult;
-use crate::System::{extract_system_rep, input_enabler};
+use crate::System::extract_system_rep;
 use log::trace;
 use tonic::{Request, Response, Status};
 
