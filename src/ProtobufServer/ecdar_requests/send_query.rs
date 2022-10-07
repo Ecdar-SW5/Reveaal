@@ -4,10 +4,12 @@ use crate::DataReader::json_writer::component_to_json;
 use crate::DataReader::parse_queries;
 use crate::ModelObjects::queries::Query;
 use crate::ProtobufServer::services::component::Rep;
-use crate::ProtobufServer::services::query_response::Result as ProtobufResult;
-use crate::ProtobufServer::services::query_response::{
+use crate::ProtobufServer::services::query_response::query_ok::Result as ProtobufResult;
+use crate::ProtobufServer::services::query_response::query_ok::{
     ComponentResult, ConsistencyResult, DeterminismResult, RefinementResult,
 };
+use crate::ProtobufServer::services::query_response::QueryOk;
+use crate::ProtobufServer::services::query_response::Response as QueryOkOrErrorResponse;
 use crate::ProtobufServer::services::{Component, QueryRequest, QueryResponse};
 use crate::System::executable_query::QueryResult;
 use crate::System::extract_system_rep;
@@ -48,8 +50,10 @@ impl ConcreteEcdarBackend {
         let result = executable_query.execute();
 
         let reply = QueryResponse {
-            query_id: 0, // TODO: this is a placeholde value
-            result: convert_ecdar_result(&result),
+            response: Some(QueryOkOrErrorResponse::QueryOk(QueryOk {
+                query_id: query_request.query_id,
+                result: convert_ecdar_result(&result),
+            })),
         };
 
         Ok(Response::new(reply))
