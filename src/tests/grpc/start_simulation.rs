@@ -8,7 +8,7 @@ mod refinements {
     static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
 
     #[tokio::test]
-    async fn start_simulation__normal_json__respondes_correct_decision_points() {
+    async fn start_simulation__normal_json__respondes_with_correct_state() {
         // Arrange
         let backend = ProtobufServer::ConcreteEcdarBackend::default();
 
@@ -52,7 +52,20 @@ mod refinements {
                                 disjunction: Some(services::Disjunction {
                                     conjunctions: vec![
                                         services::Conjunction {
-                                            constraints: vec![] // TODO: constraint (0 - y <= 0) missing maybe 
+                                            constraints: vec![
+                                                services::Constraint {
+                                                    x: Some(services::ComponentClock {
+                                                        specific_component: None,
+                                                        clock_name: "0".to_string()
+                                                    }),
+                                                    y: Some(services::ComponentClock {
+                                                        specific_component: None,
+                                                        clock_name: "y".to_string()
+                                                    }),
+                                                    strict: false,
+                                                    c: 0
+                                                } // constraint (0 - y <= 0) <= (y >= 0)
+                                            ] 
                                         }
                                     ]
                                 })
@@ -80,6 +93,5 @@ mod refinements {
                                              .into_inner();
         // Assert
         assert_eq!(actual_response, expected_response);
-        assert!(false);
     }
 }
