@@ -156,17 +156,18 @@ mod tests {
     use edbm::util::constraints::ClockIndex;
     use crate::extract_system_rep::SystemRecipe;
 
+    fn helper(path: &str, clock1: ClockIndex, clock2: ClockIndex) -> Box<dyn TransitionSystem>{
+        let project_loader = JsonProjectLoader::new(String::from(path));
+        let mut comp_loader = project_loader.to_comp_loader();
+        let mut component = comp_loader.get_component("Machine").to_owned();
+        component.set_clock_indices(&mut clock1);
+        Box::new(SystemRecipe::Component(Box::new(component.clone()))).compile(clock2).unwrap()
+    }
+
     #[test]
     fn reachability_test_if_search_algorithme_returns_true_for_reachable_state() {
         const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
-        let project_loader = JsonProjectLoader::new(String::from(PATH));
-        let mut comp_loader = project_loader.to_comp_loader();
-        let mut component = comp_loader.get_component("Machine").to_owned();
-        let mut dim1: ClockIndex = 0;
-        let dim2: ClockIndex = 0;
-        component.set_clock_indices(&mut dim1);
-        let sr = Box::new(SystemRecipe::Component(Box::new(component.clone()))).compile(dim2).unwrap();
-
+        let sr = helper(PATH, 0, 0);
         let locations: Vec<LocationTuple> = sr.get_all_locations();
         let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
         let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
@@ -181,14 +182,7 @@ mod tests {
 
     fn reachability_test_if_search_algorithme_returns_false_for_reachable_state_for_wrong_clock_values() {
       const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
-      let project_loader = JsonProjectLoader::new(String::from(PATH));
-      let mut comp_loader = project_loader.to_comp_loader();
-      let mut component = comp_loader.get_component("Machine").to_owned();
-      let mut dim1: ClockIndex = 0;
-      let dim2: ClockIndex = 7;
-      component.set_clock_indices(&mut dim1);
-      let sr = Box::new(SystemRecipe::Component(Box::new(component.clone()))).compile(dim2).unwrap();
-
+      let sr = helper(PATH, 0, 7);
       let locations: Vec<LocationTuple> = sr.get_all_locations();
       let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
       let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
@@ -196,44 +190,24 @@ mod tests {
       let path: Option<Vec<SubPath>> = search_algorithm(&state0, &state1, &(*sr));
 
       match path {
-          Some(_) => assert!(false),
-          None => assert!(true),
-      }
-  }
-
-
-
-
-
-
-
+            Some(_) => assert!(false),
+            None => assert!(true),
+        }
+    }
 
     #[test]
     fn reachability_test_if_reachable_return_false_for_non_reachable_state(){
-        const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
-        let project_loader = JsonProjectLoader::new(String::from(PATH));
-        let mut comp_loader = project_loader.to_comp_loader();
-        let mut component = comp_loader.get_component("Machine").to_owned();
-        let mut dim1: ClockIndex = 0;
-        let dim2: ClockIndex = 0;
-        component.set_clock_indices(&mut dim1);
-        let sr = Box::new(SystemRecipe::Component(Box::new(component.clone()))).compile(dim2).unwrap();
-
+        const PATH1: &str = "samples/json/EcdarUniversity/Components/Machine.json";
         const PATH2: &str = "samples/json/EcdarUniversity/Components/Machine.json";
-        let project_loader2 = JsonProjectLoader::new(String::from(PATH2));
-        let mut comp_loader2 = project_loader2.to_comp_loader();
-        let mut component2 = comp_loader2.get_component("Machine2").to_owned();
-        let mut dim1_2: ClockIndex = 0;
-        let dim2_2: ClockIndex = 0;
-        component2.set_clock_indices(&mut dim1_2);
-        let sr2 = Box::new(SystemRecipe::Component(Box::new(component2.clone()))).compile(dim2_2).unwrap();
-
+        
+        let sr1 = helper(PATH1, 0, 0);
+        let sr2 = helper(PATH2, 0, 0);
 
         let locations: Vec<LocationTuple> = sr2.get_all_locations();
         let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
         let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
 
-        let path: Option<Vec<SubPath>> = search_algorithm(&state0, &state1, &(*sr));
+        let path: Option<Vec<SubPath>> = search_algorithm(&state0, &state1, &(*sr1));
 
         match path {
             Some(_) => assert!(false),
@@ -244,14 +218,7 @@ mod tests {
     #[test]
     fn reachability_test_if_location_exists_in_transition_system(){
         const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
-        let project_loader = JsonProjectLoader::new(String::from(PATH));
-        let mut comp_loader = project_loader.to_comp_loader();
-        let mut component = comp_loader.get_component("Machine").to_owned();
-        let mut dim1: ClockIndex = 0;
-        let dim2: ClockIndex = 0;
-        component.set_clock_indices(&mut dim1);
-
-        let sr = Box::new(SystemRecipe::Component(Box::new(component.clone()))).compile(dim2).unwrap();
+        let sr = helper(PATH, 0, 0);
         let locations: Vec<LocationTuple> = sr.get_all_locations();
         let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
         let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
