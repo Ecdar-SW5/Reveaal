@@ -10,7 +10,7 @@ use crate::EdgeEval::updater::CompiledUpdate;
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 
-use crate::ModelObjects::representations::BoolExpression;
+use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
 use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
 use edbm::zones::OwnedFederation;
@@ -256,8 +256,181 @@ impl Component {
         self.input_edges = Some(i_edges);
     }
 
-    pub fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
-        todo!();
+    ///Used to find redundant clocks - checks for unused and duplicates clocks.
+    ///
+    /// Returns [`Vec<RedundantClock>`] with all found redundant clock.
+    /// If no redundant clocks found the vector will be empty
+    pub(crate) fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
+        let clocks = self.declarations.get_clocks();
+        let mut out: Vec<RedundantClock> = vec![];
+        let mut seen_clocks: HashMap<String, Box<[Vec<usize>; 2]>> = HashMap::new();
+        for (index, expr, which) in self
+            .edges
+            .iter()
+            .enumerate()
+            .filter(|(_, x)| x.guard.is_some())
+            .map(|(i, e)| (i, e.guard.as_ref().unwrap(), 0))
+            .chain(
+                self.locations
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, x)| x.invariant.is_some())
+                    .map(|(i, l)| (i, l.invariant.as_ref().unwrap(), 1)),
+            )
+        {
+            for name in find_varname_bool(expr) {
+                if clocks.contains_key(name) {
+                    if let Some(clock_indices) = seen_clocks.get_mut(name) {
+                        clock_indices.get_mut(which).unwrap().push(index);
+                    } else {
+                        seen_clocks.insert(name.to_string(), Box::new([vec![], vec![]]));
+                        seen_clocks
+                            .get_mut(name)
+                            .unwrap()
+                            .get_mut(which)
+                            .unwrap()
+                            .push(index);
+                    }
+                }
+            }
+        }
+        for contain in clocks.keys().filter(|k| !seen_clocks.contains_key(*k)) {
+            out.push(RedundantClock::unused(contain.clone()))
+        }
+        let mut global: Option<String> = None;
+        let updates = self
+            .edges
+            .iter()
+            .filter(|x| x.update.is_some())
+            .map(|y| y.update.as_ref().unwrap())
+            .flatten()
+            .map(|u| u.variable.clone())
+            .collect::<Vec<String>>();
+        for clock in seen_clocks.iter().filter(|x| !updates.contains(x.0)) {
+            if let Some(global_clock) = &global {
+                out.push(RedundantClock::duplicate(
+                    clock.0.clone(),
+                    clock.1[0].clone(),
+                    clock.1[1].clone(),
+                    global_clock.clone(),
+                ));
+            } else {
+                global = Some(clock.0.clone());
+            }
+        }
+
+        println!("{:?}", out);
+        out
+    }
+}
+
+///Finds the clock names used in an bool expression
+fn find_varname_bool(expr: &BoolExpression) -> Vec<&str> {
+    match expr {
+        BoolExpression::Parentheses(p) => find_varname_bool(p),
+        BoolExpression::AndOp(p1, p2) | BoolExpression::OrOp(p1, p2) => find_varname_bool(p1)
+            .iter()
+            .chain(find_varname_bool(p2).iter())
+            .map(|x| *x)
+            .collect(),
+        BoolExpression::LessEQ(a1, a2)
+        | BoolExpression::GreatEQ(a1, a2)
+        | BoolExpression::LessT(a1, a2)
+        | BoolExpression::GreatT(a1, a2)
+        | BoolExpression::EQ(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        BoolExpression::Bool(_) => vec![],
+        BoolExpression::Arithmetic(a) => find_varname_arith(a),
+    }
+}
+
+///Finds the clock names used in an arithmetic expression
+fn find_varname_arith(expr: &ArithExpression) -> Vec<&str> {
+    match expr {
+        ArithExpression::Parentheses(p) => find_varname_arith(p),
+        ArithExpression::Difference(a1, a2)
+        | ArithExpression::Addition(a1, a2)
+        | ArithExpression::Multiplication(a1, a2)
+        | ArithExpression::Division(a1, a2)
+        | ArithExpression::Modulo(a1, a2) => find_varname_arith(a1)
+            .iter()
+            .chain(find_varname_arith(a2).iter())
+            .map(|x| *x)
+            .collect(),
+        ArithExpression::Clock(_) | ArithExpression::Int(_) => vec![],
+        ArithExpression::VarName(name) => vec![name.as_str()],
+    }
+}
+
+///Enum to hold the reason for why a clock is declared redundant.
+#[derive(Debug)]
+pub enum ClockReductionReason {
+    ///Which clock is it a duplicate of.
+    Duplicate(String),
+    ///If a clock is not used by a guard or invariant it is unused.
+    Unused,
+}
+
+///Datastructure to hold the found redundant clocks, where they are used and their reason for being redundant.
+#[derive(Debug)]
+pub struct RedundantClock {
+    ///Name of the redundant clock.
+    clock: String,
+    ///Indices of which edges the clock are being used on.
+    edge_indices: Vec<usize>,
+    ///Indices of which locations the clock are being used in.
+    location_indices: Vec<usize>,
+    ///Reason for why the clock is declared redundant.
+    reason: ClockReductionReason,
+    //updates: Option<Vec<Update>>,
+}
+
+impl RedundantClock {
+    ///Creates a new [`RedundantClock`]
+    #[allow(unused)]
+    fn new(
+        clock: String,
+        edge_indices: Vec<usize>,
+        location_indices: Vec<usize>,
+        reason: ClockReductionReason,
+    ) -> RedundantClock {
+        RedundantClock {
+            clock,
+            edge_indices,
+            location_indices,
+            reason,
+            //      updates
+        }
+    }
+
+    ///Shorthand function to create a duplicated [`RedundantClock`]
+    fn duplicate(
+        clock: String,
+        edge_indices: Vec<usize>,
+        location_indices: Vec<usize>,
+        duplicate: String,
+    ) -> RedundantClock {
+        RedundantClock {
+            clock,
+            edge_indices,
+            location_indices,
+            reason: ClockReductionReason::Duplicate(duplicate),
+            //updates: None,
+        }
+    }
+
+    ///Shorthand function to create a unused [`RedundantClock`]
+    fn unused(clock: String) -> RedundantClock {
+        RedundantClock {
+            clock,
+            edge_indices: vec![],
+            location_indices: vec![],
+            reason: ClockReductionReason::Unused,
+            //updates: None,
+        }
     }
 }
 
@@ -269,18 +442,6 @@ pub fn contain(channels: &[Channel], channel: &str) -> bool {
     }
 
     false
-}
-
-pub enum ClockReductionReason {
-    Duplicate(String),
-    Unused
-}
-
-pub struct RedundantClock {
-    pub clock: String,
-    edges: Vec<usize>,
-    locs: Vec<usize>,
-    pub reason: ClockReductionReason,
 }
 
 /// FullState is a struct used for initial verification of consistency, and determinism as a state that also hols a dbm
