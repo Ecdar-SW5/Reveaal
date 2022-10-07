@@ -11,49 +11,6 @@ mod refinements {
     static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
 
     #[tokio::test]
-    async fn send_query_fails_with_multiple_queries() {
-        // let backend = ConcreteEcdarBackend::default();
-        // let request = Request::new(Query {
-        //     id: 0,
-        //     query: String::from("refinement: A <= A; refinement: B <= B"),
-        //     ignored_input_outputs: None,
-        // });
-
-        // let response = backend.send_query(request).await;
-
-        // assert!(response.is_err());
-        assert!(false);
-    }
-
-    #[tokio::test]
-    async fn send_query_fails_with_no_queries() {
-        // let backend = ConcreteEcdarBackend::default();
-        // let request = Request::new(Query {
-        //     id: 0,
-        //     query: String::from(""),
-        //     ignored_input_outputs: None,
-        // });
-
-        // let response = backend.send_query(request).await;
-
-        // assert!(response.is_err());
-        assert!(false);
-    }
-
-    #[tokio::test]
-    async fn send_empty_update_components() {
-        // let backend = ConcreteEcdarBackend::default();
-        // let request = Request::new(ComponentsUpdateRequest {
-        //     components: vec![],
-        //     etag: 0,
-        // });
-
-        // let response = backend.update_components(request).await;
-        // assert!(response.is_ok());
-        assert!(false);
-    }
-
-    #[tokio::test]
     async fn send_self_refinement_query() {
         // let backend = ConcreteEcdarBackend::default();
         // let json =
