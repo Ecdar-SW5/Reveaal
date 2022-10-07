@@ -63,7 +63,8 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         request: Request<SimulationStepRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        let request = std::panic::AssertUnwindSafe(request);
-        catch_unwind(self.handle_step_simulation_step(request)).await
+        Err(Status::unimplemented(""))
+        // let request = std::panic::AssertUnwindSafe(request);
+        // catch_unwind(self.handle_step_simulation_step(request)).await
     }
 }

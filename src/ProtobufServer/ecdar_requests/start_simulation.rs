@@ -29,22 +29,23 @@ impl ConcreteEcdarBackend {
         let start_simulation_request = request.0.into_inner();
 
         // Extract the individual components
-        let components_info = start_simulation_request.components_info;
-        let components = Vec::new();
-        for json_component in components_info.components {
-            let component = parse_json_component(json_component);
-            components.push(component);
-        }
+        // let components_info = start_simulation_request.components_info;
+        // let components = Vec::new();
+        // for json_component in components_info.components {
+        //     let component = parse_json_component(json_component);
+        //     components.push(component);
+        // }
 
         // Combine components as specified in the composition string
         
-        let system: TransitionSystemPtr;
-        let comb = combine_components(system, PruningStrategy::Reachable);
+        // let system: TransitionSystemPtr;
+        // let comb = combine_components(system, PruningStrategy::Reachable);
 
         // Send the combine component to the Simulation module
 
         // Serialize and respond with the SimulatioState result form the simulation module
 
-        Ok(Response::new(None);
+        // Ok(Response::new(None);
+        Err(Status::unimplemented(""))
     }
 }
