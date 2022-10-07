@@ -39,9 +39,12 @@ pub fn create_executable_query<'a>(
                 sys2: right.compile(dim)?,
             }))},
             QueryExpression::Reachability(automata, start, end) => {
+                
                 let mut quotient_index = None;
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
+                validate_reachability(&machine, &start, &end);
                 let system = machine.clone().compile(dim)?;
+
 
                 let s_state: State = get_state(start, &machine, &system);
                 let e_state: State = get_state(end, &machine, &system);
@@ -182,5 +185,47 @@ pub fn get_system_recipe(
             get_system_recipe(comp, component_loader, clock_index, &mut None)
         }
         _ => panic!("Got unexpected query side: {:?}", side),
+    }
+}
+
+
+fn validate_reachability(machine: &SystemRecipe, start: &QueryExpression, end: &QueryExpression){
+    let mut components: usize = 0;
+    count_component(machine, &mut components);
+
+    for (state, str) in [(start,"start"),(end,"end")]{
+        if compare_component_to_location(&components, state) {
+            panic!("The number of automata does not match the number of locations in the {}", str);
+        }
+    }
+}
+
+fn count_component(system: &SystemRecipe, count: &mut usize){
+    match system {
+        SystemRecipe::Composition(left, right) => {
+            count_component(left, count);
+            count_component(right, count);
+        }
+        SystemRecipe::Conjunction(left, right) => {
+            count_component(left, count);
+            count_component(right, count);
+        }
+        SystemRecipe::Quotient(left, right, _) =>{
+            count_component(left, count);
+            count_component(right, count);
+        },
+        SystemRecipe::Component(_) => {
+            *count += 1;
+        },
+    }
+
+}
+
+fn compare_component_to_location(components: &usize, state: &QueryExpression) -> bool{
+    match state{
+        QueryExpression::State(loc_names, _) =>{
+            loc_names.len() != *components
+        }
+        _ => panic!("Wrong type"),
     }
 }

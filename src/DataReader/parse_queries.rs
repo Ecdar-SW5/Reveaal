@@ -4,8 +4,7 @@ use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::representations::{QueryExpression, BoolExpression};
 
 use pest::prec_climber::{Assoc, Operator, PrecClimber};
-use pest::{Parser, iterators};
-use serde::de::value::Error;
+use pest::{Parser};
 
 use super::parse_invariant::parse;
 
@@ -179,24 +178,28 @@ fn build_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpress
 fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     let mut inner_pair = pair.clone().into_inner();
     let locPair = inner_pair.next().unwrap();
+
+    let mut loc_names:Vec<Box<QueryExpression>> = Vec::new();
+    for loc_name in locPair.as_str().split(','){
+        loc_names.push(Box::new(QueryExpression::LocName(loc_name.trim().to_string())));
+    }
+
     let clockPair = inner_pair.next().unwrap();
 
-    let invariantVersion:Option<Box<BoolExpression>> = if clockPair.as_str().trim() != "" {
-                                                            let clockString = clockPair.as_str().trim().to_string().replace(",", "&&");
-                                                            let invariantVersion = match parse(&clockString) {
-                                                                Ok(result) => result,
-                                                                Err(result) => panic!("{:?}", result),
-                                                            };
-                                                            Some(Box::new(invariantVersion))
-                                                        }
-                                                        else
-                                                        {
-                                                            None
-                                                        };
-
+    let invariantVersion:Option<Box<BoolExpression>> = 
+    if clockPair.as_str().trim() != "" {
+        let clockString = clockPair.as_str().trim().to_string().replace(",", "&&");
+        let invariantVersion = match parse(&clockString) {
+            Ok(result) => result,
+            Err(result) => panic!("{:?}", result),
+        };
+        Some(Box::new(invariantVersion))
+    }
+    else { None };
+    
     match pair.as_rule() {
         Rule::state => {
-            QueryExpression::State(Box::new(QueryExpression::LocName(locPair.as_str().trim().to_string())), invariantVersion)
+            QueryExpression::State(loc_names, invariantVersion)
         }
         err => panic!("Unable to match: {:?} as rule loc or clocks", err),
     }
@@ -213,7 +216,10 @@ fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpre
     let mside = build_state_from_pair(s_state_pair);
     let rside = build_state_from_pair(e_state_pair);
 
-    println!("l: {:?} m: {:?} r:{:?}", lside, mside, rside);
+    // println!("l: {:?} m: {:?} r:{:?}", lside, mside, rside);
+
+
+
     QueryExpression::Reachability(Box::new(lside), Box::new(mside), Box::new(rside))
 }
 
