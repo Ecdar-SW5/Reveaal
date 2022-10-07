@@ -1171,7 +1171,7 @@ pub enum QueryExpression {
     Refinement(Box<QueryExpression>, Box<QueryExpression>),
     Consistency(Box<QueryExpression>),
     Reachability(Box<QueryExpression>, Box<QueryExpression>, Box<QueryExpression>),
-    State(Box<QueryExpression>, Box<BoolExpression>),
+    State(Box<QueryExpression>, Option<Box<BoolExpression>>),
     LocName(String),
     Implementation(Box<QueryExpression>),
     Determinism(Box<QueryExpression>),
@@ -1239,7 +1239,8 @@ impl QueryExpression {
             QueryExpression::Parentheses(system) => format!("({})", system.pretty_string()),
             QueryExpression::VarName(name) => name.clone(),
             QueryExpression::State(location_names, bool_exp) => {
-                format!("State[{}]({})", location_names.pretty_string(), bool_exp.to_string())
+                panic!("Not implemented");
+                format!("State[{}]({})", location_names.pretty_string(), if bool_exp.is_some() {&*bool_exp.clone().unwrap().encode_expr()} else {""})
             }
             QueryExpression::LocName(loc_name) => {
                 format!("Locname({})", loc_name)
