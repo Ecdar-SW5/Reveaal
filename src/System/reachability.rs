@@ -157,7 +157,7 @@ mod tests {
     use crate::extract_system_rep::SystemRecipe;
 
     #[test]
-    fn Reachability_TestIfSearchAlgorithmeReturnsTrueForReachableState() {
+    fn reachability_test_if_search_algorithme_returns_true_for_reachable_state() {
         const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
         let project_loader = JsonProjectLoader::new(String::from(PATH));
         let mut comp_loader = project_loader.to_comp_loader();
@@ -179,8 +179,37 @@ mod tests {
         }
     }
 
+    fn reachability_test_if_search_algorithme_returns_false_for_reachable_state_for_wrong_clock_values() {
+      const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
+      let project_loader = JsonProjectLoader::new(String::from(PATH));
+      let mut comp_loader = project_loader.to_comp_loader();
+      let mut component = comp_loader.get_component("Machine").to_owned();
+      let mut dim1: ClockIndex = 0;
+      let dim2: ClockIndex = 7;
+      component.set_clock_indices(&mut dim1);
+      let sr = Box::new(SystemRecipe::Component(Box::new(component.clone()))).compile(dim2).unwrap();
+
+      let locations: Vec<LocationTuple> = sr.get_all_locations();
+      let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
+      let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
+
+      let path: Option<Vec<SubPath>> = search_algorithm(&state0, &state1, &(*sr));
+
+      match path {
+          Some(_) => assert!(false),
+          None => assert!(true),
+      }
+  }
+
+
+
+
+
+
+
+
     #[test]
-    fn Reachability_TestIfReachableReturnFalseForNonReachableState(){
+    fn reachability_test_if_reachable_return_false_for_non_reachable_state(){
         const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
         let project_loader = JsonProjectLoader::new(String::from(PATH));
         let mut comp_loader = project_loader.to_comp_loader();
@@ -213,7 +242,7 @@ mod tests {
     }
 
     #[test]
-    fn Reachability_Test_If_Location_Exists_In_TransitionSystem(){
+    fn reachability_test_if_location_exists_in_transition_system(){
         const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
         let project_loader = JsonProjectLoader::new(String::from(PATH));
         let mut comp_loader = project_loader.to_comp_loader();
