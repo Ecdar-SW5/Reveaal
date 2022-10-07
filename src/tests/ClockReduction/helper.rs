@@ -4,7 +4,7 @@ pub mod test {
     use crate::component::{ClockReductionReason, RedundantClock};
     use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
 
-    fn assert_duplicated_clock_detection(redundant_clocks: &Vec<RedundantClock>, expected_amount_to_reduce: u32, expected_duplicate_clocks: HashSet<&str>, unused_allowed: bool) {
+    pub fn assert_duplicated_clock_detection(redundant_clocks: &Vec<RedundantClock>, expected_amount_to_reduce: u32, expected_duplicate_clocks: HashSet<&str>, unused_allowed: bool) {
         let mut global_clock: String = String::from("");
 
         let mut clocksReduced: HashSet<String> = HashSet::new();
@@ -28,7 +28,7 @@ pub mod test {
         assert_eq!(clocksReduced.len(), 2, "Too many clocks were reduced, expected only 2, got {}", clocksReduced.len());
     }
 
-    fn get_dependent_clocks(expr: &BoolExpression, out: &mut HashSet<String>) {
+    pub fn get_dependent_clocks(expr: &BoolExpression, out: &mut HashSet<String>) {
         match expr.deref() {
             BoolExpression::Bool(_) => {},
             BoolExpression::Parentheses(op) => get_dependent_clocks(op, out),

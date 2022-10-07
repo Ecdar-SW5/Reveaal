@@ -7,6 +7,7 @@ pub mod test {
     use crate::DataReader::json_reader::read_json_component;
     use crate::JsonProjectLoader;
     use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
+    use crate::tests::ClockReduction::helper::test::{assert_duplicated_clock_detection, get_dependent_clocks};
 
     #[test]
     fn test_three_synced_clocks() {
@@ -34,7 +35,6 @@ pub mod test {
             if let Some(invariant) = location.invariant {
                 let mut dependent_clocks: HashSet<String> = HashSet::new();
                 let dependent_clocks = get_dependent_clocks(&invariant, &mut dependent_clocks);
-                println!("{}", dependent_clocks);
             }
         }
 

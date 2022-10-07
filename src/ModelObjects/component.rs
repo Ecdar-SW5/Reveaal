@@ -295,17 +295,47 @@ impl Component {
             }
         }
         for contain in clocks.keys().filter(|k| !seen_clocks.contains_key(*k)) {
-            out.push(RedundantClock::unused(contain.clone()))
+            out.push(RedundantClock::unused(contain.clone()));
         }
-        let mut global: Option<String> = None;
-        let updates = self
+        let mut seen_updates: HashMap<String, HashMap<usize, usize>> = HashMap::new();
+        for (i, updates) in self
             .edges
             .iter()
-            .filter(|x| x.update.is_some())
-            .map(|y| y.update.as_ref().unwrap())
-            .flatten()
-            .map(|u| u.variable.clone())
-            .collect::<Vec<String>>();
+            .enumerate()
+            .filter(|(_, x)| x.update.is_some())
+            .map(|(i, y)| (i, y.update.as_ref().unwrap()))
+        {
+            for (j, upd) in updates.iter().enumerate() {
+                if let Some(c) = out.iter_mut().find(|x| x.clock == upd.variable) {
+                    c.updates.insert(i, j);
+                } else {
+                    seen_updates
+                        .entry(upd.variable.clone())
+                        .or_insert(HashMap::new())
+                        .entry(i)
+                        .or_insert(j);
+                }
+            }
+        }
+
+        let mut global: Option<String> = None;
+
+        for (clock, places) in seen_clocks
+            .iter_mut()
+            .filter(|(x, _)| !seen_updates.contains_key(x.clone()))
+        {
+            if let Some(global_clock) = &global {
+                out.push(RedundantClock::duplicate(
+                    clock.to_string(),
+                    places[0].clone(),
+                    places[1].clone(),
+                    global_clock.clone()
+                ));
+            } else {
+                global = Some(clock.to_string());
+            }
+        }
+        /*
         for clock in seen_clocks.iter().filter(|x| !updates.contains(x.0)) {
             if let Some(global_clock) = &global {
                 out.push(RedundantClock::duplicate(
@@ -318,6 +348,7 @@ impl Component {
                 global = Some(clock.0.clone());
             }
         }
+        */
 
         println!("{:?}", out);
         out
@@ -376,6 +407,7 @@ pub enum ClockReductionReason {
 
 ///Datastructure to hold the found redundant clocks, where they are used and their reason for being redundant.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct RedundantClock {
     ///Name of the redundant clock.
     pub clock: String,
@@ -385,7 +417,8 @@ pub struct RedundantClock {
     pub location_indices: Vec<usize>,
     ///Reason for why the clock is declared redundant.
     pub reason: ClockReductionReason,
-    //updates: Option<Vec<Update>>,
+    /// Which updates clock occurs in. Key is index of edge ond Value is the index for the update
+    pub updates: HashMap<usize, usize>,
 }
 
 impl RedundantClock {
@@ -396,13 +429,14 @@ impl RedundantClock {
         edge_indices: Vec<usize>,
         location_indices: Vec<usize>,
         reason: ClockReductionReason,
+        updates: HashMap<usize, usize>,
     ) -> RedundantClock {
         RedundantClock {
             clock,
             edge_indices,
             location_indices,
             reason,
-            //      updates
+            updates,
         }
     }
 
@@ -418,7 +452,7 @@ impl RedundantClock {
             edge_indices,
             location_indices,
             reason: ClockReductionReason::Duplicate(duplicate),
-            //updates: None,
+            updates: HashMap::new(),
         }
     }
 
@@ -429,7 +463,7 @@ impl RedundantClock {
             edge_indices: vec![],
             location_indices: vec![],
             reason: ClockReductionReason::Unused,
-            //updates: None,
+            updates: HashMap::new(),
         }
     }
 }
