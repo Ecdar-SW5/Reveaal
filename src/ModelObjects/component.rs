@@ -407,6 +407,7 @@ pub enum ClockReason {
 
 ///Datastructure to hold the found redundant clocks, where they are used and their reason for being redundant.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct RedundantClock {
     ///Name of the redundant clock.
     clock: String,
@@ -416,7 +417,7 @@ pub struct RedundantClock {
     location_indices: Vec<usize>,
     ///Reason for why the clock is declared redundant.
     reason: ClockReason,
-
+    /// Which updates clock occurs in. Key is index of edge ond Value is the index for the update
     updates: HashMap<usize, usize>,
 }
 
