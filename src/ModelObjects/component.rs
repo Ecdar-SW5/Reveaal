@@ -278,8 +278,8 @@ pub enum ClockReductionReason {
 
 pub struct RedundantClock {
     pub clock: String,
-    edges: Vec<usize>,
-    locs: Vec<usize>,
+    pub edges: Vec<usize>,
+    pub locs: Vec<usize>,
     pub reason: ClockReductionReason,
 }
 
