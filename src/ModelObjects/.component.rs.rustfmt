@@ -297,42 +297,33 @@ impl Component {
         for contain in clocks.keys().filter(|k| !seen_clocks.contains_key(*k)) {
             out.push(RedundantClock::unused(contain.clone()));
         }
-        let mut seen_updates: HashMap<String, HashMap<usize, usize>> = HashMap::new();
+        let mut seen_updates: HashMap<String, HashMap<usize, Vec<usize>>> = HashMap::new();
         for (i, updates) in self
             .edges
             .iter()
             .enumerate()
             .filter(|(_, x)| x.update.is_some())
-            .map(|(i, y)| (i, y.update.as_ref().unwrap()))
-        {
-            for (j, upd) in updates.iter().enumerate() {
-                if let Some(c) = out.iter_mut().find(|x| x.clock == upd.variable) {
-                    c.updates.insert(i, j);
-                } else {
-                    seen_updates
-                        .entry(upd.variable.clone())
-                        .or_insert(HashMap::new())
-                        .entry(i)
-                        .or_insert(j);
+            .map(|(i, y)| (i, y.update.as_ref().unwrap())) {
+                for (j, upd) in updates.iter().enumerate() {
+                    if let Some(c) = out.iter_mut().find(|x| x.clock == upd.variable) {
+                        if let Some(u) = c.updates.get_mut(&i) {
+                            u.push(j);
+                        } else {
+                            c.updates.insert(i, vec![j]);
+                        }
+                    } else {
+                        seen_updates.entry(upd.variable.clone()).or_insert(HashMap::new()).entry(i).or_insert(vec![]).push(j);
+                    }
                 }
             }
-        }
-
+        
         let mut global: Option<String> = None;
 
-        for (clock, places) in seen_clocks
-            .iter_mut()
-            .filter(|(x, _)| !seen_updates.contains_key(x.clone()))
-        {
-            if let Some(global_clock) = &global {
-                out.push(RedundantClock::duplicate(
-                    clock.to_string(),
-                    places[0].clone(),
-                    places[1].clone(),
-                    global_clock.clone()
-                ));
+        for (clock, places) in seen_clocks.iter_mut().filter(|(x, _)| !seen_updates.contains_key(&x)) {
+            if let Some(global_clock) = global {
+                out.push(RedundantClock::duplicate(clock, places.first.unwrap(), places.last().unwrap(), global_clock));
             } else {
-                global = Some(clock.to_string());
+                global = Some(clock);
             }
         }
         /*
@@ -417,7 +408,7 @@ pub struct RedundantClock {
     ///Reason for why the clock is declared redundant.
     reason: ClockReason,
 
-    updates: HashMap<usize, usize>,
+    updates: HashMap<usize, Vec<usize>>,
 }
 
 impl RedundantClock {
@@ -428,14 +419,14 @@ impl RedundantClock {
         edge_indices: Vec<usize>,
         location_indices: Vec<usize>,
         reason: ClockReason,
-        updates: HashMap<usize, usize>,
+        updates: HashMap<usize, Vec<usize>>,
     ) -> RedundantClock {
         RedundantClock {
             clock,
             edge_indices,
             location_indices,
             reason,
-            updates,
+            updates
         }
     }
 
