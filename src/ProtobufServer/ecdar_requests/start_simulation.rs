@@ -21,17 +21,17 @@ impl ConcreteEcdarBackend {
     pub async fn handle_start_simulation(
         &self,
         request: AssertUnwindSafe<Request<()>>,
-    ) -> Result<Response<SimulationStartResponse>, tonic::Status> {
+    ) -> Result<Response<SimulationStepResponse>, tonic::Status> {
         trace!("Recieved query: {:?}", request);
         let start_simulation_request = request.0.into_inner()?;
         let mut id = 0;
 
 
         let reply = {
-            simulationid = id++
+            simulationid = id += 1;
             initialdecisionpoint = &start_simulation_request.components_info.components.component.locations
         };
 
-        Ok(Response::new((reply));
+        Ok(Response::new((reply)));
     }
 }
