@@ -1,6 +1,6 @@
 {
   "name": "Component1",
-  "declarations": "clock x, y, z;",
+  "declarations": "clock x, y, z, i;",
   "locations": [
     {
       "id": "L0",
@@ -165,7 +165,7 @@
       "targetLocation": "L2",
       "status": "INPUT",
       "select": "",
-      "guard": "z\u003e((4*3)+1)",
+      "guard": "z\u003e2",
       "update": "",
       "sync": "baz",
       "isLocked": false,
