@@ -156,7 +156,7 @@ mod tests {
     use edbm::util::constraints::ClockIndex;
     use crate::extract_system_rep::SystemRecipe;
 
-    fn helper(path: &str, clock1: ClockIndex, clock2: ClockIndex) -> Box<dyn TransitionSystem>{
+    fn helper(path: &str, mut clock1: ClockIndex, clock2: ClockIndex) -> Box<dyn TransitionSystem>{
         let project_loader = JsonProjectLoader::new(String::from(path));
         let mut comp_loader = project_loader.to_comp_loader();
         let mut component = comp_loader.get_component("Machine").to_owned();
@@ -172,27 +172,21 @@ mod tests {
         let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
         let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
 
-        let path: Option<Vec<SubPath>> = search_algorithm(&state0, &state1, &(*sr));
-
-        match path {
-            Some(_) => assert!(true),
-            None => assert!(false),
-        }
+        let path: Option<Path> = search_algorithm(&state0, &state1, &(*sr));
+        
+        assert!(path.is_some());
     }
-
+    #[test]
     fn reachability_test_if_search_algorithme_returns_false_for_reachable_state_for_wrong_clock_values() {
-      const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
-      let sr = helper(PATH, 0, 7);
-      let locations: Vec<LocationTuple> = sr.get_all_locations();
-      let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
-      let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
+        const PATH: &str = "samples/json/EcdarUniversity/Components/Machine.json";
+        let sr = helper(PATH, 0, 7);
+        let locations: Vec<LocationTuple> = sr.get_all_locations();
+        let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
+        let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
 
-      let path: Option<Vec<SubPath>> = search_algorithm(&state0, &state1, &(*sr));
+        let path: Option<Path> = search_algorithm(&state0, &state1, &(*sr));
 
-      match path {
-            Some(_) => assert!(false),
-            None => assert!(true),
-        }
+        assert!(path.is_none());        
     }
 
     #[test]
@@ -207,12 +201,9 @@ mod tests {
         let state0: State = State::create(locations[0].to_owned(), locations[0].get_invariants().unwrap().to_owned());
         let state1: State = State::create(locations[1].to_owned(), locations[1].get_invariants().unwrap().to_owned());
 
-        let path: Option<Vec<SubPath>> = search_algorithm(&state0, &state1, &(*sr1));
+        let path: Option<Path> = search_algorithm(&state0, &state1, &(*sr1));
 
-        match path {
-            Some(_) => assert!(false),
-            None => assert!(true),
-        }
+        assert!(path.is_none());  
     }
 
     #[test]
