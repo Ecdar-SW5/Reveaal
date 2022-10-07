@@ -9,6 +9,8 @@ refinement = {"refinement:" ~ expr ~ "<=" ~ expr}
 
 consistency = {"consistency:" ~ expr}
 
+reachability = { "reachability:" ~ expr ~ "->" ~ state ~ ";" ~ state }
+
 implementation = {"implementation:" ~ expr}
 
 getComponent = {"get-component:" ~ saveExpr}
@@ -60,6 +62,12 @@ var = {variable ~ ":" ~ logicFormulas | variable}
 variable = { (variable_name ~ "."?)+ ~ (int | variable_name)?}
 variable_name = @{(ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_" )*) ~ !"-"}
 
+loc = { loc_name ~ ("," ~ loc_name)* }                            
+loc_name = { (ASCII_ALPHANUMERIC | "(" | ")" | "_" | "&" | "|" | "/" | "\\" )* }
+
+clock = { boolExpr ~ ("," ~ boolExpr)* | "" }                              
+state = { "[" ~ loc ~ "]" ~ "(" ~ clock ~ ")" }
+
 int = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
 
 operator = {">=" | "<=" | "<" | ">"}
@@ -72,12 +80,5 @@ composition_op = { "||" }
 
 WHITESPACE = _{ " " | "\n" | "\r\n" | "\t"}
 
-clock = { boolExpr ~ ("," ~ boolExpr)* | "" }                               // Is used for inputs like x>0 or y<=3
 
-loc_name = { (ASCII_ALPHANUMERIC | "(" | ")" | "_" | "&" | "|" | "/" | "\\" )* }
-loc = { loc_name ~ ("," ~ loc_name)* }                                      // Can take locations of format "L20, L21 ..."
 
-state = { "[" ~ loc ~ "]" ~ "(" ~ clock ~ ")" }
-
-// This is the format for reachability
-reachability = { "reachability:" ~ expr ~ "->" ~ state ~ ";" ~ state }

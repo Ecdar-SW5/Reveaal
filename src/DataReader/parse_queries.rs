@@ -216,10 +216,6 @@ fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpre
     let mside = build_state_from_pair(s_state_pair);
     let rside = build_state_from_pair(e_state_pair);
 
-    // println!("l: {:?} m: {:?} r:{:?}", lside, mside, rside);
-
-
-
     QueryExpression::Reachability(Box::new(lside), Box::new(mside), Box::new(rside))
 }
 

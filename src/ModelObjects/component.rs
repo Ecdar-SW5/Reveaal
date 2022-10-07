@@ -270,7 +270,7 @@ pub fn contain(channels: &[Channel], channel: &str) -> bool {
 /// FullState is a struct used for initial verification of consistency, and determinism as a state that also hols a dbm
 /// This is done as the type used in refinement state pair assumes to sides of an operation
 /// this should probably be refactored as it causes unnecessary confusion
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct State {
     pub decorated_locations: LocationTuple,
     zone_sentinel: Option<OwnedFederation>,
@@ -281,13 +281,6 @@ impl State {
         State {
             decorated_locations,
             zone_sentinel: Some(zone),
-        }
-    }
-
-    pub fn test(decorated_locations: LocationTuple) -> Self {
-        State {
-            decorated_locations,
-            zone_sentinel: None,
         }
     }
 
@@ -762,13 +755,6 @@ pub struct Declarations {
 
 #[allow(dead_code)]
 impl Declarations {
-    pub fn test(clocks : HashMap<String,ClockIndex>) -> Declarations{
-        Declarations {
-            ints: HashMap::new(),
-            clocks : clocks.clone(),
-        }
-    }
-
     pub fn empty() -> Declarations {
         Declarations {
             ints: HashMap::new(),

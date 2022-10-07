@@ -65,7 +65,7 @@ fn get_locations_from_tuples(
         .collect()
 }
 
-fn get_clock_map(sysrep: &TransitionSystemPtr) -> HashMap<String, ClockIndex> {
+pub fn get_clock_map(sysrep: &TransitionSystemPtr) -> HashMap<String, ClockIndex> {
     let mut clocks = HashMap::new();
     let decls = sysrep.get_decls();
 

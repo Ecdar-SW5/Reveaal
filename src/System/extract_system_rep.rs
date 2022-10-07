@@ -52,7 +52,7 @@ pub fn create_executable_query<'a>(
                 
                 Ok(Box::new(ReachabilityExecutor {
                 sys: system,
-                s_state, //Få s og e state til at være states
+                s_state,
                 e_state,
             }))},
             QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
