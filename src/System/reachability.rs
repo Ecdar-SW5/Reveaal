@@ -53,7 +53,7 @@ pub fn find_path(
     begin_state: Option<State>,
     end_state: State,
     system: &dyn TransitionSystem,
-) -> Option<SubPath> {
+) -> Option<Path> {
     let start_state: State;
     if begin_state.is_some() {
         start_state = begin_state.unwrap();
@@ -75,7 +75,7 @@ pub fn search_algorithm(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem,
-) -> Option<SubPath> {
+) -> Option<Path> {
 
     // hashmap linking every location to all its current zones
     let mut visited_states:HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
