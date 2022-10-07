@@ -32,20 +32,10 @@ impl ConcreteEcdarBackend {
     ) -> Result<Response<QueryResponse>, Status> {
         trace!("Received query: {:?}", request);
         let query_request = request.0.into_inner();
-        let components_info = query_request.components_info.as_ref().unwrap();
-        let proto_components = &components_info.components;
         let query = parse_query(&query_request)?;
 
-        let mut parsed_components = vec![];
-
-        for proto_component in proto_components {
-            let components = parse_components_if_some(proto_component)?;
-            for component in components {
-                parsed_components.push(component);
-            }
-        }
-
-        let mut component_container = create_component_container(parsed_components);
+        let components_info = query_request.components_info.as_ref().unwrap();
+        let mut component_container = ComponentContainer::from(components_info)?;
 
         if query_request.ignored_input_outputs.is_some() {
             return Err(Status::unimplemented(
@@ -76,6 +66,7 @@ impl ConcreteEcdarBackend {
     }
 }
 
+
 fn parse_query(query_request: &QueryRequest) -> Result<Query, Status> {
     let mut queries = parse_queries::parse_to_query(&query_request.query);
 
@@ -88,49 +79,7 @@ fn parse_query(query_request: &QueryRequest) -> Result<Query, Status> {
     }
 }
 
-fn parse_components_if_some(
-    proto_component: &ProtobufComponent,
-) -> Result<Vec<Component>, tonic::Status> {
-    if let Some(rep) = &proto_component.rep {
-        match rep {
-            Rep::Json(json) => parse_json_component(json),
-            Rep::Xml(xml) => Ok(parse_xml_components(xml)),
-        }
-    } else {
-        Ok(vec![])
-    }
-}
 
-fn parse_json_component(json: &str) -> Result<Vec<Component>, tonic::Status> {
-    match json_to_component(json) {
-        Ok(comp) => Ok(vec![comp]),
-        Err(_) => Err(tonic::Status::invalid_argument(
-            "Failed to parse json component",
-        )),
-    }
-}
-
-fn parse_xml_components(xml: &str) -> Vec<Component> {
-    let (comps, _, _) = parse_xml_from_str(xml);
-    comps
-}
-
-fn create_component_container(components: Vec<Component>) -> ComponentContainer {
-    let mut comp_hashmap = HashMap::<String, Component>::new();
-    for mut component in components {
-        trace!("Adding comp {} to container", component.get_name());
-
-        component.create_edge_io_split();
-        let inputs: Vec<_> = component
-            .get_input_actions()
-            .into_iter()
-            .map(|channel| channel.name)
-            .collect();
-        input_enabler::make_input_enabled(&mut component, &inputs);
-        comp_hashmap.insert(component.get_name().to_string(), component);
-    }
-    ComponentContainer::new(comp_hashmap)
-}
 
 fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
     match query_result {
