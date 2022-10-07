@@ -329,7 +329,7 @@ impl Component {
                     clock.to_string(),
                     places[0].clone(),
                     places[1].clone(),
-                    global_clock.clone()
+                    global_clock.clone(),
                 ));
             } else {
                 global = Some(clock.to_string());
@@ -410,15 +410,15 @@ pub enum ClockReason {
 #[allow(dead_code)]
 pub struct RedundantClock {
     ///Name of the redundant clock.
-    clock: String,
+    pub(crate) clock: String,
     ///Indices of which edges the clock are being used on.
-    edge_indices: Vec<usize>,
+    pub(crate) edge_indices: Vec<usize>,
     ///Indices of which locations the clock are being used in.
-    location_indices: Vec<usize>,
+    pub(crate) location_indices: Vec<usize>,
     ///Reason for why the clock is declared redundant.
-    reason: ClockReason,
+    pub(crate) reason: ClockReason,
     /// Which updates clock occurs in. Key is index of edge ond Value is the index for the update
-    updates: HashMap<usize, usize>,
+    pub(crate) updates: HashMap<usize, usize>,
 }
 
 impl RedundantClock {
