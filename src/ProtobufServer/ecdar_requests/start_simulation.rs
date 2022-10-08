@@ -1,10 +1,19 @@
 use std::panic::AssertUnwindSafe;
 
 use crate::DataReader::component_loader::ComponentContainer;
-use crate::ProtobufServer::services::SimulationStepResponse;
-use crate::ProtobufServer::services::SimulationStartRequest;
+
+use crate::ProtobufServer::services::{
+    SimulationStepResponse, 
+    SimulationStartRequest
+};
+
 use log::trace;
-use tonic::{Request, Response, Status};
+
+use tonic::{
+    Request, 
+    Response, 
+    Status
+};
 
 use crate::ProtobufServer::ConcreteEcdarBackend;
 
@@ -18,6 +27,7 @@ impl ConcreteEcdarBackend {
         let request_message = request.0.into_inner();
         let component_info = request_message.components_info.unwrap();
 
+        // Extract components from the request message
         let _component_container= 
             ComponentContainer::from(&component_info);
 
