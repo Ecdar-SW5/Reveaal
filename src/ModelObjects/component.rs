@@ -322,7 +322,7 @@ impl Component {
 
         for (clock, places) in seen_clocks
             .iter_mut()
-            .filter(|(x, _)| !seen_updates.contains_key(x.clone()))
+            .filter(|(x, _)| !seen_updates.contains_key(x.as_str()))
         {
             if let Some(global_clock) = &global {
                 out.push(RedundantClock::duplicate(
@@ -335,22 +335,6 @@ impl Component {
                 global = Some(clock.to_string());
             }
         }
-        /*
-        for clock in seen_clocks.iter().filter(|x| !updates.contains(x.0)) {
-            if let Some(global_clock) = &global {
-                out.push(RedundantClock::duplicate(
-                    clock.0.clone(),
-                    clock.1[0].clone(),
-                    clock.1[1].clone(),
-                    global_clock.clone(),
-                ));
-            } else {
-                global = Some(clock.0.clone());
-            }
-        }
-        */
-
-        println!("{:?}", out);
         out
     }
 }
