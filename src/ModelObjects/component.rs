@@ -266,6 +266,13 @@ impl Component {
                 }
                 ClockReason::Unused => self.remove_clock(&clock.updates, &mut upd_index_sub),
             }
+            let clock_val = *self.declarations.clocks.get(clock.clock.as_str()).unwrap();
+            self.declarations.clocks.values_mut().for_each(|val| {
+                if *val > clock_val {
+                    *val -= 1;
+                }
+            });
+            self.declarations.clocks.remove(clock.clock.as_str());
         }
     }
 
@@ -361,7 +368,7 @@ impl Component {
                 .update
                 .as_mut()
                 .unwrap()
-                .remove(*u - *upd_index_sub);
+                .remove(usize::max(*u - *upd_index_sub, 0));
             *upd_index_sub += 1;
         }
     }

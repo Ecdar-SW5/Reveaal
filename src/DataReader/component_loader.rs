@@ -111,7 +111,7 @@ impl JsonProjectLoader {
 
     fn load_component(&mut self, component_name: &str) {
         let mut component = json_reader::read_json_component(&self.project_path, component_name);
-        component.find_redundant_clocks(); //TODO Remove
+        component.reduce_clocks(); //TODO Remove
 
         component.create_edge_io_split();
 
