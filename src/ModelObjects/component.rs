@@ -256,6 +256,19 @@ impl Component {
         self.input_edges = Some(i_edges);
     }
 
+    /// TODO
+    pub fn reduce_clocks(&mut self) {
+        let mut upd_index_sub = 0;
+        for clock in self.find_redundant_clocks() {
+            match &clock.reason {
+                ClockReason::Duplicate(global) => {
+                    self.replace_clock(&clock, global, &upd_index_sub)
+                }
+                ClockReason::Unused => self.remove_clock(&clock.updates, &mut upd_index_sub),
+            }
+        }
+    }
+
     ///Used to find redundant clocks - checks for unused and duplicates clocks.
     ///
     /// Returns [`Vec<RedundantClock>`] with all found redundant clock.
@@ -337,6 +350,46 @@ impl Component {
         }
         out
     }
+
+    pub(crate) fn remove_clock(
+        &mut self,
+        clock_updates: &HashMap<usize, usize>,
+        upd_index_sub: &mut usize,
+    ) {
+        for (i, u) in clock_updates {
+            self.edges[*i]
+                .update
+                .as_mut()
+                .unwrap()
+                .remove(*u - *upd_index_sub);
+            *upd_index_sub += 1;
+        }
+    }
+
+    pub(crate) fn replace_clock(
+        &mut self,
+        clock: &RedundantClock,
+        other_clock: &String,
+        upd_index_sub: &usize,
+    ) {
+        for e in &clock.edge_indices {
+            replace_varname_bool(
+                &mut self.edges[*e].guard.as_mut().unwrap(),
+                other_clock.to_string(),
+            );
+        }
+        for l in &clock.location_indices {
+            replace_varname_bool(
+                &mut self.edges[*l].guard.as_mut().unwrap(),
+                other_clock.to_string(),
+            );
+        }
+        for (i, u) in &clock.updates {
+            let mut upd = &mut self.edges[*i].update.as_mut().unwrap()[*u - *upd_index_sub];
+            (*upd).variable = other_clock.clone();
+            replace_varname_bool(&mut upd.expression, other_clock.clone());
+        }
+    }
 }
 
 ///Finds the clock names used in an bool expression
@@ -380,6 +433,43 @@ fn find_varname_arith(expr: &ArithExpression) -> Vec<&str> {
     }
 }
 
+fn replace_varname_bool(expr: &mut BoolExpression, new: String) {
+    match expr {
+        BoolExpression::Parentheses(p) => replace_varname_bool(p, new),
+        BoolExpression::AndOp(p1, p2) | BoolExpression::OrOp(p1, p2) => {
+            replace_varname_bool(p1, new.clone());
+            replace_varname_bool(p2, new);
+        }
+        BoolExpression::LessEQ(a1, a2)
+        | BoolExpression::GreatEQ(a1, a2)
+        | BoolExpression::LessT(a1, a2)
+        | BoolExpression::GreatT(a1, a2)
+        | BoolExpression::EQ(a1, a2) => {
+            replace_varname_arith(a1, new.clone());
+            replace_varname_arith(a2, new);
+        }
+        BoolExpression::Bool(_) => (),
+        BoolExpression::Arithmetic(a) => replace_varname_arith(a, new),
+    }
+}
+
+fn replace_varname_arith(expr: &mut ArithExpression, new: String) {
+    match expr {
+        ArithExpression::Parentheses(p) => replace_varname_arith(p, new),
+        ArithExpression::Difference(a1, a2)
+        | ArithExpression::Addition(a1, a2)
+        | ArithExpression::Multiplication(a1, a2)
+        | ArithExpression::Division(a1, a2)
+        | ArithExpression::Modulo(a1, a2) => {
+            replace_varname_arith(a1, new.clone());
+            replace_varname_arith(a2, new);
+        }
+        ArithExpression::Clock(_) | ArithExpression::Int(_) => (),
+        ArithExpression::VarName(name) => {
+            *name = new;
+        }
+    }
+}
 ///Enum to hold the reason for why a clock is declared redundant.
 #[derive(Debug)]
 pub enum ClockReason {
