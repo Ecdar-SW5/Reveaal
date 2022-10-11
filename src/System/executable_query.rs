@@ -4,6 +4,7 @@ use log::info;
 use crate::DataReader::component_loader::ComponentLoader;
 use crate::ModelObjects::component::Component;
 use crate::System::refine;
+use crate::System::reachability;
 use crate::System::save_component::combine_components;
 use crate::TransitionSystems::TransitionSystemPtr;
 use crate::ModelObjects::component::State;
@@ -86,13 +87,15 @@ impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
         let (sys, s_state, e_state) = (self.sys, self.s_state, self.e_state);
 
-        //match refine::check_refinement(sys1, sys2, sys3) {
-            //Ok(res) => {
-            //    info!("Refinement result: {:?}", res);
-            //    QueryResult::Refinement(res)
-            //}  
-        //}
-        QueryResult::Error("Not implemented yet".to_string())
+        match reachability::find_path(  Some(s_state), e_state, &*sys) {
+            Ok(res) => {
+                match res {
+                    Some(path_res) => QueryResult::Reachability(true, Vec::new() /* Replace with actual path */),
+                    None => QueryResult::Reachability(false, Vec::new() /* Replace with actual path */),
+                }
+            },
+            Err(err_msg) => QueryResult::Error(err_msg),
+        }
     }
 }
 
