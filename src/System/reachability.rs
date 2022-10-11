@@ -18,10 +18,13 @@ pub fn preliminary_check(
         {return Err("The transition system does not contain the start location".into())}
     if !system.get_all_locations().contains(end_state.get_location())
         {return Err("The transition system does not contain the end location".into())}
-    if !&end_state.zone_ref().has_intersection(end_state.get_location().get_invariants().unwrap())
-        {return Err("The desired end state is not allowed due to the invariant on this location".into())}
+    if let Some(invariants) = end_state.get_location().get_invariants() {
+        if !&end_state.zone_ref().has_intersection(invariants) {
+            return Err("The desired end state is not allowed due to the invariant on this location".into())
+        }
+    }
 
-    return Ok(true);
+    Ok(true)
 }
 
 ///# Find path
