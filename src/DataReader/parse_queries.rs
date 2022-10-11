@@ -4,7 +4,7 @@ use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::representations::{QueryExpression, BoolExpression};
 
 use pest::prec_climber::{Assoc, Operator, PrecClimber};
-use pest::{Parser};
+use pest::Parser;
 
 use super::parse_invariant::parse;
 
