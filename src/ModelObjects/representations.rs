@@ -418,6 +418,57 @@ impl BoolExpression {
         }
     }
 
+    /// Finds the clock names used in the expression
+    pub fn get_varnames(&self) -> Vec<&str> {
+        match self {
+            BoolExpression::Parentheses(p) => p.get_varnames(),
+            BoolExpression::AndOp(p1, p2) | BoolExpression::OrOp(p1, p2) => p1
+                .get_varnames()
+                .iter()
+                .chain(p2.get_varnames().iter())
+                .map(|x| *x)
+                .collect(),
+            BoolExpression::LessEQ(a1, a2)
+            | BoolExpression::GreatEQ(a1, a2)
+            | BoolExpression::LessT(a1, a2)
+            | BoolExpression::GreatT(a1, a2)
+            | BoolExpression::EQ(a1, a2) => a1
+                .get_varnames()
+                .iter()
+                .chain(a2.get_varnames().iter())
+                .map(|x| *x)
+                .collect(),
+            BoolExpression::Bool(_) => vec![],
+            BoolExpression::Arithmetic(a) => a.get_varnames(),
+        }
+    }
+
+    /// Replaces all occurrences of `ArithExpression::VarName(old)` with `new`
+    ///
+    /// # Arguments
+    /// `old`: The `varname` to be replaced
+    ///
+    /// `new`: The new varname
+    pub fn replace_varname(&mut self, old: &String, new: &String) {
+        match self {
+            BoolExpression::Parentheses(p) => p.replace_varname(old, new),
+            BoolExpression::AndOp(e1, e2) | BoolExpression::OrOp(e1, e2) => {
+                e1.replace_varname(old, new);
+                e2.replace_varname(old, new);
+            }
+            BoolExpression::LessEQ(e1, e2)
+            | BoolExpression::GreatEQ(e1, e2)
+            | BoolExpression::LessT(e1, e2)
+            | BoolExpression::GreatT(e1, e2)
+            | BoolExpression::EQ(e1, e2) => {
+                e1.replace_varname(old, new);
+                e2.replace_varname(old, new);
+            }
+            BoolExpression::Bool(_) => (),
+            BoolExpression::Arithmetic(a) => a.replace_varname(old, new),
+        }
+    }
+
     pub fn BLessEQ(left: ArithExpression, right: ArithExpression) -> BoolExpression {
         BoolExpression::LessEQ(Box::new(left), Box::new(right))
     }
@@ -962,6 +1013,51 @@ impl ArithExpression {
             true
         } else {
             changed
+        }
+    }
+
+    /// Finds the clock names used in the expression
+    pub fn get_varnames(&self) -> Vec<&str> {
+        match self {
+            ArithExpression::Parentheses(p) => p.get_varnames(),
+            ArithExpression::Difference(a1, a2)
+            | ArithExpression::Addition(a1, a2)
+            | ArithExpression::Multiplication(a1, a2)
+            | ArithExpression::Division(a1, a2)
+            | ArithExpression::Modulo(a1, a2) => a1
+                .get_varnames()
+                .iter()
+                .chain(a2.get_varnames().iter())
+                .map(|x| *x)
+                .collect(),
+            ArithExpression::Clock(_) | ArithExpression::Int(_) => vec![],
+            ArithExpression::VarName(name) => vec![name.as_str()],
+        }
+    }
+
+    /// Replaces all occurrences of `ArithExpression::VarName(old)` with `new`
+    ///
+    /// # Arguments
+    /// `old`: The `varname` to be replaced
+    ///
+    /// `new`: The new varname
+    pub fn replace_varname(&mut self, old: &String, new: &String) {
+        match self {
+            ArithExpression::Parentheses(p) => p.replace_varname(old, new),
+            ArithExpression::Difference(a1, a2)
+            | ArithExpression::Addition(a1, a2)
+            | ArithExpression::Multiplication(a1, a2)
+            | ArithExpression::Division(a1, a2)
+            | ArithExpression::Modulo(a1, a2) => {
+                a1.replace_varname(old, new);
+                a2.replace_varname(old, new);
+            }
+            ArithExpression::Clock(_) | ArithExpression::Int(_) => (),
+            ArithExpression::VarName(name) => {
+                if *name == *old {
+                    *name = new.to_string();
+                }
+            }
         }
     }
 
