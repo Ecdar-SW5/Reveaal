@@ -1,7 +1,4 @@
 mod reachability_parser_restrictions_test {
-    //extract_system_rep, parse_queries, queries, start_grpc_server_with_tokio, xml_parser,
-    //ComponentLoader, JsonProjectLoader, ProjectLoader, Query, QueryResult, XmlProjectLoader,
-
     use crate::{
         extract_system_rep, parse_queries, xml_parser, JsonProjectLoader, XmlProjectLoader,
     };
@@ -15,8 +12,8 @@ mod reachability_parser_restrictions_test {
     #[test_case("reachability: Adm2 || Machine -> [L21](); [L20]()";
     "Amount of machine and amount of location args does not match: 2 machines, 1 loc-arg")]
     #[should_panic]
+    // The amount of locations given as parameters must be the same as the amount of machines.
     fn reachability_parser_checks_invalid_amount_of_location_and_machine_args(parser_input: &str) {
-        // The amount of locations given as parameters must be the same as the amount of machines.
         let folder_path = "samples/json/EcdarUniversity".to_string();
         let mut comp_loader = if xml_parser::is_xml_project(&folder_path) {
             XmlProjectLoader::new(folder_path)
@@ -37,8 +34,8 @@ mod reachability_parser_restrictions_test {
     "Matching amount of locations and machines: 2 machines, 2 loc args")]
     #[test_case("reachability: Adm2 || Machine -> [L21, L4](); [L20, _]()";
     "Matching amount of locations and machines: 2 machines, 2 loc args, end loc has blank arg")]
+    // The amount of locations given as parameters must be the same as the amount of machines.
     fn reachability_parser_checks_valid_amount_of_location_and_machine_args(parser_input: &str) {
-        // The amount of locations given as parameters must be the same as the amount of machines.
         let folder_path = "samples/json/EcdarUniversity".to_string();
         let mut comp_loader = if xml_parser::is_xml_project(&folder_path) {
             XmlProjectLoader::new(folder_path)
