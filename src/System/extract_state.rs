@@ -10,8 +10,8 @@ use crate::ModelObjects::component::State;
 use crate::ModelObjects::representations::QueryExpression;
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 
-/// This function takes a QueryExpresssion, the system recipe, and the transistionsystem -
-/// to define a state form the QueryExpression which has clocks and locations.
+/// This function takes a QueryExpresssion, the system recipe, and the transitionsystem -
+/// to define a state from the QueryExpression which has clocks and locations.
 /// The QueryExpression looks like this: State(Vec<LocName>, Option<BoolExpression>)
 pub fn get_state(
     expr: &QueryExpression,
