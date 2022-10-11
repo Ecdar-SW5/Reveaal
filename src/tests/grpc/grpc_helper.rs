@@ -1,13 +1,13 @@
-use crate::ProtobufServer::services;
+use crate::ProtobufServer::services::{self, SimulationStepRequest};
 use std::fs;
 
 static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
 
 // Create a simulation state with the Machine component and the decision point drawn below:
 //
-//           -----coin?----->
+//           -----coin? E3----->
 //          /
-// (L5,y>=0)-------tea!----->
+// (L5,y>=0)-------tea! E5----->
 //
 pub fn create_initial_state() -> services::SimulationState {
     let component_json = create_sample_json_component();
@@ -57,17 +57,18 @@ pub fn create_initial_state() -> services::SimulationState {
 
 // Create a simulation state with the Machine component and the decision point drawn below:
 //
-//           -----coin?----->
+//           -----coin? E3----->
 //          /
-// (L5,y>=0)-------tea!----->
+// (L5,y>=0)-------tea! E5----->
 //
-//           -----coin?----->
+//           -----coin? E3----->
 //          /
-// (L5,y>=2)-------tea!----->
+// (L5,y>=2)-------tea! E5----->
 //
 pub fn create_state_after_taking_step() -> services::SimulationState {
-    let mut new_state = create_initial_state();
-    new_state.decision_points.push(services::DecisionPoint {
+    let mut initial_state = create_initial_state();
+
+    initial_state.decision_points.push(services::DecisionPoint {
         source: Some(services::State {
             location_id: "L5".to_string(),
             zone: Some(services::Zone {
@@ -92,20 +93,21 @@ pub fn create_state_after_taking_step() -> services::SimulationState {
                 }),
             }),
         }),
-        edges: new_state.decision_points[0].edges.clone(),
+        edges: initial_state.decision_points[0].edges.clone(),
     });
-    new_state
+    initial_state
 }
 
 // Create a simulation state with the Machine component and the decision point drawn below:
 //
-//              -----coin?----->
+//              -----coin? E3----->
 //             /
-// (Wrong,y>=0)-------tea!----->
+// (Wrong,y>=0)-------tea! E5----->
 //
 pub fn create_sample_state_component_decision_mismatch() -> services::SimulationState {
-    let mut new_state = create_initial_state();
-    new_state.decision_points.push(services::DecisionPoint {
+    let mut initial_state = create_initial_state();
+
+    initial_state.decision_points.push(services::DecisionPoint {
         source: Some(services::State {
             location_id: "Wrong".to_string(),
             zone: Some(services::Zone {
@@ -130,9 +132,23 @@ pub fn create_sample_state_component_decision_mismatch() -> services::Simulation
                 }),
             }),
         }),
-        edges: new_state.decision_points[0].edges.clone(),
+        edges: initial_state.decision_points[0].edges.clone(),
     });
-    new_state
+    initial_state
+}
+
+pub fn create_simulation_step_request (
+    current_state: services::SimulationState,
+    source: services::State,
+    edge: services::Edge
+) -> SimulationStepRequest {
+    services::SimulationStepRequest {
+        current_state: Some(current_state.clone()),
+        chosen_decision: Some(services::Decision {
+            source: Some(source),
+            edge: Some(edge),
+        }),
+    }
 }
 
 // Returns the Machine component as a String, in the .json format
