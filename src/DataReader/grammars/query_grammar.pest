@@ -63,7 +63,7 @@ variable = { (variable_name ~ "."?)+ ~ (int | variable_name)?}
 variable_name = @{(ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_" )*) ~ !"-"}
 
 loc = { loc_name ~ ("," ~ loc_name)* }                            
-loc_name = { (ASCII_ALPHANUMERIC | "(" | ")" | "_" | "&" | "|" | "/" | "\\" )* }
+loc_name = { (ASCII_ALPHANUMERIC | "(" | ")" | "_" | "&" | "|" | "/" | "\\" )+ }
 
 clock = { boolExpr ~ ("," ~ boolExpr)* | "" }                              
 state = { "[" ~ loc ~ "]" ~ "(" ~ clock ~ ")" }
