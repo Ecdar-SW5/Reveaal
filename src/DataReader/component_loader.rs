@@ -1,12 +1,12 @@
 use crate::component::Component;
+use crate::xml_parser;
 use crate::DataReader::json_reader;
 use crate::DataReader::json_writer::component_to_json_file;
 use crate::DataReader::xml_parser::parse_xml_from_file;
 use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
-use crate::System::input_enabler;
 use crate::ProtobufServer::services;
-use crate::xml_parser;
+use crate::System::input_enabler;
 use std::collections::HashMap;
 
 pub trait ComponentLoader {
@@ -39,7 +39,9 @@ impl ComponentContainer {
         }
     }
 
-    pub fn from(components_info: &services::ComponentsInfo) -> Result<ComponentContainer, tonic::Status> {
+    pub fn from(
+        components_info: &services::ComponentsInfo,
+    ) -> Result<ComponentContainer, tonic::Status> {
         let proto_components = &components_info.components;
         let mut parsed_components = vec![];
         for proto_component in proto_components {
@@ -52,7 +54,9 @@ impl ComponentContainer {
         Ok(component_container)
     }
 
-    fn parse_components_if_some( proto_component: &services::Component) -> Result<Vec<Component>, tonic::Status> {
+    fn parse_components_if_some(
+        proto_component: &services::Component,
+    ) -> Result<Vec<Component>, tonic::Status> {
         if let Some(rep) = &proto_component.rep {
             match rep {
                 services::component::Rep::Json(json) => Self::parse_json_component(json),
