@@ -62,7 +62,6 @@ impl ConcreteEcdarBackend {
     }
 }
 
-
 fn parse_query(query_request: &QueryRequest) -> Result<Query, Status> {
     let mut queries = parse_queries::parse_to_query(&query_request.query);
 
@@ -74,8 +73,6 @@ fn parse_query(query_request: &QueryRequest) -> Result<Query, Status> {
         Ok(queries.remove(0))
     }
 }
-
-
 
 fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
     match query_result {
