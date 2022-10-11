@@ -75,6 +75,7 @@ impl ExecutableQuery for RefinementExecutor {
     }
 }
 
+/// Used to store input for the reachability checker
 pub struct ReachabilityExecutor {
     pub sys: TransitionSystemPtr,
     pub s_state: State,
