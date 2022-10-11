@@ -13,7 +13,7 @@ use prost::encoding::message;
 use tonic;
 
 #[tokio::test]
-async fn take_simulation_step__normal__respondes_with_correct_state() {
+async fn take_simulation_step__normal__responds_with_correct_state() {
     // Arrange
     let backend = ProtobufServer::ConcreteEcdarBackend::default();
 
@@ -47,14 +47,14 @@ async fn take_simulation_step__normal__respondes_with_correct_state() {
 }
 
 #[tokio::test]
-async fn take_simulation_step__decision_not_in_decision_points__respondes_with_invalid_argument() {
+async fn take_simulation_step__decision_not_in_decision_points__responds_with_invalid_argument() {
     // Arrange
     let backend = ProtobufServer::ConcreteEcdarBackend::default();
 
     let initial_state = grpc_helper::create_initial_state();
 
     let chosen_source = initial_state.decision_points[0].source.clone().unwrap();
-    // clearly "" not in {"E3", "E5"}
+    // clearly "" is not in {"E3", "E5"}
     let chosen_edge = services::Edge { id: "".to_string(), specific_component: None};
     let request = tonic::Request::new(
         grpc_helper::create_simulation_step_request(
@@ -65,7 +65,7 @@ async fn take_simulation_step__decision_not_in_decision_points__respondes_with_i
     );
 
     let expected_response: Result<tonic::Response<SimulationStepResponse>, tonic::Status> = Err(
-        tonic::Status::invalid_argument("Decision not in decision points"),
+        tonic::Status::invalid_argument("Decision not present in decision points"),
     );
 
     // Act
@@ -83,13 +83,14 @@ async fn take_simulation_step__decision_not_in_decision_points__respondes_with_i
     );
 }
 
+// This should never occur unless the simulation state is tampered with 
 #[tokio::test]
-async fn take_simulation_step__decision_points_component_mismatch__respondes_with_invalid_argument()
+async fn take_simulation_step__decision_points_component_mismatch_1__responds_with_invalid_argument()
 {
     // Arrange
     let backend = ProtobufServer::ConcreteEcdarBackend::default();
 
-    let mismatched_state = grpc_helper::create_sample_state_component_decision_mismatch();
+    let mismatched_state = grpc_helper::create_sample_state_component_decision_mismatch_1();
 
     let chosen_source = mismatched_state.decision_points[0].source.clone().unwrap();
     let chosen_edge = mismatched_state.decision_points[0].edges[1].clone();
@@ -102,6 +103,81 @@ async fn take_simulation_step__decision_points_component_mismatch__respondes_wit
     );
 
     let expected_response: Result<tonic::Response<SimulationStepResponse>, tonic::Status> = Err(tonic::Status::invalid_argument("Mismatch between decision points and component, please don't modify the simulation state"));
+
+    // Act
+    let actual_response = backend.take_simulation_step(request).await;
+
+    // Assert
+    assert_eq!(
+        actual_response.as_ref().err().unwrap().code(),
+        expected_response.as_ref().err().unwrap().code()
+    );
+
+    assert_eq!(
+        actual_response.err().unwrap().message(),
+        expected_response.err().unwrap().message()
+    );
+}
+
+// This should never occur unless the simulation state is tampered with 
+#[tokio::test]
+async fn take_simulation_step__decision_points_component_mismatch_2__responds_with_invalid_argument()
+{
+    // Arrange
+    let backend = ProtobufServer::ConcreteEcdarBackend::default();
+
+    let mismatched_state = grpc_helper::create_sample_state_component_decision_mismatch_2();
+
+    let chosen_source = mismatched_state.decision_points[0].source.clone().unwrap();
+    let chosen_edge = mismatched_state.decision_points[0].edges[1].clone();
+    let request = tonic::Request::new(
+        grpc_helper::create_simulation_step_request(
+            mismatched_state, 
+            chosen_source, 
+            chosen_edge
+        )
+    );
+
+    let expected_response: Result<tonic::Response<SimulationStepResponse>, tonic::Status> = Err(tonic::Status::invalid_argument("Mismatch between decision points and component, please don't modify the simulation state"));
+
+    // Act
+    let actual_response = backend.take_simulation_step(request).await;
+
+    // Assert
+    assert_eq!(
+        actual_response.as_ref().err().unwrap().code(),
+        expected_response.as_ref().err().unwrap().code()
+    );
+
+    assert_eq!(
+        actual_response.err().unwrap().message(),
+        expected_response.err().unwrap().message()
+    );
+}
+
+// This should never occur unless the simulation state is tampered with 
+#[tokio::test]
+async fn take_simulation_step__malformed_component__responds_with_invalid_argument()
+{
+    // Arrange
+    let backend = ProtobufServer::ConcreteEcdarBackend::default();
+
+    let malformed_state = services::SimulationState { 
+        component: Some(services::Component { 
+            rep: Some(services::component::Rep::Json("".to_string())) 
+        }), 
+        decision_points: vec![]
+    };
+
+    let request = tonic::Request::new(
+        grpc_helper::create_simulation_step_request(
+            malformed_state, 
+            services::State { location_id: "".to_string(), zone: None }, 
+            services::Edge { id: "".to_string(), specific_component: None }
+        )
+    );
+
+    let expected_response: Result<tonic::Response<SimulationStepResponse>, tonic::Status> = Err(tonic::Status::invalid_argument("Malformed component, please don't modify the simulation state"));
 
     // Act
     let actual_response = backend.take_simulation_step(request).await;
