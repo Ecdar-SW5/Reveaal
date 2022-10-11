@@ -6,9 +6,15 @@ mod parser_not_broken_test {
 
     #[test]
     fn reachability_parser_not_broken() {
-        let parserResult:QueryExpression = parse_queries::parse_to_expression_tree("consistency: HalfAdm2").first().unwrap().to_owned();
+        let parserResult: QueryExpression =
+            parse_queries::parse_to_expression_tree("consistency: HalfAdm2")
+                .first()
+                .unwrap()
+                .to_owned();
 
-        let mock: QueryExpression = QueryExpression::Consistency(Box::new(QueryExpression::VarName("HalfAdm2".to_string())));
+        let mock: QueryExpression = QueryExpression::Consistency(Box::new(
+            QueryExpression::VarName("HalfAdm2".to_string()),
+        ));
 
         assert_eq!(format!("{:?}", mock), format!("{:?}", parserResult));
     }
