@@ -95,8 +95,10 @@ pub fn search_algorithm(
         }
         let next_state = next_state.unwrap();
         // If there is a overlap with the end state, it has been reached.
-        if next_state.zone_ref().has_intersection(end_state.zone_ref()){
-            return Ok(Some(Path{}))/* TODO: Return the actual path */
+        if next_state.get_location().id == end_state.get_location().id {
+            if next_state.zone_ref().has_intersection(end_state.zone_ref()){
+                return Ok(Some(Path{}))/* TODO: Return the actual path */
+            }    
         }
 
         for action in system.get_actions(){
