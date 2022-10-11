@@ -1,6 +1,6 @@
 
 use std::collections::HashMap;
-use std::error::Error;
+use std::{error::Error, fmt};
 
 use edbm::zones::OwnedFederation;
 
@@ -73,7 +73,7 @@ fn build_location_tuple(locations: &Vec<&str> , machine: &SystemRecipe, system: 
     let locationtuple = locations_system.iter().filter(|loc| loc.id == locationID).next();
 
     if locationtuple.is_none(){
-        return Err(format!("The location {} is not found in", locationID));
+        return Err(format!("The location {} is not found in the system", locationID));
     }
 
     Ok(locationtuple.unwrap().clone())
@@ -100,36 +100,25 @@ fn get_locationID(locations: &Vec<&str>, index: &mut usize, machine: &SystemReci
 }
 
 
-
-pub struct InvalidLoaction {
-    location: String
+#[derive(Debug)]
+pub enum LocationError{
+    InvalidLoaction(String)
 }
 
-impl InvalidLoaction{
-    pub fn new(location: String) -> InvalidLoaction {
-        InvalidLoaction {location}
+impl Error for LocationError {
+    fn description(&self) -> &str {
+        // Both underlying errors already impl `Error`, so we defer to their
+        // implementations.
+        match &*self {
+            LocationError::InvalidLoaction(location) => &location,
+        }
     }
 }
 
-// impl Error for InvalidLoaction {
-//     fn description(&self) -> &str {
-//         &self.location
-//     }
-
-//     fn source(&self) -> Option<&(dyn Error + 'static)> {
-//         None
-//     }
-
-//     fn backtrace(&self) -> Option<&std::backtrace::Backtrace> {
-//         None
-//     }
-    
-//     fn type_id(&self, _: private::Internal) -> std::any::TypeId
-//     where
-//         Self: 'static,
-//     {
-//         std::any::TypeId::of::<Self>()
-//     }
-
-    
-// }
+impl fmt::Display for LocationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &*self {
+            LocationError::InvalidLoaction(location) => write!(f, "invaild location: {}", location)
+        } 
+    }
+}

@@ -20,7 +20,8 @@ use simple_error::bail;
 
 use std::error::Error;
 
-use super::extract_state::InvalidLoaction;
+use super::extract_state::LocationError;
+
 
 /// This function fetches the appropriate components based on the structure of the query and makes the enum structure match the query
 /// this function also handles setting up the correct indices for clocks based on the amount of components in each system representation
@@ -50,11 +51,14 @@ pub fn create_executable_query<'a>(
 
                 let s_state: State = match get_state(start, &machine, &system) {
                     Ok(s) => s,
-                    Err(location)=> panic!(""),
+                    Err(location)=> return Err(Box::new(LocationError::InvalidLoaction(location))),
                 };
 
 
-                let e_state: State = get_state(end, &machine, &system).ok().unwrap();
+                let e_state: State = match get_state(start, &machine, &system) {
+                    Ok(s) => s,
+                    Err(location)=> return Err(Box::new(LocationError::InvalidLoaction(location))),
+                };
                 
                 
                 Ok(Box::new(ReachabilityExecutor {
