@@ -5,9 +5,9 @@ static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
 
 // Create a simulation state with the Machine component and the decision point drawn below:
 //
-//             ----coin?---->
-//            /
-// <L5,y>=0>-------tea!----->
+//           -----coin?----->
+//          /
+// (L5,y>=0)-------tea!----->
 //
 pub fn create_sample_state_1() -> services::SimulationState {
     let component_json = create_sample_json_component();
@@ -57,13 +57,13 @@ pub fn create_sample_state_1() -> services::SimulationState {
 
 // Create a simulation state with the Machine component and the decision point drawn below:
 //
-//             ----coin?---->
-//            /
-// <L5,y>=0>-------tea!----->
+//           -----coin?----->
+//          /
+// (L5,y>=0)-------tea!----->
 //
-//             ----coin?---->
-//            /
-// <L5,y>=2>-------tea!----->
+//           -----coin?----->
+//          /
+// (L5,y>=2)-------tea!----->
 //
 pub fn create_sample_state_2() -> services::SimulationState {
     let mut new_state = create_sample_state_1();
@@ -86,7 +86,7 @@ pub fn create_sample_state_2() -> services::SimulationState {
                                 }),
                                 strict: false,
                                 c: -2,
-                            }, 
+                            },
                         ],
                     }],
                 }),
@@ -99,9 +99,9 @@ pub fn create_sample_state_2() -> services::SimulationState {
 
 // Create a simulation state with the Machine component and the decision point drawn below:
 //
-//             ----coin?---->
-//            /
-// <Wrong,y>=0>-------tea!----->
+//              -----coin?----->
+//             /
+// (Wrong,y>=0)-------tea!----->
 //
 pub fn create_sample_state_component_decision_mismatch() -> services::SimulationState {
     let mut new_state = create_sample_state_1();
@@ -124,7 +124,7 @@ pub fn create_sample_state_component_decision_mismatch() -> services::Simulation
                                 }),
                                 strict: false,
                                 c: 0,
-                            }, 
+                            },
                         ],
                     }],
                 }),

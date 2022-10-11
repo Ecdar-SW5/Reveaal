@@ -64,44 +64,33 @@ async fn take_simulation_step__decision_not_in_decision_points__respondes_with_i
             source: old_state.decision_points[0].source.clone(),
             edge: Some(services::Edge {
                 id: "Does not exist".to_string(),
-                specific_component: None
-            })
+                specific_component: None,
+            }),
         }),
     });
 
-    let expected_response: Result<tonic::Response<SimulationStepResponse>, tonic::Status> = 
-        Err(tonic::Status::invalid_argument("Decision not in decision points"));
-
+    let expected_response: Result<tonic::Response<SimulationStepResponse>, tonic::Status> = Err(
+        tonic::Status::invalid_argument("Decision not in decision points"),
+    );
 
     // Act
-    let actual_response = backend
-        .take_simulation_step(request)
-        .await;
+    let actual_response = backend.take_simulation_step(request).await;
 
     // Assert
     assert_eq!(
-        actual_response.as_ref()
-                       .err()
-                       .unwrap()
-                       .code(), 
-        expected_response.as_ref()
-                         .err()
-                         .unwrap()
-                         .code()
+        actual_response.as_ref().err().unwrap().code(),
+        expected_response.as_ref().err().unwrap().code()
     );
 
     assert_eq!(
-        actual_response.err()
-                       .unwrap()
-                       .message(), 
-        expected_response.err()
-                         .unwrap()
-                         .message()
+        actual_response.err().unwrap().message(),
+        expected_response.err().unwrap().message()
     );
 }
 
 #[tokio::test]
-async fn take_simulation_step__decision_points_component_mismatch__respondes_with_invalid_argument() {
+async fn take_simulation_step__decision_points_component_mismatch__respondes_with_invalid_argument()
+{
     // Arrange
     let backend = ProtobufServer::ConcreteEcdarBackend::default();
 
@@ -111,37 +100,23 @@ async fn take_simulation_step__decision_points_component_mismatch__respondes_wit
         current_state: Some(old_state.clone()),
         chosen_decision: Some(services::Decision {
             source: old_state.decision_points[0].source.clone(),
-            edge: Some(old_state.decision_points[0].edges[1].clone())
+            edge: Some(old_state.decision_points[0].edges[1].clone()),
         }),
     });
 
-    let expected_response: Result<tonic::Response<SimulationStepResponse>, tonic::Status> = 
-        Err(tonic::Status::invalid_argument("Mismatch between decision points and component, please don't modify the simulation state"));
-
+    let expected_response: Result<tonic::Response<SimulationStepResponse>, tonic::Status> = Err(tonic::Status::invalid_argument("Mismatch between decision points and component, please don't modify the simulation state"));
 
     // Act
-    let actual_response = backend
-        .take_simulation_step(request)
-        .await;
+    let actual_response = backend.take_simulation_step(request).await;
 
     // Assert
     assert_eq!(
-        actual_response.as_ref()
-                       .err()
-                       .unwrap()
-                       .code(), 
-        expected_response.as_ref()
-                         .err()
-                         .unwrap()
-                         .code()
+        actual_response.as_ref().err().unwrap().code(),
+        expected_response.as_ref().err().unwrap().code()
     );
 
     assert_eq!(
-        actual_response.err()
-                       .unwrap()
-                       .message(), 
-        expected_response.err()
-                         .unwrap()
-                         .message()
+        actual_response.err().unwrap().message(),
+        expected_response.err().unwrap().message()
     );
 }
