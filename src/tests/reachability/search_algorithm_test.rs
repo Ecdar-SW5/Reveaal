@@ -7,6 +7,7 @@ mod search_algorithm_test{
 
     #[test_case("samples/json/EcdarUniversity", "reachability: Machine -> [L5](y<6); [L4](y<=6)")]
     #[test_case("samples/json/EcdarUniversity", "reachability: Machine -> [L5](y>7); [L4](y<=6)")]
+    #[test_case("samples/json/EcdarUniversity", "reachability: Machine -> [L4](y<=6); [L5](y>=4)")]//This one makes an error but should work.
     fn reachability_test_search_algorithme_return_true(path: &str, query: &str) {
         match json_run_query(path, query) {
           QueryResult::Reachability(b, _) => assert!(b), 
