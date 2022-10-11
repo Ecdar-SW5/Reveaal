@@ -12,6 +12,7 @@ mod search_algorithm_test{
     #[test_case(PATH, "reachability: Machine -> [L5](y<1); [L5](y<2)", true; "T_Test5")]
     #[test_case(PATH, "reachability: Machine || Researcher -> [L5, L6](); [L4, L9]()", true; "T_Test6")]
     #[test_case(PATH, "reachability: Researcher -> [U0](); [L7]()", false; "T_Test7")]
+    #[test_case(PATH, "reachability: Researcher -> [U0](x>15); [L7](x<=15)", false; "T_Test8")]
     fn reachability_test_search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
         match json_run_query(path, query) {
           QueryResult::Reachability(b, _) => assert_eq!(b, expected), 
