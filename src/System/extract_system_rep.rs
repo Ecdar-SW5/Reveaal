@@ -4,7 +4,7 @@ use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::representations::QueryExpression;
 use crate::System::executable_query::{
     ConsistencyExecutor, DeterminismExecutor, ExecutableQuery, GetComponentExecutor,
-    RefinementExecutor, ReachabilityExecutor,
+    ReachabilityExecutor, RefinementExecutor,
 };
 use crate::System::extract_state::get_state;
 
@@ -12,8 +12,8 @@ use crate::TransitionSystems::{
     CompiledComponent, Composition, Conjunction, Quotient, TransitionSystemPtr,
 };
 
-use crate::System::pruning;
 use crate::component::State;
+use crate::System::pruning;
 use edbm::util::constraints::ClockIndex;
 use log::debug;
 use simple_error::bail;
@@ -21,7 +21,6 @@ use simple_error::bail;
 use std::error::Error;
 
 use super::extract_state::LocationError;
-
 
 /// This function fetches the appropriate components based on the structure of the query and makes the enum structure match the query
 /// this function also handles setting up the correct indices for clocks based on the amount of components in each system representation
@@ -42,10 +41,9 @@ pub fn create_executable_query<'a>(
                 sys2: right.compile(dim)?,
             }))},
             QueryExpression::Reachability(automata, start, end) => {
-                
                 let mut quotient_index = None;
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
-                validate_reachability(&machine, &start, &end);
+                validate_reachability_input(&machine, start, end);
                 let system = machine.clone().compile(dim)?;
 
 
@@ -59,13 +57,12 @@ pub fn create_executable_query<'a>(
                     Ok(s) => s,
                     Err(location)=> return Err(Box::new(LocationError::InvalidLoaction(location))),
                 };
-                
-                
                 Ok(Box::new(ReachabilityExecutor {
-                sys: system,
-                s_state,
-                e_state,
-            }))},
+                    sys: system,
+                    s_state,
+                    e_state,
+                }))
+            },
             QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
                 recipe: get_system_recipe(
                     query_expression,
@@ -199,19 +196,21 @@ pub fn get_system_recipe(
     }
 }
 
-
-fn validate_reachability(machine: &SystemRecipe, start: &QueryExpression, end: &QueryExpression){
+fn validate_reachability_input(machine: &SystemRecipe, start: &QueryExpression, end: &QueryExpression) {
     let mut components: usize = 0;
     count_component(machine, &mut components);
 
-    for (state, str) in [(start,"start"),(end,"end")]{
-        if compare_component_to_location(&components, state) {
-            panic!("The number of automata does not match the number of locations in the {}", str);
+    for (state, str) in [(start, "start"), (end, "end")] {
+        if component_to_location_count_equal(&components, state) {
+            panic!(
+                "The number of automata does not match the number of locations in the {}",
+                str
+            );
         }
     }
 }
 
-fn count_component(system: &SystemRecipe, count: &mut usize){
+fn count_component(system: &SystemRecipe, count: &mut usize) {
     match system {
         SystemRecipe::Composition(left, right) => {
             count_component(left, count);
@@ -221,22 +220,19 @@ fn count_component(system: &SystemRecipe, count: &mut usize){
             count_component(left, count);
             count_component(right, count);
         }
-        SystemRecipe::Quotient(left, right, _) =>{
+        SystemRecipe::Quotient(left, right, _) => {
             count_component(left, count);
             count_component(right, count);
-        },
+        }
         SystemRecipe::Component(_) => {
             *count += 1;
-        },
+        }
     }
-
 }
 
-fn compare_component_to_location(components: &usize, state: &QueryExpression) -> bool{
-    match state{
-        QueryExpression::State(loc_names, _) =>{
-            loc_names.len() != *components
-        }
-        _ => panic!("Wrong type"),
+fn component_to_location_count_equal(components: &usize, state: &QueryExpression) -> bool {
+    match state {
+        QueryExpression::State(loc_names, _) => loc_names.len() != *components,
+        _ => panic!("Wrong type of QueryExpression"),
     }
 }

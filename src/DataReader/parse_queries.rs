@@ -186,9 +186,12 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
 
     let clockPair = inner_pair.next().unwrap();
 
+    // In the following line of code, we build a BoolExprssion based on the clock constraints defined for the given location. 
+    // To make BoolExprssion we use the InvariantParser parser instead.
+    // Becuase clocks is defined as c1&&c2... in the InvariantParser we replace ',' to match the format e.g., e.g., "x>0,y<5" => "x>0&&y<5"
     let invariantVersion:Option<Box<BoolExpression>> = 
     if clockPair.as_str().trim() != "" {
-        let clockString = clockPair.as_str().trim().to_string().replace(",", "&&");
+        let clockString = clockPair.as_str().trim().to_string().replace(',', "&&");
         let invariantVersion = match parse(&clockString) {
             Ok(result) => result,
             Err(result) => panic!("{:?}", result),
@@ -212,11 +215,11 @@ fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpre
     let s_state_pair = inner_pair.next().unwrap();
     let e_state_pair = inner_pair.next().unwrap();
 
-    let lside = build_expression_from_pair(automata_pair);
-    let mside = build_state_from_pair(s_state_pair);
-    let rside = build_state_from_pair(e_state_pair);
+    let automata = build_expression_from_pair(automata_pair);
+    let start_state = build_state_from_pair(s_state_pair);
+    let end_state = build_state_from_pair(e_state_pair);
 
-    QueryExpression::Reachability(Box::new(lside), Box::new(mside), Box::new(rside))
+    QueryExpression::Reachability(Box::new(automata), Box::new(start_state), Box::new(end_state))
 }
 
 fn build_refinement_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
