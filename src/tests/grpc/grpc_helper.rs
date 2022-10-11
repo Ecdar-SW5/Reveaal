@@ -57,47 +57,43 @@ pub fn create_sample_state_1() -> services::SimulationState {
 
 // Create a simulation state with the Machine component and the decision point drawn below:
 //
-//             ----coin?---->           
-//            /                         
+//             ----coin?---->
+//            /
 // <L5,y>=0>-------tea!----->
 
-//             ----coin?---->           
-//            /                         
+//             ----coin?---->
+//            /
 // <L5,y>=2>-------tea!----->
 //
 //
 pub fn create_sample_state_2() -> services::SimulationState {
     let mut new_state = create_sample_state_1();
-    new_state.decision_points.push(
-        services::DecisionPoint { 
-            source: Some(services::State {
-                location_id: "L5".to_string(),
-                zone: Some(services::Zone { 
-                    disjunction: Some(
-                        services::Disjunction {
-                        conjunctions: vec![services::Conjunction {
-                            constraints: vec![
-                                services::Constraint {
-                                    x: Some(services::ComponentClock {
-                                        specific_component: None,
-                                        clock_name: "0".to_string(),
-                                    }),
-                                    y: Some(services::ComponentClock {
-                                        specific_component: None,
-                                        clock_name: "y".to_string(),
-                                    }),
-                                    strict: false,
-                                    c: -2,
-                                }, // constraint (0 - y <= -2) <= (y >= 2)
-                            ],
-                        }],
-                        }
-                    ) 
-                })
-            }), 
-            edges: new_state.decision_points[0].edges.clone() 
-        }
-    );
+    new_state.decision_points.push(services::DecisionPoint {
+        source: Some(services::State {
+            location_id: "L5".to_string(),
+            zone: Some(services::Zone {
+                disjunction: Some(services::Disjunction {
+                    conjunctions: vec![services::Conjunction {
+                        constraints: vec![
+                            services::Constraint {
+                                x: Some(services::ComponentClock {
+                                    specific_component: None,
+                                    clock_name: "0".to_string(),
+                                }),
+                                y: Some(services::ComponentClock {
+                                    specific_component: None,
+                                    clock_name: "y".to_string(),
+                                }),
+                                strict: false,
+                                c: -2,
+                            }, // constraint (0 - y <= -2) <= (y >= 2)
+                        ],
+                    }],
+                }),
+            }),
+        }),
+        edges: new_state.decision_points[0].edges.clone(),
+    });
     new_state
 }
 

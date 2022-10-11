@@ -13,16 +13,15 @@ async fn start_simulation__normal_json__respondes_with_correct_state() {
 
     let component_json = grpc_helper::create_sample_json_component();
 
-    let request =
-        tonic::Request::new(services::SimulationStartRequest {
-            component_composition: String::from("Machine"),
-            components_info: Some(services::ComponentsInfo {
-                components: vec![services::Component {
-                    rep: Some(services::component::Rep::Json(component_json.clone())),
-                }],
-                components_hash: 0, // TODO: this is not correct, but will do for now
-            }),
-        });
+    let request = tonic::Request::new(services::SimulationStartRequest {
+        component_composition: String::from("Machine"),
+        components_info: Some(services::ComponentsInfo {
+            components: vec![services::Component {
+                rep: Some(services::component::Rep::Json(component_json.clone())),
+            }],
+            components_hash: 0, // TODO: this is not correct, but will do for now
+        }),
+    });
 
     let expected_response = services::SimulationStepResponse {
         new_state: Some(grpc_helper::create_sample_state_1()),
