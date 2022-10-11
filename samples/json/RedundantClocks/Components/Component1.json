@@ -47,7 +47,7 @@
     {
       "id": "L4",
       "nickname": "",
-      "invariant": "",
+      "invariant": "y\u003e1",
       "type": "NORMAL",
       "urgency": "NORMAL",
       "x": 152.60002999999998,
@@ -55,13 +55,13 @@
       "color": "9",
       "nicknameX": 30.0,
       "nicknameY": -10.0,
-      "invariantX": 30.0,
-      "invariantY": 10.0
+      "invariantX": 10.0,
+      "invariantY": 30.0
     },
     {
       "id": "L1",
       "nickname": "",
-      "invariant": "",
+      "invariant": "x\u003e1",
       "type": "NORMAL",
       "urgency": "NORMAL",
       "x": 121.41668666666664,
@@ -69,8 +69,8 @@
       "color": "9",
       "nicknameX": 30.0,
       "nicknameY": -10.0,
-      "invariantX": 30.0,
-      "invariantY": 10.0
+      "invariantX": 20.0,
+      "invariantY": -40.0
     }
   ],
   "edges": [

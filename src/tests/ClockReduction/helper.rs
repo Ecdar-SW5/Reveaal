@@ -89,7 +89,10 @@ pub mod test {
             assert!(
                 found_location_names.is_subset(clock_expected_locations)
                     && found_location_names.len() == clock_expected_locations.len(),
-                "Got unexpected locations for reduction"
+                "Got unexpected locations for reduction of {}. Expected: {:?}, got: {:?}",
+                redundancy.clock,
+                clock_expected_locations,
+                found_location_names,
             );
 
             let mut found_edge_names: HashSet<String> = HashSet::new();
@@ -97,7 +100,7 @@ pub mod test {
 
             for index in redundancy.edge_indices {
                 let edge = &component.edges[index];
-                let edge_id = format!("{}!{}", edge.source_location, edge.target_location);
+                let edge_id = format!("{}->{}", edge.source_location, edge.target_location);
                 assert!(!found_edge_names.contains(&edge_id));
                 found_edge_names.insert(edge_id);
             }
@@ -105,7 +108,10 @@ pub mod test {
             assert!(
                 found_edge_names.is_subset(clock_expected_edges)
                     && found_edge_names.len() == clock_expected_edges.len(),
-                "Got unexpected locations for reduction"
+                "Got unexpected edges for reduction of {}. Expected: {:?}, got: {:?}",
+                redundancy.clock,
+                clock_expected_edges,
+                found_edge_names,
             );
         }
     }
