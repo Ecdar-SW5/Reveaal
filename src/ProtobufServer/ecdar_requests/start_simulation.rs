@@ -22,7 +22,7 @@ impl ConcreteEcdarBackend {
         &self,
         request: AssertUnwindSafe<Request<SimulationStartRequest>>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        trace!("Recieved query: {:?}", request);
+        trace!("Received query: {:?}", request);
 
         let request_message = request.0.into_inner();
         let component_info = request_message.components_info.unwrap();
