@@ -1,3 +1,4 @@
+#[cfg(test)]
 mod reachability_parser_restrictions_test {
     use crate::{
         extract_system_rep, parse_queries, xml_parser, JsonProjectLoader, XmlProjectLoader,

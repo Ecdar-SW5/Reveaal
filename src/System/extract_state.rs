@@ -24,7 +24,7 @@ pub fn get_state(expr: &QueryExpression, machine: &SystemRecipe, system: &Transi
                 };
             }
             
-            let locationtuple = build_location_tuple(&locations,&machine,&system);
+            let locationtuple = build_location_tuple(&locations, machine, system);
             
             if locationtuple.is_err(){
                 return Err(locationtuple.err().unwrap());
@@ -68,9 +68,9 @@ pub fn get_state(expr: &QueryExpression, machine: &SystemRecipe, system: &Transi
 
 fn build_location_tuple(locations: &Vec<&str> , machine: &SystemRecipe, system: &TransitionSystemPtr) -> Result<LocationTuple,String>{
     let mut index = 0;
-    let locationID = get_locationID(&locations, &mut index, &machine);
-    let locations_system = system.get_all_locations().clone();
-    let locationtuple = locations_system.iter().filter(|loc| loc.id == locationID).next();
+    let locationID = get_locationID(locations, &mut index, machine);
+    let locations_system = system.get_all_locations();
+    let locationtuple = locations_system.iter().find(|loc| loc.id == locationID);
 
     if locationtuple.is_none(){
         return Err(format!("The location {} is not found in the system", locationID));
@@ -83,17 +83,17 @@ fn build_location_tuple(locations: &Vec<&str> , machine: &SystemRecipe, system: 
 fn get_locationID(locations: &Vec<&str>, index: &mut usize, machine: &SystemRecipe)-> LocationID{
     match machine {
         SystemRecipe::Composition(left, right) => {
-           LocationID::Composition(Box::new(get_locationID(&locations, index, left)), Box::new(get_locationID(&locations, index, right)))
+           LocationID::Composition(Box::new(get_locationID(locations, index, left)), Box::new(get_locationID(locations, index, right)))
         }
         SystemRecipe::Conjunction(left, right) => {
-            LocationID::Conjunction(Box::new(get_locationID(&locations, index, left)), Box::new(get_locationID(&locations, index, right)))
+            LocationID::Conjunction(Box::new(get_locationID(locations, index, left)), Box::new(get_locationID(locations, index, right)))
         }
         SystemRecipe::Quotient(left, right, _clock_index) => {
-            LocationID::Quotient(Box::new(get_locationID(&locations, index, left)), Box::new(get_locationID(&locations, index, right)))
+            LocationID::Quotient(Box::new(get_locationID(locations, index, left)), Box::new(get_locationID(locations, index, right)))
         },
         SystemRecipe::Component(_comp) => {  
             let loc = locations[*index];
-            *index = *index + 1;
+            *index += 1;
             LocationID::Simple(loc.trim().to_string())
         },
     }
@@ -109,15 +109,15 @@ impl Error for LocationError {
     fn description(&self) -> &str {
         // Both underlying errors already impl `Error`, so we defer to their
         // implementations.
-        match &*self {
-            LocationError::InvalidLoaction(location) => &location,
+        match self {
+            LocationError::InvalidLoaction(location) => location,
         }
     }
 }
 
 impl fmt::Display for LocationError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &*self {
+        match self {
             LocationError::InvalidLoaction(location) => write!(f, "invaild location: {}", location)
         } 
     }

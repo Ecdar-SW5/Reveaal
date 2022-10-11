@@ -5,21 +5,21 @@ pub mod reachability_test_helper_functions {
 
     /// Helper function which converts a string to an option<box<BoolExpression>> by replacing ',' with "&&" and using the invariant parser.
     pub fn string_to_boolexpression(string: &str) -> Option<Box<BoolExpression>> {
-        let string_in_invariant_format = &string.replace(",", "&&");
+        let string_in_invariant_format = &string.replace(',', "&&");
         if string_in_invariant_format.is_empty() {
-            return None;
+            None
         } else {
-            return Some(Box::new(parse(&string.replace(",", "&&")).unwrap()));
+            Some(Box::new(parse(&string.replace(',', "&&")).unwrap()))
         }
     }
     /// Helper function which converts a string to a Vec<Box<QueryExpression::LocName("")>>>
     pub fn string_to_locations(string: &str) -> Vec<Box<QueryExpression>> {
         let mut v = vec![];
-        let parsed_string = string.split(",").map(|s| s.trim());
+        let parsed_string = string.split(',').map(|s| s.trim());
         for s in parsed_string {
             v.push(Box::new(QueryExpression::LocName(s.to_string())));
         }
-        return v;
+        v
     }
 
     /// Helper function to create the mock data
