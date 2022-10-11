@@ -74,6 +74,11 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
             success: *refines,
             relation: vec![],
         })),
+
+        QueryResult::Reachability(_, _) =>{
+            panic!("Not implemented, but should be implemented");
+        }
+
         QueryResult::GetComponent(comp) => Some(ProtobufResult::Component(ComponentResult {
             component: Some(Component {
                 rep: Some(Rep::Json(component_to_json(comp))),
