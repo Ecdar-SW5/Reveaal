@@ -1,0 +1,99 @@
+{
+  "name": "Clock replaced",
+  "declarations": "clock x, y, z;",
+  "locations": [
+    {
+      "id": "L3",
+      "nickname": "",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 60.000009999999975,
+      "y": 170.0,
+      "color": "3",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L4",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 170.00000999999997,
+      "y": 70.0,
+      "color": "3",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L5",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 190.00000999999997,
+      "y": 200.0,
+      "color": "3",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "E2",
+      "group": "",
+      "sourceLocation": "L3",
+      "targetLocation": "L4",
+      "status": "INPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 116.20689655172413,
+          "y": 116.20689655172413,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E3",
+      "group": "",
+      "sourceLocation": "L3",
+      "targetLocation": "L5",
+      "status": "INPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 116.20689655172413,
+          "y": 182.68965517241378,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": -19.999999999999996,
+          "propertyY": 20.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "x": 484.0,
+  "y": 277.0,
+  "width": 380.0,
+  "height": 320.0,
+  "color": "3",
+  "includeInPeriodicCheck": true
+}
