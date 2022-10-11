@@ -196,7 +196,11 @@ pub fn get_system_recipe(
     }
 }
 
-fn validate_reachability_input(machine: &SystemRecipe, start: &QueryExpression, end: &QueryExpression) {
+fn validate_reachability_input(
+    machine: &SystemRecipe,
+    start: &QueryExpression,
+    end: &QueryExpression,
+) {
     let mut components: usize = 0;
     count_component(machine, &mut components);
 

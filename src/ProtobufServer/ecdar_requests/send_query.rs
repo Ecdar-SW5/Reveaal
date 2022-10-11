@@ -75,7 +75,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
             relation: vec![],
         })),
 
-        QueryResult::Reachability(_, _) =>{
+        QueryResult::Reachability(_, _) => {
             panic!("Not implemented, but should be implemented");
         }
 

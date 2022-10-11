@@ -3,17 +3,17 @@ use log::info;
 
 use crate::DataReader::component_loader::ComponentLoader;
 use crate::ModelObjects::component::Component;
+use crate::ModelObjects::component::State;
 use crate::System::refine;
 use crate::System::save_component::combine_components;
 use crate::TransitionSystems::TransitionSystemPtr;
-use crate::ModelObjects::component::State;
 
 use super::extract_system_rep::SystemRecipe;
 use super::save_component::PruningStrategy;
 
 pub enum QueryResult {
     Refinement(bool),
-    Reachability(bool,Vec<String>), //Skal ændre String til Edge
+    Reachability(bool, Vec<String>), //Skal ændre String til Edge
     GetComponent(Component),
     Consistency(bool),
     Determinism(bool),
@@ -26,8 +26,12 @@ impl QueryResult {
             QueryResult::Refinement(true) => satisfied(query_str),
             QueryResult::Refinement(false) => not_satisfied(query_str),
 
-            QueryResult::Reachability(true, _) => {println!("{} -- reachable", query_str)},
-            QueryResult::Reachability(false, _) => {println!("{} -- not reachable", query_str)},
+            QueryResult::Reachability(true, _) => {
+                println!("{} -- reachable", query_str)
+            }
+            QueryResult::Reachability(false, _) => {
+                println!("{} -- not reachable", query_str)
+            }
 
             QueryResult::Consistency(true) => satisfied(query_str),
             QueryResult::Consistency(false) => not_satisfied(query_str),
@@ -40,7 +44,6 @@ impl QueryResult {
             }
 
             QueryResult::Error(_) => println!("{} -- Failed", query_str),
-
         };
     }
 }
@@ -87,10 +90,10 @@ impl ExecutableQuery for ReachabilityExecutor {
         let (sys, s_state, e_state) = (self.sys, self.s_state, self.e_state);
 
         //match refine::check_refinement(sys1, sys2, sys3) {
-            //Ok(res) => {
-            //    info!("Refinement result: {:?}", res);
-            //    QueryResult::Refinement(res)
-            //}  
+        //Ok(res) => {
+        //    info!("Refinement result: {:?}", res);
+        //    QueryResult::Refinement(res)
+        //}
         //}
         QueryResult::Error("Not implemented yet".to_string())
     }
