@@ -24,7 +24,7 @@ async fn start_simulation__normal_json__respondes_with_correct_state() {
     });
 
     let expected_response = services::SimulationStepResponse {
-        new_state: Some(grpc_helper::create_sample_state_1()),
+        new_state: Some(grpc_helper::create_initial_state()),
     };
 
     // Act

@@ -9,7 +9,7 @@ static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
 //          /
 // (L5,y>=0)-------tea!----->
 //
-pub fn create_sample_state_1() -> services::SimulationState {
+pub fn create_initial_state() -> services::SimulationState {
     let component_json = create_sample_json_component();
 
     services::SimulationState {
@@ -65,8 +65,8 @@ pub fn create_sample_state_1() -> services::SimulationState {
 //          /
 // (L5,y>=2)-------tea!----->
 //
-pub fn create_sample_state_2() -> services::SimulationState {
-    let mut new_state = create_sample_state_1();
+pub fn create_state_after_taking_step() -> services::SimulationState {
+    let mut new_state = create_initial_state();
     new_state.decision_points.push(services::DecisionPoint {
         source: Some(services::State {
             location_id: "L5".to_string(),
@@ -104,7 +104,7 @@ pub fn create_sample_state_2() -> services::SimulationState {
 // (Wrong,y>=0)-------tea!----->
 //
 pub fn create_sample_state_component_decision_mismatch() -> services::SimulationState {
-    let mut new_state = create_sample_state_1();
+    let mut new_state = create_initial_state();
     new_state.decision_points.push(services::DecisionPoint {
         source: Some(services::State {
             location_id: "Wrong".to_string(),

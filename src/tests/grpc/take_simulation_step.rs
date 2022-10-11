@@ -17,9 +17,9 @@ async fn take_simulation_step__normal__respondes_with_correct_state() {
     // Arrange
     let backend = ProtobufServer::ConcreteEcdarBackend::default();
 
-    let old_state = grpc_helper::create_sample_state_1();
+    let old_state = grpc_helper::create_initial_state();
 
-    let expected_new_state = grpc_helper::create_sample_state_2();
+    let expected_new_state = grpc_helper::create_state_after_taking_step();
 
     let expected_response = services::SimulationStepResponse {
         new_state: Some(expected_new_state),
@@ -30,7 +30,6 @@ async fn take_simulation_step__normal__respondes_with_correct_state() {
     //             ----coin?---->
     //            /
     // <L5,y>=0>=======TEA!=====>
-    //
     //
     let request = tonic::Request::new(services::SimulationStepRequest {
         current_state: Some(old_state.clone()),
@@ -56,7 +55,7 @@ async fn take_simulation_step__decision_not_in_decision_points__respondes_with_i
     // Arrange
     let backend = ProtobufServer::ConcreteEcdarBackend::default();
 
-    let old_state = grpc_helper::create_sample_state_1();
+    let old_state = grpc_helper::create_initial_state();
 
     let request = tonic::Request::new(services::SimulationStepRequest {
         current_state: Some(old_state.clone()),
