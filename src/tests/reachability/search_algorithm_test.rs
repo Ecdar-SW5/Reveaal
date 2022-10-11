@@ -20,7 +20,8 @@ mod search_algorithm_test{
     #[test_case("samples/json/EcdarUniversity", "reachability: Machine -> [L5](y<6); [L4](y>7)"; "Test1")]
     #[test_case("samples/json/EcdarUniversity", "reachability: Machine -> [L3](y<6); [L4](y<=6)"; "Test2")]
     #[test_case("samples/json/EcdarUniversity", "reachability: Machine -> [L5](y<6); [L3](y<=6)"; "Test3")]
-    
+    #[test_case("samples/json/EcdarUniversity", "reachability: Reseacher -> [L9](x<2); [L7](x<=15)"; "Test4")]
+    #[test_case("samples/json/EcdarUniversity", "reachability: Reseacher -> [U0](); [L7](x<=15)"; "Test5")]
     #[should_panic]
     fn reachability_test_search_algorithme_panics(path: &str, query: &str) {
         match json_run_query(path, query) {
