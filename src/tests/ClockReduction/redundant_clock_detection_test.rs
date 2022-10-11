@@ -7,7 +7,7 @@ pub mod test {
     use crate::DataReader::json_reader::read_json_component;
     use crate::JsonProjectLoader;
     use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
-    use crate::tests::ClockReduction::helper::test::{assert_duplicated_clock_detection, get_dependent_clocks};
+    use crate::tests::ClockReduction::helper::test::{assert_correct_edges_and_locations, assert_duplicated_clock_detection, get_dependent_clocks};
 
     #[test]
     fn test_three_synced_clocks() {
@@ -19,27 +19,22 @@ pub mod test {
     }
 
     #[test]
-    fn test_three_synced_clocks_correct_targeting() {
+    fn test_three_synced_clocks_correct_location_target() {
         let component = read_json_component("samples/json/RedundantClocks", "Component1");
 
-        let mut expected_locations: HashMap<String, HashSet<usize>> = HashMap::new();
-        for clock in ["x", "y", "z", "i"] {
-            expected_locations.insert(String::from(clock), HashSet::new());
-        }
+        let mut expected_locations: HashMap<String, HashSet<String>> = HashMap::new();
 
+        expected_locations.insert("i".to_string(), HashSet::from(["L2".to_string()]));
+        expected_locations.insert("x".to_string(), HashSet::from([]));
+        expected_locations.insert("y".to_string(), HashSet::from([]));
+        expected_locations.insert("z".to_string(), HashSet::from([]));
 
-        let redundant_clocks = component.find_redundant_clocks();
+        let mut expected_edges: HashMap<String, HashSet<String>> = HashMap::new();
+        expected_edges.insert("i".to_string(), HashSet::from(["L1!L0".to_string(), "L0!L2".to_string()]));
+        expected_edges.insert("x".to_string(), HashSet::from(["L2!L1".to_string(), "L0!L2".to_string()]));
+        expected_edges.insert("y".to_string(), HashSet::from(["L0!L4".to_string()]));
+        expected_edges.insert("z".to_string(), HashSet::from(["L4!L2".to_string()]));
 
-
-        for (i, location) in component.locations.into_iter().enumerate() {
-            if let Some(invariant) = location.invariant {
-                let mut dependent_clocks: HashSet<String> = HashSet::new();
-                let dependent_clocks = get_dependent_clocks(&invariant, &mut dependent_clocks);
-            }
-        }
-
-        for redundancy in redundant_clocks {
-
-        }
+        assert_correct_edges_and_locations(&component, expected_locations, expected_edges);
     }
 }

@@ -1,7 +1,7 @@
 pub mod test {
-    use std::collections::HashSet;
+    use std::collections::{HashMap, HashSet};
     use std::ops::Deref;
-    use crate::component::{ClockReductionReason, RedundantClock};
+    use crate::component::{ClockReductionReason, Component, RedundantClock};
     use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
 
     pub fn assert_duplicated_clock_detection(redundant_clocks: &Vec<RedundantClock>, expected_amount_to_reduce: u32, expected_duplicate_clocks: HashSet<&str>, unused_allowed: bool) {
@@ -68,6 +68,45 @@ pub mod test {
             ArithExpression::VarName(name) => {out.insert(name.clone());},
             ArithExpression::Int(i) => {}
 
+        }
+    }
+
+    pub fn assert_correct_edges_and_locations(
+        component: &Component,
+        expected_locations: HashMap<String, HashSet<String>>,
+        expected_edges: HashMap<String, HashSet<String>>
+    ) {
+        let redundant_clocks = component.find_redundant_clocks();
+
+        for redundancy in redundant_clocks {
+            let mut found_location_names: HashSet<String> = HashSet::new();
+            let clock_expected_locations = expected_locations.get(redundancy.clock.as_str()).unwrap();
+            for index in redundancy.location_indices {
+                assert!(!found_location_names.contains(component.locations[index].id.as_str()), "Duplicate location index found");
+                found_location_names.insert(component.locations[index].id.clone());
+            }
+
+            assert!(
+                found_location_names.is_subset(clock_expected_locations)
+                    && found_location_names.len() == clock_expected_locations.len(),
+                "Got unexpected locations for reduction"
+            );
+
+            let mut found_edge_names: HashSet<String> = HashSet::new();
+            let clock_expected_edges = expected_edges.get(&redundancy.clock).unwrap();
+
+            for index in redundancy.edge_indices {
+                let edge = &component.edges[index];
+                let edge_id = format!("{}!{}", edge.source_location, edge.target_location);
+                assert!(!found_edge_names.contains(&edge_id));
+                found_edge_names.insert(edge_id);
+            }
+
+            assert!(
+                found_edge_names.is_subset(clock_expected_edges)
+                    && found_edge_names.len() == clock_expected_edges.len(),
+                "Got unexpected locations for reduction"
+            );
         }
     }
 }
