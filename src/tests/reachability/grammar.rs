@@ -16,6 +16,7 @@ mod reachability_grammar_test {
     #[test_case("reachability: Hi -> [L1, L2](); [L2, L3]()"; "no clock restrictions")]
     #[test_case("reachability: H -> [L1, L2](); [L2, L3]()"; "1 char model")]
     #[test_case("reachability: Hi -> [LX1, LQ2](); [Lorem, Ipsum]()"; "strange location names")]
+    #[test_case("reachability: Hi -> [L1](); [_]()"; "no location or clock values specified for end state")] // 1 location argument provided
     #[test_case("reachability: Hi -> [_](); [_]()"; "no location or clock values specified")] // 1 location argument provided
     fn reachability_query_grammar_test_valid_queries(parser_input: &str) {
         // This tests that the grammar accepts this string, and does not panic:
@@ -35,7 +36,8 @@ mod reachability_grammar_test {
     #[test_case("reachability Hi -> []() []()"; "Missing : after query type")]
     #[test_case("ry: Hi -> []() []()"; "Misspelled reachability")]
     #[test_case("Hi -> []() []()"; "Query type omitted")]
-    #[test_case("reachability: Hi -> [_](); []()"; "no location or clock values specified")] // Missing location argument
+    #[test_case("reachability: Hi -> [_](); []()"; "blank start loc and and no location or clock values specified for end")] // Missing location argument
+    #[test_case("reachability: Hi -> [](); [_]()"; "no location or clock values specified for start, blank for end")] // Missing location argument
     #[should_panic]
     fn reachability_query_grammar_test_panic(parser_input: &str) {
         // This tests that the grammar does NOT accept this string and panics:
