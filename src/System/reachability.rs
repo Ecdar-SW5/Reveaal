@@ -58,10 +58,10 @@ pub fn find_path(
     system: &dyn TransitionSystem,
 ) -> Result<Option<Path>, String> {
     let start_state: State;
-    if begin_state.is_some() {
-        start_state = begin_state.unwrap();
-    } else if system.get_initial_state().is_some() {
-        start_state = system.get_initial_state().unwrap();
+    if let Some(s) = begin_state {
+        start_state = s;
+    } else if let Some(s) = system.get_initial_state() {
+        start_state = s;
     } else {
         panic!("No state to start with");
     }
