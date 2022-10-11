@@ -1170,6 +1170,9 @@ fn get_op(exp: &BoolExpression) -> Option<String> {
 pub enum QueryExpression {
     Refinement(Box<QueryExpression>, Box<QueryExpression>),
     Consistency(Box<QueryExpression>),
+    Reachability(Box<QueryExpression>, Box<QueryExpression>, Box<QueryExpression>),
+    State(Vec<Box<QueryExpression>>, Option<Box<BoolExpression>>),
+    LocName(String),
     Implementation(Box<QueryExpression>),
     Determinism(Box<QueryExpression>),
     Specification(Box<QueryExpression>),
@@ -1206,6 +1209,12 @@ impl QueryExpression {
                 left.pretty_string(),
                 right.pretty_string()
             ),
+            QueryExpression::Reachability(left, middle, right) => format!(
+                "reachability: {} -> {} {}",
+                left.pretty_string(),
+                middle.pretty_string(),
+                right.pretty_string()
+            ),
             QueryExpression::Consistency(system) => {
                 format!("consistency: {}", system.pretty_string())
             }
@@ -1229,7 +1238,22 @@ impl QueryExpression {
             }
             QueryExpression::Parentheses(system) => format!("({})", system.pretty_string()),
             QueryExpression::VarName(name) => name.clone(),
-
+            QueryExpression::State(location_names, bool_exp) => {
+                let mut location_name_iter = location_names.iter();
+                let mut res:String = "".to_string();
+                res.push_str(&location_name_iter.next().expect("The location name cannot be empty, '_' should be used instead").pretty_string());
+                for s in location_name_iter {
+                    res.push_str(&(", ".to_string() + &s.pretty_string()));
+                }
+                let bool_str = match bool_exp {
+                    None => "".to_string(),
+                    _ => bool_exp.as_ref().unwrap().to_string()
+                };
+                format!("[{}]({})", res, bool_str)
+            }
+            QueryExpression::LocName(loc_name) => {
+                format!("Locname({})", loc_name)
+            }
             _ => panic!("Rule not implemented yet"),
         }
     }
