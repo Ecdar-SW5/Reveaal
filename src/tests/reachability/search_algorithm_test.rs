@@ -11,7 +11,7 @@ mod search_algorithm_test{
     #[test_case(PATH, "reachability: Machine -> [L4](y<=6); [L5](y<4)", true; "T_Test4")]
     #[test_case(PATH, "reachability: Machine -> [L5](y<1); [L5](y<2)", true; "T_Test5")]
     #[test_case(PATH, "reachability: Machine || Researcher -> [L5, L6](); [L4, L9]()", true; "T_Test6")]
-    #[test_case(PATH, "reachability: Researcher -> [U0](); [L7]()", false; "T_Test7")] // IT FAILS HERE.... SADGE
+    #[test_case(PATH, "reachability: Researcher -> [U0](); [L7]()", false; "T_Test7")]
     fn reachability_test_search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
         match json_run_query(path, query) {
           QueryResult::Reachability(b, _) => assert_eq!(b, expected), 
