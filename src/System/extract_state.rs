@@ -33,12 +33,6 @@ pub fn get_state(
             }
 
             let locationtuple = locationtuple.unwrap();
-            let decls = system.get_decls();
-            let mut initial_decl = HashMap::new();
-
-            for decl in decls {
-                initial_decl.extend(decl.clocks.clone());
-            }
 
             if clock.is_some() {
                 let initalFederation = OwnedFederation::universe(system.get_dim());

@@ -26,12 +26,8 @@ impl QueryResult {
             QueryResult::Refinement(true) => satisfied(query_str),
             QueryResult::Refinement(false) => not_satisfied(query_str),
 
-            QueryResult::Reachability(true, _) => {
-                println!("{} -- reachable", query_str)
-            }
-            QueryResult::Reachability(false, _) => {
-                println!("{} -- not reachable", query_str)
-            }
+            QueryResult::Reachability(true, _) => satisfied(query_str),
+            QueryResult::Reachability(false, _) => not_satisfied(query_str),
 
             QueryResult::Consistency(true) => satisfied(query_str),
             QueryResult::Consistency(false) => not_satisfied(query_str),
