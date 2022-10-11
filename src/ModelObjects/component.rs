@@ -10,7 +10,7 @@ use crate::EdgeEval::updater::CompiledUpdate;
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 
-use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
+use crate::ModelObjects::representations::BoolExpression;
 use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
 use edbm::zones::OwnedFederation;
@@ -256,16 +256,16 @@ impl Component {
         self.input_edges = Some(i_edges);
     }
 
-    /// TODO
+    /// Function for reducing the clocks found on the component.
+    /// It will find the unused clocks, along with the "duplicate" clocks (clocks that are never reset)
+    /// and then remove them.
     pub fn reduce_clocks(&mut self) {
-        let mut upd_index_sub = 0;
         for clock in self.find_redundant_clocks() {
             match &clock.reason {
-                ClockReason::Duplicate(global) => {
-                    self.replace_clock(&clock, global, &upd_index_sub)
-                }
-                ClockReason::Unused => self.remove_clock(&clock.updates, &mut upd_index_sub),
+                ClockReason::Duplicate(global) => self.replace_clock(&clock, global),
+                ClockReason::Unused => self.remove_clock(&clock.updates),
             }
+
             let clock_val = *self.declarations.clocks.get(clock.clock.as_str()).unwrap();
             self.declarations.clocks.values_mut().for_each(|val| {
                 if *val > clock_val {
@@ -298,7 +298,7 @@ impl Component {
                     .map(|(i, l)| (i, l.invariant.as_ref().unwrap(), 1)),
             )
         {
-            for name in find_varname_bool(expr) {
+            for name in expr.get_varnames() {
                 if clocks.contains_key(name) {
                     if let Some(clock_indices) = seen_clocks.get_mut(name) {
                         clock_indices.get_mut(which).unwrap().push(index);
@@ -358,125 +358,45 @@ impl Component {
         out
     }
 
-    pub(crate) fn remove_clock(
-        &mut self,
-        clock_updates: &HashMap<usize, usize>,
-        upd_index_sub: &mut usize,
-    ) {
+    /// Removes unused clock
+    ///
+    /// # Arguments
+    /// `clock_updates`: Hashmap where the keys are the indices for the `edges`, and the value is the index in `updates` on said edge
+    pub(crate) fn remove_clock(&mut self, clock_updates: &HashMap<usize, usize>) {
         for (i, u) in clock_updates {
-            self.edges[*i]
-                .update
+            self.edges[*i].update.as_mut().unwrap().remove(*u);
+        }
+    }
+
+    /// Replaces duplicate clock with a new
+    ///
+    /// # Arguments
+    /// `clock`: [`RedundantClock`] representing the clock to be replaced
+    ///
+    /// `other_clock`: The name of the clock to replace `clock`
+    pub(crate) fn replace_clock(&mut self, clock: &RedundantClock, other_clock: &String) {
+        for e in &clock.edge_indices {
+            self.edges[*e]
+                .guard
                 .as_mut()
                 .unwrap()
-                .remove(usize::max(*u - *upd_index_sub, 0));
-            *upd_index_sub += 1;
-        }
-    }
-
-    pub(crate) fn replace_clock(
-        &mut self,
-        clock: &RedundantClock,
-        other_clock: &String,
-        upd_index_sub: &usize,
-    ) {
-        for e in &clock.edge_indices {
-            replace_varname_bool(
-                &mut self.edges[*e].guard.as_mut().unwrap(),
-                other_clock.to_string(),
-            );
+                .replace_varname(&clock.clock, other_clock);
         }
         for l in &clock.location_indices {
-            replace_varname_bool(
-                &mut self.edges[*l].guard.as_mut().unwrap(),
-                other_clock.to_string(),
-            );
+            self.edges[*l]
+                .guard
+                .as_mut()
+                .unwrap()
+                .replace_varname(&clock.clock, other_clock);
         }
         for (i, u) in &clock.updates {
-            let mut upd = &mut self.edges[*i].update.as_mut().unwrap()[*u - *upd_index_sub];
+            let mut upd = &mut self.edges[*i].update.as_mut().unwrap()[*u];
             (*upd).variable = other_clock.clone();
-            replace_varname_bool(&mut upd.expression, other_clock.clone());
+            upd.expression.replace_varname(&clock.clock, other_clock);
         }
     }
 }
 
-///Finds the clock names used in an bool expression
-fn find_varname_bool(expr: &BoolExpression) -> Vec<&str> {
-    match expr {
-        BoolExpression::Parentheses(p) => find_varname_bool(p),
-        BoolExpression::AndOp(p1, p2) | BoolExpression::OrOp(p1, p2) => find_varname_bool(p1)
-            .iter()
-            .chain(find_varname_bool(p2).iter())
-            .map(|x| *x)
-            .collect(),
-        BoolExpression::LessEQ(a1, a2)
-        | BoolExpression::GreatEQ(a1, a2)
-        | BoolExpression::LessT(a1, a2)
-        | BoolExpression::GreatT(a1, a2)
-        | BoolExpression::EQ(a1, a2) => find_varname_arith(a1)
-            .iter()
-            .chain(find_varname_arith(a2).iter())
-            .map(|x| *x)
-            .collect(),
-        BoolExpression::Bool(_) => vec![],
-        BoolExpression::Arithmetic(a) => find_varname_arith(a),
-    }
-}
-
-///Finds the clock names used in an arithmetic expression
-fn find_varname_arith(expr: &ArithExpression) -> Vec<&str> {
-    match expr {
-        ArithExpression::Parentheses(p) => find_varname_arith(p),
-        ArithExpression::Difference(a1, a2)
-        | ArithExpression::Addition(a1, a2)
-        | ArithExpression::Multiplication(a1, a2)
-        | ArithExpression::Division(a1, a2)
-        | ArithExpression::Modulo(a1, a2) => find_varname_arith(a1)
-            .iter()
-            .chain(find_varname_arith(a2).iter())
-            .map(|x| *x)
-            .collect(),
-        ArithExpression::Clock(_) | ArithExpression::Int(_) => vec![],
-        ArithExpression::VarName(name) => vec![name.as_str()],
-    }
-}
-
-fn replace_varname_bool(expr: &mut BoolExpression, new: String) {
-    match expr {
-        BoolExpression::Parentheses(p) => replace_varname_bool(p, new),
-        BoolExpression::AndOp(p1, p2) | BoolExpression::OrOp(p1, p2) => {
-            replace_varname_bool(p1, new.clone());
-            replace_varname_bool(p2, new);
-        }
-        BoolExpression::LessEQ(a1, a2)
-        | BoolExpression::GreatEQ(a1, a2)
-        | BoolExpression::LessT(a1, a2)
-        | BoolExpression::GreatT(a1, a2)
-        | BoolExpression::EQ(a1, a2) => {
-            replace_varname_arith(a1, new.clone());
-            replace_varname_arith(a2, new);
-        }
-        BoolExpression::Bool(_) => (),
-        BoolExpression::Arithmetic(a) => replace_varname_arith(a, new),
-    }
-}
-
-fn replace_varname_arith(expr: &mut ArithExpression, new: String) {
-    match expr {
-        ArithExpression::Parentheses(p) => replace_varname_arith(p, new),
-        ArithExpression::Difference(a1, a2)
-        | ArithExpression::Addition(a1, a2)
-        | ArithExpression::Multiplication(a1, a2)
-        | ArithExpression::Division(a1, a2)
-        | ArithExpression::Modulo(a1, a2) => {
-            replace_varname_arith(a1, new.clone());
-            replace_varname_arith(a2, new);
-        }
-        ArithExpression::Clock(_) | ArithExpression::Int(_) => (),
-        ArithExpression::VarName(name) => {
-            *name = new;
-        }
-    }
-}
 ///Enum to hold the reason for why a clock is declared redundant.
 #[derive(Debug)]
 pub enum ClockReason {
