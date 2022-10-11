@@ -2,8 +2,7 @@
 #[cfg(test)]
 mod unused_clocks_tests {
     use std::collections::HashSet;
-    use crate::component::{Component, RedundantClock};
-    use crate::DataReader::component_loader::JsonProjectLoader;
+    use crate::component::RedundantClock;
     use crate::DataReader::json_reader::read_json_component;
 
     fn assert_unused_clocks_detection(unused_clocks: &Vec<RedundantClock>, expected_clocks: HashSet<&str> ,expected_amount: usize) {
@@ -21,26 +20,31 @@ mod unused_clocks_tests {
         assert_eq!(expected_amount, unused_clocks.len(), "{} clocks are unused, expected {} clocks", unused_clocks.len(), expected_amount);
     }
 
-
-    #[test]
-    fn unused_clocks_with_cycles() {
-        let component = read_json_component("samples/json/ClockReductionTest/UnusedClockWithCycle", "Component1");
+    fn unused_clocks_with_cycles(component_name: &str, unused_clock: &str) {
+        let component = read_json_component("samples/json/ClockReductionTest/UnusedClockWithCycle", component_name);
 
         let unused_clocks = component.find_redundant_clocks();
 
-        assert_unused_clocks_detection(&unused_clocks, HashSet::from(["x"]), 1);
+        assert_unused_clocks_detection(&unused_clocks, HashSet::from([unused_clock]), 1);
     }
 
-
-    #[test]
-    fn unused_clock() {
-        let component = read_json_component("samples/json/ClockReductionTest/UnusedClock", "Component1");
+    fn unused_clock(component_name: &str, unused_clock: &str) {
+        let component = read_json_component("samples/json/ClockReductionTest/UnusedClock", component_name);
 
         let unused_clocks = component.find_redundant_clocks();
 
-
-
-        assert!(unused_clocks.get(0).clock, "x");
+        assert_unused_clocks_detection(&unused_clocks, HashSet::from([unused_clock]), 1);
     }
+
+    #[test]
+    fn unused_clock_test(){
+        unused_clocks_with_cycles("Component1","x");
+        unused_clocks_with_cycles("Component2","z");
+        unused_clocks_with_cycles("Component3","j");
+        unused_clock("Component1", "x");
+        unused_clock("Component2", "i");
+        unused_clock("Component3", "c");
+    }
+
 
 }
