@@ -1,6 +1,9 @@
 use tonic::Request;
 
-use crate::ProtobufServer::services::{self, SimulationStepRequest, component, SimulationStartRequest, ComponentsInfo, Component, LocationTuple, SpecificComponent, Location};
+use crate::ProtobufServer::services::{
+    self, component, Component, ComponentsInfo, Location, LocationTuple, SimulationStartRequest,
+    SimulationStepRequest, SpecificComponent,
+};
 use std::fs;
 
 static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
@@ -17,25 +20,21 @@ pub fn create_initial_state() -> services::SimulationState {
     services::SimulationState {
         component_composition: String::from("Machine"),
         components_info: Some(ComponentsInfo {
-            components: vec![
-                Component {
-                    rep: Some(services::component::Rep::Json(component_json.clone()))
-                }
-            ],
-            components_hash: 0 // TODO this is incorrect
-        }), 
+            components: vec![Component {
+                rep: Some(services::component::Rep::Json(component_json.clone())),
+            }],
+            components_hash: 0, // TODO this is incorrect
+        }),
         decision_points: vec![services::DecisionPoint {
             source: Some(services::State {
                 location_tuple: Some(LocationTuple {
-                    locations: vec![
-                        Location {
-                            id: String::from("L5"),
-                            specific_component: Some(SpecificComponent {
-                                component_name: String::from("Machine"),
-                                component_index: 0 // TODO: this is probably wrong
-                            })
-                        }
-                    ]
+                    locations: vec![Location {
+                        id: String::from("L5"),
+                        specific_component: Some(SpecificComponent {
+                            component_name: String::from("Machine"),
+                            component_index: 0, // TODO: this is probably wrong
+                        }),
+                    }],
                 }),
                 zone: Some(services::Zone {
                     disjunction: Some(services::Disjunction {
@@ -46,14 +45,14 @@ pub fn create_initial_state() -> services::SimulationState {
                                     x: Some(services::ComponentClock {
                                         specific_component: Some(SpecificComponent {
                                             component_name: String::from("Machine"),
-                                            component_index: 0 
+                                            component_index: 0,
                                         }),
                                         clock_name: "0".to_string(),
                                     }),
                                     y: Some(services::ComponentClock {
                                         specific_component: Some(SpecificComponent {
                                             component_name: String::from("Machine"),
-                                            component_index: 0 
+                                            component_index: 0,
                                         }),
                                         clock_name: "y".to_string(),
                                     }),
@@ -70,14 +69,14 @@ pub fn create_initial_state() -> services::SimulationState {
                     id: "E3".to_string(),
                     specific_component: Some(SpecificComponent {
                         component_name: String::from("Machine"),
-                        component_index: 0 
+                        component_index: 0,
                     }),
                 },
                 services::Edge {
                     id: "E5".to_string(),
                     specific_component: Some(SpecificComponent {
                         component_name: String::from("Machine"),
-                        component_index: 0 
+                        component_index: 0,
                     }),
                 },
             ],
@@ -101,15 +100,13 @@ pub fn create_state_after_taking_step() -> services::SimulationState {
     initial_state.decision_points.push(services::DecisionPoint {
         source: Some(services::State {
             location_tuple: Some(LocationTuple {
-                locations: vec![
-                    Location {
-                        id: String::from("L5"),
-                        specific_component: Some(SpecificComponent {
-                            component_name: String::from("Machine"),
-                            component_index: 0 // TODO: this is probably wrong
-                        })
-                    }
-                ]
+                locations: vec![Location {
+                    id: String::from("L5"),
+                    specific_component: Some(SpecificComponent {
+                        component_name: String::from("Machine"),
+                        component_index: 0, // TODO: this is probably wrong
+                    }),
+                }],
             }),
             zone: Some(services::Zone {
                 disjunction: Some(services::Disjunction {
@@ -120,14 +117,14 @@ pub fn create_state_after_taking_step() -> services::SimulationState {
                                 x: Some(services::ComponentClock {
                                     specific_component: Some(SpecificComponent {
                                         component_name: String::from("Machine"),
-                                        component_index: 0 
+                                        component_index: 0,
                                     }),
                                     clock_name: "0".to_string(),
                                 }),
                                 y: Some(services::ComponentClock {
                                     specific_component: Some(SpecificComponent {
                                         component_name: String::from("Machine"),
-                                        component_index: 0 
+                                        component_index: 0,
                                     }),
                                     clock_name: "y".to_string(),
                                 }),
@@ -156,15 +153,13 @@ pub fn create_sample_state_component_decision_mismatch_1() -> services::Simulati
     initial_state.decision_points.push(services::DecisionPoint {
         source: Some(services::State {
             location_tuple: Some(LocationTuple {
-                locations: vec![
-                    Location {
-                        id: String::from("Wrong"),
-                        specific_component: Some(SpecificComponent {
-                            component_name: String::from("Machine"),
-                            component_index: 0 // TODO: this is probably wrong
-                        })
-                    }
-                ]
+                locations: vec![Location {
+                    id: String::from("Wrong"),
+                    specific_component: Some(SpecificComponent {
+                        component_name: String::from("Machine"),
+                        component_index: 0, // TODO: this is probably wrong
+                    }),
+                }],
             }),
             zone: Some(services::Zone {
                 disjunction: Some(services::Disjunction {
@@ -175,14 +170,14 @@ pub fn create_sample_state_component_decision_mismatch_1() -> services::Simulati
                                 x: Some(services::ComponentClock {
                                     specific_component: Some(SpecificComponent {
                                         component_name: String::from("Machine"),
-                                        component_index: 0 
+                                        component_index: 0,
                                     }),
                                     clock_name: "0".to_string(),
                                 }),
                                 y: Some(services::ComponentClock {
                                     specific_component: Some(SpecificComponent {
                                         component_name: String::from("Machine"),
-                                        component_index: 0 
+                                        component_index: 0,
                                     }),
                                     clock_name: "y".to_string(),
                                 }),
@@ -215,7 +210,7 @@ pub fn create_simulation_step_request(
 
 pub fn create_simulation_start_request(
     composition: String,
-    component_json: String
+    component_json: String,
 ) -> Request<SimulationStartRequest> {
     Request::new(SimulationStartRequest {
         component_composition: composition,
@@ -239,25 +234,21 @@ pub fn create_sample_state_component_decision_mismatch_2() -> services::Simulati
     services::SimulationState {
         component_composition: String::from("Machine"),
         components_info: Some(ComponentsInfo {
-            components: vec![
-                Component {
-                    rep: Some(services::component::Rep::Json(component_json.clone()))
-                }
-            ],
-            components_hash: 0 // TODO this is incorrect
-        }), 
+            components: vec![Component {
+                rep: Some(services::component::Rep::Json(component_json.clone())),
+            }],
+            components_hash: 0, // TODO this is incorrect
+        }),
         decision_points: vec![services::DecisionPoint {
             source: Some(services::State {
                 location_tuple: Some(LocationTuple {
-                    locations: vec![
-                        Location {
-                            id: String::from("L5"),
-                            specific_component: Some(SpecificComponent {
-                                component_name: String::from("Machine"),
-                                component_index: 0 // TODO: this is probably wrong
-                            })
-                        }
-                    ]
+                    locations: vec![Location {
+                        id: String::from("L5"),
+                        specific_component: Some(SpecificComponent {
+                            component_name: String::from("Machine"),
+                            component_index: 0, // TODO: this is probably wrong
+                        }),
+                    }],
                 }),
                 zone: Some(services::Zone {
                     disjunction: Some(services::Disjunction {

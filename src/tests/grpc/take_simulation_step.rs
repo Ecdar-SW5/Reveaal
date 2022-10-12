@@ -1,11 +1,14 @@
 #[cfg(test)]
 mod test {
     use crate::tests::grpc::grpc_helper::{
-        create_initial_state, create_sample_state_component_decision_mismatch_1,
+        create_initial_state, create_sample_json_component,
+        create_sample_state_component_decision_mismatch_1,
         create_sample_state_component_decision_mismatch_2, create_simulation_step_request,
-        create_state_after_taking_step, create_sample_json_component,
+        create_state_after_taking_step,
     };
-    use crate::ProtobufServer::services::{self, SimulationStepRequest, SimulationStepResponse, Component, ComponentsInfo};
+    use crate::ProtobufServer::services::{
+        self, Component, ComponentsInfo, SimulationStepRequest, SimulationStepResponse,
+    };
     use crate::ProtobufServer::{self, services::ecdar_backend_server::EcdarBackend};
     use test_case::test_case;
     use tonic::{self, Request, Response, Status};
@@ -101,7 +104,9 @@ mod test {
 
     fn create_expected_response_to_decision_not_in_decision_points_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument( "Decision not present in decision points"))
+        Err(tonic::Status::invalid_argument(
+            "Decision not present in decision points",
+        ))
     }
 
     fn create_mismatched_request_1() -> Request<SimulationStepRequest> {
@@ -141,13 +146,11 @@ mod test {
         let current_state = services::SimulationState {
             component_composition: String::from(""),
             components_info: Some(ComponentsInfo {
-                components: vec![
-                    Component {
-                        rep: Some(services::component::Rep::Json(String::from("")))
-                    }
-                ],
-                components_hash: 0 // TODO this is incorrect
-            }), 
+                components: vec![Component {
+                    rep: Some(services::component::Rep::Json(String::from(""))),
+                }],
+                components_hash: 0, // TODO this is incorrect
+            }),
             decision_points: vec![],
         };
 
@@ -166,21 +169,24 @@ mod test {
         ))
     }
 
-    fn create_response_to_malformed_component_request() -> Result<Response<SimulationStepResponse>, Status> {
-        Err(Status::invalid_argument( "Malformed component, please don't modify the simulation state"))
+    fn create_response_to_malformed_component_request(
+    ) -> Result<Response<SimulationStepResponse>, Status> {
+        Err(Status::invalid_argument(
+            "Malformed component, please don't modify the simulation state",
+        ))
     }
 
     fn create_malformed_composition_request() -> Request<SimulationStepRequest> {
         let current_state = services::SimulationState {
             component_composition: String::from(""),
             components_info: Some(ComponentsInfo {
-                components: vec![
-                    Component {
-                        rep: Some(services::component::Rep::Json(create_sample_json_component()))
-                    }
-                ],
-                components_hash: 0 // TODO this is incorrect
-            }), 
+                components: vec![Component {
+                    rep: Some(services::component::Rep::Json(
+                        create_sample_json_component(),
+                    )),
+                }],
+                components_hash: 0, // TODO this is incorrect
+            }),
             decision_points: vec![],
         };
 
@@ -199,7 +205,10 @@ mod test {
         ))
     }
 
-    fn create_response_to_malformed_composition_request() -> Result<Response<SimulationStepResponse>, Status> {
-        Err(Status::invalid_argument( "Malformed composition, please don't modify the simulation state"))
+    fn create_response_to_malformed_composition_request(
+    ) -> Result<Response<SimulationStepResponse>, Status> {
+        Err(Status::invalid_argument(
+            "Malformed composition, please don't modify the simulation state",
+        ))
     }
 }
