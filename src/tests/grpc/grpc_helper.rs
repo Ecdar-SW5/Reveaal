@@ -1,4 +1,6 @@
-use crate::ProtobufServer::services::{self, SimulationStepRequest};
+use tonic::Request;
+
+use crate::ProtobufServer::services::{self, SimulationStepRequest, component, SimulationStartRequest, ComponentsInfo, Component};
 use std::fs;
 
 static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
@@ -149,6 +151,21 @@ pub fn create_simulation_step_request(
             edge: Some(edge),
         }),
     }
+}
+
+pub fn create_simulation_start_request(
+    composition: String,
+    component_json: String
+) -> Request<SimulationStartRequest> {
+    Request::new(SimulationStartRequest {
+        component_composition: composition,
+        components_info: Some(ComponentsInfo {
+            components: vec![Component {
+                rep: Some(component::Rep::Json(component_json)),
+            }],
+            components_hash: 0, // TODO: this is not correct, but will do for now
+        }),
+    })
 }
 
 // Returns the Machine component as a String, in the .json format

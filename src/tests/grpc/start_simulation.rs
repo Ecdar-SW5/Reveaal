@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod test {
     use crate::{
-        tests::grpc::grpc_helper::{create_initial_state, create_sample_json_component},
+        tests::grpc::grpc_helper::{create_initial_state, create_sample_json_component, create_simulation_start_request},
         ProtobufServer::{
             self,
             services::{
-                component, ecdar_backend_server::EcdarBackend, Component, ComponentsInfo,
+                ecdar_backend_server::EcdarBackend,
                 SimulationStartRequest, SimulationStepResponse,
             },
         },
@@ -19,9 +19,14 @@ mod test {
         "given a good request, responds with correct state"
     )]
     #[test_case(
-        create_malformed_request(),
-        create_expected_response_to_malformed_request();
-        "given a malformed request, respond with invalid argument"
+        create_malformed_component_request(),
+        create_expected_response_to_malformed_component_request();
+        "given a request with a malformed component, respond with invalid argument"
+    )]
+    #[test_case(
+        create_malformed_composition_request(),
+        create_expected_response_to_malformed_composition_request();
+        "given a malformed with a malformed composition, respond with invalid argument"
     )]
     #[tokio::test]
     async fn start_simulation__responds_as_expected(
@@ -42,17 +47,10 @@ mod test {
     }
 
     fn create_good_request() -> Request<SimulationStartRequest> {
-        let component_json = create_sample_json_component();
-
-        Request::new(SimulationStartRequest {
-            component_composition: String::from("Machine"),
-            components_info: Some(ComponentsInfo {
-                components: vec![Component {
-                    rep: Some(component::Rep::Json(component_json.clone())),
-                }],
-                components_hash: 0, // TODO: this is not correct, but will do for now
-            }),
-        })
+        create_simulation_start_request(
+            String::from("Machine"),
+            create_sample_json_component()
+        )
     }
 
     fn create_expected_response_to_good_request() -> Result<Response<SimulationStepResponse>, Status>
@@ -62,23 +60,29 @@ mod test {
         }))
     }
 
-    fn create_malformed_request() -> Request<SimulationStartRequest> { 
-        let test_json: String = String::from("");
-
-        tonic::Request::new(SimulationStartRequest {
-            component_composition: String::from("Machine"),
-            components_info: Some(ComponentsInfo {
-                components: vec![Component {
-                    rep: Some(component::Rep::Json(test_json.clone())),
-                }],
-                components_hash: 0, // TODO: this is not correct, but will do for now
-            }),
-        })
+    fn create_malformed_component_request() -> Request<SimulationStartRequest> { 
+        create_simulation_start_request(
+            String::from("Machine"), 
+            String::from("")
+        )
     }
 
-    fn create_expected_response_to_malformed_request() -> Result<Response<SimulationStepResponse>, Status> {
+    fn create_expected_response_to_malformed_component_request() -> Result<Response<SimulationStepResponse>, Status> {
         Err(tonic::Status::invalid_argument(
             "Malformed component",
+        ))
+    }
+
+    fn create_malformed_composition_request() -> Request<SimulationStartRequest> { 
+        create_simulation_start_request(
+            String::from(""), 
+            create_sample_json_component()
+        )
+    }
+
+    fn create_expected_response_to_malformed_composition_request() -> Result<Response<SimulationStepResponse>, Status> {
+        Err(tonic::Status::invalid_argument(
+            "Malformed composition",
         ))
     }
 }
