@@ -3,9 +3,9 @@ mod test {
     use crate::tests::grpc::grpc_helper::{
         create_initial_state, create_sample_state_component_decision_mismatch_1,
         create_sample_state_component_decision_mismatch_2, create_simulation_step_request,
-        create_state_after_taking_step,
+        create_state_after_taking_step, create_sample_json_component,
     };
-    use crate::ProtobufServer::services::{self, SimulationStepRequest, SimulationStepResponse};
+    use crate::ProtobufServer::services::{self, SimulationStepRequest, SimulationStepResponse, Component, ComponentsInfo};
     use crate::ProtobufServer::{self, services::ecdar_backend_server::EcdarBackend};
     use test_case::test_case;
     use tonic::{self, Request, Response, Status};
@@ -31,9 +31,14 @@ mod test {
         "given a request with component decision mismatch, decision taking edge that is not possible, responds with invalid argument"
     )]
     #[test_case(
-        create_malformed_request(),
-        create_response_to_malformed_request();
+        create_malformed_component_request(),
+        create_response_to_malformed_component_request();
         "given a request with a malformed component, responds with invalid argument"
+    )]
+    #[test_case(
+        create_malformed_composition_request(),
+        create_response_to_malformed_composition_request();
+        "given a request with a malformed composition, responds with invalid argument"
     )]
     #[tokio::test]
     async fn take_simulation_step__responds_as_expected(
@@ -132,16 +137,22 @@ mod test {
         Err(tonic::Status::invalid_argument("Mismatch between decision points and component, please don't modify the simulation state"))
     }
 
-    fn create_malformed_request() -> Request<SimulationStepRequest> {
+    fn create_malformed_component_request() -> Request<SimulationStepRequest> {
         let current_state = services::SimulationState {
-            component: Some(services::Component {
-                rep: Some(services::component::Rep::Json("".to_string())),
-            }),
+            component_composition: String::from(""),
+            components_info: Some(ComponentsInfo {
+                components: vec![
+                    Component {
+                        rep: Some(services::component::Rep::Json(String::from("")))
+                    }
+                ],
+                components_hash: 0 // TODO this is incorrect
+            }), 
             decision_points: vec![],
         };
 
         let chosen_source = services::State {
-            location_id: "".to_string(),
+            location_tuple: None,
             zone: None,
         };
         let chosen_edge = services::Edge {
@@ -155,7 +166,40 @@ mod test {
         ))
     }
 
-    fn create_response_to_malformed_request() -> Result<Response<SimulationStepResponse>, Status> {
+    fn create_response_to_malformed_component_request() -> Result<Response<SimulationStepResponse>, Status> {
         Err(Status::invalid_argument( "Malformed component, please don't modify the simulation state"))
+    }
+
+    fn create_malformed_composition_request() -> Request<SimulationStepRequest> {
+        let current_state = services::SimulationState {
+            component_composition: String::from(""),
+            components_info: Some(ComponentsInfo {
+                components: vec![
+                    Component {
+                        rep: Some(services::component::Rep::Json(create_sample_json_component()))
+                    }
+                ],
+                components_hash: 0 // TODO this is incorrect
+            }), 
+            decision_points: vec![],
+        };
+
+        let chosen_source = services::State {
+            location_tuple: None,
+            zone: None,
+        };
+        let chosen_edge = services::Edge {
+            id: "".to_string(),
+            specific_component: None,
+        };
+        Request::new(create_simulation_step_request(
+            current_state,
+            chosen_source,
+            chosen_edge,
+        ))
+    }
+
+    fn create_response_to_malformed_composition_request() -> Result<Response<SimulationStepResponse>, Status> {
+        Err(Status::invalid_argument( "Malformed composition, please don't modify the simulation state"))
     }
 }
