@@ -23,7 +23,7 @@ pub fn create_initial_state() -> services::SimulationState {
                     disjunction: Some(services::Disjunction {
                         conjunctions: vec![services::Conjunction {
                             constraints: vec![
-                                // constraint (0 - y <= 0) <= (y >= 0)
+                                // constraint (0 - y <= 0)
                                 services::Constraint {
                                     x: Some(services::ComponentClock {
                                         specific_component: None,
@@ -65,7 +65,7 @@ pub fn create_state_after_taking_step() -> services::SimulationState {
                 disjunction: Some(services::Disjunction {
                     conjunctions: vec![services::Conjunction {
                         constraints: vec![
-                            // constraint (0 - y <= -2) <= (y >= 2)
+                            // constraint (0 - y <= -2)
                             services::Constraint {
                                 x: Some(services::ComponentClock {
                                     specific_component: None,
@@ -104,7 +104,7 @@ pub fn create_sample_state_component_decision_mismatch_1() -> services::Simulati
                 disjunction: Some(services::Disjunction {
                     conjunctions: vec![services::Conjunction {
                         constraints: vec![
-                            // constraint (0 - y <= 0) <= (y >= 0)
+                            // constraint (0 - y <= 0)
                             services::Constraint {
                                 x: Some(services::ComponentClock {
                                     specific_component: None,
