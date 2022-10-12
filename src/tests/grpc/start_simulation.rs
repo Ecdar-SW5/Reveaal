@@ -26,7 +26,7 @@ mod test {
     #[test_case(
         create_malformed_composition_request(),
         create_expected_response_to_malformed_composition_request();
-        "given a malformed with a malformed composition, respond with invalid argument"
+        "given a request with a malformed composition, respond with invalid argument"
     )]
     #[tokio::test]
     async fn start_simulation__responds_as_expected(
