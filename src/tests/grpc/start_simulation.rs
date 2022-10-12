@@ -62,7 +62,8 @@ mod test {
         }))
     }
 
-    fn create_malformed_request() -> Request<SimulationStartRequest> {        let test_json: String = String::from("");
+    fn create_malformed_request() -> Request<SimulationStartRequest> { 
+        let test_json: String = String::from("");
 
         tonic::Request::new(SimulationStartRequest {
             component_composition: String::from("Machine"),

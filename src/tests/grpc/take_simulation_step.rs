@@ -60,26 +60,16 @@ mod test {
     // (L5,y>=0)=====tea! E5=====>
     //
     fn create_good_request() -> tonic::Request<SimulationStepRequest> {
-        let initial_state = create_initial_state();
-        let chosen_source = initial_state.decision_points[0].source.clone().unwrap();
-        let chosen_edge = initial_state.decision_points[0].edges[1].clone();
+        let current_state = create_initial_state();
+        let chosen_source = current_state.decision_points[0].source.clone().unwrap();
+        let chosen_edge = current_state.decision_points[0].edges[1].clone();
         tonic::Request::new(create_simulation_step_request(
-            initial_state,
+            current_state,
             chosen_source,
             chosen_edge,
         ))
     }
 
-    // Create a response with: simulation state that has the Machine component and the decision point drawn below:
-    //
-    //           -----coin? E3----->
-    //          /
-    // (L5,y>=0)-------tea! E5----->
-    //
-    //           -----coin? E3----->
-    //          /
-    // (L5,y>=2)-------tea! E5----->
-    //
     fn create_expected_response_to_good_request() -> Result<Response<SimulationStepResponse>, Status>
     {
         Ok(Response::new(SimulationStepResponse {
@@ -88,16 +78,17 @@ mod test {
     }
 
     fn create_decision_not_in_decision_points_request() -> Request<SimulationStepRequest> {
-        let initial_state = create_initial_state();
+        let current_state = create_initial_state();
 
-        let chosen_source = initial_state.decision_points[0].source.clone().unwrap();
+        let chosen_source = current_state.decision_points[0].source.clone().unwrap();
         // clearly "" is not in {"E3", "E5"}
         let chosen_edge = services::Edge {
             id: "".to_string(),
             specific_component: None,
         };
+
         Request::new(create_simulation_step_request(
-            initial_state,
+            current_state,
             chosen_source,
             chosen_edge,
         ))
@@ -105,9 +96,7 @@ mod test {
 
     fn create_expected_response_to_decision_not_in_decision_points_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument(
-            "Decision not present in decision points",
-        ))
+        Err(tonic::Status::invalid_argument( "Decision not present in decision points"))
     }
 
     fn create_mismatched_request_1() -> Request<SimulationStepRequest> {
@@ -127,12 +116,12 @@ mod test {
     }
 
     fn create_mismatched_request_2() -> Request<SimulationStepRequest> {
-        let mismatched_state = create_sample_state_component_decision_mismatch_2();
+        let current_state = create_sample_state_component_decision_mismatch_2();
 
-        let chosen_source = mismatched_state.decision_points[0].source.clone().unwrap();
-        let chosen_edge = mismatched_state.decision_points[0].edges[1].clone();
+        let chosen_source = current_state.decision_points[0].source.clone().unwrap();
+        let chosen_edge = current_state.decision_points[0].edges[1].clone();
         Request::new(create_simulation_step_request(
-            mismatched_state,
+            current_state,
             chosen_source,
             chosen_edge,
         ))
@@ -144,29 +133,29 @@ mod test {
     }
 
     fn create_malformed_request() -> Request<SimulationStepRequest> {
-        let malformed_state = services::SimulationState {
+        let current_state = services::SimulationState {
             component: Some(services::Component {
                 rep: Some(services::component::Rep::Json("".to_string())),
             }),
             decision_points: vec![],
         };
 
-        tonic::Request::new(create_simulation_step_request(
-            malformed_state,
-            services::State {
-                location_id: "".to_string(),
-                zone: None,
-            },
-            services::Edge {
-                id: "".to_string(),
-                specific_component: None,
-            },
+        let chosen_source = services::State {
+            location_id: "".to_string(),
+            zone: None,
+        };
+        let chosen_edge = services::Edge {
+            id: "".to_string(),
+            specific_component: None,
+        };
+        Request::new(create_simulation_step_request(
+            current_state,
+            chosen_source,
+            chosen_edge,
         ))
     }
 
     fn create_response_to_malformed_request() -> Result<Response<SimulationStepResponse>, Status> {
-        Err(Status::invalid_argument(
-            "Malformed component, please don't modify the simulation state",
-        ))
+        Err(Status::invalid_argument( "Malformed component, please don't modify the simulation state"))
     }
 }
