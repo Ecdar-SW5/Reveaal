@@ -62,7 +62,7 @@ mod test {
 
     fn create_malformed_component_request() -> Request<SimulationStartRequest> { 
         create_simulation_start_request(
-            String::from("Machine"), 
+            String::from(""), 
             String::from("")
         )
     }
