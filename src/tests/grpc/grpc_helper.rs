@@ -1,6 +1,6 @@
 use tonic::Request;
 
-use crate::ProtobufServer::services::{self, SimulationStepRequest, component, SimulationStartRequest, ComponentsInfo, Component, LocationTuple, location_tuple::Location, SpecificComponent};
+use crate::ProtobufServer::services::{self, SimulationStepRequest, component, SimulationStartRequest, ComponentsInfo, Component, LocationTuple, SpecificComponent, Location};
 use std::fs;
 
 static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
@@ -30,7 +30,10 @@ pub fn create_initial_state() -> services::SimulationState {
                     locations: vec![
                         Location {
                             id: String::from("L5"),
-                            component_name: String::from("Machine")
+                            specific_component: Some(SpecificComponent {
+                                component_name: String::from("Machine"),
+                                component_index: 0 // TODO: this is probably wrong
+                            })
                         }
                     ]
                 }),
@@ -101,7 +104,10 @@ pub fn create_state_after_taking_step() -> services::SimulationState {
                 locations: vec![
                     Location {
                         id: String::from("L5"),
-                        component_name: String::from("Machine")
+                        specific_component: Some(SpecificComponent {
+                            component_name: String::from("Machine"),
+                            component_index: 0 // TODO: this is probably wrong
+                        })
                     }
                 ]
             }),
@@ -153,7 +159,10 @@ pub fn create_sample_state_component_decision_mismatch_1() -> services::Simulati
                 locations: vec![
                     Location {
                         id: String::from("Wrong"),
-                        component_name: String::from("Machine")
+                        specific_component: Some(SpecificComponent {
+                            component_name: String::from("Machine"),
+                            component_index: 0 // TODO: this is probably wrong
+                        })
                     }
                 ]
             }),
@@ -243,7 +252,10 @@ pub fn create_sample_state_component_decision_mismatch_2() -> services::Simulati
                     locations: vec![
                         Location {
                             id: String::from("L5"),
-                            component_name: String::from("Machine")
+                            specific_component: Some(SpecificComponent {
+                                component_name: String::from("Machine"),
+                                component_index: 0 // TODO: this is probably wrong
+                            })
                         }
                     ]
                 }),
