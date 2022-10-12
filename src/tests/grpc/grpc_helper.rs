@@ -55,16 +55,6 @@ pub fn create_initial_state() -> services::SimulationState {
     }
 }
 
-// Create a simulation state with the Machine component and the decision point drawn below:
-//
-//           -----coin? E3----->
-//          /
-// (L5,y>=0)-------tea! E5----->
-//
-//           -----coin? E3----->
-//          /
-// (L5,y>=2)-------tea! E5----->
-//
 pub fn create_state_after_taking_step() -> services::SimulationState {
     let mut initial_state = create_initial_state();
 
@@ -137,10 +127,10 @@ pub fn create_sample_state_component_decision_mismatch_1() -> services::Simulati
     initial_state
 }
 
-pub fn create_simulation_step_request (
+pub fn create_simulation_step_request(
     current_state: services::SimulationState,
     source: services::State,
-    edge: services::Edge
+    edge: services::Edge,
 ) -> SimulationStepRequest {
     services::SimulationStepRequest {
         current_state: Some(current_state.clone()),
