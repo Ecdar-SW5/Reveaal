@@ -20,8 +20,6 @@ use simple_error::bail;
 
 use std::error::Error;
 
-use super::extract_state::LocationError;
-
 /// This function fetches the appropriate components based on the structure of the query and makes the enum structure match the query
 /// this function also handles setting up the correct indices for clocks based on the amount of components in each system representation
 pub fn create_executable_query<'a>(
@@ -43,19 +41,21 @@ pub fn create_executable_query<'a>(
             QueryExpression::Reachability(automata, start, end) => {
                 let mut quotient_index = None;
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
-                validate_reachability_input(&machine, start, end);
+                if let Err(e) = validate_reachability_input(&machine, start, end){
+                    return Err(e.into());
+                }
                 let system = machine.clone().compile(dim)?;
 
 
                 let s_state: State = match get_state(start, &machine, &system) {
                     Ok(s) => s,
-                    Err(location)=> return Err(Box::new(LocationError::InvalidLoaction(location))),
+                    Err(location)=> return Err(location.into()),
                 };
 
 
                 let e_state: State = match get_state(end, &machine, &system) {
                     Ok(s) => s,
-                    Err(location)=> return Err(Box::new(LocationError::InvalidLoaction(location))),
+                    Err(location)=> return Err(location.into()),
                 };
                 Ok(Box::new(ReachabilityExecutor {
                     sys: system,
@@ -200,43 +200,35 @@ fn validate_reachability_input(
     machine: &SystemRecipe,
     start: &QueryExpression,
     end: &QueryExpression,
-) {
-    let mut components: usize = 0;
-    count_component(machine, &mut components);
+) -> Result<(),String> {
+    let components: usize = count_component(machine);
 
     for (state, str) in [(start, "start"), (end, "end")] {
-        if component_to_location_count_equal(&components, state) {
-            panic!(
-                "The number of automata does not match the number of locations in the {}",
-                str
-            );
+        if component_to_location_count_equal(components, state) {
+            return Err(format!("The number of automata does not match the number of locations in the {}",str));
         }
     }
+    Ok(())
 }
 
-fn count_component(system: &SystemRecipe, count: &mut usize) {
+fn count_component(system: &SystemRecipe) -> usize {
     match system {
         SystemRecipe::Composition(left, right) => {
-            count_component(left, count);
-            count_component(right, count);
+            count_component(left) + count_component(right) 
         }
         SystemRecipe::Conjunction(left, right) => {
-            count_component(left, count);
-            count_component(right, count);
+            count_component(left) + count_component(right) 
         }
         SystemRecipe::Quotient(left, right, _) => {
-            count_component(left, count);
-            count_component(right, count);
+            count_component(left) + count_component(right) 
         }
-        SystemRecipe::Component(_) => {
-            *count += 1;
-        }
+        SystemRecipe::Component(_) => 1
     }
 }
 
-fn component_to_location_count_equal(components: &usize, state: &QueryExpression) -> bool {
+fn component_to_location_count_equal(components: usize, state: &QueryExpression) -> bool {
     match state {
-        QueryExpression::State(loc_names, _) => loc_names.len() != *components,
+        QueryExpression::State(loc_names, _) => loc_names.len() != components,
         _ => panic!("Wrong type of QueryExpression"),
     }
 }

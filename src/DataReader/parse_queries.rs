@@ -192,12 +192,9 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     // To make BoolExprssion we use the InvariantParser parser instead.
     // Becuase clocks is defined as c1&&c2... in the InvariantParser we replace ',' to match the format e.g., e.g., "x>0,y<5" => "x>0&&y<5"
     let invariantVersion: Option<Box<BoolExpression>> = if clockPair.as_str().trim() != "" {
-        let clockString = clockPair.as_str().trim().to_string().replace(',', "&&");
-        let invariantVersion = match parse(&clockString) {
-            Ok(result) => result,
-            Err(result) => panic!("{:?}", result),
-        };
-        Some(Box::new(invariantVersion))
+        let clock_string = clockPair.as_str().trim().to_string().replace(',', "&&");
+        let invariant_version = parse(&clock_string).expect("");
+        Some(Box::new(invariant_version))
     } else {
         None
     };
