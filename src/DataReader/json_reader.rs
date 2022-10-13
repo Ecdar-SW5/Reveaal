@@ -49,7 +49,8 @@ pub fn read_json_component(project_path: &str, component_name: &str) -> componen
 //Description:uses the filename to open the file and then reads the file.
 //Output: Result type, if more info about this type is need please go to: https://doc.rust-lang.org/std/result/
 pub fn read_json<T: DeserializeOwned>(filename: &str) -> serde_json::Result<T> {
-    let mut file = File::open(filename).expect(&format!("Could not find file {filename}"));
+    let mut file =
+        File::open(filename).unwrap_or_else(|_| panic!("Could not find file {}", filename));
     let mut data = String::new();
     file.read_to_string(&mut data).unwrap();
 
