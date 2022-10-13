@@ -59,7 +59,6 @@ fn fails_early(
 ///     None => false
 /// };
 ///
-// This is the main function for the reachability query.
 pub fn find_path(
     begin_state: Option<State>,
     end_state: State,
@@ -85,7 +84,7 @@ pub fn find_path(
     search_algorithm(&start_state, &end_state, system)
 }
 
-pub fn search_algorithm(
+fn search_algorithm(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem,
@@ -96,6 +95,8 @@ pub fn search_algorithm(
 
     // List of states that are to be visited
     let mut frontier_states: Vec<State> = Vec::new();
+
+    let actions = system.get_actions();
 
     frontier_states.push(start_state.clone());
     loop {
@@ -108,7 +109,7 @@ pub fn search_algorithm(
         if reached_end_state(&next_state, end_state) {
             return Ok(Some(Path{}))/* TODO: Return the actual path */
         }
-        for action in system.get_actions(){
+        for action in &actions {
             for transition in &system.next_transitions(&next_state.decorated_locations, &action){
                 take_transition(&next_state, transition, &mut frontier_states, &mut visited_states, system);
             }
@@ -135,7 +136,7 @@ fn take_transition(
     let mut new_state = next_state.clone();
     if transition.use_transition(&mut new_state){
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
-        let existing_zones: &mut Vec<OwnedFederation> = visited_states.entry(new_state.get_location().id.clone()).or_insert(Vec::new());
+        let existing_zones = visited_states.entry(new_state.get_location().id.clone()).or_insert(Vec::new());
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
             remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
             visited_states.get_mut(&new_state.get_location().id).unwrap().push(new_state.zone_ref().clone());
@@ -147,7 +148,7 @@ fn take_transition(
 /// Checks if this zone is redundant by being a subset of any other zone
 fn zone_subset_of_existing_zones(
     new_state: &OwnedFederation,
-    existing_states: & Vec<OwnedFederation>
+    existing_states: &Vec<OwnedFederation>
 ) -> bool {
     for existing_state in existing_states {
         if new_state.subset_eq(existing_state) {
