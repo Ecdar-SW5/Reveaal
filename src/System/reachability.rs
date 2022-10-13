@@ -87,30 +87,32 @@ pub fn search_algorithm(
     let frontier_states: &mut Vec<State> = &mut Vec::new();
 
     frontier_states.push(start_state.clone());
-    loop{
+    loop {
         let next_state = frontier_states.pop();
         // All has been explored if no next state exist
         if next_state.is_none() {
             break;
         }
         let next_state = next_state.unwrap();
-        // If there is a overlap with the end state, it has been reached.
-        if next_state.get_location().id == end_state.get_location().id {
-            if next_state.zone_ref().has_intersection(end_state.zone_ref()){
-                return Ok(Some(Path{}))/* TODO: Return the actual path */
-            }    
+        if reached_end_state(&next_state, &end_state) {
+            return Ok(Some(Path{}))/* TODO: Return the actual path */
         }
-
         for action in system.get_actions(){
             for transition in &system.next_transitions(&next_state.decorated_locations, &action){
                 take_transition(&next_state, transition, frontier_states, &mut visited_states, system);
-
             }
         }
     };
 
     // If nothing has been found, it is not reachable
     Ok(None)
+}
+
+fn reached_end_state(
+    cur_state: &State,
+    end_state: &State
+) -> bool {
+    cur_state.get_location().id == end_state.get_location().id && cur_state.zone_ref().has_intersection(end_state.zone_ref())
 }
 
 fn take_transition(
