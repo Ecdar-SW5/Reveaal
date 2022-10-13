@@ -23,10 +23,10 @@ fn validate_input(
     Ok(())
 }
 
-fn fails_early(
-    start_state: &State,
+fn is_trivially_uncreachable(
+    _start_state: &State,
     end_state: &State,
-    system: &dyn TransitionSystem
+    _system: &dyn TransitionSystem
 ) -> bool{
     if let Some(invariants) = end_state.get_location().get_invariants() {
         if !&end_state.zone_ref().has_intersection(invariants) {
@@ -47,18 +47,26 @@ fn fails_early(
 ///
 ///## Checking if a state can reach another:
 ///
-/// let is_reachable: bool = match find_path(Some(start_state), end_state, transition_system) {
-///     Some(path) => true,
-///     None => false
-/// };
+/// ```
+/// let is_reachable: bool = match find_path(Some(start_state), end_state, transition_system) { 
+///    Ok(result) => match result { 
+///        Some(path) => true, 
+///        None => false, 
+///    }, 
+///    Err(string) => panic!(string), 
+///};
+/// ```
 ///
 ///## Omitting start state:
-///
-/// let is_reachable: bool = match find_path(None, end_state, transition_system) {
-///     Some(path) => true,
-///     None => false
+/// ```
+/// let is_reachable: bool = match find_path(None, end_state, transition_system) { 
+///    Ok(result) => match result { 
+///        Some(path) => true, 
+///        None => false, 
+///    }, 
+///    Err(string) => panic!(string), 
 /// };
-///
+/// ```
 pub fn find_path(
     begin_state: Option<State>,
     end_state: State,
@@ -70,14 +78,14 @@ pub fn find_path(
     } else if let Some(s) = system.get_initial_state() {
         start_state = s;
     } else {
-        panic!("No state to start with");
+        return Err("No start state in either parameter or transition system".to_string());
     }
 
     if let Err(err) = validate_input(&start_state, &end_state, system) {
         return Err(err.to_string());
     }
 
-    if fails_early(&start_state, &end_state, system){
+    if is_trivially_uncreachable(&start_state, &end_state, system) {
         return Ok(None);
     }
 
