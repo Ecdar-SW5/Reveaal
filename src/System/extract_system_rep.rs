@@ -53,7 +53,7 @@ pub fn create_executable_query<'a>(
                 };
 
 
-                let e_state: State = match get_state(start, &machine, &system) {
+                let e_state: State = match get_state(end, &machine, &system) {
                     Ok(s) => s,
                     Err(location)=> return Err(Box::new(LocationError::InvalidLoaction(location))),
                 };
