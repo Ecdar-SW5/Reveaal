@@ -14,7 +14,7 @@ use super::save_component::PruningStrategy;
 
 pub enum QueryResult {
     Refinement(bool),
-    Reachability(bool, Vec<String>), //Skal ændre String til Edge
+    Reachability(bool, Vec<String>), //This should be changed to Vec<Edge>, once the Protobuf is ready.
     GetComponent(Component),
     Consistency(bool),
     Determinism(bool),
@@ -78,8 +78,13 @@ impl ExecutableQuery for RefinementExecutor {
 
 /// Used to store input for the reachability checker
 pub struct ReachabilityExecutor {
+    // sys represents the transition system
     pub sys: TransitionSystemPtr,
+
+    // s_state is the start state
     pub s_state: State,
+
+    // e_steate is the end state, where we want to see whether end state is reachable from start state
     pub e_state: State,
 }
 

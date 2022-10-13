@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::{error::Error, fmt};
 
 use edbm::zones::OwnedFederation;
 
@@ -13,12 +12,15 @@ use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 /// This function takes a QueryExpresssion, the system recipe, and the transitionsystem -
 /// to define a state from the QueryExpression which has clocks and locations.
 /// The QueryExpression looks like this: State(Vec<LocName>, Option<BoolExpression>)
+/// state_query is the part of the query that describes the location and the clock constraints of the state.
+/// machine defines which operators is used to define the transistion system
+/// systme is the transition system
 pub fn get_state(
-    expr: &QueryExpression,
+    state_query: &QueryExpression,
     machine: &SystemRecipe,
     system: &TransitionSystemPtr,
 ) -> Result<State, String> {
-    match expr {
+    match state_query {
         QueryExpression::State(loc, clock) => {
             let mut locations: Vec<&str> = Vec::new();
 
@@ -101,29 +103,6 @@ fn get_locationID(locations: &Vec<&str>, index: &mut usize, machine: &SystemReci
             let loc = locations[*index];
             *index += 1;
             LocationID::Simple(loc.trim().to_string())
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum LocationError {
-    InvalidLoaction(String),
-}
-
-impl Error for LocationError {
-    fn description(&self) -> &str {
-        // Both underlying errors already impl `Error`, so we defer to their
-        // implementations.
-        match self {
-            LocationError::InvalidLoaction(location) => location,
-        }
-    }
-}
-
-impl fmt::Display for LocationError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            LocationError::InvalidLoaction(location) => write!(f, "invaild location: {}", location),
         }
     }
 }
