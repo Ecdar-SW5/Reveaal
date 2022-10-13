@@ -13,7 +13,7 @@ pub fn preliminary_check(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem
-) -> Result<bool, Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error>> {
     if !system.get_all_locations().contains(start_state.get_location())
         {return Err("The transition system does not contain the start location".into())}
     if !system.get_all_locations().contains(end_state.get_location())
@@ -24,7 +24,7 @@ pub fn preliminary_check(
         }
     }
 
-    Ok(true)
+    Ok(())
 }
 
 ///# Find path
@@ -66,9 +66,8 @@ pub fn find_path(
         panic!("No state to start with");
     }
 
-    match preliminary_check(&start_state, &end_state, system) {
-        Err(msg) => panic!("{}", msg),
-        Ok(_b) => ()
+    if let Err(err) = preliminary_check(&start_state, &end_state, system) {
+        return Err(err.to_string());
     }
 
     search_algorithm(&start_state, &end_state, system)
