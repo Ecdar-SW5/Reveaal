@@ -19,7 +19,7 @@ mod reachability_parser_output_datatypes_test {
     #[test_case("reachability: Hi -> [L1](y<1); [L2]()", "Hi", "L1", "y<1", "L2", "";
     "No clock restrictions on end state")]
     // Only works with one model as argument! This test does not support m1 || m2 etc.
-    fn reachability_query_parser_output_valid(
+    fn query_parser_output_valid(
         parser_input: &str,
         machine: &str,
         start_loc: &str,
@@ -51,7 +51,7 @@ mod reachability_parser_output_datatypes_test {
     #[test_case("reachability: Hi -> [L1](y<2, y>3); [L2](y<2)", "Hi", "L1", "y<22222, y>3", "L2", "y<2";
     "Wrong clock restrictions")]
     // Only works with one model as argument! This test does not support m1 || m2 etc.
-    fn reachability_query_parser_output_invalid_values(
+    fn query_parser_output_invalid_values(
         parser_input: &str,
         machine: &str,
         start_loc: &str,
@@ -77,7 +77,7 @@ mod reachability_parser_output_datatypes_test {
     }
 
     #[test]
-    fn reachability_query_parser_output_invalid_data_type() {
+    fn query_parser_output_invalid_data_type() {
         let parserResult: QueryExpression = parse_queries::parse_to_expression_tree(
             "reachability: HalfAdm1 -> [L1](y<3); [L2](z<2)",
         )
@@ -103,7 +103,7 @@ mod reachability_parser_output_datatypes_test {
     }
 
     #[test]
-    fn reachability_query_parser_output_invalid_types_for_model() {
+    fn query_parser_output_invalid_types_for_model() {
         let parserResult: QueryExpression = parse_queries::parse_to_expression_tree(
             "reachability: HalfAdm1 || HalfAdm2 -> [L1, L2](y<3, z>1); [L3, L4](y<4, z<2)",
         )
