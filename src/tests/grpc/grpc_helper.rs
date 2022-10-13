@@ -36,7 +36,7 @@ pub fn create_initial_state() -> services::SimulationState {
                         }),
                     }],
                 }),
-                zone: Some(services::Zone {
+                federation: Some(services::Federation {
                     disjunction: Some(services::Disjunction {
                         conjunctions: vec![services::Conjunction {
                             constraints: vec![
@@ -108,7 +108,7 @@ pub fn create_state_after_taking_step() -> services::SimulationState {
                     }),
                 }],
             }),
-            zone: Some(services::Zone {
+            federation: Some(services::Federation {
                 disjunction: Some(services::Disjunction {
                     conjunctions: vec![services::Conjunction {
                         constraints: vec![
@@ -161,7 +161,7 @@ pub fn create_sample_state_component_decision_mismatch_1() -> services::Simulati
                     }),
                 }],
             }),
-            zone: Some(services::Zone {
+            federation: Some(services::Federation {
                 disjunction: Some(services::Disjunction {
                     conjunctions: vec![services::Conjunction {
                         constraints: vec![
@@ -250,7 +250,7 @@ pub fn create_sample_state_component_decision_mismatch_2() -> services::Simulati
                         }),
                     }],
                 }),
-                zone: Some(services::Zone {
+                federation: Some(services::Federation {
                     disjunction: Some(services::Disjunction {
                         conjunctions: vec![services::Conjunction {
                             constraints: vec![

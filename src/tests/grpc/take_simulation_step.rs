@@ -156,7 +156,7 @@ mod test {
 
         let chosen_source = services::State {
             location_tuple: None,
-            zone: None,
+            federation: None,
         };
         let chosen_edge = services::Edge {
             id: "".to_string(),
@@ -192,7 +192,7 @@ mod test {
 
         let chosen_source = services::State {
             location_tuple: None,
-            zone: None,
+            federation: None,
         };
         let chosen_edge = services::Edge {
             id: "".to_string(),
