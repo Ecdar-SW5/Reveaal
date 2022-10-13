@@ -9,7 +9,7 @@ pub mod reachability_test_helper_functions {
         if string_in_invariant_format.is_empty() {
             None
         } else {
-            Some(Box::new(parse(&string.replace(',', "&&")).unwrap()))
+            Some(Box::new(parse(string_in_invariant_format).unwrap()))
         }
     }
     /// Helper function which converts a string to a Vec<Box<QueryExpression::LocName("")>>>
