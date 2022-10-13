@@ -200,12 +200,15 @@ fn validate_reachability_input(
     machine: &SystemRecipe,
     start: &QueryExpression,
     end: &QueryExpression,
-) -> Result<(),String> {
+) -> Result<(), String> {
     let components: usize = count_component(machine);
 
     for (state, str) in [(start, "start"), (end, "end")] {
         if component_to_location_count_equal(components, state) {
-            return Err(format!("The number of automata does not match the number of locations in the {}",str));
+            return Err(format!(
+                "The number of automata does not match the number of locations in the {}",
+                str
+            ));
         }
     }
     Ok(())
@@ -213,16 +216,10 @@ fn validate_reachability_input(
 
 fn count_component(system: &SystemRecipe) -> usize {
     match system {
-        SystemRecipe::Composition(left, right) => {
-            count_component(left) + count_component(right) 
-        }
-        SystemRecipe::Conjunction(left, right) => {
-            count_component(left) + count_component(right) 
-        }
-        SystemRecipe::Quotient(left, right, _) => {
-            count_component(left) + count_component(right) 
-        }
-        SystemRecipe::Component(_) => 1
+        SystemRecipe::Composition(left, right) => count_component(left) + count_component(right),
+        SystemRecipe::Conjunction(left, right) => count_component(left) + count_component(right),
+        SystemRecipe::Quotient(left, right, _) => count_component(left) + count_component(right),
+        SystemRecipe::Component(_) => 1,
     }
 }
 
