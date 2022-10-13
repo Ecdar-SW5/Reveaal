@@ -9,7 +9,7 @@ pub struct Path {
     //transition: Transition,
 }
 
-pub fn preliminary_check(
+pub fn validate_input(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem
@@ -18,15 +18,22 @@ pub fn preliminary_check(
         {return Err("The transition system does not contain the start location".into())}
     if !system.get_all_locations().contains(end_state.get_location())
         {return Err("The transition system does not contain the end location".into())}
-    if let Some(invariants) = end_state.get_location().get_invariants() {
-        if !&end_state.zone_ref().has_intersection(invariants) {
-            return Err("The desired end state is not allowed due to the invariant on this location".into())
-        }
-    }
 
     Ok(())
 }
 
+fn fails_early(
+    start_state: &State,
+    end_state: &State,
+    system: &dyn TransitionSystem
+) -> bool{
+    if let Some(invariants) = end_state.get_location().get_invariants() {
+        if !&end_state.zone_ref().has_intersection(invariants) {
+            return true;
+        }
+    }
+    false
+}
 ///# Find path
 ///
 /// Returns a path from a start state to an end state in a transition system.
@@ -66,8 +73,12 @@ pub fn find_path(
         panic!("No state to start with");
     }
 
-    if let Err(err) = preliminary_check(&start_state, &end_state, system) {
+    if let Err(err) = validate_input(&start_state, &end_state, system) {
         return Err(err.to_string());
+    }
+
+    if fails_early(&start_state, &end_state, system){
+        return Ok(None);
     }
 
     search_algorithm(&start_state, &end_state, system)
@@ -83,7 +94,7 @@ pub fn search_algorithm(
     let mut visited_states:HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
 
     // List of states that are to be visited
-    let frontier_states: &mut Vec<State> = &mut Vec::new();
+    let mut frontier_states: Vec<State> = Vec::new();
 
     frontier_states.push(start_state.clone());
     loop {
@@ -98,7 +109,7 @@ pub fn search_algorithm(
         }
         for action in system.get_actions(){
             for transition in &system.next_transitions(&next_state.decorated_locations, &action){
-                take_transition(&next_state, transition, frontier_states, &mut visited_states, system);
+                take_transition(&next_state, transition, &mut frontier_states, &mut visited_states, system);
             }
         }
     };
