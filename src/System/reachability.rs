@@ -9,14 +9,15 @@ pub struct Path {
     //transition: Transition,
 }
 
-pub fn validate_input(
+fn validate_input(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem
 ) -> Result<(), Box<dyn std::error::Error>> {
-    if !system.get_all_locations().contains(start_state.get_location())
+    let locations = system.get_all_locations();
+    if !locations.contains(start_state.get_location())
         {return Err("The transition system does not contain the start location".into())}
-    if !system.get_all_locations().contains(end_state.get_location())
+    if !locations.contains(end_state.get_location())
         {return Err("The transition system does not contain the end location".into())}
 
     Ok(())
@@ -104,7 +105,7 @@ pub fn search_algorithm(
             break;
         }
         let next_state = next_state.unwrap();
-        if reached_end_state(&next_state, &end_state) {
+        if reached_end_state(&next_state, end_state) {
             return Ok(Some(Path{}))/* TODO: Return the actual path */
         }
         for action in system.get_actions(){
