@@ -65,7 +65,9 @@ mod test {
 
     fn create_expected_response_to_malformed_component_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument("Malformed component, bad json"))
+        Err(tonic::Status::invalid_argument(
+            "Malformed component, bad json",
+        ))
     }
 
     fn create_malformed_composition_request() -> Request<SimulationStartRequest> {
@@ -74,6 +76,8 @@ mod test {
 
     fn create_expected_response_to_malformed_composition_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument("Malformed composition, bad expression"))
+        Err(tonic::Status::invalid_argument(
+            "Malformed composition, bad expression",
+        ))
     }
 }
