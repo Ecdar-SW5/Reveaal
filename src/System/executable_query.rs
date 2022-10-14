@@ -13,11 +13,17 @@ use super::save_component::PruningStrategy;
 
 pub enum QueryResult {
     Refinement(bool),
-    Reachability(bool, Vec<String>), //This should be changed to Vec<Edge>, once the Protobuf is ready.
+    Reachability(bool, Vec<Edge>), // This represents a path from start state to end state
     GetComponent(Component),
     Consistency(bool),
     Determinism(bool),
     Error(String),
+}
+
+/// When egde is fully defined in protobuf it will:
+/// Serves as a representation of a transition you can take in the transision system.
+pub struct Edge {
+    id: String,
 }
 
 impl QueryResult {
@@ -91,7 +97,7 @@ impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
         let (sys, s_state, e_state) = (self.sys, self.s_state, self.e_state);
 
-        QueryResult::Error("Not implemented yet".to_string())
+        unimplemented!();
     }
 }
 
