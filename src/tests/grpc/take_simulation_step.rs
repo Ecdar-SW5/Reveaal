@@ -1,13 +1,12 @@
 #[cfg(test)]
 mod test {
     use crate::tests::grpc::grpc_helper::{
-        create_sample_json_component,
-        create_simulation_step_request,
-        create_decision_point_after_taking_E5, create_initial_decision_point, create_state_not_in_machine, create_edges_from_L5, create_state_setup_for_mismatch, create_empty_state, create_simulation_info_from, create_empty_edge,
+        create_decision_point_after_taking_E5, create_edges_from_L5, create_empty_edge,
+        create_empty_state, create_initial_decision_point, create_sample_json_component,
+        create_simulation_info_from, create_simulation_step_request, create_state_not_in_machine,
+        create_state_setup_for_mismatch,
     };
-    use crate::ProtobufServer::services::{
-        SimulationStepRequest, SimulationStepResponse
-    };
+    use crate::ProtobufServer::services::{SimulationStepRequest, SimulationStepResponse};
     use crate::ProtobufServer::{self, services::ecdar_backend_server::EcdarBackend};
     use test_case::test_case;
     use tonic::{self, Request, Response, Status};
@@ -62,7 +61,8 @@ mod test {
     // (L5,y>=0)=====tea! E5=====>
     //
     fn create_good_request() -> tonic::Request<SimulationStepRequest> {
-        let simulation_info = create_simulation_info_from(String::from("Machine"), create_sample_json_component());
+        let simulation_info =
+            create_simulation_info_from(String::from("Machine"), create_sample_json_component());
         let initial_decision_point = create_initial_decision_point();
         let chosen_source = initial_decision_point.source.clone().unwrap();
         let chosen_edge = initial_decision_point.edges[1].clone();
@@ -82,7 +82,8 @@ mod test {
     }
 
     fn create_mismatched_request_1() -> Request<SimulationStepRequest> {
-        let simulation_info = create_simulation_info_from(String::from("Machine"), create_sample_json_component());
+        let simulation_info =
+            create_simulation_info_from(String::from("Machine"), create_sample_json_component());
         let chosen_source = create_state_not_in_machine();
         let chosen_edge = create_edges_from_L5()[0].clone();
 
@@ -95,11 +96,14 @@ mod test {
 
     fn create_expected_response_to_mismatched_request_1(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument("Mismatch between decision and system, state not in system"))
+        Err(tonic::Status::invalid_argument(
+            "Mismatch between decision and system, state not in system",
+        ))
     }
 
     fn create_mismatched_request_2() -> Request<SimulationStepRequest> {
-        let simulation_info = create_simulation_info_from(String::from("Machine"), create_sample_json_component());
+        let simulation_info =
+            create_simulation_info_from(String::from("Machine"), create_sample_json_component());
 
         let chosen_source = create_state_setup_for_mismatch();
         let chosen_edge = create_edges_from_L5()[1].clone(); // Should not be able to choose this edge
@@ -112,7 +116,9 @@ mod test {
 
     fn create_expected_response_to_mismatched_request_2(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument("Mismatch between decision and system, could not make transition"))
+        Err(tonic::Status::invalid_argument(
+            "Mismatch between decision and system, could not make transition",
+        ))
     }
 
     fn create_malformed_component_request() -> Request<SimulationStepRequest> {
@@ -135,7 +141,8 @@ mod test {
     }
 
     fn create_malformed_composition_request() -> Request<SimulationStepRequest> {
-        let simulation_info = create_simulation_info_from(String::from(""), create_sample_json_component());
+        let simulation_info =
+            create_simulation_info_from(String::from(""), create_sample_json_component());
         let chosen_source = create_empty_state();
         let chosen_edge = create_empty_edge();
 
@@ -148,8 +155,6 @@ mod test {
 
     fn create_response_to_malformed_composition_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(Status::invalid_argument(
-            "Malformed composition",
-        ))
+        Err(Status::invalid_argument("Malformed composition"))
     }
 }

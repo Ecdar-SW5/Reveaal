@@ -1,15 +1,15 @@
 use tonic::Request;
 
 use crate::ProtobufServer::services::{
-    self, Component, ComponentsInfo, Location, LocationTuple, SimulationStartRequest,
-    SimulationStepRequest, SpecificComponent, DecisionPoint, SimulationInfo, State, Edge,
+    self, Component, ComponentsInfo, DecisionPoint, Edge, Location, LocationTuple, SimulationInfo,
+    SimulationStartRequest, SimulationStepRequest, SpecificComponent, State,
 };
 use std::fs;
 
 static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
 
 pub fn create_edges_from_L5() -> Vec<Edge> {
-     vec![
+    vec![
         Edge {
             id: "E3".to_string(),
             specific_component: Some(SpecificComponent {
@@ -34,15 +34,15 @@ pub fn create_1tuple_state_with_single_constraint(
     clock_x_name: &str,
     clock_y_name: &str,
     clock_constraint: i32,
-   is_constrain_strict: bool
-) -> State{
+    is_constrain_strict: bool,
+) -> State {
     State {
         location_tuple: Some(LocationTuple {
             locations: vec![Location {
                 id: String::from(id),
                 specific_component: Some(SpecificComponent {
                     component_name: String::from(component_name),
-                    component_index: component_index
+                    component_index: component_index,
                 }),
             }],
         }),
@@ -85,15 +85,9 @@ pub fn create_1tuple_state_with_single_constraint(
 pub fn create_initial_decision_point() -> DecisionPoint {
     DecisionPoint {
         source: Some(create_1tuple_state_with_single_constraint(
-            "L5",
-            "Machine",
-            0,
-            "0",
-            "y",
-            0,
-            false
+            "L5", "Machine", 0, "0", "y", 0, false,
         )),
-        edges: create_edges_from_L5()
+        edges: create_edges_from_L5(),
     }
 }
 
@@ -111,15 +105,9 @@ pub fn create_sample_json_component() -> String {
 pub fn create_decision_point_after_taking_E5() -> DecisionPoint {
     DecisionPoint {
         source: Some(create_1tuple_state_with_single_constraint(
-            "L5",
-            "Machine",
-            0,
-            "0",
-            "y",
-            -2,
-            false
+            "L5", "Machine", 0, "0", "y", -2, false,
         )),
-        edges: create_edges_from_L5()
+        edges: create_edges_from_L5(),
     }
 }
 
@@ -130,15 +118,7 @@ pub fn create_decision_point_after_taking_E5() -> DecisionPoint {
 // (ε,y>=0)-------tea! E5----->
 //
 pub fn create_state_not_in_machine() -> State {
-    create_1tuple_state_with_single_constraint(
-        "",
-        "Machine",
-        0,
-        "0",
-        "y",
-        0,
-        false
-    )
+    create_1tuple_state_with_single_constraint("", "Machine", 0, "0", "y", 0, false)
 }
 
 pub fn create_simulation_step_request(
@@ -160,29 +140,19 @@ pub fn create_simulation_start_request(
     component_json: String,
 ) -> Request<SimulationStartRequest> {
     Request::new(SimulationStartRequest {
-        simulation_info: Some(
-            create_simulation_info_from(composition, component_json)
-        )
+        simulation_info: Some(create_simulation_info_from(composition, component_json)),
     })
 }
 
-
+// create a state such that can't transition via E5
 pub fn create_state_setup_for_mismatch() -> State {
-    create_1tuple_state_with_single_constraint(
-        "L5",
-        "Machine",
-        0,
-        "y",
-        "0",
-        2,
-        true
-    )
+    create_1tuple_state_with_single_constraint("L5", "Machine", 0, "y", "0", 2, true)
 }
 
 pub fn create_empty_state() -> State {
     State {
-            location_tuple: None,
-            federation: None,
+        location_tuple: None,
+        federation: None,
     }
 }
 
@@ -193,10 +163,7 @@ pub fn create_empty_edge() -> Edge {
     }
 }
 
-pub fn create_simulation_info_from(
-    composition: String, 
-    component_json: String
-) -> SimulationInfo {
+pub fn create_simulation_info_from(composition: String, component_json: String) -> SimulationInfo {
     SimulationInfo {
         component_composition: composition,
         components_info: Some(ComponentsInfo {
