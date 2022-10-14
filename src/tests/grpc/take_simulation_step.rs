@@ -136,7 +136,7 @@ mod test {
     fn create_response_to_malformed_component_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
         Err(Status::invalid_argument(
-            "Malformed component, please don't modify the simulation state",
+            "Malformed component, bad json",
         ))
     }
 
@@ -155,6 +155,6 @@ mod test {
 
     fn create_response_to_malformed_composition_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(Status::invalid_argument("Malformed composition"))
+        Err(Status::invalid_argument("Malformed composition, bad expression"))
     }
 }
