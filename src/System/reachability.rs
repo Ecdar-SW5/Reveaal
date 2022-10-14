@@ -46,19 +46,18 @@ fn is_trivially_uncreachable(
 /// The start state can be omitted with None to use the start state of the transition system.
 ///
 ///## Checking if a state can reach another:
-///
-/// ```
+/// ```ignore
 /// let is_reachable: bool = match find_path(Some(start_state), end_state, transition_system) { 
 ///    Ok(result) => match result { 
 ///        Some(path) => true, 
 ///        None => false, 
 ///    }, 
 ///    Err(string) => panic!(string), 
-///};
+/// };
 /// ```
 ///
 ///## Omitting start state:
-/// ```
+/// ```ignore
 /// let is_reachable: bool = match find_path(None, end_state, transition_system) { 
 ///    Ok(result) => match result { 
 ///        Some(path) => true, 
