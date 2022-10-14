@@ -9,6 +9,7 @@ pub mod test {
         component: &Component,
         expected_edges: HashSet<String>
     ){
+        let mut actual_edges: HashSet<String> = HashSet::new();
 
         for edge in &component.edges {
             let mut dependentClocks = HashSet::new();
@@ -26,8 +27,12 @@ pub mod test {
 
 
             let edge_id = format!("{}-{}->{}", edge.source_location, sortedClocks, edge.target_location);
-            assert!(expected_edges.contains(&edge_id), "Expected edge with id {} to be present", edge_id);
+
+            assert!(!actual_edges.contains(&edge_id), "Duplicate edge: {}", edge_id);
+
+            actual_edges.insert(edge_id);
         }
+        assert!(expected_edges.is_subset(&actual_edges) && expected_edges.len() == actual_edges.len(), "Expected these edges {:?} but got {:?}", expected_edges, actual_edges)
     }
 
     pub fn assert_duplicated_clock_detection(redundant_clocks: &Vec<RedundantClock>, expected_amount_to_reduce: u32, expected_duplicate_clocks: HashSet<&str>, unused_allowed: bool) {
