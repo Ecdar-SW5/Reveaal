@@ -418,7 +418,7 @@ pub struct RedundantClock {
     pub(crate) location_indices: Vec<usize>,
     ///Reason for why the clock is declared redundant.
     pub(crate) reason: ClockReductionReason,
-    /// Which updates clock occurs in. Key is index of edge ond Value is the index for the update
+    /// Which updates clock occurs in. Key is index of edge and Value is the index for the update
     pub(crate) updates: HashMap<usize, usize>,
 }
 

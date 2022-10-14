@@ -98,7 +98,6 @@ impl ProjectLoader for JsonProjectLoader {
 impl JsonProjectLoader {
     #[allow(clippy::new_ret_no_self)]
     pub fn new(project_path: String) -> Box<dyn ProjectLoader> {
-        println!("{}", std::env::current_dir().unwrap().to_str().unwrap());
         let system_declarations = json_reader::read_system_declarations(&project_path).unwrap();
         let queries = json_reader::read_queries(&project_path).unwrap();
 
