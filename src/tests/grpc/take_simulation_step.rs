@@ -1,13 +1,12 @@
 #[cfg(test)]
 mod test {
     use crate::tests::grpc::grpc_helper::{
-        create_initial_state, create_sample_json_component,
-        create_sample_state_component_decision_mismatch_1,
-        create_sample_state_component_decision_mismatch_2, create_simulation_step_request,
-        create_state_after_taking_step,
+        create_sample_json_component,
+        create_simulation_step_request,
+        create_decision_point_after_taking_E5, create_initial_decision_point, create_state_not_in_machine, create_edges_from_L5, create_state_setup_for_mismatch, create_empty_state, create_simulation_info_from, create_empty_edge,
     };
     use crate::ProtobufServer::services::{
-        self, Component, ComponentsInfo, SimulationStepRequest, SimulationStepResponse,
+        SimulationStepRequest, SimulationStepResponse
     };
     use crate::ProtobufServer::{self, services::ecdar_backend_server::EcdarBackend};
     use test_case::test_case;
@@ -19,19 +18,14 @@ mod test {
         "given a good request, responds with correct state"
     )]
     #[test_case(
-        create_decision_not_in_decision_points_request(),
-        create_expected_response_to_decision_not_in_decision_points_request();
-        "given a request where decision not in decision points, responds with invalid argument"
-    )]
-    #[test_case(
         create_mismatched_request_1(),
         create_expected_response_to_mismatched_request_1();
-        "given a request with component decision mismatch, decision referencing nonexistent location in component, responds with invalid argument"
+        "given a request with component decision mismatch, decision referencing source not in the set of states, responds with invalid argument"
     )]
     #[test_case(
         create_mismatched_request_2(),
         create_expected_response_to_mismatched_request_2();
-        "given a request with component decision mismatch, decision taking edge that is not possible, responds with invalid argument"
+        "given a request with component decision mismatch, decision making transition that is not possible, responds with invalid argument"
     )]
     #[test_case(
         create_malformed_component_request(),
@@ -68,11 +62,13 @@ mod test {
     // (L5,y>=0)=====tea! E5=====>
     //
     fn create_good_request() -> tonic::Request<SimulationStepRequest> {
-        let current_state = create_initial_state();
-        let chosen_source = current_state.decision_points[0].source.clone().unwrap();
-        let chosen_edge = current_state.decision_points[0].edges[1].clone();
+        let simulation_info = create_simulation_info_from(String::from("Machine"), create_sample_json_component());
+        let initial_decision_point = create_initial_decision_point();
+        let chosen_source = initial_decision_point.source.clone().unwrap();
+        let chosen_edge = initial_decision_point.edges[1].clone();
+
         tonic::Request::new(create_simulation_step_request(
-            current_state,
+            simulation_info,
             chosen_source,
             chosen_edge,
         ))
@@ -81,40 +77,17 @@ mod test {
     fn create_expected_response_to_good_request() -> Result<Response<SimulationStepResponse>, Status>
     {
         Ok(Response::new(SimulationStepResponse {
-            new_state: Some(create_state_after_taking_step()),
+            new_decision_point: Some(create_decision_point_after_taking_E5()),
         }))
     }
 
-    fn create_decision_not_in_decision_points_request() -> Request<SimulationStepRequest> {
-        let current_state = create_initial_state();
-
-        let chosen_source = current_state.decision_points[0].source.clone().unwrap();
-        // clearly "" is not in {"E3", "E5"}
-        let chosen_edge = services::Edge {
-            id: "".to_string(),
-            specific_component: None,
-        };
-
-        Request::new(create_simulation_step_request(
-            current_state,
-            chosen_source,
-            chosen_edge,
-        ))
-    }
-
-    fn create_expected_response_to_decision_not_in_decision_points_request(
-    ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument(
-            "Decision not present in decision points",
-        ))
-    }
-
     fn create_mismatched_request_1() -> Request<SimulationStepRequest> {
-        let mismatched_state = create_sample_state_component_decision_mismatch_1();
-        let chosen_source = mismatched_state.decision_points[0].source.clone().unwrap();
-        let chosen_edge = mismatched_state.decision_points[0].edges[1].clone();
+        let simulation_info = create_simulation_info_from(String::from("Machine"), create_sample_json_component());
+        let chosen_source = create_state_not_in_machine();
+        let chosen_edge = create_edges_from_L5()[0].clone();
+
         tonic::Request::new(create_simulation_step_request(
-            mismatched_state,
+            simulation_info,
             chosen_source,
             chosen_edge,
         ))
@@ -122,16 +95,16 @@ mod test {
 
     fn create_expected_response_to_mismatched_request_1(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument("Mismatch between decision points and component, please don't modify the simulation state"))
+        Err(tonic::Status::invalid_argument("Mismatch between decision and system, state not in system"))
     }
 
     fn create_mismatched_request_2() -> Request<SimulationStepRequest> {
-        let current_state = create_sample_state_component_decision_mismatch_2();
+        let simulation_info = create_simulation_info_from(String::from("Machine"), create_sample_json_component());
 
-        let chosen_source = current_state.decision_points[0].source.clone().unwrap();
-        let chosen_edge = current_state.decision_points[0].edges[1].clone();
+        let chosen_source = create_state_setup_for_mismatch();
+        let chosen_edge = create_edges_from_L5()[1].clone(); // Should not be able to choose this edge
         Request::new(create_simulation_step_request(
-            current_state,
+            simulation_info,
             chosen_source,
             chosen_edge,
         ))
@@ -139,31 +112,16 @@ mod test {
 
     fn create_expected_response_to_mismatched_request_2(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument("Mismatch between decision points and component, please don't modify the simulation state"))
+        Err(tonic::Status::invalid_argument("Mismatch between decision and system, could not make transition"))
     }
 
     fn create_malformed_component_request() -> Request<SimulationStepRequest> {
-        let current_state = services::SimulationState {
-            component_composition: String::from(""),
-            components_info: Some(ComponentsInfo {
-                components: vec![Component {
-                    rep: Some(services::component::Rep::Json(String::from(""))),
-                }],
-                components_hash: 0, // TODO this is incorrect
-            }),
-            decision_points: vec![],
-        };
+        let simulation_info = create_simulation_info_from(String::from(""), String::from(""));
+        let chosen_source = create_empty_state();
+        let chosen_edge = create_empty_edge();
 
-        let chosen_source = services::State {
-            location_tuple: None,
-            federation: None,
-        };
-        let chosen_edge = services::Edge {
-            id: "".to_string(),
-            specific_component: None,
-        };
         Request::new(create_simulation_step_request(
-            current_state,
+            simulation_info,
             chosen_source,
             chosen_edge,
         ))
@@ -177,29 +135,12 @@ mod test {
     }
 
     fn create_malformed_composition_request() -> Request<SimulationStepRequest> {
-        let current_state = services::SimulationState {
-            component_composition: String::from(""),
-            components_info: Some(ComponentsInfo {
-                components: vec![Component {
-                    rep: Some(services::component::Rep::Json(
-                        create_sample_json_component(),
-                    )),
-                }],
-                components_hash: 0, // TODO this is incorrect
-            }),
-            decision_points: vec![],
-        };
+        let simulation_info = create_simulation_info_from(String::from(""), create_sample_json_component());
+        let chosen_source = create_empty_state();
+        let chosen_edge = create_empty_edge();
 
-        let chosen_source = services::State {
-            location_tuple: None,
-            federation: None,
-        };
-        let chosen_edge = services::Edge {
-            id: "".to_string(),
-            specific_component: None,
-        };
         Request::new(create_simulation_step_request(
-            current_state,
+            simulation_info,
             chosen_source,
             chosen_edge,
         ))
@@ -208,7 +149,7 @@ mod test {
     fn create_response_to_malformed_composition_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
         Err(Status::invalid_argument(
-            "Malformed composition, please don't modify the simulation state",
+            "Malformed composition",
         ))
     }
 }

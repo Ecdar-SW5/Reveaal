@@ -2,7 +2,7 @@ use std::panic::AssertUnwindSafe;
 
 use crate::DataReader::component_loader::{ComponentContainer};
 
-use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
+use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse, DecisionPoint};
 use crate::extract_system_rep::get_system_recipe;
 use crate::parse_queries::parse_to_expression_tree;
 
@@ -33,10 +33,14 @@ impl ConcreteEcdarBackend {
         let transition_system = get_system_recipe(&composition_as_expression_tree[0], &mut component_container, &mut dimension, &mut None).compile(dimension);
 
         // Send the combine component to the Simulation module
-        let initial_decision_point = get_initial_decision_from(transition_system);
+        let initial_decision_point = DecisionPoint {
+            source: todo!(),
+            edges: todo!(),
+        };
+        // get_initial_decision_from(transition_system);
 
         // Serialize and respond with the SimulationState result from the simulation module
-        let simulation_step_response = SimulationStepResponse {new_decision_point: initial_decision_point};
+        let simulation_step_response = SimulationStepResponse {new_decision_point: Some(initial_decision_point)};
 
         Ok(Response::new(simulation_step_response))
     }

@@ -2,7 +2,7 @@
 mod test {
     use crate::{
         tests::grpc::grpc_helper::{
-            create_initial_state, create_sample_json_component, create_simulation_start_request,
+            create_sample_json_component, create_simulation_start_request, create_initial_decision_point,
         },
         ProtobufServer::{
             self,
@@ -54,7 +54,7 @@ mod test {
     fn create_expected_response_to_good_request() -> Result<Response<SimulationStepResponse>, Status>
     {
         Ok(Response::new(SimulationStepResponse {
-            new_state: Some(create_initial_state()),
+            new_decision_point: Some(create_initial_decision_point())
         }))
     }
 
