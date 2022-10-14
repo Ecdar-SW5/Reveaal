@@ -1,13 +1,13 @@
 use std::collections::HashSet;
 
-use crate::{ModelObjects::component::{Channel, Component, Location}, TransitionSystems::{TransitionSystemPtr, LocationTuple}};
+use crate::{ModelObjects::{component::{Channel, Component, Location}, self}, TransitionSystems::{TransitionSystemPtr, LocationTuple, TransitionSystem}};
 
 #[derive(Clone)]
 #[allow(dead_code)]
 pub struct SimulationComponent {
     transition_system: TransitionSystemPtr,
-    locations: Vec<LocationTuple>,
     valid_actions: HashSet<String>,
+    state: Vec<ModelObjects::component::State>
     // valid_transitions: Vec<&'a Edge>,
 }
 
@@ -16,19 +16,32 @@ impl SimulationComponent {
         Self {
             valid_actions: transitionSystem.get_actions(),
             transition_system: transitionSystem.clone(),
-            locations: vec![get_initial_location(transitionSystem)],
+            state: vec![get_inital_state(transitionSystem)],
             }
         }
+
+    pub fn use_transition(&self, action: String, State: ModelObjects::component::State) {
+        
     }
+}
     
-    fn get_initial_location(transitionSystem: TransitionSystemPtr) -> LocationTuple
-    {
+    fn get_initial_location(transitionSystem: TransitionSystemPtr) -> LocationTuple {
         let initialLocation = match transitionSystem.get_initial_location() {
             None => panic!("no initial location found"),
             Some(x) => x.clone(),
         };
         initialLocation
     }
+
+    fn get_inital_state(transitionSystem: TransitionSystemPtr) -> ModelObjects::component::State {
+        let initialState = match transitionSystem.get_initial_state() {
+            None => panic!("Initial state is empty"),
+            Some(x) => x.clone(),
+        };
+        initialState
+    }
+
+
     
 
 
@@ -38,12 +51,12 @@ pub fn continue_simulation(
     _action: Channel,
 ) -> SimulationComponent {
     // let start_location: Location = input_component.location;
-    //let action_taken: Channel = action;
+    // let action_taken: Channel = action;
 
     // Check the allowed actions from start location to edges.
     // Can this be done with the intersection Casper explained?
     // let new_edges: Vec<SimulationComponent::component::Edge> = vec![];
-    //let input_edges = simulation_component.get_next_edges(start_location, action_taken.to_string(), SimulationComponent:component::SyncType::Input);
+    // let input_edges = simulation_component.get_next_edges(start_location, action_taken.to_string(), SimulationComponent:component::SyncType::Input);
 
     simulation_component
 }
