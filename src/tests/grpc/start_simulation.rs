@@ -1,12 +1,13 @@
 #[cfg(test)]
 mod test {
     use crate::{
-        tests::grpc::grpc_helper::{create_initial_state, create_sample_json_component, create_simulation_start_request},
+        tests::grpc::grpc_helper::{
+            create_initial_state, create_sample_json_component, create_simulation_start_request,
+        },
         ProtobufServer::{
             self,
             services::{
-                ecdar_backend_server::EcdarBackend,
-                SimulationStartRequest, SimulationStepResponse,
+                ecdar_backend_server::EcdarBackend, SimulationStartRequest, SimulationStepResponse,
             },
         },
     };
@@ -47,10 +48,7 @@ mod test {
     }
 
     fn create_good_request() -> Request<SimulationStartRequest> {
-        create_simulation_start_request(
-            String::from("Machine"),
-            create_sample_json_component()
-        )
+        create_simulation_start_request(String::from("Machine"), create_sample_json_component())
     }
 
     fn create_expected_response_to_good_request() -> Result<Response<SimulationStepResponse>, Status>
@@ -60,29 +58,21 @@ mod test {
         }))
     }
 
-    fn create_malformed_component_request() -> Request<SimulationStartRequest> { 
-        create_simulation_start_request(
-            String::from(""), 
-            String::from("")
-        )
+    fn create_malformed_component_request() -> Request<SimulationStartRequest> {
+        create_simulation_start_request(String::from(""), String::from(""))
     }
 
-    fn create_expected_response_to_malformed_component_request() -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument(
-            "Malformed component",
-        ))
+    fn create_expected_response_to_malformed_component_request(
+    ) -> Result<Response<SimulationStepResponse>, Status> {
+        Err(tonic::Status::invalid_argument("Malformed component"))
     }
 
-    fn create_malformed_composition_request() -> Request<SimulationStartRequest> { 
-        create_simulation_start_request(
-            String::from(""), 
-            create_sample_json_component()
-        )
+    fn create_malformed_composition_request() -> Request<SimulationStartRequest> {
+        create_simulation_start_request(String::from(""), create_sample_json_component())
     }
 
-    fn create_expected_response_to_malformed_composition_request() -> Result<Response<SimulationStepResponse>, Status> {
-        Err(tonic::Status::invalid_argument(
-            "Malformed composition",
-        ))
+    fn create_expected_response_to_malformed_composition_request(
+    ) -> Result<Response<SimulationStepResponse>, Status> {
+        Err(tonic::Status::invalid_argument("Malformed composition"))
     }
 }
