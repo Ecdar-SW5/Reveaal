@@ -1,8 +1,8 @@
 use std::panic::AssertUnwindSafe;
 
-use crate::DataReader::component_loader::{ComponentContainer, self};
+use crate::DataReader::component_loader::{ComponentContainer};
 
-use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse, SimulationState};
+use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
 use crate::extract_system_rep::get_system_recipe;
 use crate::parse_queries::parse_to_expression_tree;
 
@@ -20,8 +20,9 @@ impl ConcreteEcdarBackend {
         trace!("Received query: {:?}", request);
         
         let request_message = request.0.into_inner();
-        let component_info = request_message.components_info.unwrap();
-        let composition = request_message.component_composition;
+        let simulation_info = request_message.simulation_info.unwrap();
+        let composition = simulation_info.component_composition;
+        let component_info = simulation_info.components_info.unwrap();
 
         // Extract components from the request message
         let mut component_container = ComponentContainer::from(&component_info).unwrap();
@@ -35,12 +36,7 @@ impl ConcreteEcdarBackend {
         let initial_decision_point = get_initial_decision_from(transition_system);
 
         // Serialize and respond with the SimulationState result from the simulation module
-        let initial_simulation_state = SimulationState{
-            component_composition: composition,
-            components_info: Some(component_info),
-            decision_points: vec![initial_decision_point],
-        };
-        let simulation_step_response = SimulationStepResponse { new_state: Some(initial_simulation_state) };
+        let simulation_step_response = SimulationStepResponse {new_decision_point: initial_decision_point};
 
         Ok(Response::new(simulation_step_response))
     }
