@@ -22,10 +22,14 @@ pub mod test {
                 }
                 ClockReductionReason::Unused => {
                     assert!(unused_allowed, "Unexpected unused optimization");
+                    assert!(expected_duplicate_clocks.contains(&redundancy.clock.as_str()), "Clock ({}) is not set as unused, but is not in expected", redundancy.clock
+                        .as_str());
+                    assert!(!clocksReduced.contains(&redundancy.clock), "Clock {} has been removed multiple times", redundancy.clock);
+                    clocksReduced.insert(redundancy.clock.clone());
                 }
             }
         }
-        assert_eq!(clocksReduced.len(), 2, "Too many clocks were reduced, expected only 2, got {}", clocksReduced.len());
+        assert_eq!(clocksReduced.len(), expected_amount_to_reduce as usize, "Too many clocks were reduced, expected only {}, got {}",expected_amount_to_reduce, clocksReduced.len());
     }
 
     pub fn get_dependent_clocks(expr: &BoolExpression, out: &mut HashSet<String>) {

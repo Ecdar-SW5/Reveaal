@@ -1,0 +1,239 @@
+{
+  "name": "Component3",
+  "declarations": "clock c,v,b;",
+  "locations": [
+    {
+      "id": "L5",
+      "nickname": "",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 75.00000000000001,
+      "y": 110.0,
+      "color": "5",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L12",
+      "nickname": "",
+      "invariant": "b \u003c 12 ",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 311.9230969230769,
+      "y": 120.00000000000001,
+      "color": "5",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L13",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 340.00001999999995,
+      "y": 356.9230769230769,
+      "color": "5",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L14",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 78.46155846153847,
+      "y": 361.53846153846155,
+      "color": "5",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L15",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 162.69232769230769,
+      "y": 231.15384615384613,
+      "color": "5",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L16",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 291.1538661538461,
+      "y": 526.1538461538462,
+      "color": "5",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "E9",
+      "group": "",
+      "sourceLocation": "L5",
+      "targetLocation": "L12",
+      "status": "INPUT",
+      "select": "",
+      "guard": "v \u003e 1",
+      "update": "",
+      "sync": "good",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 130.0,
+          "y": 109.99999999999999,
+          "propertyType": "GUARD",
+          "propertyX": 9.999999999999972,
+          "propertyY": -60.0
+        },
+        {
+          "x": 189.6153846153846,
+          "y": 111.53846153846153,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E10",
+      "group": "",
+      "sourceLocation": "L12",
+      "targetLocation": "L15",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "c \u003d 0",
+      "sync": "1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 254.23076923076923,
+          "y": 157.3076923076923,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        },
+        {
+          "x": 220.0,
+          "y": 179.99999999999997,
+          "propertyType": "UPDATE",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E11",
+      "group": "",
+      "sourceLocation": "L15",
+      "targetLocation": "L14",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "b \u003d 0",
+      "sync": "2",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 141.53846153846155,
+          "y": 270.0,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        },
+        {
+          "x": 119.99999999999999,
+          "y": 310.0,
+          "propertyType": "UPDATE",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E12",
+      "group": "",
+      "sourceLocation": "L14",
+      "targetLocation": "L16",
+      "status": "INPUT",
+      "select": "",
+      "guard": "v \u003e 15",
+      "update": "",
+      "sync": "good",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 140.0,
+          "y": 410.0,
+          "propertyType": "GUARD",
+          "propertyX": -30.0,
+          "propertyY": 20.0
+        },
+        {
+          "x": 208.46153846153845,
+          "y": 465.0,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E13",
+      "group": "",
+      "sourceLocation": "L14",
+      "targetLocation": "L13",
+      "status": "INPUT",
+      "select": "",
+      "guard": "b \u003c 9",
+      "update": "",
+      "sync": "bad",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 169.99999999999997,
+          "y": 360.0,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        },
+        {
+          "x": 250.76923076923077,
+          "y": 356.9230769230769,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "x": 137.5,
+  "y": 102.0,
+  "width": 450.0,
+  "height": 600.0,
+  "color": "5",
+  "includeInPeriodicCheck": true
+}
