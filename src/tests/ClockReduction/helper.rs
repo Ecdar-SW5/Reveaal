@@ -1,8 +1,34 @@
 pub mod test {
     use std::collections::{HashMap, HashSet};
+    use std::iter::FromIterator;
     use std::ops::Deref;
     use crate::component::{ClockReductionReason, Component, RedundantClock};
     use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
+
+    pub fn assert_removed_unused_clocks(
+        component: &Component,
+        expected_edges: HashSet<String>
+    ){
+
+        for edge in &component.edges {
+            let mut dependentClocks = HashSet::new();
+            if let Some(guard) = &edge.guard {
+                get_dependent_clocks( &guard, &mut dependentClocks);
+            }
+
+            let mut dependentClocksVec = Vec::from_iter(dependentClocks.iter());
+            let mut sortedClocks = String::new();
+            dependentClocksVec.sort();
+
+            for clock in dependentClocksVec{
+                sortedClocks = sortedClocks + clock;
+            }
+
+
+            let edge_id = format!("{}-{}->{}", edge.source_location, sortedClocks, edge.target_location);
+            assert!(expected_edges.contains(&edge_id), "Expected edge with id {} to be present", edge_id);
+        }
+    }
 
     pub fn assert_duplicated_clock_detection(redundant_clocks: &Vec<RedundantClock>, expected_amount_to_reduce: u32, expected_duplicate_clocks: HashSet<&str>, unused_allowed: bool) {
         let mut global_clock: String = String::from("");
