@@ -257,10 +257,10 @@ impl Component {
     }
 
     /// Function for reducing the clocks found on the component.
-    /// It will find the unused clocks, along with the "duplicate" clocks (clocks that are never reset)
+    /// Unused clocks and "duplicate" clocks (clocks that are never reset)
     /// and then remove them.
-    pub fn reduce_clocks(&mut self) {
-        for clock in self.find_redundant_clocks() {
+    pub fn reduce_clocks(&mut self, redundant_clocks: &Vec<RedundantClock>) {
+        for clock in redundant_clocks {
             match &clock.reason {
                 ClockReductionReason::Duplicate(global) => self.replace_clock(&clock, global),
                 ClockReductionReason::Unused => self.remove_clock(&clock.updates),

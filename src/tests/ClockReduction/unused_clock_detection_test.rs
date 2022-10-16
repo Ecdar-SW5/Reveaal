@@ -1,8 +1,7 @@
 
 #[cfg(test)]
 mod unused_clocks_tests {
-    use std::collections::{HashMap, HashSet};
-    use crate::component::RedundantClock;
+    use std::collections::HashSet;
     use crate::DataReader::json_reader::read_json_component;
     use crate::tests::ClockReduction::helper::test::{assert_duplicated_clock_detection};
 

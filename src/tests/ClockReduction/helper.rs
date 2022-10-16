@@ -4,7 +4,7 @@ pub mod test {
     use std::ops::Deref;
     use crate::component::{ClockReductionReason, Component, RedundantClock};
     use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
-
+    #[allow(dead_code)]
     pub fn assert_locations_replaced_clocks(
         component: &Component,
         expected_locations: HashSet<String>
@@ -35,6 +35,7 @@ pub mod test {
         sorted_clocks
     }
 
+    #[allow(dead_code)]
     pub fn assert_removed_unused_clocks(
         component: &Component,
         expected_edges: HashSet<String>
@@ -59,6 +60,7 @@ pub mod test {
         assert!(expected_edges.is_subset(&actual_edges) && expected_edges.len() == actual_edges.len(), "Expected these edges {:?} but got {:?}", expected_edges, actual_edges)
     }
 
+    #[allow(dead_code)]
     pub fn assert_duplicated_clock_detection(redundant_clocks: &Vec<RedundantClock>, expected_amount_to_reduce: u32, expected_duplicate_clocks: HashSet<&str>, unused_allowed: bool) {
         let mut global_clock: String = String::from("");
 
@@ -123,13 +125,14 @@ pub mod test {
                 get_dependent_clocks_arithmetic(rhs, out);
             },
 
-            ArithExpression::Clock(index) => panic!("aaaaa"),
+            ArithExpression::Clock(_index) => panic!("aaaaa"),
             ArithExpression::VarName(name) => {out.insert(name.clone());},
-            ArithExpression::Int(i) => {}
+            ArithExpression::Int(_i) => {}
 
         }
     }
 
+    #[allow(dead_code)]
     pub fn assert_correct_edges_and_locations(
         component: &Component,
         expected_locations: HashMap<String, HashSet<String>>,

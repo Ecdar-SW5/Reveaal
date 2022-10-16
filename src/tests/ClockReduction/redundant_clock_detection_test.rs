@@ -1,13 +1,8 @@
 #[cfg(test)]
 pub mod test {
     use std::collections::{HashMap, HashSet};
-    use std::hash::Hash;
-    use std::ops::Deref;
-    use crate::component::{ClockReductionReason, Component, RedundantClock};
     use crate::DataReader::json_reader::read_json_component;
-    use crate::JsonProjectLoader;
-    use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
-    use crate::tests::ClockReduction::helper::test::{assert_correct_edges_and_locations, assert_duplicated_clock_detection, get_dependent_clocks};
+    use crate::tests::ClockReduction::helper::test::{assert_correct_edges_and_locations, assert_duplicated_clock_detection};
 
     #[test]
     fn test_three_synced_clocks() {

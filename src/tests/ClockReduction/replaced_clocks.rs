@@ -1,34 +1,29 @@
 #[cfg(test)]
 pub mod test {
-    use std::collections::{HashMap, HashSet};
-    use std::fmt::format;
-    use std::hash::Hash;
+    use std::collections::HashSet;
     use std::iter::FromIterator;
-    use std::ops::Deref;
-    use crate::component::{ClockReductionReason, Component, RedundantClock};
     use crate::DataReader::json_reader::read_json_component;
-    use crate::JsonProjectLoader;
-    use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
-    use crate::tests::ClockReduction::helper::test::{assert_locations_replaced_clocks, assert_removed_unused_clocks};
+    use crate::tests::ClockReduction::helper::test::assert_removed_unused_clocks;
 
     #[test]
     pub fn test_test() {
         let mut component = read_json_component("samples/json/RedundantClocks", "Component1");
-        let mut clocks = HashSet::from(["x","y","z"]);
+        let clocks = HashSet::from(["x","y","z"]);
 
         let redundant_clocks = component.find_redundant_clocks();
-        assert!(redundant_clocks.len() == 2, "Expected only two redundant clocks, but got {}", redundant_clocks.len());
+        asserteq!(redundant_clocks.len(), 2, "Expected only two redundant clocks, but got {}", redundant_clocks.len());
         let duplicate_clocks = HashSet::from([redundant_clocks[0].clock.as_str(), redundant_clocks[1].clock.as_str()]);
 
         let global_clock = Vec::from_iter(clocks.symmetric_difference(&duplicate_clocks));
-        assert!(global_clock.len() == 1, "reduced only one clock, expected two");
+        asserteq!(global_clock.len(), 1, "reduced only one clock, expected two");
 
-        let mut expected_locations: HashSet<String> = HashSet::from(["L2-i".to_string(), format!("L1-{}",global_clock[0].to_string()), format!("L4-{}",global_clock[0].to_string()), "L3-".to_string(), "L0-".to_string()]);
+        let _expected_locations: HashSet<String> = HashSet::from(["L2-i".to_string(), format!("L1-{}",global_clock[0].to_string()), format!("L4-{}",global_clock[0].to_string()), "L3-".to_string(), "L0-".to_string()]);
 
-        let mut expected_edges: HashSet<String> = HashSet::from(["L1-i->L0".to_string(), "L0-i->L2".to_string(),format!("L2-{}->L1",global_clock[0].to_string()),
+        let expected_edges: HashSet<String> = HashSet::from(["L1-i->L0".to_string(), "L0-i->L2".to_string(),format!("L2-{}->L1",global_clock[0].to_string()),
                                                                 format!("L0-{}->L2", global_clock[0].to_string()), format!("L0-{}->L4", global_clock[0].to_string()), format!("L4-{}->L2", global_clock[0].to_string())]);
 
-        component.reduce_clocks();
+        let redundant_clocks = component.find_redundant_clocks();
+        component.reduce_clocks(&redundant_clocks);
 
         //assert_locations_replaced_clocks(&component, expected_locations);
         assert_removed_unused_clocks(&component, expected_edges);
