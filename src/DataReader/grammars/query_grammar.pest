@@ -9,7 +9,7 @@ refinement = {"refinement:" ~ expr ~ "<=" ~ expr}
 
 consistency = {"consistency:" ~ expr}
 
-reachability = { "reachability:" ~ expr ~ "->" ~ state ~ ";" ~ state }
+reachability = { "reachability:" ~ expr ~ "->" ~ startState ~ state }
 
 implementation = {"implementation:" ~ expr}
 
@@ -67,6 +67,7 @@ loc_name = { (ASCII_ALPHANUMERIC | "(" | ")" | "_" | "&" | "|" | "/" | "\\" )+ }
 
 clock = { boolExpr ~ ("," ~ boolExpr)* | "" }                              
 state = { "[" ~ loc ~ "]" ~ "(" ~ clock ~ ")" }
+startState = {(state ~ ";")?}
 
 int = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
 

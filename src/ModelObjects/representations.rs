@@ -1176,6 +1176,7 @@ pub enum QueryExpression {
         Box<QueryExpression>,
     ),
     State(Vec<Box<QueryExpression>>, Option<Box<BoolExpression>>),
+    NoStartState(),
     LocName(String),
     Implementation(Box<QueryExpression>),
     Determinism(Box<QueryExpression>),

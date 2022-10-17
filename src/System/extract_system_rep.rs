@@ -47,16 +47,20 @@ pub fn create_executable_query<'a>(
                 let system = machine.clone().compile(dim)?;
 
 
-                let s_state: State = match get_state(start, &machine, &system) {
-                    Ok(s) => s,
-                    Err(location)=> return Err(location.into()),
+                let s_state: Option<State> = match **start{
+                    QueryExpression::State(_,_) => match get_state(start, &machine, &system) {
+                            Ok(s) => Some(s),
+                            Err(location) => return Err(location.into()),
+                        },
+                    QueryExpression::NoStartState() => None,  
+                    _ =>  return Err("Wrong type".into()) 
                 };
-
 
                 let e_state: State = match get_state(end, &machine, &system) {
                     Ok(s) => s,
                     Err(location)=> return Err(location.into()),
                 };
+                
                 Ok(Box::new(ReachabilityExecutor {
                     sys: system,
                     s_state,
@@ -204,7 +208,7 @@ fn validate_reachability_input(
     let components: usize = count_component(machine);
 
     for (state, str) in [(start, "start"), (end, "end")] {
-        if component_to_location_count_equal(components, state) {
+        if !component_to_location_count_equal(components, state) {
             return Err(format!(
                 "The number of automata does not match the number of locations in the {}",
                 str
@@ -225,7 +229,8 @@ fn count_component(system: &SystemRecipe) -> usize {
 
 fn component_to_location_count_equal(components: usize, state: &QueryExpression) -> bool {
     match state {
-        QueryExpression::State(loc_names, _) => loc_names.len() != components,
+        QueryExpression::State(loc_names, _) => loc_names.len() == components,
+        QueryExpression::NoStartState() => true,
         _ => panic!("Wrong type of QueryExpression"),
     }
 }
