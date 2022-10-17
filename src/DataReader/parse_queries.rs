@@ -206,11 +206,11 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
 }
 
 fn build_start_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
-    if pair.clone().into_inner().next().is_none() {
-        QueryExpression::NoStartState()
+    if let Some(state_pair) = pair.into_inner().next(){
+        build_state_from_pair(state_pair)
     }
     else{
-        build_state_from_pair(pair.into_inner().next().unwrap())
+        QueryExpression::NoStartState()
     }
 }
 

@@ -46,13 +46,12 @@ pub fn create_executable_query<'a>(
                 }
                 let system = machine.clone().compile(dim)?;
 
-
                 let s_state: Option<State> = match **start{
                     QueryExpression::State(_,_) => match get_state(start, &machine, &system) {
                             Ok(s) => Some(s),
                             Err(location) => return Err(location.into()),
                         },
-                    QueryExpression::NoStartState() => None,  
+                    QueryExpression::NoStartState() => None,
                     _ =>  return Err("Wrong type".into()) 
                 };
 
@@ -60,7 +59,6 @@ pub fn create_executable_query<'a>(
                     Ok(s) => s,
                     Err(location)=> return Err(location.into()),
                 };
-                
                 Ok(Box::new(ReachabilityExecutor {
                     sys: system,
                     s_state,
