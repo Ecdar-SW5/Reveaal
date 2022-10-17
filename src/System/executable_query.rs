@@ -13,16 +13,15 @@ use super::save_component::PruningStrategy;
 
 pub enum QueryResult {
     Refinement(bool),
-    Reachability(bool, Vec<Edge>), // This represents a path from start state to end state
+    Reachability(bool, Vec<ProtobufEdge>), // This represents a path from start state to end state
     GetComponent(Component),
     Consistency(bool),
     Determinism(bool),
     Error(String),
 }
 
-/// When egde is fully defined in protobuf it will:
-/// Serves as a representation of a transition you can take in the transision system.
-pub struct Edge {
+/// Edges are now defined uniquly in `Protobuf` with their ids. This means that we can represent an edge with just a simple id.
+pub struct ProtobufEdge {
     id: String,
 }
 

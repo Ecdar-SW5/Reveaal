@@ -51,12 +51,11 @@ pub fn create_executable_query<'a>(
                     Ok(s) => s,
                     Err(location)=> return Err(location.into()),
                 };
-
-
                 let e_state: State = match get_state(end, &machine, &system) {
                     Ok(s) => s,
                     Err(location)=> return Err(location.into()),
                 };
+
                 Ok(Box::new(ReachabilityExecutor {
                     sys: system,
                     s_state,
