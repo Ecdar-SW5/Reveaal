@@ -20,7 +20,7 @@ pub enum QueryResult {
     Error(String),
 }
 
-/// Edges are now defined uniquly in `Protobuf` with their ids. This means that we can represent an edge with just a simple id.
+/// Edges are now defined uniquely in `Protobuf` with their ids. This means that we can represent an edge with just a simple id.
 pub struct ProtobufEdge {
     id: String,
 }
