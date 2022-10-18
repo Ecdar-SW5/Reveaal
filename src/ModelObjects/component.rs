@@ -383,8 +383,8 @@ impl Component {
                 .replace_varname(&clock.clock, other_clock);
         }
         for l in &clock.location_indices {
-            self.edges[*l]
-                .guard
+            self.locations[*l]
+                .invariant
                 .as_mut()
                 .unwrap()
                 .replace_varname(&clock.clock, other_clock);

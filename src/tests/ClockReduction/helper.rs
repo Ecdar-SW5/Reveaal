@@ -47,6 +47,11 @@ pub mod test {
             if let Some(guard) = &edge.guard {
                 get_dependent_clocks( &guard, &mut dependent_clocks);
             }
+            if let Some(update) = &edge.update{
+                for upt in update {
+                    dependent_clocks.insert(upt.get_variable_name().to_string());
+                }
+            }
 
             let sorted_clocks = sort_clocks_and_join(&dependent_clocks);
 
