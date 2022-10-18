@@ -20,7 +20,6 @@ pub enum QueryResult {
     Error(String),
 }
 
-
 impl QueryResult {
     pub fn print_result(&self, query_str: &str) {
         match self {
