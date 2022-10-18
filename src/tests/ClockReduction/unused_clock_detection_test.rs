@@ -1,13 +1,14 @@
-
 #[cfg(test)]
 mod unused_clocks_tests {
-    use std::collections::{HashMap, HashSet};
-    use crate::component::RedundantClock;
+    use crate::tests::ClockReduction::helper::test::assert_duplicated_clock_detection;
     use crate::DataReader::json_reader::read_json_component;
-    use crate::tests::ClockReduction::helper::test::{assert_duplicated_clock_detection};
+    use std::collections::HashSet;
 
     fn unused_clocks_with_cycles(component_name: &str, unused_clock: &str) {
-        let component = read_json_component("samples/json/ClockReductionTest/UnusedClockWithCycle", component_name);
+        let component = read_json_component(
+            "samples/json/ClockReductionTest/UnusedClockWithCycle",
+            component_name,
+        );
 
         let unused_clocks = component.find_redundant_clocks();
 
@@ -15,18 +16,21 @@ mod unused_clocks_tests {
     }
 
     fn unused_clock(component_name: &str, unused_clock: &str) {
-        let component = read_json_component("samples/json/ClockReductionTest/UnusedClock", component_name);
+        let component = read_json_component(
+            "samples/json/ClockReductionTest/UnusedClock",
+            component_name,
+        );
 
         let unused_clocks = component.find_redundant_clocks();
 
-        assert_duplicated_clock_detection(&unused_clocks,1, HashSet::from([unused_clock]), true);
+        assert_duplicated_clock_detection(&unused_clocks, 1, HashSet::from([unused_clock]), true);
     }
 
     #[test]
-    fn unused_clock_test(){
-        unused_clocks_with_cycles("Component1","x");
-        unused_clocks_with_cycles("Component2","z");
-        unused_clocks_with_cycles("Component3","j");
+    fn unused_clock_test() {
+        unused_clocks_with_cycles("Component1", "x");
+        unused_clocks_with_cycles("Component2", "z");
+        unused_clocks_with_cycles("Component3", "j");
         unused_clock("Component1", "x");
         unused_clock("Component2", "i");
         unused_clock("Component3", "c");
