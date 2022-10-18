@@ -30,15 +30,15 @@ pub mod reachability_test_helper_functions {
         end_loc: &str,
         end_clocks: &str,
     ) -> QueryExpression {
-        let mock_l = Box::new(QueryExpression::VarName(machine.to_string()));
-        let mock_m = Box::new(QueryExpression::State(
+        let mock_model = Box::new(QueryExpression::VarName(machine.to_string()));
+        let mock_start_state = Box::new(QueryExpression::State(
             string_to_locations(start_loc),
             string_to_boolexpression(start_clocks),
         ));
-        let mock_r = Box::new(QueryExpression::State(
+        let mock_end_state = Box::new(QueryExpression::State(
             string_to_locations(end_loc),
             string_to_boolexpression(end_clocks),
         ));
-        QueryExpression::Reachability(mock_l, mock_m, mock_r)
+        QueryExpression::Reachability(mock_model, mock_start_state, mock_end_state)
     }
 }

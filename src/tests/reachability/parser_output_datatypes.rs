@@ -28,7 +28,7 @@ mod reachability_parser_output_datatypes_test {
         end_clocks: &str,
     ) {
         // Functionality to be tested:
-        let parserResult: QueryExpression = parse_queries::parse_to_expression_tree(parser_input)
+        let parser_result: QueryExpression = parse_queries::parse_to_expression_tree(parser_input)
             .first()
             .unwrap()
             .to_owned();
@@ -41,7 +41,7 @@ mod reachability_parser_output_datatypes_test {
             end_clocks,
         );
         // Assert they are equal:
-        assert_eq!(format!("{:?}", mock), format!("{:?}", parserResult));
+        assert_eq!(format!("{:?}", mock), format!("{:?}", parser_result));
     }
 
     #[test_case("reachability: Hi -> [L1](y<3); [L2](y<2)", "H", "L1", "y<3", "L2", "y<2";
@@ -60,7 +60,7 @@ mod reachability_parser_output_datatypes_test {
         end_clocks: &str,
     ) {
         // Functionality to be tested:
-        let parserResult: QueryExpression = parse_queries::parse_to_expression_tree(parser_input)
+        let parser_result: QueryExpression = parse_queries::parse_to_expression_tree(parser_input)
             .first()
             .unwrap()
             .to_owned();
@@ -73,12 +73,12 @@ mod reachability_parser_output_datatypes_test {
             end_clocks,
         );
         // Assert they are equal:
-        assert_ne!(format!("{:?}", mock), format!("{:?}", parserResult));
+        assert_ne!(format!("{:?}", mock), format!("{:?}", parser_result));
     }
 
     #[test]
     fn query_parser_output_invalid_data_type() {
-        let parserResult: QueryExpression = parse_queries::parse_to_expression_tree(
+        let parser_result: QueryExpression = parse_queries::parse_to_expression_tree(
             "reachability: HalfAdm1 -> [L1](y<3); [L2](z<2)",
         )
         .first()
@@ -86,20 +86,20 @@ mod reachability_parser_output_datatypes_test {
         .to_owned();
 
         // Mock data:
-        let mock_l = Box::new(QueryExpression::VarName("HalfAdm1".to_string()));
+        let mock_model = Box::new(QueryExpression::VarName("HalfAdm1".to_string()));
 
         // This should be QueryExpression::LocName instead of QueryExpression::VarName
-        let mock_m = Box::new(QueryExpression::State(
+        let mock_start_state = Box::new(QueryExpression::State(
             Vec::from([Box::new(QueryExpression::VarName("L1".to_string()))]),
             reachability_test_helper_functions::string_to_boolexpression("y<3"),
         ));
-        let mock_r = Box::new(QueryExpression::State(
+        let mock_end_state = Box::new(QueryExpression::State(
             reachability_test_helper_functions::string_to_locations("L2"),
             reachability_test_helper_functions::string_to_boolexpression("z<2"),
         ));
-        let mock: QueryExpression = QueryExpression::Reachability(mock_l, mock_m, mock_r);
+        let mock: QueryExpression = QueryExpression::Reachability(mock_model, mock_start_state, mock_end_state);
 
-        assert_ne!(format!("{:?}", mock), format!("{:?}", parserResult));
+        assert_ne!(format!("{:?}", mock), format!("{:?}", parser_result));
     }
 
     #[test]
@@ -112,20 +112,20 @@ mod reachability_parser_output_datatypes_test {
         .to_owned();
 
         // Mock data:
-        let mock_l = Box::new(QueryExpression::Composition(
+        let mock_model = Box::new(QueryExpression::Composition(
             Box::new(QueryExpression::VarName("HalfAdm1".to_string())),
             // This should be VarName type:
             Box::new(QueryExpression::LocName("HalfAdm2".to_string())),
         ));
-        let mock_m = Box::new(QueryExpression::State(
+        let mock_start_state = Box::new(QueryExpression::State(
             reachability_test_helper_functions::string_to_locations("L1, L2"),
             reachability_test_helper_functions::string_to_boolexpression("y<3, z>1"),
         ));
-        let mock_r = Box::new(QueryExpression::State(
+        let mock_end_state = Box::new(QueryExpression::State(
             reachability_test_helper_functions::string_to_locations("L3, L4"),
             reachability_test_helper_functions::string_to_boolexpression("y<4, z<2"),
         ));
-        let mock: QueryExpression = QueryExpression::Reachability(mock_l, mock_m, mock_r);
+        let mock: QueryExpression = QueryExpression::Reachability(mock_model, mock_start_state, mock_end_state);
 
         assert_ne!(format!("{:?}", mock), format!("{:?}", parserResult));
     }

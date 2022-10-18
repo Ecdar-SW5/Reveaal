@@ -88,7 +88,7 @@ pub struct ReachabilityExecutor {
     // s_state is the start state
     pub s_state: State,
 
-    // e_steate is the end state, where we want to see whether end state is reachable from start state
+    // e_state is the end state, where we want to see whether end state is reachable from start state
     pub e_state: State,
 }
 

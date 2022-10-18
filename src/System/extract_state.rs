@@ -40,7 +40,7 @@ pub fn get_state(
             let locationtuple = locationtuple.unwrap();
 
             if clock.is_some() {
-                let initalFederation = OwnedFederation::universe(system.get_dim());
+                let inital_federation = OwnedFederation::universe(system.get_dim());
                 let clock = &*clock.clone().unwrap();
 
                 let decls = system.get_decls();
@@ -54,7 +54,7 @@ pub fn get_state(
                     clocks,
                 };
 
-                let zone = apply_constraints_to_state(clock, &declarations, initalFederation);
+                let zone = apply_constraints_to_state(clock, &declarations, inital_federation);
                 Ok(State::create(locationtuple, zone))
             } else {
                 let zone = OwnedFederation::universe(system.get_dim());
@@ -71,14 +71,14 @@ fn build_location_tuple(
     system: &TransitionSystemPtr,
 ) -> Result<LocationTuple, String> {
     let mut index = 0;
-    let locationID = get_location_id(locations, &mut index, machine);
+    let location_id = get_location_id(locations, &mut index, machine);
     let locations_system = system.get_all_locations();
-    let locationtuple = locations_system.iter().find(|loc| loc.id == locationID);
+    let locationtuple = locations_system.iter().find(|loc| loc.id == location_id);
 
     if locationtuple.is_none() {
         return Err(format!(
             "The location {} is not found in the system",
-            locationID
+            location_id
         ));
     }
 
