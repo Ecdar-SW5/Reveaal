@@ -39,13 +39,11 @@ pub fn get_state(
 
             let locationtuple = locationtuple.unwrap();
 
-            if clock.is_some() {
+            if let Some(clock_constraints) = clock {
                 let inital_federation = OwnedFederation::universe(system.get_dim());
-                let clock = &*clock.clone().unwrap();
 
-                let decls = system.get_decls();
                 let mut clocks = HashMap::new();
-                for decl in decls {
+                for decl in system.get_decls() {
                     clocks.extend(decl.clocks.clone());
                 }
 
@@ -54,7 +52,8 @@ pub fn get_state(
                     clocks,
                 };
 
-                let zone = apply_constraints_to_state(clock, &declarations, inital_federation);
+                let zone =
+                    apply_constraints_to_state(clock_constraints, &declarations, inital_federation);
                 Ok(State::create(locationtuple, zone))
             } else {
                 let zone = OwnedFederation::universe(system.get_dim());
