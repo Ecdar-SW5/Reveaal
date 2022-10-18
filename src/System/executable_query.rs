@@ -13,17 +13,13 @@ use super::save_component::PruningStrategy;
 
 pub enum QueryResult {
     Refinement(bool),
-    Reachability(bool, Vec<ProtobufEdge>), // This represents a path from start state to end state
+    Reachability(bool, Vec<String>), // This represents a path from start state to end state
     GetComponent(Component),
     Consistency(bool),
     Determinism(bool),
     Error(String),
 }
 
-/// Edges are now defined uniquely in `Protobuf` with their ids. This means that we can represent an edge with just a simple id.
-pub struct ProtobufEdge {
-    id: String,
-}
 
 impl QueryResult {
     pub fn print_result(&self, query_str: &str) {
