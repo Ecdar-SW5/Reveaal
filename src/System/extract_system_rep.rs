@@ -12,7 +12,6 @@ use crate::TransitionSystems::{
     CompiledComponent, Composition, Conjunction, Quotient, TransitionSystemPtr,
 };
 
-use crate::component::State;
 use crate::System::pruning;
 use edbm::util::constraints::ClockIndex;
 use log::debug;
