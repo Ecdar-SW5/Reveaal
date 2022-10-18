@@ -44,22 +44,22 @@ pub fn create_executable_query<'a>(
                 if let Err(e) = validate_reachability_input(&machine, start, end){
                     return Err(e.into());
                 }
-                let system = machine.clone().compile(dim)?;
+                let transition_system = machine.clone().compile(dim)?;
 
 
-                let s_state: State = match get_state(start, &machine, &system) {
+                let start_state = match get_state(start, &machine, &transition_system) {
                     Ok(s) => s,
                     Err(location)=> return Err(location.into()),
                 };
-                let e_state: State = match get_state(end, &machine, &system) {
+                let end_state = match get_state(end, &machine, &transition_system) {
                     Ok(s) => s,
                     Err(location)=> return Err(location.into()),
                 };
 
                 Ok(Box::new(ReachabilityExecutor {
-                    transition_system: system,
-                    start_state: s_state,
-                    end_state: e_state,
+                    transition_system,
+                    start_state,
+                    end_state,
                 }))
             },
             QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
