@@ -83,18 +83,18 @@ impl ExecutableQuery for RefinementExecutor {
 /// Used to store input for the reachability checker
 pub struct ReachabilityExecutor {
     // sys represents the transition system
-    pub sys: TransitionSystemPtr,
+    pub transition_system: TransitionSystemPtr,
 
     // s_state is the start state
-    pub s_state: State,
+    pub start_state: State,
 
     // e_state is the end state, where we want to see whether end state is reachable from start state
-    pub e_state: State,
+    pub end_state: State,
 }
 
 impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
-        let (sys, s_state, e_state) = (self.sys, self.s_state, self.e_state);
+        let (sys, s_state, e_state) = (self.transition_system, self.start_state, self.end_state);
 
         unimplemented!();
     }

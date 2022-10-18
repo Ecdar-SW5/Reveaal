@@ -57,9 +57,9 @@ pub fn create_executable_query<'a>(
                 };
 
                 Ok(Box::new(ReachabilityExecutor {
-                    sys: system,
-                    s_state,
-                    e_state,
+                    transition_system: system,
+                    start_state: s_state,
+                    end_state: e_state,
                 }))
             },
             QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
