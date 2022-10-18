@@ -97,7 +97,8 @@ mod reachability_parser_output_datatypes_test {
             reachability_test_helper_functions::string_to_locations("L2"),
             reachability_test_helper_functions::string_to_boolexpression("z<2"),
         ));
-        let mock: QueryExpression = QueryExpression::Reachability(mock_model, mock_start_state, mock_end_state);
+        let mock: QueryExpression =
+            QueryExpression::Reachability(mock_model, mock_start_state, mock_end_state);
 
         assert_ne!(format!("{:?}", mock), format!("{:?}", parser_result));
     }
@@ -125,7 +126,8 @@ mod reachability_parser_output_datatypes_test {
             reachability_test_helper_functions::string_to_locations("L3, L4"),
             reachability_test_helper_functions::string_to_boolexpression("y<4, z<2"),
         ));
-        let mock: QueryExpression = QueryExpression::Reachability(mock_model, mock_start_state, mock_end_state);
+        let mock: QueryExpression =
+            QueryExpression::Reachability(mock_model, mock_start_state, mock_end_state);
 
         assert_ne!(format!("{:?}", mock), format!("{:?}", parserResult));
     }
