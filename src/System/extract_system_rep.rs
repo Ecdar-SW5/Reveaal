@@ -48,17 +48,22 @@ pub fn create_executable_query<'a>(
 
                 let transition_system = machine.clone().compile(dim)?;
 
-                let start_state: Option<State> = if let Some(state) = &**start {
+                let start_state: State = if let Some(state) = &**start {
                     if let Err(e) = validate_reachability_input(&machine, state){
                         return Err(e.into());
                     }
 
                     match get_state(&state, &machine, &transition_system) {
-                        Ok(s) => Some(s),
+                        Ok(s) => s,
                         Err(location) => return Err(location.into()),
                     }
                 }
-                else {None};
+                else {
+                    match transition_system.get_initial_state() {
+                        Some(state)=> state,
+                        None => return Err("No start state in the transition system".into())
+                    }
+                };
 
                 let end_state: State = match get_state(end, &machine, &transition_system) {
                     Ok(s) => s,
