@@ -10,7 +10,6 @@ use std::collections::HashMap;
 pub trait ComponentLoader {
     fn get_component(&mut self, component_name: &str) -> &Component;
     fn save_component(&mut self, component: Component);
-    fn unload_component(&mut self, component_name: &str);
 }
 
 #[derive(Debug, Default, Clone)]
@@ -26,17 +25,18 @@ impl ComponentLoader for ComponentContainer {
             panic!("The component '{}' could not be retrieved", component_name);
         }
     }
-    fn save_component(&mut self, component: Component) {
-        self.unload_component(&component.name);
-        self.loaded_components
-            .insert(component.get_name().clone(), component);
-    }
-    fn unload_component(&mut self, component_name: &str) {
-        self.loaded_components.remove(component_name);
+    fn save_component(&mut self, _component: Component) {
+        //Intentionally left blank (no-op func)
     }
 }
 
-impl ComponentContainer {}
+impl ComponentContainer {
+    pub fn new(map: HashMap<String, Component>) -> Self {
+        ComponentContainer {
+            loaded_components: map,
+        }
+    }
+}
 
 pub trait ProjectLoader: ComponentLoader {
     fn get_declarations(&self) -> &SystemDeclarations;
@@ -66,14 +66,9 @@ impl ComponentLoader for JsonProjectLoader {
     }
 
     fn save_component(&mut self, component: Component) {
-        self.unload_component(&component.name);
         component_to_json_file(&self.project_path, &component);
         self.loaded_components
             .insert(component.get_name().clone(), component);
-    }
-
-    fn unload_component(&mut self, component_name: &str) {
-        self.loaded_components.remove(component_name);
     }
 }
 
@@ -148,10 +143,6 @@ impl ComponentLoader for XmlProjectLoader {
 
     fn save_component(&mut self, _: Component) {
         panic!("Saving components is not supported for XML projects")
-    }
-
-    fn unload_component(&mut self, _: &str) {
-        panic!("unloading and loading individual components isnt permitted in XML")
     }
 }
 
