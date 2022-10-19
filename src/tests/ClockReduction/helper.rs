@@ -4,21 +4,28 @@ pub mod test {
     use std::collections::{HashMap, HashSet};
     use std::iter::FromIterator;
 
-    pub fn assert_locations_and_edges_in_component(component: &Component, expected_locations: &HashSet<String>, expected_edges: HashSet<String>) {
+    pub fn assert_locations_and_edges_in_component(
+        component: &Component,
+        expected_locations: &HashSet<String>,
+        expected_edges: HashSet<String>,
+    ) {
         assert_locations_in_component(&component, &expected_locations);
         assert_edges_in_component(&component, &expected_edges);
     }
 
     // Asserts that component contains given locations.
-    pub fn assert_locations_in_component(component: &Component, expected_locations: &HashSet<String>) {
+    pub fn assert_locations_in_component(
+        component: &Component,
+        expected_locations: &HashSet<String>,
+    ) {
         let mut actual_locations: HashSet<String> = HashSet::new();
 
-        for location in &component.locations{
+        for location in &component.locations {
             let mut clocks_in_invariants = HashSet::new();
             if let Some(invariant) = &location.invariant {
-                invariant.get_varnames()
-                    .iter()
-                    .for_each(|clock| { clocks_in_invariants.insert((*clock).to_string());});
+                invariant.get_varnames().iter().for_each(|clock| {
+                    clocks_in_invariants.insert((*clock).to_string());
+                });
             }
 
             let clock = sort_clocks_and_join(&clocks_in_invariants);
@@ -41,9 +48,9 @@ pub mod test {
         for edge in &component.edges {
             let mut clocks_in_guards_and_updates = HashSet::new();
             if let Some(guard) = &edge.guard {
-                guard.get_varnames()
-                    .iter()
-                    .for_each(|clock| { clocks_in_guards_and_updates.insert((*clock).to_string());});
+                guard.get_varnames().iter().for_each(|clock| {
+                    clocks_in_guards_and_updates.insert((*clock).to_string());
+                });
             }
             if let Some(updates) = &edge.update {
                 for update in updates {

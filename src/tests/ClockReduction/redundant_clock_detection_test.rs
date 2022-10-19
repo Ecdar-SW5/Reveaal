@@ -1,6 +1,8 @@
 #[cfg(test)]
 pub mod test {
-    use crate::tests::ClockReduction::helper::test::{assert_correct_edges_and_locations, assert_clock_reason};
+    use crate::tests::ClockReduction::helper::test::{
+        assert_clock_reason, assert_correct_edges_and_locations,
+    };
     use crate::DataReader::json_reader::read_json_component;
     use std::collections::{HashMap, HashSet};
 
@@ -12,12 +14,7 @@ pub mod test {
 
         let redundant_clocks = component.find_redundant_clocks();
 
-        assert_clock_reason(
-            &redundant_clocks,
-            2,
-            HashSet::from(["x", "y", "z"]),
-            false,
-        );
+        assert_clock_reason(&redundant_clocks, 2, HashSet::from(["x", "y", "z"]), false);
     }
 
     #[test]
