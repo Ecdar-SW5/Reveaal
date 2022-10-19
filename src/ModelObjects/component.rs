@@ -482,7 +482,7 @@ pub fn contain(channels: &[Channel], channel: &str) -> bool {
 /// FullState is a struct used for initial verification of consistency, and determinism as a state that also hols a dbm
 /// This is done as the type used in refinement state pair assumes to sides of an operation
 /// this should probably be refactored as it causes unnecessary confusion
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct State {
     pub decorated_locations: LocationTuple,
     zone_sentinel: Option<OwnedFederation>,

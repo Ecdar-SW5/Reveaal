@@ -1266,6 +1266,13 @@ fn get_op(exp: &BoolExpression) -> Option<String> {
 pub enum QueryExpression {
     Refinement(Box<QueryExpression>, Box<QueryExpression>),
     Consistency(Box<QueryExpression>),
+    Reachability(
+        Box<QueryExpression>,
+        Box<QueryExpression>,
+        Box<QueryExpression>,
+    ),
+    State(Vec<Box<QueryExpression>>, Option<Box<BoolExpression>>),
+    LocName(String),
     Implementation(Box<QueryExpression>),
     Determinism(Box<QueryExpression>),
     Specification(Box<QueryExpression>),
@@ -1302,6 +1309,12 @@ impl QueryExpression {
                 left.pretty_string(),
                 right.pretty_string()
             ),
+            QueryExpression::Reachability(left, middle, right) => format!(
+                "reachability: {} -> {} {}",
+                left.pretty_string(),
+                middle.pretty_string(),
+                right.pretty_string()
+            ),
             QueryExpression::Consistency(system) => {
                 format!("consistency: {}", system.pretty_string())
             }
@@ -1325,7 +1338,6 @@ impl QueryExpression {
             }
             QueryExpression::Parentheses(system) => format!("({})", system.pretty_string()),
             QueryExpression::VarName(name) => name.clone(),
-
             _ => panic!("Rule not implemented yet"),
         }
     }
