@@ -1,7 +1,7 @@
 #[cfg(test)]
 pub mod test {
     use crate::tests::ClockReduction::helper::test::{
-        assert_locations_replaced_clocks, assert_removed_unused_clocks,
+        assert_clock_locations, assert_edges_in_component,
     };
     use crate::DataReader::json_reader::read_json_component;
     use std::collections::HashSet;
@@ -12,7 +12,10 @@ pub mod test {
     /// are not removed.
     #[test]
     pub fn test_replace_clocks() {
-        let mut component = read_json_component("samples/json/RedundantClocks", "Component1");
+        let mut component = read_json_component(
+            "samples/json/ClockReductionTest/RedundantClocks",
+            "Component1",
+        );
         let clocks = HashSet::from(["x", "y", "z"]);
 
         let redundant_clocks = component.find_redundant_clocks();
@@ -53,7 +56,7 @@ pub mod test {
 
         component.reduce_clocks(&redundant_clocks);
 
-        assert_locations_replaced_clocks(&component, expected_locations);
-        assert_removed_unused_clocks(&component, expected_edges);
+        assert_clock_locations(&component, expected_locations);
+        assert_edges_in_component(&component, expected_edges);
     }
 }

@@ -1,11 +1,13 @@
+#[cfg(test)]
 pub mod test {
     use crate::component::{ClockReductionReason, Component, RedundantClock};
     use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
     use std::collections::{HashMap, HashSet};
     use std::iter::FromIterator;
     use std::ops::Deref;
-    #[allow(dead_code)]
-    pub fn assert_locations_replaced_clocks(
+
+    // Asserts that component contains given locations.
+    pub fn assert_clock_locations(
         component: &Component,
         expected_locations: HashSet<String>,
     ) {
@@ -30,19 +32,7 @@ pub mod test {
         );
     }
 
-    pub fn sort_clocks_and_join(dependent_clocks: &HashSet<String>) -> String {
-        let mut dependent_clocks_vec = Vec::from_iter(dependent_clocks.iter());
-        let mut sorted_clocks = String::new();
-        dependent_clocks_vec.sort();
-
-        for clock in dependent_clocks_vec {
-            sorted_clocks = sorted_clocks + clock;
-        }
-        sorted_clocks
-    }
-
-    #[allow(dead_code)]
-    pub fn assert_removed_unused_clocks(component: &Component, expected_edges: HashSet<String>) {
+    pub fn assert_edges_in_component(component: &Component, expected_edges: HashSet<String>) {
         let mut actual_edges: HashSet<String> = HashSet::new();
 
         for edge in &component.edges {
@@ -79,7 +69,17 @@ pub mod test {
         )
     }
 
-    #[allow(dead_code)]
+    pub fn sort_clocks_and_join(dependent_clocks: &HashSet<String>) -> String {
+        let mut dependent_clocks_vec = Vec::from_iter(dependent_clocks.iter());
+        let mut sorted_clocks = String::new();
+        dependent_clocks_vec.sort();
+
+        for clock in dependent_clocks_vec {
+            sorted_clocks = sorted_clocks + clock;
+        }
+        sorted_clocks
+    }
+
     pub fn assert_duplicated_clock_detection(
         redundant_clocks: &Vec<RedundantClock>,
         expected_amount_to_reduce: u32,
@@ -173,7 +173,8 @@ pub mod test {
                 get_dependent_clocks_arithmetic(rhs, out);
             }
 
-            ArithExpression::Clock(_index) => panic!("aaaaa"),
+            // Clock is illegal.
+            ArithExpression::Clock(_) => assert!(false),
             ArithExpression::VarName(name) => {
                 out.insert(name.clone());
             }
@@ -181,7 +182,6 @@ pub mod test {
         }
     }
 
-    #[allow(dead_code)]
     pub fn assert_correct_edges_and_locations(
         component: &Component,
         expected_locations: HashMap<String, HashSet<String>>,

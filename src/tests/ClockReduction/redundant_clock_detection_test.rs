@@ -6,9 +6,11 @@ pub mod test {
     use crate::DataReader::json_reader::read_json_component;
     use std::collections::{HashMap, HashSet};
 
+    const REDUNDANT_CLOCKS_TEST_PROJECT: &str = "samples/json/ClockReductionTest/RedundantClocks";
+
     #[test]
     fn test_three_synced_clocks() {
-        let component = read_json_component("samples/json/RedundantClocks", "Component1");
+        let component = read_json_component(REDUNDANT_CLOCKS_TEST_PROJECT, "Component1");
 
         let redundant_clocks = component.find_redundant_clocks();
 
@@ -22,7 +24,7 @@ pub mod test {
 
     #[test]
     fn test_three_synced_clocks_correct_location_target() {
-        let component = read_json_component("samples/json/RedundantClocks", "Component1");
+        let component = read_json_component(REDUNDANT_CLOCKS_TEST_PROJECT, "Component1");
 
         let mut expected_locations: HashMap<String, HashSet<String>> = HashMap::new();
 

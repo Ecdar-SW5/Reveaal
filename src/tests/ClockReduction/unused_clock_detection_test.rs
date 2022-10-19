@@ -4,6 +4,7 @@ mod unused_clocks_tests {
     use crate::DataReader::json_reader::read_json_component;
     use std::collections::HashSet;
 
+    //TODO: Merge these functions
     fn unused_clocks_with_cycles(component_name: &str, unused_clock: &str) {
         let component = read_json_component(
             "samples/json/ClockReductionTest/UnusedClockWithCycle",
@@ -15,6 +16,7 @@ mod unused_clocks_tests {
         assert_duplicated_clock_detection(&unused_clocks, 1, HashSet::from([unused_clock]), true);
     }
 
+    //TODO: Merge these functions
     fn unused_clock(component_name: &str, unused_clock: &str) {
         let component = read_json_component(
             "samples/json/ClockReductionTest/UnusedClock",
@@ -27,7 +29,7 @@ mod unused_clocks_tests {
     }
 
     #[test]
-    fn unused_clock_test() {
+    fn test_unused_clock_test() {
         unused_clocks_with_cycles("Component1", "x");
         unused_clocks_with_cycles("Component2", "z");
         unused_clocks_with_cycles("Component3", "j");
