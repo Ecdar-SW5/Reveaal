@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod reachability_parser_clock_variable_validation {
+mod reachability_parser_location_validation {
     use crate::{
         extract_system_rep::get_system_recipe,
         tests::reachability::helper_functions::reachability_test_helper_functions, xml_parser,
@@ -9,16 +9,15 @@ mod reachability_parser_clock_variable_validation {
     use edbm::util::constraints::ClockIndex;
     use test_case::test_case;
 
-    // These tests check that the parser only accepts clock variable arguments with existing clock variables.
-    // i.e. check that the variables exist in the model.
+    // These tests check that the parser only accepts location arguments with existing locations.
+    // i.e. check that the locations exist in the model.
     // The model/sample used is samples/json/EcdarUniversity/adm2.json
-    // This model/sample contains the clock variables "x" and "y".
-    // And locations "L20", "L21" ... "L23".
-    #[test_case("u>1";
-    "The clock variable u in the state does not exist in the model")]
-    #[test_case("uwu>2";
-    "The clock variable uwu in the state does not exist in the model")]
-    fn query_parser_checks_invalid_clock_variables(clock_str: &str) {
+    // This model/sample contains the locations "L20", "L21" ... "L23".
+    #[test_case("L19";
+    "The location L19 in the state does not exist in the model")]
+    #[test_case("NOTCORRECTNAME";
+    "The location NOTCORRECTNAME in the state does not exist in the model")]
+    fn query_parser_checks_invalid_locations(location_str: &str) {
         let folder_path = "samples/json/EcdarUniversity".to_string();
         let mut comp_loader = if xml_parser::is_xml_project(&folder_path) {
             XmlProjectLoader::new(folder_path)
@@ -37,8 +36,8 @@ mod reachability_parser_clock_variable_validation {
         );
         let system = machine.clone().compile(dim).unwrap();
         let mock_state = Box::new(QueryExpression::State(
-            reachability_test_helper_functions::string_to_locations("L20"), // This location exists in Adm2
-            reachability_test_helper_functions::string_to_boolexpression(clock_str),
+            reachability_test_helper_functions::string_to_locations(location_str),
+            None,
         ));
         match System::extract_state::get_state(&mock_state, &machine, &system) {
             Err(_) => (),
@@ -46,11 +45,11 @@ mod reachability_parser_clock_variable_validation {
         };
     }
 
-    #[test_case("x>1";
-    "The clock variable x in state exists in the model")]
-    #[test_case("y<1";
-    "The clock variable y in state exists in the model")]
-    fn query_parser_checks_valid_clock_variables(clock_str: &str) {
+    #[test_case("L20";
+    "The location L20 in the state exists in the model")]
+    #[test_case("L23";
+    "The location L23 in the state exists in the model")]
+    fn query_parser_checks_valid_clock_variables(location_str: &str) {
         let folder_path = "samples/json/EcdarUniversity".to_string();
         let mut comp_loader = if xml_parser::is_xml_project(&folder_path) {
             XmlProjectLoader::new(folder_path)
@@ -69,8 +68,8 @@ mod reachability_parser_clock_variable_validation {
         );
         let system = machine.clone().compile(dim).unwrap();
         let mock_state = Box::new(QueryExpression::State(
-            reachability_test_helper_functions::string_to_locations("L20"), // This location exists in Adm2
-            reachability_test_helper_functions::string_to_boolexpression(clock_str),
+            reachability_test_helper_functions::string_to_locations(location_str),
+            None,
         ));
         match System::extract_state::get_state(&mock_state, &machine, &system) {
             Ok(_) => (),
