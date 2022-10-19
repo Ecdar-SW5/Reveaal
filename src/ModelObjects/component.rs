@@ -15,7 +15,7 @@ use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
 use edbm::zones::OwnedFederation;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 /// The basic struct used to represent components read from either Json or xml
@@ -267,11 +267,11 @@ impl Component {
             }
 
             let clock_val = *self.declarations.clocks.get(clock.clock.as_str()).unwrap();
-            self.declarations.clocks.values_mut().for_each(|val| {
-                if *val > clock_val {
-                    *val -= 1;
-                }
-            });
+            self.declarations
+                .clocks
+                .values_mut()
+                .filter(|val| **val > clock_val)
+                .for_each(|val| *val -= 1);
             self.declarations.clocks.remove(clock.clock.as_str());
         }
     }
@@ -281,7 +281,7 @@ impl Component {
     /// Returns [`Vec<RedundantClock>`] with all found redundant clock.
     /// If no redundant clocks found the vector will be empty
     pub(crate) fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
-        let clocks = self.declarations.get_clocks();
+        let clocks: HashSet<String> = self.declarations.get_clocks().keys().cloned().collect();
         let mut out: Vec<RedundantClock> = vec![];
         let mut seen_clocks: HashMap<String, Box<[Vec<usize>; 2]>> = HashMap::new();
         for (index, expr, which) in self
@@ -299,7 +299,7 @@ impl Component {
             )
         {
             for name in expr.get_varnames() {
-                if clocks.contains_key(name) {
+                if clocks.contains(name) {
                     if let Some(clock_indices) = seen_clocks.get_mut(name) {
                         clock_indices.get_mut(which).unwrap().push(index);
                     } else {
@@ -314,7 +314,7 @@ impl Component {
                 }
             }
         }
-        for contain in clocks.keys().filter(|k| !seen_clocks.contains_key(*k)) {
+        for contain in clocks.iter().filter(|k| !seen_clocks.contains_key(*k)) {
             out.push(RedundantClock::unused(contain.clone()));
         }
         let mut seen_updates: HashMap<String, HashMap<usize, usize>> = HashMap::new();
