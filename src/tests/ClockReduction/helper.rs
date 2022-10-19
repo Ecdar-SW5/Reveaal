@@ -7,10 +7,7 @@ pub mod test {
     use std::ops::Deref;
 
     // Asserts that component contains given locations.
-    pub fn assert_clock_locations(
-        component: &Component,
-        expected_locations: HashSet<String>,
-    ) {
+    pub fn assert_clock_locations(component: &Component, expected_locations: HashSet<String>) {
         let mut actual_locations: HashSet<String> = HashSet::new();
 
         for location in &component.locations {
