@@ -31,10 +31,14 @@ pub mod reachability_test_helper_functions {
         end_clocks: &str,
     ) -> QueryExpression {
         let mock_model = Box::new(QueryExpression::VarName(machine.to_string()));
-        let mock_start_state = Box::new(Some(QueryExpression::State(
-            string_to_locations(start_loc),
-            string_to_boolexpression(start_clocks),
-        )));
+        let mock_start_state = if start_loc.is_empty() {
+            Box::new(None)
+        } else {
+            Box::new(Some(QueryExpression::State(
+                string_to_locations(start_loc),
+                string_to_boolexpression(start_clocks),
+            )))
+        };
         let mock_end_state = Box::new(QueryExpression::State(
             string_to_locations(end_loc),
             string_to_boolexpression(end_clocks),
