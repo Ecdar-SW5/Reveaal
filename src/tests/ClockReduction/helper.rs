@@ -4,17 +4,18 @@ pub mod test {
     use std::collections::{HashMap, HashSet};
     use std::iter::FromIterator;
 
+    /// Asserts that component contains given locations and edges.
     pub fn assert_locations_and_edges_in_component(
         component: &Component,
         expected_locations: &HashSet<String>,
-        expected_edges: HashSet<String>,
+        expected_edges: &HashSet<String>,
     ) {
-        assert_locations_in_component(&component, &expected_locations);
-        assert_edges_in_component(&component, &expected_edges);
+        assert_locations_in_component(&component, expected_locations);
+        assert_edges_in_component(&component, expected_edges);
     }
 
-    // Asserts that component contains given locations.
-    pub fn assert_locations_in_component(
+    /// Asserts that component contains given locations.
+    fn assert_locations_in_component(
         component: &Component,
         expected_locations: &HashSet<String>,
     ) {
@@ -41,8 +42,8 @@ pub mod test {
         );
     }
 
-    // Asserts that component contains given locations.
-    pub fn assert_edges_in_component(component: &Component, expected_edges: &HashSet<String>) {
+    /// Asserts that component contains given locations.
+    fn assert_edges_in_component(component: &Component, expected_edges: &HashSet<String>) {
         let mut actual_edges: HashSet<String> = HashSet::new();
 
         for edge in &component.edges {
@@ -81,7 +82,7 @@ pub mod test {
         )
     }
 
-    pub fn sort_clocks_and_join(dependent_clocks: &HashSet<String>) -> String {
+    fn sort_clocks_and_join(dependent_clocks: &HashSet<String>) -> String {
         let mut dependent_clocks_vec = Vec::from_iter(dependent_clocks.iter());
         let mut sorted_clocks = String::new();
         dependent_clocks_vec.sort();
@@ -92,6 +93,7 @@ pub mod test {
         sorted_clocks
     }
 
+    /// Assert that a redundant clock is redundant for the correct reason
     pub fn assert_clock_reason(
         redundant_clocks: &Vec<RedundantClock>,
         expected_amount_to_reduce: u32,
@@ -150,6 +152,7 @@ pub mod test {
         );
     }
 
+    /// Asserts that the specific clocks occur in the correct locations and edges
     pub fn assert_correct_edges_and_locations(
         component: &Component,
         expected_locations: HashMap<String, HashSet<String>>,

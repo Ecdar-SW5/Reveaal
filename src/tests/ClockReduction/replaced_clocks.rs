@@ -1,8 +1,6 @@
 #[cfg(test)]
 pub mod test {
-    use crate::tests::ClockReduction::helper::test::{
-        assert_edges_in_component, assert_locations_in_component,
-    };
+    use crate::tests::ClockReduction::helper::test::assert_locations_and_edges_in_component;
     use crate::DataReader::json_reader::read_json_component;
     use std::collections::HashSet;
     use std::iter::FromIterator;
@@ -56,7 +54,6 @@ pub mod test {
 
         component.reduce_clocks(&redundant_clocks);
 
-        assert_locations_in_component(&component, &expected_locations);
-        assert_edges_in_component(&component, &expected_edges);
+        assert_locations_and_edges_in_component(&component, &expected_locations, &expected_edges);
     }
 }
