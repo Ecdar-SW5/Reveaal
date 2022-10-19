@@ -186,13 +186,13 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
         )));
     }
 
-    let clockPair = inner_pair.next().unwrap();
+    let clock_pair = inner_pair.next().unwrap();
 
     // In the following line of code, we build a BoolExprssion based on the clock constraints defined for the given location.
     // To make BoolExprssion we use the InvariantParser parser instead.
     // Becuase clocks is defined as c1&&c2... in the InvariantParser we replace ',' to match the format e.g., e.g., "x>0,y<5" => "x>0&&y<5"
-    let invariantVersion: Option<Box<BoolExpression>> = if clockPair.as_str().trim() != "" {
-        let clock_string = clockPair.as_str().trim().to_string().replace(',', "&&");
+    let invariant_version: Option<Box<BoolExpression>> = if clock_pair.as_str().trim() != "" {
+        let clock_string = clock_pair.as_str().trim().to_string().replace(',', "&&");
         let invariant_version = parse(&clock_string).expect("");
         Some(Box::new(invariant_version))
     } else {
@@ -200,7 +200,7 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     };
 
     match pair.as_rule() {
-        Rule::state => QueryExpression::State(loc_names, invariantVersion),
+        Rule::state => QueryExpression::State(loc_names, invariant_version),
         err => panic!("Unable to match: {:?} as rule loc or clocks", err),
     }
 }
@@ -208,12 +208,12 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
 fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     let mut inner_pair = pair.into_inner();
     let automata_pair = inner_pair.next().unwrap();
-    let s_state_pair = inner_pair.next().unwrap();
-    let e_state_pair = inner_pair.next().unwrap();
+    let start_state_pair = inner_pair.next().unwrap();
+    let end_state_pair = inner_pair.next().unwrap();
 
     let automata = build_expression_from_pair(automata_pair);
-    let start_state = build_state_from_pair(s_state_pair);
-    let end_state = build_state_from_pair(e_state_pair);
+    let start_state = build_state_from_pair(start_state_pair);
+    let end_state = build_state_from_pair(end_state_pair);
 
     QueryExpression::Reachability(
         Box::new(automata),
