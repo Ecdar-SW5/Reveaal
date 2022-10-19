@@ -1,31 +1,31 @@
 #[cfg(test)]
 mod unused_clocks_tests {
+    use crate::component::Component;
     use crate::tests::ClockReduction::helper::test::assert_clock_reason;
     use crate::DataReader::json_reader::read_json_component;
     use std::collections::HashSet;
 
-    //TODO: Merge these functions
     fn unused_clocks_with_cycles(component_name: &str, unused_clock: &str) {
         let component = read_json_component(
             "samples/json/ClockReductionTest/UnusedClockWithCycle",
             component_name,
         );
 
-        let unused_clocks = component.find_redundant_clocks();
-
-        assert_clock_reason(&unused_clocks, 1, HashSet::from([unused_clock]), true);
+        unused_clocks_are_found(&component, HashSet::from([unused_clock]));
     }
 
-    //TODO: Merge these functions
     fn unused_clock(component_name: &str, unused_clock: &str) {
         let component = read_json_component(
             "samples/json/ClockReductionTest/UnusedClock",
             component_name,
         );
 
-        let unused_clocks = component.find_redundant_clocks();
+        unused_clocks_are_found(&component, HashSet::from([unused_clock]));
+    }
 
-        assert_clock_reason(&unused_clocks, 1, HashSet::from([unused_clock]), true);
+    fn unused_clocks_are_found(component: &Component, unused_clocks: HashSet<&str>) {
+        let redundant_clocks = component.find_redundant_clocks();
+        assert_clock_reason(&redundant_clocks, 1, unused_clocks, true)
     }
 
     #[test]

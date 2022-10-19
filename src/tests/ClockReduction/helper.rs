@@ -15,10 +15,7 @@ pub mod test {
     }
 
     /// Asserts that component contains given locations.
-    fn assert_locations_in_component(
-        component: &Component,
-        expected_locations: &HashSet<String>,
-    ) {
+    fn assert_locations_in_component(component: &Component, expected_locations: &HashSet<String>) {
         let mut actual_locations: HashSet<String> = HashSet::new();
 
         for location in &component.locations {
