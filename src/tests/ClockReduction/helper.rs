@@ -40,7 +40,7 @@ pub mod test {
     }
 
     /// Asserts that component contains given locations.
-    fn assert_edges_in_component(component: &Component, expected_edges: &HashSet<String>) {
+    pub(crate) fn assert_edges_in_component(component: &Component, expected_edges: &HashSet<String>) {
         let mut actual_edges: HashSet<String> = HashSet::new();
 
         for edge in &component.edges {
