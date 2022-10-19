@@ -1172,11 +1172,10 @@ pub enum QueryExpression {
     Consistency(Box<QueryExpression>),
     Reachability(
         Box<QueryExpression>,
-        Box<QueryExpression>,
+        Box<Option<QueryExpression>>,
         Box<QueryExpression>,
     ),
     State(Vec<Box<QueryExpression>>, Option<Box<BoolExpression>>),
-    NoStartState(),
     LocName(String),
     Implementation(Box<QueryExpression>),
     Determinism(Box<QueryExpression>),
@@ -1214,12 +1213,19 @@ impl QueryExpression {
                 left.pretty_string(),
                 right.pretty_string()
             ),
-            QueryExpression::Reachability(left, middle, right) => format!(
-                "reachability: {} -> {} {}",
-                left.pretty_string(),
-                middle.pretty_string(),
-                right.pretty_string()
-            ),
+            QueryExpression::Reachability(left, middle, right) =>{
+                let start_state = match **middle{
+                    Some(expr) => expr.pretty_string(),
+                    None => "".to_string(),
+                };
+                
+                format!(
+                    "reachability: {} -> {} {}",
+                    left.pretty_string(),
+                    start_state,
+                    right.pretty_string()
+                )
+            },
             QueryExpression::Consistency(system) => {
                 format!("consistency: {}", system.pretty_string())
             }

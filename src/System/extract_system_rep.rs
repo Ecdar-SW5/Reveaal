@@ -41,18 +41,19 @@ pub fn create_executable_query<'a>(
             QueryExpression::Reachability(automata, start, end) => {
                 let mut quotient_index = None;
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
+
                 if let Err(e) = validate_reachability_input(&machine, start, end){
                     return Err(e.into());
                 }
+
                 let system = machine.clone().compile(dim)?;
 
                 let s_state: Option<State> = match **start{
-                    QueryExpression::State(_,_) => match get_state(start, &machine, &system) {
+                    Some(state) => match get_state(&state, &machine, &system) {
                             Ok(s) => Some(s),
                             Err(location) => return Err(location.into()),
                         },
-                    QueryExpression::NoStartState() => None,
-                    _ =>  return Err("Wrong type".into()) 
+                    None => None,
                 };
 
                 let e_state: State = match get_state(end, &machine, &system) {
@@ -228,7 +229,6 @@ fn count_component(system: &SystemRecipe) -> usize {
 fn component_to_location_count_equal(components: usize, state: &QueryExpression) -> bool {
     match state {
         QueryExpression::State(loc_names, _) => loc_names.len() == components,
-        QueryExpression::NoStartState() => true,
         _ => panic!("Wrong type of QueryExpression"),
     }
 }
