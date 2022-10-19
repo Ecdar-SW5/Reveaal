@@ -81,7 +81,7 @@ pub struct ReachabilityExecutor {
     pub transition_system: TransitionSystemPtr,
 
     // s_state is the start state
-    pub start_state: Option<State>,
+    pub start_state: State,
 
     // e_state is the end state, where we want to see whether end state is reachable from start state
     pub end_state: State,

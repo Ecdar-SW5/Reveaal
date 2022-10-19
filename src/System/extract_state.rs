@@ -6,7 +6,8 @@ use crate::component::Declarations;
 use crate::extract_system_rep::SystemRecipe;
 use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
 use crate::ModelObjects::component::State;
-use crate::ModelObjects::representations::QueryExpression;
+use crate::ModelObjects::representations::{BoolExpression, QueryExpression};
+use crate::TransitionSystems::TransitionSystem;
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use std::slice::Iter;
 
@@ -102,4 +103,11 @@ fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> Locati
             LocationID::Simple(locations.next().unwrap().trim().to_string())
         }
     }
+}
+
+fn validate_clocks(
+    clock_constraints: &Box<BoolExpression>,
+    system: &Box<dyn TransitionSystem>,
+) -> Result<(), String> {
+    Ok(())
 }
