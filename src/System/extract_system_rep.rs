@@ -44,30 +44,28 @@ pub fn create_executable_query<'a>(
 
                 if let Err(e) = validate_reachability_input(&machine, end){
                     return Err(e.into());
-                }                
+                }
 
-                let system = machine.clone().compile(dim)?;
+                let transition_system = machine.clone().compile(dim)?;
 
-                let start_state: Option<State> = match &**start{
-                    Some(state) =>{ 
-                        
-                        if let Err(e) = validate_reachability_input(&machine, state){
-                            return Err(e.into());
-                        }
+                let start_state: Option<State> = if let Some(state) = &**start {
+                    if let Err(e) = validate_reachability_input(&machine, state){
+                        return Err(e.into());
+                    }
 
-                        match get_state(&state, &machine, &system) {
-                            Ok(s) => Some(s),
-                            Err(location) => return Err(location.into()),
-                        }},
-                    None => None,
-                };
+                    match get_state(&state, &machine, &transition_system) {
+                        Ok(s) => Some(s),
+                        Err(location) => return Err(location.into()),
+                    }
+                }
+                else {None};
 
-                let end_state: State = match get_state(end, &machine, &system) {
+                let end_state: State = match get_state(end, &machine, &transition_system) {
                     Ok(s) => s,
                     Err(location)=> return Err(location.into()),
                 };
                 Ok(Box::new(ReachabilityExecutor {
-                    transition_system: system,
+                    transition_system,
                     start_state,
                     end_state,
                 }))
@@ -207,13 +205,21 @@ pub fn get_system_recipe(
 
 fn validate_reachability_input(
     machine: &SystemRecipe,
-    state: &QueryExpression
+    state: &QueryExpression,
 ) -> Result<(), String> {
-    let components: usize = count_component(machine);
-
-    if !component_to_location_count_equal(components, state) {
-        return Err(format!("The number of automata does not match the number of locations"));
+    if let QueryExpression::State(loc_names, _) = state {
+        if loc_names.len() != count_component(machine) {
+            return Err(format!(
+                "The number of automata does not match the number of locations"
+            ));
+        }
+    } else {
+        return Err(format!(
+            "Expected QueryExpression::State but got {:?}",
+            state
+        ));
     }
+
     Ok(())
 }
 
@@ -223,12 +229,5 @@ fn count_component(system: &SystemRecipe) -> usize {
         SystemRecipe::Conjunction(left, right) => count_component(left) + count_component(right),
         SystemRecipe::Quotient(left, right, _) => count_component(left) + count_component(right),
         SystemRecipe::Component(_) => 1,
-    }
-}
-
-fn component_to_location_count_equal(components: usize, state: &QueryExpression) -> bool {
-    match state {
-        QueryExpression::State(loc_names, _) => loc_names.len() == components,
-        _ => panic!("Wrong type of QueryExpression"),
     }
 }
