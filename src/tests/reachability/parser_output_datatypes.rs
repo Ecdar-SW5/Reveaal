@@ -89,10 +89,10 @@ mod reachability_parser_output_datatypes_test {
         let mock_model = Box::new(QueryExpression::VarName("HalfAdm1".to_string()));
 
         // This should be QueryExpression::LocName instead of QueryExpression::VarName
-        let mock_start_state = Box::new(QueryExpression::State(
+        let mock_start_state = Box::new(Some(QueryExpression::State(
             Vec::from([Box::new(QueryExpression::VarName("L1".to_string()))]),
             reachability_test_helper_functions::string_to_boolexpression("y<3"),
-        ));
+        )));
         let mock_end_state = Box::new(QueryExpression::State(
             reachability_test_helper_functions::string_to_locations("L2"),
             reachability_test_helper_functions::string_to_boolexpression("z<2"),
@@ -118,10 +118,10 @@ mod reachability_parser_output_datatypes_test {
             // This should be VarName type:
             Box::new(QueryExpression::LocName("HalfAdm2".to_string())),
         ));
-        let mock_start_state = Box::new(QueryExpression::State(
+        let mock_start_state = Box::new(Some(QueryExpression::State(
             reachability_test_helper_functions::string_to_locations("L1, L2"),
             reachability_test_helper_functions::string_to_boolexpression("y<3, z>1"),
-        ));
+        )));
         let mock_end_state = Box::new(QueryExpression::State(
             reachability_test_helper_functions::string_to_locations("L3, L4"),
             reachability_test_helper_functions::string_to_boolexpression("y<4, z<2"),

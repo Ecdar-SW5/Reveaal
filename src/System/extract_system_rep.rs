@@ -42,28 +42,34 @@ pub fn create_executable_query<'a>(
                 let mut quotient_index = None;
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
 
-                if let Err(e) = validate_reachability_input(&machine, start, end){
+                if let Err(e) = validate_reachability_input(&machine, end){
                     return Err(e.into());
-                }
+                }                
 
                 let system = machine.clone().compile(dim)?;
 
-                let s_state: Option<State> = match **start{
-                    Some(state) => match get_state(&state, &machine, &system) {
+                let start_state: Option<State> = match **start{
+                    Some(state) =>{ 
+                        
+                        if let Err(e) = validate_reachability_input(&machine, &state){
+                            return Err(e.into());
+                        }
+
+                        match get_state(&state, &machine, &system) {
                             Ok(s) => Some(s),
                             Err(location) => return Err(location.into()),
-                        },
+                        }},
                     None => None,
                 };
 
-                let e_state: State = match get_state(end, &machine, &system) {
+                let end_state: State = match get_state(end, &machine, &system) {
                     Ok(s) => s,
                     Err(location)=> return Err(location.into()),
                 };
                 Ok(Box::new(ReachabilityExecutor {
-                    sys: system,
-                    s_state,
-                    e_state,
+                    transition_system: system,
+                    start_state,
+                    end_state,
                 }))
             },
             QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
@@ -201,18 +207,12 @@ pub fn get_system_recipe(
 
 fn validate_reachability_input(
     machine: &SystemRecipe,
-    start: &QueryExpression,
-    end: &QueryExpression,
+    state: &QueryExpression
 ) -> Result<(), String> {
     let components: usize = count_component(machine);
 
-    for (state, str) in [(start, "start"), (end, "end")] {
-        if !component_to_location_count_equal(components, state) {
-            return Err(format!(
-                "The number of automata does not match the number of locations in the {}",
-                str
-            ));
-        }
+    if !component_to_location_count_equal(components, state) {
+        return Err(format!("The number of automata does not match the number of locations"));
     }
     Ok(())
 }
