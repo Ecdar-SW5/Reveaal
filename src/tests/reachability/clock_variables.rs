@@ -1,11 +1,8 @@
 #[cfg(test)]
 mod reachability_parser_clock_variable_validation {
     use crate::{
-        tests::reachability::helper_functions::reachability_test_helper_functions::{
-            self, create_system_recipe_and_machine,
-        },
-        ModelObjects::representations::QueryExpression,
-        System,
+        tests::reachability::helper_functions::reachability_test_helper_functions,
+        ModelObjects::representations::QueryExpression, System,
     };
     use test_case::test_case;
 
@@ -21,7 +18,11 @@ mod reachability_parser_clock_variable_validation {
     fn query_parser_checks_invalid_clock_variables(clock_str: &str) {
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
         let folder_path = "samples/json/EcdarUniversity";
-        let (machine, system) = create_system_recipe_and_machine(*mock_model, folder_path);
+        let (machine, system) =
+            reachability_test_helper_functions::create_system_recipe_and_machine(
+                *mock_model,
+                folder_path,
+            );
 
         let mock_state = Box::new(QueryExpression::State(
             reachability_test_helper_functions::string_to_locations("L20"), // This location exists in Adm2
@@ -40,7 +41,11 @@ mod reachability_parser_clock_variable_validation {
     fn query_parser_checks_valid_clock_variables(clock_str: &str) {
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
         let folder_path = "samples/json/EcdarUniversity";
-        let (machine, system) = create_system_recipe_and_machine(*mock_model, folder_path);
+        let (machine, system) =
+            reachability_test_helper_functions::create_system_recipe_and_machine(
+                *mock_model,
+                folder_path,
+            );
 
         let mock_state = Box::new(QueryExpression::State(
             reachability_test_helper_functions::string_to_locations("L20"), // This location exists in Adm2
