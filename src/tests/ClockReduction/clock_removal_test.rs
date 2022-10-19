@@ -17,7 +17,7 @@ pub mod clock_removal_tests {
 
         assert_edges_in_component(
             &component,
-            HashSet::from([
+            &HashSet::from([
                 "L0-y->L1".to_string(),
                 "L1-y->L0".to_string(),
                 "L0-->L1".to_string(),

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod unused_clocks_tests {
-    use crate::tests::ClockReduction::helper::test::assert_duplicated_clock_detection;
+    use crate::tests::ClockReduction::helper::test::assert_clock_reason;
     use crate::DataReader::json_reader::read_json_component;
     use std::collections::HashSet;
 
@@ -13,7 +13,7 @@ mod unused_clocks_tests {
 
         let unused_clocks = component.find_redundant_clocks();
 
-        assert_duplicated_clock_detection(&unused_clocks, 1, HashSet::from([unused_clock]), true);
+        assert_clock_reason(&unused_clocks, 1, HashSet::from([unused_clock]), true);
     }
 
     //TODO: Merge these functions
@@ -25,7 +25,7 @@ mod unused_clocks_tests {
 
         let unused_clocks = component.find_redundant_clocks();
 
-        assert_duplicated_clock_detection(&unused_clocks, 1, HashSet::from([unused_clock]), true);
+        assert_clock_reason(&unused_clocks, 1, HashSet::from([unused_clock]), true);
     }
 
     #[test]

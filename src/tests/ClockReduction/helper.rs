@@ -1,22 +1,27 @@
 #[cfg(test)]
 pub mod test {
     use crate::component::{ClockReductionReason, Component, RedundantClock};
-    use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
     use std::collections::{HashMap, HashSet};
     use std::iter::FromIterator;
-    use std::ops::Deref;
+
+    pub fn assert_locations_and_edges_in_component(component: &Component, expected_locations: &HashSet<String>, expected_edges: HashSet<String>) {
+        assert_locations_in_component(&component, &expected_locations);
+        assert_edges_in_component(&component, &expected_edges);
+    }
 
     // Asserts that component contains given locations.
-    pub fn assert_clock_locations(component: &Component, expected_locations: HashSet<String>) {
+    pub fn assert_locations_in_component(component: &Component, expected_locations: &HashSet<String>) {
         let mut actual_locations: HashSet<String> = HashSet::new();
 
-        for location in &component.locations {
-            let mut dependentClocks = HashSet::new();
+        for location in &component.locations{
+            let mut clocks_in_invariants = HashSet::new();
             if let Some(invariant) = &location.invariant {
-                get_dependent_clocks(&invariant, &mut dependentClocks);
+                invariant.get_varnames()
+                    .iter()
+                    .for_each(|clock| { clocks_in_invariants.insert((*clock).to_string());});
             }
 
-            let clock = sort_clocks_and_join(&dependentClocks);
+            let clock = sort_clocks_and_join(&clocks_in_invariants);
 
             actual_locations.insert(format!("{}-{}", location.id.clone(), clock));
         }
@@ -29,21 +34,24 @@ pub mod test {
         );
     }
 
-    pub fn assert_edges_in_component(component: &Component, expected_edges: HashSet<String>) {
+    // Asserts that component contains given locations.
+    pub fn assert_edges_in_component(component: &Component, expected_edges: &HashSet<String>) {
         let mut actual_edges: HashSet<String> = HashSet::new();
 
         for edge in &component.edges {
-            let mut dependent_clocks = HashSet::new();
+            let mut clocks_in_guards_and_updates = HashSet::new();
             if let Some(guard) = &edge.guard {
-                get_dependent_clocks(&guard, &mut dependent_clocks);
+                guard.get_varnames()
+                    .iter()
+                    .for_each(|clock| { clocks_in_guards_and_updates.insert((*clock).to_string());});
             }
-            if let Some(update) = &edge.update {
-                for upt in update {
-                    dependent_clocks.insert(upt.get_variable_name().to_string());
+            if let Some(updates) = &edge.update {
+                for update in updates {
+                    clocks_in_guards_and_updates.insert(update.variable.to_string());
                 }
             }
 
-            let sorted_clocks = sort_clocks_and_join(&dependent_clocks);
+            let sorted_clocks = sort_clocks_and_join(&clocks_in_guards_and_updates);
 
             let edge_id = format!(
                 "{}-{}->{}",
@@ -77,10 +85,10 @@ pub mod test {
         sorted_clocks
     }
 
-    pub fn assert_duplicated_clock_detection(
+    pub fn assert_clock_reason(
         redundant_clocks: &Vec<RedundantClock>,
         expected_amount_to_reduce: u32,
-        expected_duplicate_clocks: HashSet<&str>,
+        expected_reducible_clocks: HashSet<&str>,
         unused_allowed: bool,
     ) {
         let mut global_clock: String = String::from("");
@@ -94,7 +102,7 @@ pub mod test {
                         global_clock = replaced_by.clone();
                     }
                     assert!(
-                        expected_duplicate_clocks.contains(redundancy.clock.as_str()),
+                        expected_reducible_clocks.contains(redundancy.clock.as_str()),
                         "Clock ({}) was marked as duplicate unexpectedly",
                         redundancy.clock
                     );
@@ -113,7 +121,7 @@ pub mod test {
                 ClockReductionReason::Unused => {
                     assert!(unused_allowed, "Unexpected unused optimization");
                     assert!(
-                        expected_duplicate_clocks.contains(&redundancy.clock.as_str()),
+                        expected_reducible_clocks.contains(&redundancy.clock.as_str()),
                         "Clock ({}) is not set as unused, but is not in expected",
                         redundancy.clock.as_str()
                     );
@@ -133,50 +141,6 @@ pub mod test {
             expected_amount_to_reduce,
             clocksReduced.len()
         );
-    }
-
-    pub fn get_dependent_clocks(expr: &BoolExpression, out: &mut HashSet<String>) {
-        match expr.deref() {
-            BoolExpression::Bool(_) => {}
-            BoolExpression::Parentheses(op) => get_dependent_clocks(op, out),
-            BoolExpression::Arithmetic(op) => get_dependent_clocks_arithmetic(op, out),
-
-            BoolExpression::AndOp(lhs, rhs) | BoolExpression::OrOp(lhs, rhs) => {
-                get_dependent_clocks(lhs, out);
-                get_dependent_clocks(rhs, out);
-            }
-
-            BoolExpression::LessEQ(lhs, rhs)
-            | BoolExpression::GreatEQ(lhs, rhs)
-            | BoolExpression::LessT(lhs, rhs)
-            | BoolExpression::GreatT(lhs, rhs)
-            | BoolExpression::EQ(lhs, rhs) => {
-                get_dependent_clocks_arithmetic(lhs, out);
-                get_dependent_clocks_arithmetic(rhs, out);
-            }
-        }
-    }
-
-    fn get_dependent_clocks_arithmetic(expr: &ArithExpression, out: &mut HashSet<String>) {
-        match expr.deref() {
-            ArithExpression::Parentheses(op) => get_dependent_clocks_arithmetic(op, out),
-
-            ArithExpression::Difference(lhs, rhs)
-            | ArithExpression::Addition(lhs, rhs)
-            | ArithExpression::Multiplication(lhs, rhs)
-            | ArithExpression::Division(lhs, rhs)
-            | ArithExpression::Modulo(lhs, rhs) => {
-                get_dependent_clocks_arithmetic(lhs, out);
-                get_dependent_clocks_arithmetic(rhs, out);
-            }
-
-            // Clock is illegal.
-            ArithExpression::Clock(_) => assert!(false),
-            ArithExpression::VarName(name) => {
-                out.insert(name.clone());
-            }
-            ArithExpression::Int(_i) => {}
-        }
     }
 
     pub fn assert_correct_edges_and_locations(
