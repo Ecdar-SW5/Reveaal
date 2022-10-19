@@ -78,9 +78,15 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
     match query_result {
         QueryResult::Refinement(refines) => Some(ProtobufResult::Refinement(RefinementResult {
             success: *refines,
+            reason: "".to_string(),
             relation: vec![],
-            state: None, // TODO: this is a placeholder value
+            state: None,
         })),
+
+        QueryResult::Reachability(_, _) => {
+            unimplemented!("Not implemented, but should be implemented");
+        }
+
         QueryResult::GetComponent(comp) => Some(ProtobufResult::Component(ComponentResult {
             component: Some(ProtobufComponent {
                 rep: Some(Rep::Json(component_to_json(comp))),
@@ -89,13 +95,15 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
         QueryResult::Consistency(is_consistent) => {
             Some(ProtobufResult::Consistency(ConsistencyResult {
                 success: *is_consistent,
-                state: None, // TODO: this is a placeholder value
+                reason: "".to_string(),
+                state: None,
             }))
         }
         QueryResult::Determinism(is_deterministic) => {
             Some(ProtobufResult::Determinism(DeterminismResult {
                 success: *is_deterministic,
-                state: None, // TODO: this is a placeholder value
+                reason: "".to_string(),
+                state: None,
             }))
         }
         QueryResult::Error(message) => Some(ProtobufResult::Error(message.clone())),

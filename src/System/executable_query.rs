@@ -3,6 +3,7 @@ use log::info;
 
 use crate::DataReader::component_loader::ComponentLoader;
 use crate::ModelObjects::component::Component;
+use crate::ModelObjects::component::State;
 use crate::System::refine;
 use crate::System::save_component::combine_components;
 use crate::TransitionSystems::TransitionSystemPtr;
@@ -12,6 +13,7 @@ use super::save_component::PruningStrategy;
 
 pub enum QueryResult {
     Refinement(bool),
+    Reachability(bool, Vec<String>), // This represents a path from start state to end state
     GetComponent(Component),
     Consistency(bool),
     Determinism(bool),
@@ -23,6 +25,9 @@ impl QueryResult {
         match self {
             QueryResult::Refinement(true) => satisfied(query_str),
             QueryResult::Refinement(false) => not_satisfied(query_str),
+
+            QueryResult::Reachability(true, _) => satisfied(query_str),
+            QueryResult::Reachability(false, _) => not_satisfied(query_str),
 
             QueryResult::Consistency(true) => satisfied(query_str),
             QueryResult::Consistency(false) => not_satisfied(query_str),
@@ -67,6 +72,26 @@ impl ExecutableQuery for RefinementExecutor {
             }
             Err(err_msg) => QueryResult::Error(err_msg),
         }
+    }
+}
+
+/// Used to store input for the reachability checker
+pub struct ReachabilityExecutor {
+    // sys represents the transition system
+    pub transition_system: TransitionSystemPtr,
+
+    // s_state is the start state
+    pub start_state: State,
+
+    // e_state is the end state, where we want to see whether end state is reachable from start state
+    pub end_state: State,
+}
+
+impl ExecutableQuery for ReachabilityExecutor {
+    fn execute(self: Box<Self>) -> QueryResult {
+        let (sys, s_state, e_state) = (self.transition_system, self.start_state, self.end_state);
+
+        unimplemented!();
     }
 }
 

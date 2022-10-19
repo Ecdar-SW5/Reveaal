@@ -4,8 +4,9 @@ use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::representations::QueryExpression;
 use crate::System::executable_query::{
     ConsistencyExecutor, DeterminismExecutor, ExecutableQuery, GetComponentExecutor,
-    RefinementExecutor,
+    ReachabilityExecutor, RefinementExecutor,
 };
+use crate::System::extract_state::get_state;
 
 use crate::TransitionSystems::{
     CompiledComponent, Composition, Conjunction, Quotient, TransitionSystemPtr,
@@ -36,6 +37,30 @@ pub fn create_executable_query<'a>(
                 sys1: left.compile(dim)?,
                 sys2: right.compile(dim)?,
             }))},
+            QueryExpression::Reachability(automata, start, end) => {
+                let mut quotient_index = None;
+                let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
+                if let Err(e) = validate_reachability_input(&machine, start, end){
+                    return Err(e.into());
+                }
+                let transition_system = machine.clone().compile(dim)?;
+
+
+                let start_state = match get_state(start, &machine, &transition_system) {
+                    Ok(s) => s,
+                    Err(location)=> return Err(location.into()),
+                };
+                let end_state = match get_state(end, &machine, &transition_system) {
+                    Ok(s) => s,
+                    Err(location)=> return Err(location.into()),
+                };
+
+                Ok(Box::new(ReachabilityExecutor {
+                    transition_system,
+                    start_state,
+                    end_state,
+                }))
+            },
             QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
                 recipe: get_system_recipe(
                     query_expression,
@@ -166,5 +191,39 @@ pub fn get_system_recipe(
             get_system_recipe(comp, component_loader, clock_index, &mut None)
         }
         _ => panic!("Got unexpected query side: {:?}", side),
+    }
+}
+
+fn validate_reachability_input(
+    machine: &SystemRecipe,
+    start: &QueryExpression,
+    end: &QueryExpression,
+) -> Result<(), String> {
+    let components: usize = count_component(machine);
+
+    for (state, str) in [(start, "start"), (end, "end")] {
+        if component_to_location_count_equal(components, state) {
+            return Err(format!(
+                "The number of automata does not match the number of locations in the {}",
+                str
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn count_component(system: &SystemRecipe) -> usize {
+    match system {
+        SystemRecipe::Composition(left, right) => count_component(left) + count_component(right),
+        SystemRecipe::Conjunction(left, right) => count_component(left) + count_component(right),
+        SystemRecipe::Quotient(left, right, _) => count_component(left) + count_component(right),
+        SystemRecipe::Component(_) => 1,
+    }
+}
+
+fn component_to_location_count_equal(components: usize, state: &QueryExpression) -> bool {
+    match state {
+        QueryExpression::State(loc_names, _) => loc_names.len() != components,
+        _ => panic!("Wrong type of QueryExpression"),
     }
 }

@@ -40,7 +40,7 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         _request: Request<()>,
     ) -> Result<Response<UserTokenResponse>, Status> {
-        panic!("not implemented")
+        unimplemented!();
     }
 
     async fn send_query(
@@ -53,7 +53,7 @@ impl EcdarBackend for ConcreteEcdarBackend {
 
     async fn start_simulation(
         &self,
-        request: Request<SimulationStartRequest>,
+        _request: Request<SimulationStartRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
         let request = std::panic::AssertUnwindSafe(request);
         catch_unwind(self.handle_start_simulation(request)).await
