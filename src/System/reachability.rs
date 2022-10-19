@@ -117,7 +117,7 @@ fn search_algorithm(
             return Ok(Some(Path{}))/* TODO: Return the actual path */
         }
         for action in &actions {
-            for transition in &system.next_transitions(&next_state.decorated_locations, &action){
+            for transition in &system.next_transitions(&next_state.decorated_locations, action){
                 take_transition(&next_state, transition, &mut frontier_states, &mut visited_states, system);
             }
         }
