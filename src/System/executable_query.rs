@@ -20,12 +20,6 @@ pub enum QueryResult {
     Error(String),
 }
 
-/// When egde is fully defined in protobuf it will:
-/// Serves as a representation of a transition you can take in the transision system.
-pub struct Edge {
-    id: String,
-}
-
 impl QueryResult {
     pub fn print_result(&self, query_str: &str) {
         match self {

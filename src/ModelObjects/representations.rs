@@ -1213,17 +1213,17 @@ impl QueryExpression {
                 left.pretty_string(),
                 right.pretty_string()
             ),
-            QueryExpression::Reachability(left, middle, right) =>{
-                let start_state = match **middle{
+            QueryExpression::Reachability(automata, start, end) =>{
+                let start_state = match &**start{
                     Some(expr) => expr.pretty_string(),
                     None => "".to_string(),
                 };
                 
                 format!(
                     "reachability: {} -> {} {}",
-                    left.pretty_string(),
+                    automata.pretty_string(),
                     start_state,
-                    right.pretty_string()
+                    end.pretty_string()
                 )
             },
             QueryExpression::Consistency(system) => {

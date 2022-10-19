@@ -48,10 +48,10 @@ pub fn create_executable_query<'a>(
 
                 let system = machine.clone().compile(dim)?;
 
-                let start_state: Option<State> = match **start{
+                let start_state: Option<State> = match &**start{
                     Some(state) =>{ 
                         
-                        if let Err(e) = validate_reachability_input(&machine, &state){
+                        if let Err(e) = validate_reachability_input(&machine, state){
                             return Err(e.into());
                         }
 
