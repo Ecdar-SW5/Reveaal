@@ -262,7 +262,7 @@ impl Component {
     pub fn reduce_clocks(&mut self, redundant_clocks: &Vec<RedundantClock>) {
         for clock in redundant_clocks {
             match &clock.reason {
-                ClockReductionReason::Duplicate(global) => self.replace_clock(&clock, global),
+                ClockReductionReason::Duplicate(global) => self.replace_clock(clock, global),
                 ClockReductionReason::Unused => self.remove_clock(&clock.updates),
             }
 
@@ -270,7 +270,7 @@ impl Component {
                 .declarations
                 .clocks
                 .get(clock.clock.as_str())
-                .expect(format!("Clock {} is not in the declarations", clock.clock).as_str());
+                .unwrap_or_else(|| panic!("Clock {} is not in the declarations", clock.clock));
             self.declarations
                 .clocks
                 .values_mut()
