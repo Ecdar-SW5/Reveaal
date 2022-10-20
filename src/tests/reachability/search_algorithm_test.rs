@@ -35,6 +35,9 @@ mod reachability_search_algorithm_test{
     #[test_case(PATH2, "reachability: Component3 -> [L7](x>4); [L8]()", false; "It is not possible to travel from L7 to L8 due to specified guards")]
     #[test_case(PATH2, "reachability: Component5 -> [L11](); [L12]()", true; "It is possible to travel from L11 to L12 due to update")]
     #[test_case(PATH2, "reachability: Component6 -> [L13](); [L15]()", true; "It is possible to travel from L13 to L15 due to the updates at L14")]
+    #[test_case(PATH2, "reachability: Component7 -> [L16](); [L19]()", true; "Overwrite state of location once to reach end state")]
+    #[test_case(PATH2, "reachability: Component8 -> [L20](); [L22]()", true; "Reset clock to reach end state")]
+    #[test_case(PATH2, "reachability: Component7 -> [L16](); [L19](y<2)", false; "Unreachable due to second clock")]
 	fn search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
 
 		TEMPORARY_MISSING_DECLERATIONS_HACK(path);
