@@ -331,7 +331,7 @@ impl Component {
                 } else {
                     seen_updates
                         .entry(upd.variable.clone())
-                        .or_insert(HashMap::new())
+                        .or_insert_with(HashMap::new)
                         .entry(i)
                         .or_insert(j);
                 }

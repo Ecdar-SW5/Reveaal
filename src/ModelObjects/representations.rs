@@ -425,9 +425,7 @@ impl BoolExpression {
             BoolExpression::AndOp(p1, p2) | BoolExpression::OrOp(p1, p2) => p1
                 .get_varnames()
                 .iter()
-                .chain(p2.get_varnames().iter())
-                .map(|x| *x)
-                .collect(),
+                .chain(p2.get_varnames().iter()).copied().collect(),
             BoolExpression::LessEQ(a1, a2)
             | BoolExpression::GreatEQ(a1, a2)
             | BoolExpression::LessT(a1, a2)
@@ -435,9 +433,7 @@ impl BoolExpression {
             | BoolExpression::EQ(a1, a2) => a1
                 .get_varnames()
                 .iter()
-                .chain(a2.get_varnames().iter())
-                .map(|x| *x)
-                .collect(),
+                .chain(a2.get_varnames().iter()).copied().collect(),
             BoolExpression::Bool(_) => vec![],
             BoolExpression::Arithmetic(a) => a.get_varnames(),
         }
@@ -1027,9 +1023,7 @@ impl ArithExpression {
             | ArithExpression::Modulo(a1, a2) => a1
                 .get_varnames()
                 .iter()
-                .chain(a2.get_varnames().iter())
-                .map(|x| *x)
-                .collect(),
+                .chain(a2.get_varnames().iter()).copied().collect(),
             ArithExpression::Clock(_) | ArithExpression::Int(_) => vec![],
             ArithExpression::VarName(name) => vec![name.as_str()],
         }
