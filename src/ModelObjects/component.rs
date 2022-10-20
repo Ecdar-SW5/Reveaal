@@ -266,7 +266,11 @@ impl Component {
                 ClockReductionReason::Unused => self.remove_clock(&clock.updates),
             }
 
-            let clock_val = *self.declarations.clocks.get(clock.clock.as_str()).unwrap();
+            let clock_val = *self
+                .declarations
+                .clocks
+                .get(clock.clock.as_str())
+                .expect(format!("Clock {} is not in the declarations", clock.clock).as_str());
             self.declarations
                 .clocks
                 .values_mut()
@@ -284,6 +288,11 @@ impl Component {
         let clocks: HashSet<String> = self.declarations.get_clocks().keys().cloned().collect();
         let mut out: Vec<RedundantClock> = vec![];
         let mut seen_clocks: HashMap<String, Box<[Vec<usize>; 2]>> = HashMap::new();
+
+        // This loops takes ass the edges and locations with guards and invariants and saves the clocks
+        // `index` is the index in either `self.edges` or `self.locations`
+        // `expr` is the guard or invariant itself
+        // `which` determines if it is an edge or location, used for saving the indices correctly (0 = edge, 1 = location)
         for (index, expr, which) in self
             .edges
             .iter()
@@ -298,11 +307,16 @@ impl Component {
                     .map(|(i, l)| (i, l.invariant.as_ref().unwrap(), 1)),
             )
         {
+            // Here we find all varnames in the expression so we can save where it is used
             for name in expr.get_varnames() {
                 if clocks.contains(name) {
                     if let Some(clock_indices) = seen_clocks.get_mut(name) {
+                        // Either we have seen the clock, and just add the index in the correct vec (edge or location)
+                        // We know that `which` will be valid because we set it in the loop above
                         clock_indices.get_mut(which).unwrap().push(index);
                     } else {
+                        // Or we have not seen the clock before, and have to input it in the HashMap
+                        // and then input the index correctly
                         seen_clocks.insert(name.to_string(), Box::new([vec![], vec![]]));
                         seen_clocks
                             .get_mut(name)
@@ -364,7 +378,11 @@ impl Component {
     /// `clock_updates`: Hashmap where the keys are the indices for the `edges`, and the value is the index in `updates` on said edge
     pub(crate) fn remove_clock(&mut self, clock_updates: &HashMap<usize, usize>) {
         for (i, u) in clock_updates {
-            self.edges[*i].update.as_mut().unwrap().remove(*u);
+            self.edges[*i]
+                .update
+                .as_mut()
+                .expect("No updates on the edge")
+                .remove(*u);
         }
     }
 
