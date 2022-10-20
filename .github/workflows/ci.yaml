@@ -11,8 +11,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
-      - name: Install llvm-config
-        run: sudo apt-get install llvm protobuf-compiler
+      - name: Install protoc
+        run: sudo apt-get install protobuf-compiler
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -45,6 +45,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
+      - name: Install protoc
+        run: sudo apt-get install protobuf-compiler
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
@@ -52,8 +54,13 @@ jobs:
     name: Lint and check
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - name: Install llvm-config
         run: sudo apt-get install llvm protobuf-compiler
+=======
+      - name: Install protoc
+        run: sudo apt-get install protobuf-compiler
+>>>>>>> 81b1794bc27f464ebf046fd15529153993761474
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
