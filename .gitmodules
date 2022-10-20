@@ -1,3 +1,4 @@
 [submodule "Ecdar-ProtoBuf"]
 	path = Ecdar-ProtoBuf
 	url = ../Ecdar-ProtoBuf.git
+	branch = origin clock-reduction
