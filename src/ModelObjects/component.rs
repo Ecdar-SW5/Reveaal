@@ -280,16 +280,16 @@ impl Component {
         }
     }
 
-    ///Used to find redundant clocks - checks for unused and duplicates clocks.
+    /// Used to find redundant clocks - checks for unused and duplicates clocks.
     ///
     /// Returns [`Vec<RedundantClock>`] with all found redundant clock.
-    /// If no redundant clocks found the vector will be empty
+    /// If no redundant clocks are found the vector will be empty
     pub(crate) fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
         let clocks: HashSet<String> = self.declarations.get_clocks().keys().cloned().collect();
         let mut out: Vec<RedundantClock> = vec![];
         let mut seen_clocks: HashMap<String, Box<[Vec<usize>; 2]>> = HashMap::new();
 
-        // This loops takes ass the edges and locations with guards and invariants and saves the clocks
+        // This loop loops over the edges and locations that have guards and invariants, and saves the clocks in `seen_clocks`
         // `index` is the index in either `self.edges` or `self.locations`
         // `expr` is the guard or invariant itself
         // `which` determines if it is an edge or location, used for saving the indices correctly (0 = edge, 1 = location)
