@@ -33,7 +33,7 @@ impl LocationTuple {
     pub fn simple(location: &Location, decls: &Declarations, dim: ClockIndex) -> Self {
         let invariant = if let Some(inv) = location.get_invariant() {
             let mut fed = OwnedFederation::universe(dim);
-            fed = apply_constraints_to_state(inv, decls, fed);
+            fed = apply_constraints_to_state(inv, decls, fed).unwrap();
             Some(fed)
         } else {
             None

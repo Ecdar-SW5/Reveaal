@@ -9,7 +9,7 @@ pub fn apply_constraints_to_state(
     guard: &BoolExpression,
     decls: &Declarations,
     fed: OwnedFederation,
-) -> OwnedFederation {
+) -> Result<OwnedFederation, String> {
     apply_constraints_to_state_helper(guard, decls, fed)
 }
 
@@ -17,55 +17,55 @@ fn apply_constraints_to_state_helper(
     guard: &BoolExpression,
     decls: &Declarations,
     fed: OwnedFederation,
-) -> OwnedFederation {
+) -> Result<OwnedFederation, String> {
     if fed.is_empty() {
-        return fed;
+        return Ok(fed);
     }
     use Inequality::*;
     match guard {
         BoolExpression::AndOp(left, right) => {
-            let fed = apply_constraints_to_state_helper(left, decls, fed);
+            let fed = apply_constraints_to_state_helper(left, decls, fed)?;
             apply_constraints_to_state_helper(right, decls, fed)
         }
         BoolExpression::OrOp(left, right) => {
             let clone = fed.clone();
-            let fed1 = apply_constraints_to_state_helper(left, decls, fed);
-            let fed2 = apply_constraints_to_state_helper(right, decls, clone);
-            fed1 + fed2
+            let fed1 = apply_constraints_to_state_helper(left, decls, fed)?;
+            let fed2 = apply_constraints_to_state_helper(right, decls, clone)?;
+            Ok(fed1 + fed2)
         }
         BoolExpression::LessEQ(left, right) => {
-            let (i, j, c) = get_indices(left, right, decls).unwrap();
+            let (i, j, c) = get_indices(left, right, decls)?;
             // i-j<=c
-            fed.constrain(i, j, LE(c))
+            Ok(fed.constrain(i, j, LE(c)))
         }
         BoolExpression::GreatEQ(left, right) => {
-            let (i, j, c) = get_indices(right, left, decls).unwrap();
+            let (i, j, c) = get_indices(right, left, decls)?;
             // j-i <= -c -> c <= i-j
-            fed.constrain(i, j, LE(c))
+            Ok(fed.constrain(i, j, LE(c)))
         }
         BoolExpression::EQ(left, right) => {
-            let (i, j, c) = get_indices(left, right, decls).unwrap();
+            let (i, j, c) = get_indices(left, right, decls)?;
             // i-j <= c && j-i <= -c -> c <= i-j
 
             // TODO: maybe use fed.constrain_many(...)
-            fed.constrain(i, j, LE(c)).constrain(j, i, LE(-c))
+            Ok(fed.constrain(i, j, LE(c)).constrain(j, i, LE(-c)))
         }
         BoolExpression::LessT(left, right) => {
-            let (i, j, c) = get_indices(left, right, decls).unwrap();
+            let (i, j, c) = get_indices(left, right, decls)?;
             // i-j < c
-            fed.constrain(i, j, LS(c))
+            Ok(fed.constrain(i, j, LS(c)))
         }
         BoolExpression::GreatT(left, right) => {
-            let (i, j, c) = get_indices(right, left, decls).unwrap();
+            let (i, j, c) = get_indices(right, left, decls)?;
             // j-i < -c -> c < i-j
-            fed.constrain(i, j, LS(c))
+            Ok(fed.constrain(i, j, LS(c)))
         }
         BoolExpression::Parentheses(expr) => apply_constraints_to_state_helper(expr, decls, fed),
         BoolExpression::Bool(val) => {
             if !*val {
-                return fed.set_empty();
+                return Ok(fed.set_empty());
             }
-            fed
+            Ok(fed)
         }
         _ => panic!("Unexpected BoolExpression"),
     }

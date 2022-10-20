@@ -6,8 +6,7 @@ use crate::component::Declarations;
 use crate::extract_system_rep::SystemRecipe;
 use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
 use crate::ModelObjects::component::State;
-use crate::ModelObjects::representations::{BoolExpression, QueryExpression};
-use crate::TransitionSystems::TransitionSystem;
+use crate::ModelObjects::representations::QueryExpression;
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use std::slice::Iter;
 
@@ -54,8 +53,7 @@ pub fn get_state(
                     clocks,
                 };
 
-                let zone =
-                    apply_constraints_to_state(clock_constraints, &declarations, inital_federation);
+                let zone = apply_constraints_to_state(clock_constraints, &declarations, inital_federation)?;
                 Ok(State::create(locationtuple, zone))
             } else {
                 let zone = OwnedFederation::universe(system.get_dim());
