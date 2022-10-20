@@ -38,7 +38,8 @@ mod reachability_search_algorithm_test{
     #[test_case(PATH2, "reachability: Component7 -> [L16](); [L19]()", true; "Overwrite state of location once to reach end state")]
     #[test_case(PATH2, "reachability: Component8 -> [L20](); [L22]()", true; "Reset clock to reach end state")]
     #[test_case(PATH2, "reachability: Component7 -> [L16](); [L19](y<2)", false; "Unreachable due to second clock")]
-	fn search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
+    #[test_case(PATH2, "reachability: Component3 && Component3 -> [L6, L6](); [L7, L7]()", true; "Simple conjunction")]
+    fn search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
 
 		TEMPORARY_MISSING_DECLERATIONS_HACK(path);
 
