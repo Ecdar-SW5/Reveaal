@@ -59,7 +59,7 @@ pub mod reachability_test_helper_functions {
         model: QueryExpression,
         folder_path: &str,
     ) -> (Box<SystemRecipe>, Box<dyn TransitionSystem>) {
-        let mut comp_loader = if xml_parser::is_xml_project(&folder_path) {
+        let mut comp_loader = if xml_parser::is_xml_project(folder_path) {
             XmlProjectLoader::new(folder_path.to_string())
         } else {
             JsonProjectLoader::new(folder_path.to_string())

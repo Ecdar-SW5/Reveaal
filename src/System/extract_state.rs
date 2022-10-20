@@ -77,7 +77,7 @@ pub fn get_state(
 }
 
 fn build_location_tuple(
-    locations: &Vec<&str>,
+    locations: &[&str],
     machine: &SystemRecipe,
     system: &TransitionSystemPtr,
 ) -> Result<LocationTuple, String> {

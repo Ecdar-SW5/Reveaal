@@ -160,12 +160,10 @@ fn replace_vars(expr: &ArithExpression, decls: &Declarations) -> Result<ArithExp
         ArithExpression::VarName(name) => {
             if let Some(x) = decls.get_clocks().get(name.as_str()).copied() {
                 Ok(ArithExpression::Clock(x))
+            } else if let Some(x) = decls.get_ints().get(name.as_str()).copied() {
+                Ok(ArithExpression::Int(x))
             } else {
-                if let Some(x) = decls.get_ints().get(name.as_str()).copied() {
-                    Ok(ArithExpression::Int(x))
-                } else {
-                    return Err(name.to_string());
-                }
+                Err(name.to_string())
             }
         }
         ArithExpression::Int(i) => Ok(ArithExpression::Int(*i)),

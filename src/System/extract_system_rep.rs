@@ -53,7 +53,7 @@ pub fn create_executable_query<'a>(
                         return Err(e.into());
                     }
 
-                    match get_state(&state, &machine, &transition_system) {
+                    match get_state(state, &machine, &transition_system) {
                         Ok(s) => s,
                         Err(location) => return Err(location.into()),
                     }
@@ -214,9 +214,9 @@ fn validate_reachability_input(
 ) -> Result<(), String> {
     if let QueryExpression::State(loc_names, _) = state {
         if loc_names.len() != count_component(machine) {
-            return Err(format!(
-                "The number of automata does not match the number of locations"
-            ));
+            return Err(
+                "The number of automata does not match the number of locations".to_string(),
+            );
         }
     } else {
         return Err(format!(
