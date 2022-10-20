@@ -33,7 +33,8 @@ mod reachability_search_algorithm_test{
     #[test_case(PATH2, "reachability: Component3 -> [L7](); [L8]()", true; "It is possible to travel from L7 to L8 without specifiying guards")]
     #[test_case(PATH2, "reachability: Component3 -> [L6](); [L7](x<5)", false; "It is not possible to travel from L6 to L7 due to specified guards")]
     #[test_case(PATH2, "reachability: Component3 -> [L7](x>4); [L8]()", false; "It is not possible to travel from L7 to L8 due to specified guards")]
-    #[test_case(PATH2, "reachability: Component5 -> [L11](); [L12]()", true; "It is not possible to travel from L11 to L12 due to update")]
+    #[test_case(PATH2, "reachability: Component5 -> [L11](); [L12]()", true; "It is possible to travel from L11 to L12 due to update")]
+    #[test_case(PATH2, "reachability: Component6 -> [L13](); [L15]()", true; "It is possible to travel from L13 to L15 due to the updates at L14")]
 	fn search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
 
 		TEMPORARY_MISSING_DECLERATIONS_HACK(path);
