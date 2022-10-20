@@ -25,7 +25,8 @@ mod reachability_search_algorithm_test{
     }
 
     #[test_case(PATH2, "reachability: Component1 -> [L1](); [L3]()", false; "False due to invariants")]
-    #[test_case(PATH2, "reachability: Component1 -> [L4](); [L5]()", false; "False due to invariants, like the other")]
+    #[test_case(PATH2, "reachability: Component2 -> [L4](); [L5]()", false; "False due to invariants, like the other")]
+    #[test_case(PATH2, "reachability: Component3 -> [L6](); [L8]()", false; "False due to guards on the last transition")]
 	fn search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
 
 		TEMPORARY_MISSING_DECLERATIONS_HACK(path);
