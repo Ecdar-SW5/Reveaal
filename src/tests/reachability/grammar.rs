@@ -22,7 +22,10 @@ mod reachability_grammar_test {
     #[test_case("reachability: Hi -> [_]()"; "No start state is given, valid grammar, but invalid query")]
     fn query_grammar_test_valid_queries(parser_input: &str) {
         // This tests that the grammar accepts this string, and does not panic:
-        parse_queries::parse_to_expression_tree(parser_input);
+        match parse_queries::parse_to_expression_tree(parser_input) {
+            Ok(_) => (),
+            Err(_) => panic!("Expected Ok, recieved Err"),
+        };
     }
 
     #[test_case("reachability: Hi -> (); []()"; "No [] to specify locations")]
@@ -43,7 +46,10 @@ mod reachability_grammar_test {
     #[test_case("reachability: Hi -> "; "no state information")]
     #[should_panic]
     fn query_grammar_test_panic(parser_input: &str) {
-        // This tests that the grammar does NOT accept this string and panics:
-        parse_queries::parse_to_expression_tree(parser_input);
+        // This tests that the grammar does NOT accept this string:
+        match parse_queries::parse_to_expression_tree(parser_input) {
+            Err(_) => (),
+            Ok(_) => panic!("Expected Err, recieved Ok"),
+        };
     }
 }
