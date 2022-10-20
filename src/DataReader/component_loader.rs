@@ -6,6 +6,7 @@ use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
 use crate::System::input_enabler;
 use std::collections::HashMap;
+use log::info;
 
 pub trait ComponentLoader {
     fn get_component(&mut self, component_name: &str) -> &Component;
@@ -106,7 +107,7 @@ impl JsonProjectLoader {
 
     fn load_component(&mut self, component_name: &str) {
         let mut component = json_reader::read_json_component(&self.project_path, component_name);
-
+        info!(target: "clock-reduction", "YOOOOOO");
         component.create_edge_io_split();
 
         let opt_inputs = self
