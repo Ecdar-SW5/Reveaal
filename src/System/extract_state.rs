@@ -104,10 +104,3 @@ fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> Locati
         }
     }
 }
-
-fn validate_clocks(
-    clock_constraints: &Box<BoolExpression>,
-    system: &Box<dyn TransitionSystem>,
-) -> Result<(), String> {
-    Ok(())
-}

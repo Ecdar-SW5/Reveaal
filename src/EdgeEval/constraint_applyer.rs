@@ -77,8 +77,8 @@ fn get_indices(
     right: &ArithExpression,
     d: &Declarations,
 ) -> Result<(ClockIndex, ClockIndex, i32), String> {
-    let left = &(replace_vars(left, d).simplify())?;
-    let right = &(replace_vars(right, d).simplify())?;
+    let left = &(replace_vars(left, d)?.simplify())?;
+    let right = &(replace_vars(right, d)?.simplify())?;
     let (clocks_left, clocks_right) = (left.clock_var_count(), right.clock_var_count());
 
     if clocks_left + clocks_right == 0 {
@@ -132,34 +132,39 @@ fn get_indices(
     result
 }
 
-fn replace_vars(expr: &ArithExpression, decls: &Declarations) -> ArithExpression {
+fn replace_vars(expr: &ArithExpression, decls: &Declarations) -> Result<ArithExpression, String> {
     //let mut out = expr.clone();
     match expr {
         ArithExpression::Parentheses(inner) => replace_vars(inner, decls),
         ArithExpression::Difference(l, r) => {
-            ArithExpression::ADif(replace_vars(l, decls), replace_vars(r, decls))
+            Ok(ArithExpression::ADif(replace_vars(l, decls)?, replace_vars(r, decls)?))
         }
         ArithExpression::Addition(l, r) => {
-            ArithExpression::AAdd(replace_vars(l, decls), replace_vars(r, decls))
+            Ok(ArithExpression::AAdd(replace_vars(l, decls)?, replace_vars(r, decls)?))
         }
         ArithExpression::Multiplication(l, r) => {
-            ArithExpression::AMul(replace_vars(l, decls), replace_vars(r, decls))
+            Ok(ArithExpression::AMul(replace_vars(l, decls)?, replace_vars(r, decls)?))
         }
         ArithExpression::Division(l, r) => {
-            ArithExpression::ADiv(replace_vars(l, decls), replace_vars(r, decls))
+            Ok(ArithExpression::ADiv(replace_vars(l, decls)?, replace_vars(r, decls)?))
         }
         ArithExpression::Modulo(l, r) => {
-            ArithExpression::AMod(replace_vars(l, decls), replace_vars(r, decls))
+            Ok(ArithExpression::AMod(replace_vars(l, decls)?, replace_vars(r, decls)?))
         }
-        ArithExpression::Clock(x) => ArithExpression::Clock(*x),
+        ArithExpression::Clock(x) => Ok(ArithExpression::Clock(*x)),
         ArithExpression::VarName(name) => {
             if let Some(x) = decls.get_clocks().get(name.as_str()).copied() {
-                ArithExpression::Clock(x)
+                Ok(ArithExpression::Clock(x))
             } else {
-                ArithExpression::Int(decls.get_ints().get(name.as_str()).copied().unwrap())
+                if let Ok(i) = name.parse::<i32>(){
+                    Ok(ArithExpression::Int(decls.get_ints().get(name.as_str()).copied().unwrap()))
+                }
+                else{
+                    return Err(format!("Could not parse {} as string or int", name)); 
+                }
             }
         }
-        ArithExpression::Int(i) => ArithExpression::Int(*i),
+        ArithExpression::Int(i) => Ok(ArithExpression::Int(*i)),
     }
 }
 
