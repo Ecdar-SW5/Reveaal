@@ -4,9 +4,9 @@ mod reachability_search_algorithm_test{
     use crate::tests::refinement::Helper::json_run_query;
     use crate::QueryResult;
     const PATH: &str = "samples/json/EcdarUniversity";
-    const PATH2: &str = "samples/json/TEST2";
+    const PATH2: &str = "samples/json/AutomatonTestReachability";
 	use std::fs::{File, self, OpenOptions};
-use std::io::prelude::*;
+    use std::io::prelude::*;
 
     #[test_case(PATH, "reachability: Machine -> [L5](y<6); [L4](y<=6)", true; "Existing states and with right clocks")]
     #[test_case(PATH, "reachability: Machine -> [L5](); [L4](y>7)", false; "Exisiting locations but not possible with the clocks")]
@@ -23,7 +23,7 @@ use std::io::prelude::*;
         }
     }
 
-    #[test_case(PATH2, "reachability: Component1 -> [L0](); [L2]()", false; "hi")]
+    #[test_case(PATH2, "reachability: Component1 -> [L1](); [L3]()", false; "False due to invariants")]
 	fn search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
 
 		TEMPORARY_MISSING_DECLERATIONS_HACK(path);
