@@ -40,7 +40,12 @@ use std::io::prelude::*;
 		let mut declarations = String::new();
 		let componentNames = fs::read_dir(path.to_string() + "/Components").unwrap();
 		declarations += "{\n\"name\": \"System Declarations\",\n\"declarations\": \"system ";
+		let mut first = true;
 		for filename in componentNames{
+			if !first{
+				declarations += ", ";
+			}
+			first = false;
 			declarations = declarations + &filename.unwrap().file_name().into_string().unwrap().replace(".json", "");
 		}
 		declarations += "\"\n}";
@@ -54,7 +59,6 @@ use std::io::prelude::*;
 			let filenamestring = &filename.unwrap().file_name().into_string().unwrap();
 			let contents = fs::read_to_string(path.to_string() + "/Components/" + filenamestring).unwrap();
 			let new = contents.replace("declarations\": \"\",", "declarations\": \"clock x, y, z;\",");
-			dbg!(&contents, &new);
 		
 			let mut file = OpenOptions::new().write(true).truncate(true).open(path.to_string() + "/Components/" + filenamestring).unwrap();
 			file.write(new.as_bytes());		
