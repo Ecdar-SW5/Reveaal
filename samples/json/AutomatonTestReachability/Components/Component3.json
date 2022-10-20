@@ -83,7 +83,7 @@
       "select": "",
       "guard": "x\u003c4",
       "update": "",
-      "sync": "x\u003c4",
+      "sync": "",
       "isLocked": false,
       "nails": [
         {
