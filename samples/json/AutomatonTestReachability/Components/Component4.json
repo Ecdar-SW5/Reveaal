@@ -1,30 +1,30 @@
 {
-  "name": "Component2",
+  "name": "Component4",
   "declarations": "clock x, y, z;",
   "locations": [
     {
-      "id": "L4",
-      "nickname": "",
-      "invariant": "",
-      "type": "INITIAL",
-      "urgency": "NORMAL",
-      "x": 125.0,
-      "y": 300.0,
-      "color": "6",
-      "nicknameX": 30.0,
-      "nicknameY": -10.0,
-      "invariantX": 30.0,
-      "invariantY": 10.0
-    },
-    {
-      "id": "L5",
+      "id": "L9",
       "nickname": "",
       "invariant": "x\u003c5",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 65.0,
+      "y": 300.0,
+      "color": "0",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": -3.552713678800501E-15,
+      "invariantY": 30.0
+    },
+    {
+      "id": "L10",
+      "nickname": "",
+      "invariant": "",
       "type": "NORMAL",
       "urgency": "NORMAL",
-      "x": 320.00001,
-      "y": 302.0,
-      "color": "6",
+      "x": 220.00000999999995,
+      "y": 304.0,
+      "color": "0",
       "nicknameX": 30.0,
       "nicknameY": -10.0,
       "invariantX": 30.0,
@@ -33,30 +33,30 @@
   ],
   "edges": [
     {
-      "id": "E4",
+      "id": "E7",
       "group": "",
-      "sourceLocation": "L4",
-      "targetLocation": "L5",
+      "sourceLocation": "L9",
+      "targetLocation": "L10",
       "status": "INPUT",
       "select": "",
-      "guard": "x\u003e6",
+      "guard": "x\u003e5",
       "update": "",
       "sync": "",
       "isLocked": false,
       "nails": [
         {
-          "x": 170.0,
-          "y": 280.0,
+          "x": 110.0,
+          "y": 270.0,
           "propertyType": "GUARD",
           "propertyX": 0.0,
-          "propertyY": 20.0
+          "propertyY": -40.0
         },
         {
-          "x": 230.8,
-          "y": 317.6,
+          "x": 136.4,
+          "y": 297.6,
           "propertyType": "SYNCHRONIZATION",
-          "propertyX": 10.0,
-          "propertyY": 0.0
+          "propertyX": 0.0,
+          "propertyY": 20.0
         }
       ]
     }
@@ -66,6 +66,6 @@
   "y": 132.0,
   "width": 450.0,
   "height": 600.0,
-  "color": "6",
+  "color": "0",
   "includeInPeriodicCheck": true
 }

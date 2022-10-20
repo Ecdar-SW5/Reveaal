@@ -1,6 +1,6 @@
 {
   "name": "Component1",
-  "declarations": "",
+  "declarations": "clock x, y, z;",
   "locations": [
     {
       "id": "L0",
@@ -67,11 +67,18 @@
       "targetLocation": "L1",
       "status": "INPUT",
       "select": "",
-      "guard": "",
+      "guard": "x\u003e7",
       "update": "",
-      "sync": "x\u003e7",
+      "sync": "",
       "isLocked": false,
       "nails": [
+        {
+          "x": 120.00000000000006,
+          "y": 360.0,
+          "propertyType": "GUARD",
+          "propertyX": 0.0,
+          "propertyY": 20.0
+        },
         {
           "x": 128.39999999999998,
           "y": 328.0,
@@ -88,17 +95,24 @@
       "targetLocation": "L3",
       "status": "INPUT",
       "select": "",
-      "guard": "",
+      "guard": "x\u003e8",
       "update": "",
-      "sync": "x\u003e8",
+      "sync": "",
       "isLocked": false,
       "nails": [
+        {
+          "x": 130.0,
+          "y": 250.0,
+          "propertyType": "GUARD",
+          "propertyX": 0.0,
+          "propertyY": 20.0
+        },
         {
           "x": 187.2,
           "y": 269.2,
           "propertyType": "SYNCHRONIZATION",
           "propertyX": 10.0,
-          "propertyY": 0.0
+          "propertyY": 10.0
         }
       ]
     },
@@ -110,8 +124,8 @@
       "status": "INPUT",
       "select": "",
       "guard": "",
-      "update": "",
-      "sync": "x\u003d0",
+      "update": "x\u003d0",
+      "sync": "",
       "isLocked": false,
       "nails": [
         {
@@ -120,6 +134,13 @@
           "propertyType": "SYNCHRONIZATION",
           "propertyX": 10.0,
           "propertyY": 0.0
+        },
+        {
+          "x": 220.0,
+          "y": 180.0,
+          "propertyType": "UPDATE",
+          "propertyX": 30.000000000000014,
+          "propertyY": -20.000000000000004
         }
       ]
     },
@@ -130,11 +151,18 @@
       "targetLocation": "L3",
       "status": "INPUT",
       "select": "",
-      "guard": "",
+      "guard": "x\u003c4",
       "update": "",
-      "sync": "x\u003c4",
+      "sync": "",
       "isLocked": false,
       "nails": [
+        {
+          "x": 220.0,
+          "y": 360.0,
+          "propertyType": "GUARD",
+          "propertyX": 20.0,
+          "propertyY": 20.0
+        },
         {
           "x": 245.99999999999997,
           "y": 328.0,

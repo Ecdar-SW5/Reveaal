@@ -1,6 +1,6 @@
 {
   "name": "Component3",
-  "declarations": "",
+  "declarations": "clock x, y, z;",
   "locations": [
     {
       "id": "L6",
@@ -53,11 +53,18 @@
       "targetLocation": "L7",
       "status": "INPUT",
       "select": "",
-      "guard": "",
+      "guard": "x\u003e5",
       "update": "",
-      "sync": "x\u003e5",
+      "sync": "",
       "isLocked": false,
       "nails": [
+        {
+          "x": 110.0,
+          "y": 210.0,
+          "propertyType": "GUARD",
+          "propertyX": -3.552713678800501E-15,
+          "propertyY": -30.000000000000004
+        },
         {
           "x": 144.0,
           "y": 245.2,
@@ -74,11 +81,18 @@
       "targetLocation": "L8",
       "status": "INPUT",
       "select": "",
-      "guard": "",
+      "guard": "x\u003c4",
       "update": "",
       "sync": "x\u003c4",
       "isLocked": false,
       "nails": [
+        {
+          "x": 190.0,
+          "y": 300.0,
+          "propertyType": "GUARD",
+          "propertyX": 0.0,
+          "propertyY": 20.0
+        },
         {
           "x": 228.0,
           "y": 305.2,
