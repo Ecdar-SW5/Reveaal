@@ -42,21 +42,13 @@ pub fn create_executable_query<'a>(
                 let mut quotient_index = None;
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
 
-                if let Err(e) = validate_reachability_input(&machine, end){
-                    return Err(e.into());
-                }
+                validate_reachability_input(&machine, end)?;
 
                 let transition_system = machine.clone().compile(dim)?;
 
                 let start_state: State = if let Some(state) = &**start {
-                    if let Err(e) = validate_reachability_input(&machine, state){
-                        return Err(e.into());
-                    }
-
-                    match get_state(state, &machine, &transition_system) {
-                        Ok(s) => s,
-                        Err(location) => return Err(location.into()),
-                    }
+                    validate_reachability_input(&machine, state)?;
+                    get_state(state, &machine, &transition_system)?
                 }
                 else {
                     match transition_system.get_initial_state() {
@@ -65,10 +57,8 @@ pub fn create_executable_query<'a>(
                     }
                 };
 
-                let end_state: State = match get_state(end, &machine, &transition_system) {
-                    Ok(s) => s,
-                    Err(location)=> return Err(location.into()),
-                };
+                let end_state: State = get_state(end, &machine, &transition_system)?;
+
                 Ok(Box::new(ReachabilityExecutor {
                     transition_system,
                     start_state,
