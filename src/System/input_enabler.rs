@@ -17,7 +17,8 @@ pub fn make_input_enabled(component: &mut component::Component, inputs: &[String
                 invariant,
                 component.get_declarations(),
                 location_inv_zone,
-            ).unwrap();
+            )
+            .unwrap();
         }
 
         // No constraints on any clocks
@@ -37,7 +38,8 @@ pub fn make_input_enabled(component: &mut component::Component, inputs: &[String
                         target_invariant,
                         component.get_declarations(),
                         guard_zone,
-                    ).unwrap();
+                    )
+                    .unwrap();
                 }
 
                 if let Some(updates) = edge.get_update() {
@@ -53,7 +55,8 @@ pub fn make_input_enabled(component: &mut component::Component, inputs: &[String
                         guard,
                         component.get_declarations(),
                         guard_zone,
-                    ).unwrap();
+                    )
+                    .unwrap();
                 }
 
                 zones_federation += guard_zone.intersection(&location_inv_zone);

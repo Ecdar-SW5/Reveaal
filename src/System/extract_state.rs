@@ -53,7 +53,19 @@ pub fn get_state(
                     clocks,
                 };
 
-                let zone = apply_constraints_to_state(clock_constraints, &declarations, inital_federation)?;
+                let zone = match apply_constraints_to_state(
+                    clock_constraints,
+                    &declarations,
+                    inital_federation,
+                ) {
+                    Ok(zone) => zone,
+                    Err(wrong_clock) => {
+                        return Err(format!(
+                            "Clock {} does not exist in the transition system",
+                            wrong_clock
+                        ))
+                    }
+                };
                 Ok(State::create(locationtuple, zone))
             } else {
                 let zone = OwnedFederation::universe(system.get_dim());

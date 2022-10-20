@@ -136,31 +136,35 @@ fn replace_vars(expr: &ArithExpression, decls: &Declarations) -> Result<ArithExp
     //let mut out = expr.clone();
     match expr {
         ArithExpression::Parentheses(inner) => replace_vars(inner, decls),
-        ArithExpression::Difference(l, r) => {
-            Ok(ArithExpression::ADif(replace_vars(l, decls)?, replace_vars(r, decls)?))
-        }
-        ArithExpression::Addition(l, r) => {
-            Ok(ArithExpression::AAdd(replace_vars(l, decls)?, replace_vars(r, decls)?))
-        }
-        ArithExpression::Multiplication(l, r) => {
-            Ok(ArithExpression::AMul(replace_vars(l, decls)?, replace_vars(r, decls)?))
-        }
-        ArithExpression::Division(l, r) => {
-            Ok(ArithExpression::ADiv(replace_vars(l, decls)?, replace_vars(r, decls)?))
-        }
-        ArithExpression::Modulo(l, r) => {
-            Ok(ArithExpression::AMod(replace_vars(l, decls)?, replace_vars(r, decls)?))
-        }
+        ArithExpression::Difference(l, r) => Ok(ArithExpression::ADif(
+            replace_vars(l, decls)?,
+            replace_vars(r, decls)?,
+        )),
+        ArithExpression::Addition(l, r) => Ok(ArithExpression::AAdd(
+            replace_vars(l, decls)?,
+            replace_vars(r, decls)?,
+        )),
+        ArithExpression::Multiplication(l, r) => Ok(ArithExpression::AMul(
+            replace_vars(l, decls)?,
+            replace_vars(r, decls)?,
+        )),
+        ArithExpression::Division(l, r) => Ok(ArithExpression::ADiv(
+            replace_vars(l, decls)?,
+            replace_vars(r, decls)?,
+        )),
+        ArithExpression::Modulo(l, r) => Ok(ArithExpression::AMod(
+            replace_vars(l, decls)?,
+            replace_vars(r, decls)?,
+        )),
         ArithExpression::Clock(x) => Ok(ArithExpression::Clock(*x)),
         ArithExpression::VarName(name) => {
             if let Some(x) = decls.get_clocks().get(name.as_str()).copied() {
                 Ok(ArithExpression::Clock(x))
             } else {
-                if let Ok(i) = name.parse::<i32>(){
-                    Ok(ArithExpression::Int(decls.get_ints().get(name.as_str()).copied().unwrap()))
-                }
-                else{
-                    return Err(format!("Could not parse {} as string or int", name)); 
+                if let Some(x) = decls.get_ints().get(name.as_str()).copied() {
+                    Ok(ArithExpression::Int(x))
+                } else {
+                    return Err(name.to_string());
                 }
             }
         }

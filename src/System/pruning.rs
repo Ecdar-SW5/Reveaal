@@ -183,7 +183,8 @@ fn handle_input(edge: &Edge, context: &mut PruneContext) {
 
     // apply target invariant
     if let Some(inv) = target_loc.get_invariant() {
-        inconsistent_part = apply_constraints_to_state(inv, context.decl(), inconsistent_part).unwrap();
+        inconsistent_part =
+            apply_constraints_to_state(inv, context.decl(), inconsistent_part).unwrap();
     }
     // apply updates as guard
     if let Some(updates) = edge.get_update() {
@@ -377,13 +378,15 @@ fn back_exploration_on_transition(
 
     // apply edge guard
     if let Some(guard) = edge.get_guard() {
-        inconsistent_part = apply_constraints_to_state(guard, context.decl(), inconsistent_part).unwrap();
+        inconsistent_part =
+            apply_constraints_to_state(guard, context.decl(), inconsistent_part).unwrap();
     }
 
     // apply source invariant
     let source = context.get_loc(edge.get_source_location());
     if let Some(inv) = source.get_invariant() {
-        inconsistent_part = apply_constraints_to_state(inv, context.decl(), inconsistent_part).unwrap();
+        inconsistent_part =
+            apply_constraints_to_state(inv, context.decl(), inconsistent_part).unwrap();
     }
 
     inconsistent_part
@@ -433,7 +436,8 @@ fn handle_output(edge: &Edge, context: &mut PruneContext) {
     let mut source_invariant = OwnedFederation::universe(context.dim);
     let source_loc = context.get_loc(edge.get_source_location());
     if let Some(inv) = source_loc.get_invariant() {
-        source_invariant = apply_constraints_to_state(inv, context.decl(), source_invariant).unwrap();
+        source_invariant =
+            apply_constraints_to_state(inv, context.decl(), source_invariant).unwrap();
     }
 
     if source_invariant.can_delay_indefinitely() {
