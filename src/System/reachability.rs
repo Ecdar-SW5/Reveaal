@@ -105,7 +105,12 @@ fn search_algorithm(
 
     let actions = system.get_actions();
 
-    frontier_states.push(start_state.clone());
+    let mut start_clone = start_state.clone();
+    let start_zone = start_clone.take_zone();
+    let zone = start_clone.decorated_locations.apply_invariants(start_zone);
+    start_clone.set_zone(zone);
+
+    frontier_states.push(start_clone);
     loop {
         let next_state = frontier_states.pop();
         // All has been explored if no next state exist
