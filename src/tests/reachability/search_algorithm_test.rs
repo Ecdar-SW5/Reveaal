@@ -4,11 +4,13 @@ mod reachability_search_algorithm_test{
     use crate::System::reachability::Path;
     use crate::tests::refinement::Helper::json_run_query;
     use crate::QueryResult;
-    const PATH: &str = "samples/json/EcdarUniversity";
-    const PATH2: &str = "samples/json/AutomatonTestReachability";
-	use std::fs::{File, self, OpenOptions};
+    use std::fs::{File, self, OpenOptions};
     use std::io::prelude::*;
     use std::path::Path as PPath;
+
+    const PATH: &str = "samples/json/EcdarUniversity";
+    const PATH2: &str = "samples/json/AutomatonTestReachability";
+
     #[test_case(PATH, "reachability: Machine -> [L5](y<6); [L4](y<=6)", true; "Existing states and with right clocks")]
     #[test_case(PATH, "reachability: Machine -> [L5](); [L4](y>7)", false; "Exisiting locations but not possible with the clocks")]
     #[test_case(PATH, "reachability: Machine -> [L4](y<=6); [L5](y>=4)", true; "Switched the two states and with right clocks")]
