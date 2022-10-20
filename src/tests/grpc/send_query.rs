@@ -85,7 +85,7 @@ mod refinements {
                 components_hash: 0,
             }),
             ignored_input_outputs: None,
-            should_reduce_clocks: None,
+            should_reduce_clocks: true,
         })
     }
 }
