@@ -1,6 +1,6 @@
 {
   "name": "Component1",
-  "declarations": "clock x, y, z;",
+  "declarations": "",
   "locations": [
     {
       "id": "L0",
@@ -69,7 +69,7 @@
       "select": "",
       "guard": "",
       "update": "",
-      "sync": "x\u003e6",
+      "sync": "x\u003e7",
       "isLocked": false,
       "nails": [
         {
@@ -90,7 +90,7 @@
       "select": "",
       "guard": "",
       "update": "",
-      "sync": "x\u003e6",
+      "sync": "x\u003e8",
       "isLocked": false,
       "nails": [
         {
