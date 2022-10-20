@@ -45,10 +45,8 @@ impl ConcreteEcdarBackend {
             }
         }
 
-        let mut component_container = create_component_container(
-            parsed_components,
-            query_request.should_reduce_clocks,
-        );
+        let mut component_container =
+            create_component_container(parsed_components, query_request.should_reduce_clocks);
 
         if query_request.ignored_input_outputs.is_some() {
             return Err(Status::unimplemented(
