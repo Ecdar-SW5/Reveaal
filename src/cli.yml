@@ -27,7 +27,12 @@ args:
         long: save-relation
         required: false
         takes_value: false
-#    - checkInputOutput:
+    - omit-clock-reduction:
+        short: r
+        long: omit-clock-reduction
+        required: false
+        takes_value: false
+          #    - checkInputOutput:
 #        short: c
 #        long: checkInputOutput
 #        help: returns extra ouputs which are present on the left side and vise versa inputs

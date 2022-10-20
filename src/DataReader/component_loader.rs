@@ -51,6 +51,7 @@ pub struct JsonProjectLoader {
     loaded_components: HashMap<String, Component>,
     system_declarations: SystemDeclarations,
     queries: Vec<Query>,
+    should_reduce_clocks: bool,
 }
 
 impl ComponentLoader for JsonProjectLoader {
@@ -93,7 +94,7 @@ impl ProjectLoader for JsonProjectLoader {
 
 impl JsonProjectLoader {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new(project_path: String) -> Box<dyn ProjectLoader> {
+    pub fn new(project_path: String, should_reduce_clocks: bool) -> Box<dyn ProjectLoader> {
         let system_declarations = json_reader::read_system_declarations(&project_path).unwrap();
         let queries = json_reader::read_queries(&project_path).unwrap();
 
@@ -102,12 +103,17 @@ impl JsonProjectLoader {
             loaded_components: HashMap::new(),
             system_declarations,
             queries,
+            should_reduce_clocks
         })
     }
 
     fn load_component(&mut self, component_name: &str) {
         let mut component = json_reader::read_json_component(&self.project_path, component_name);
-        info!(target: "clock-reduction", "YOOOOOO");
+        if self.should_reduce_clocks {
+            component.reduce_clocks(component.find_redundant_clocks());
+            info!(target: "clock-reduction", "YOOOOOO");
+        }
+
         component.create_edge_io_split();
 
         let opt_inputs = self
@@ -167,11 +173,14 @@ impl ProjectLoader for XmlProjectLoader {
 
 impl XmlProjectLoader {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new(project_path: String) -> Box<dyn ProjectLoader> {
+    pub fn new(project_path: String, should_reduce_clocks: bool) -> Box<dyn ProjectLoader> {
         let (comps, system_declarations, queries) = parse_xml_from_file(&project_path);
 
         let mut map = HashMap::<String, Component>::new();
         for mut component in comps {
+            if should_reduce_clocks {
+                component.reduce_clocks(component.find_redundant_clocks());
+            }
             component.create_edge_io_split();
 
             let opt_inputs = system_declarations.get_component_inputs(component.get_name());
