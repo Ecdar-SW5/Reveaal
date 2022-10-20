@@ -1,6 +1,6 @@
 use chrono::Local;
 use colored::{ColoredString, Colorize};
-use log::SetLoggerError;
+use log::{LevelFilter, SetLoggerError};
 use std::io::Write;
 
 #[cfg(feature = "logging")]
@@ -15,14 +15,14 @@ pub fn setup_logger() -> Result<(), SetLoggerError> {
         }
     }
 
-    env_logger::Builder::from_env(env_logger::Env::default())
+    env_logger::Builder::from_default_env()
+        .filter(Some("clock-reduction"), LevelFilter::Info)
         .format(|buf, record| {
             writeln!(
                 buf,
-                "[{} {}:{} {}] - {}",
+                "[{0} {1}:{1} {2}] - {3}",
                 Local::now().format("%H:%M:%S").to_string().cyan(),
                 record.file().unwrap_or_default(),
-                record.line().unwrap_or_default(),
                 colored_level(record.level()),
                 record.args()
             )

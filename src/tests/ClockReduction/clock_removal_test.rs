@@ -13,7 +13,7 @@ pub mod clock_removal_tests {
         );
         let redundant_clocks = component.find_redundant_clocks();
 
-        component.reduce_clocks(&redundant_clocks);
+        component.reduce_clocks(redundant_clocks);
 
         assert_edges_in_component(
             &component,

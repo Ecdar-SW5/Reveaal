@@ -11,7 +11,7 @@ use crate::ModelObjects::queries::Query;
 use crate::ProtobufServer::services::component::Rep;
 use crate::ProtobufServer::services::query_response::query_ok::Result as ProtobufResult;
 use crate::ProtobufServer::services::query_response::query_ok::{
-    ComponentResult, ConsistencyResult, DeterminismResult, RefinementResult,
+    ComponentResult, ConsistencyResult, DeterminismResult, RefinementResult, Information,
 };
 use crate::ProtobufServer::services::query_response::QueryOk;
 use crate::ProtobufServer::services::query_response::Response as QueryOkOrErrorResponse;
@@ -45,7 +45,7 @@ impl ConcreteEcdarBackend {
             }
         }
 
-        let mut component_container = create_component_container(parsed_components);
+        let mut component_container = create_component_container(parsed_components, query_request.should_reduce_clocks.unwrap_or(true));
 
         if query_request.ignored_input_outputs.is_some() {
             return Err(Status::unimplemented(
@@ -69,6 +69,7 @@ impl ConcreteEcdarBackend {
             response: Some(QueryOkOrErrorResponse::QueryOk(QueryOk {
                 query_id: query_request.query_id,
                 result: convert_ecdar_result(&result),
+                info: vec![Information {subject: "test".to_string(), message: "nsoedundo".to_string()}], //TODO: Should be whatever is written through `info!` (logging)
             })),
         };
 
@@ -115,10 +116,13 @@ fn parse_xml_components(xml: &str) -> Vec<Component> {
     comps
 }
 
-fn create_component_container(components: Vec<Component>) -> ComponentContainer {
+fn create_component_container(components: Vec<Component>, should_clock_reduce: bool) -> ComponentContainer {
     let mut comp_hashmap = HashMap::<String, Component>::new();
     for mut component in components {
         trace!("Adding comp {} to container", component.get_name());
+        if should_clock_reduce {
+            component.reduce_clocks(component.find_redundant_clocks())
+        }
 
         component.create_edge_io_split();
         let inputs: Vec<_> = component
