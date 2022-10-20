@@ -3,6 +3,7 @@ mod ecdar_requests;
 mod server;
 
 pub mod services {
+    #![allow(clippy::derive_partial_eq_without_eq)]
     tonic::include_proto!("ecdar_proto_buf");
 }
 
