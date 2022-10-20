@@ -97,6 +97,12 @@ fn search_algorithm(
     system: &dyn TransitionSystem,
 ) -> Result<Option<Path>, String> {
 
+    // Apply the invariant of the start state to the start state
+    let mut start_clone = start_state.clone();
+    let start_zone = start_clone.take_zone();
+    let zone = start_clone.decorated_locations.apply_invariants(start_zone);
+    start_clone.set_zone(zone);
+
     // hashmap linking every location to all its current zones
     let mut visited_states:HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
 
@@ -104,11 +110,6 @@ fn search_algorithm(
     let mut frontier_states: Vec<State> = Vec::new();
 
     let actions = system.get_actions();
-
-    let mut start_clone = start_state.clone();
-    let start_zone = start_clone.take_zone();
-    let zone = start_clone.decorated_locations.apply_invariants(start_zone);
-    start_clone.set_zone(zone);
 
     frontier_states.push(start_clone);
     loop {
