@@ -41,10 +41,9 @@ pub fn create_executable_query<'a>(
             QueryExpression::Reachability(automata, start, end) => {
                 let mut quotient_index = None;
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
+                let transition_system = machine.clone().compile(dim)?;
 
                 validate_reachability_input(&machine, end)?;
-
-                let transition_system = machine.clone().compile(dim)?;
 
                 let start_state: State = if let Some(state) = &**start {
                     validate_reachability_input(&machine, state)?;
