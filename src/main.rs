@@ -4,7 +4,7 @@ mod logging;
 use logging::setup_logger;
 
 use reveaal::{
-    extract_system_rep, parse_queries, queries, start_grpc_server_with_tokio, xml_parser,
+    extract_system_rep, parse_queries, start_grpc_server_with_tokio, xml_parser,
     ComponentLoader, JsonProjectLoader, ProjectLoader, Query, QueryResult, XmlProjectLoader,
 };
 use std::env;
