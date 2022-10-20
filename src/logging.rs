@@ -21,12 +21,15 @@ pub fn setup_logger() -> Result<(), SetLoggerError> {
         .set_target_level(LevelFilter::Info)
         .add_filter_allow_str("clock-reduction")
         .build();
-    CombinedLogger::init(
-        vec![
-            TermLogger::new(LevelFilter::Info, conf, TerminalMode::Stdout, ColorChoice::Auto),
-            //WriteLogger::new(LevelFilter::Info, Config::default(), File::create("my_rust_binary.log").unwrap()), //TODO: Write to something that should be sent through gRPC
-        ]
-    )
+    CombinedLogger::init(vec![
+        TermLogger::new(
+            LevelFilter::Info,
+            conf,
+            TerminalMode::Stdout,
+            ColorChoice::Auto,
+        ),
+        //WriteLogger::new(LevelFilter::Info, Config::default(), File::create("my_rust_binary.log").unwrap()), //TODO: Write to something that should be sent through gRPC
+    ])
     /*
     let target = if let Some(w) = target {
         Target::Pipe(w)

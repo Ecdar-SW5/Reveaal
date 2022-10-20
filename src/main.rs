@@ -49,22 +49,20 @@ fn start_using_cli(matches: &clap::ArgMatches) {
     }
 }
 
-fn parse_args(matches: &clap::ArgMatches) -> (Box<dyn ComponentLoader>, Vec<queries::Query>) {
+fn parse_args(matches: &clap::ArgMatches) -> (Box<dyn ComponentLoader>, Vec<Query>) {
     let folder_path = matches.value_of("folder").unwrap_or("");
     let query = matches.value_of("query").unwrap_or("");
     let should_reduce = !matches.is_present("omit-clock-reduction");
 
     let project_loader = get_project_loader(folder_path.to_string(), should_reduce);
 
-    if query.is_empty() {
-        let queries: Vec<Query> = project_loader.get_queries().clone();
-
-        (project_loader.to_comp_loader(), queries)
+    let queries = if query.is_empty() {
+        project_loader.get_queries().clone()
     } else {
-        let queries = parse_queries::parse_to_query(query);
+        parse_queries::parse_to_query(query)
+    };
 
-        (project_loader.to_comp_loader(), queries)
-    }
+    (project_loader.to_comp_loader(), queries)
 }
 
 fn get_project_loader(project_path: String, should_clock_reduce: bool) -> Box<dyn ProjectLoader> {

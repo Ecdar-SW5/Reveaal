@@ -5,8 +5,8 @@ use crate::DataReader::xml_parser::parse_xml_from_file;
 use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
 use crate::System::input_enabler;
-use std::collections::HashMap;
 use log::info;
+use std::collections::HashMap;
 
 pub trait ComponentLoader {
     fn get_component(&mut self, component_name: &str) -> &Component;
@@ -103,7 +103,7 @@ impl JsonProjectLoader {
             loaded_components: HashMap::new(),
             system_declarations,
             queries,
-            should_reduce_clocks
+            should_reduce_clocks,
         })
     }
 
