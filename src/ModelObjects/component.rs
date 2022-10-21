@@ -13,7 +13,6 @@ use edbm::util::constraints::ClockIndex;
 use crate::ModelObjects::representations::BoolExpression;
 use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
-
 use edbm::zones::OwnedFederation;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

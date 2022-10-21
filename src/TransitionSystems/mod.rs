@@ -15,4 +15,3 @@ pub use location_id::LocationID;
 pub use location_tuple::{CompositionType, LocationTuple};
 pub use quotient::Quotient;
 pub use transition_system::{TransitionSystem, TransitionSystemPtr};
-pub use common::ComposedTransitionSystem;
