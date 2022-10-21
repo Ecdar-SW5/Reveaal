@@ -39,8 +39,7 @@ pub fn create_executable_query<'a>(
                 sys2: right.compile(dim)?,
             }))},
             QueryExpression::Reachability(automata, start, end) => {
-                let mut quotient_index = None;
-                let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
+                let machine = get_system_recipe(automata, component_loader, &mut dim, &mut None);
                 let transition_system = machine.clone().compile(dim)?;
 
                 validate_reachability_input(&machine, end)?;

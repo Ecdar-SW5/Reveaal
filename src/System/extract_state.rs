@@ -32,15 +32,9 @@ pub fn get_state(
                 };
             }
 
-            let locationtuple = build_location_tuple(&locations, machine, system);
+            let locationtuple = build_location_tuple(&locations, machine, system)?;
 
-            if locationtuple.is_err() {
-                return Err(locationtuple.err().unwrap());
-            }
-
-            let locationtuple = locationtuple.unwrap();
-
-            if let Some(clock_constraints) = clock {
+            let zone = if let Some(clock_constraints) = clock {
                 let mut clocks = HashMap::new();
                 for decl in system.get_decls() {
                     clocks.extend(decl.clocks.clone());
@@ -51,7 +45,7 @@ pub fn get_state(
                     clocks,
                 };
 
-                let zone = match apply_constraints_to_state(
+                match apply_constraints_to_state(
                     clock_constraints,
                     &declarations,
                     OwnedFederation::universe(system.get_dim()),
@@ -63,12 +57,12 @@ pub fn get_state(
                             wrong_clock
                         ))
                     }
-                };
-                Ok(State::create(locationtuple, zone))
+                }
             } else {
-                let zone = OwnedFederation::universe(system.get_dim());
-                Ok(State::create(locationtuple, zone))
-            }
+                OwnedFederation::universe(system.get_dim())
+            };
+
+            Ok(State::create(locationtuple, zone))
         }
         _ => panic!("Expected QueryExpression::State, but got {:?}", state_query),
     }
