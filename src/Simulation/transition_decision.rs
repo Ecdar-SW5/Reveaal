@@ -1,4 +1,6 @@
 use crate::{TransitionSystems::{TransitionSystemPtr}, component::{State, Transition}};
+use mockall::*;
+use mockall::predicate::*;
 
 #[allow(dead_code)]
 pub struct TransitionDecision {
@@ -24,7 +26,6 @@ impl TransitionDecision {
         // get all transitions
         for action in actions {
             let transition = system.next_transitions_if_available(source.get_location(), &action);
-
             transitions.append(&mut transition.clone());
         }
 
@@ -37,6 +38,12 @@ impl TransitionDecision {
 
         TransitionDecision { source: source, transitions: transitions }
     }
+}
 
+#[cfg(test)]
+mod tests {
+    fn from__source_with_no_transitions__returns_source_with_no_transitions() {
+        assert!(false);
+    }
 }
 
