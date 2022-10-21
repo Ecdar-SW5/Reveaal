@@ -5,7 +5,7 @@ mod reachability_parser_clock_variable_validation {
         ModelObjects::representations::QueryExpression, System,
     };
     use test_case::test_case;
-
+    const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
     // These tests check that the parser only accepts clock variable arguments with existing clock variables.
     // i.e. check that the variables exist in the model.
     // The model/sample used is samples/json/EcdarUniversity/adm2.json
@@ -17,11 +17,10 @@ mod reachability_parser_clock_variable_validation {
     "The clock variable uwu in the state does not exist in the model")]
     fn query_parser_checks_invalid_clock_variables(clock_str: &str) {
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
-        let folder_path = "samples/json/EcdarUniversity";
         let (machine, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(
                 *mock_model,
-                folder_path,
+                FOLDER_PATH,
             );
 
         let mock_state = Box::new(QueryExpression::State(
@@ -40,11 +39,10 @@ mod reachability_parser_clock_variable_validation {
     "The clock variable y in state exists in the model")]
     fn query_parser_checks_valid_clock_variables(clock_str: &str) {
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
-        let folder_path = "samples/json/EcdarUniversity";
         let (machine, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(
                 *mock_model,
-                folder_path,
+                FOLDER_PATH,
             );
 
         let mock_state = Box::new(QueryExpression::State(

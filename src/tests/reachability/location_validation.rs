@@ -5,7 +5,7 @@ mod reachability_parser_location_validation {
         ModelObjects::representations::QueryExpression, System,
     };
     use test_case::test_case;
-
+    const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
     // These tests check that the parser only accepts location arguments with existing locations.
     // i.e. check that the locations exist in the model.
     // The model/sample used is samples/json/EcdarUniversity/adm2.json
@@ -16,11 +16,10 @@ mod reachability_parser_location_validation {
     "The location NOTCORRECTNAME in the state does not exist in the model")]
     fn query_parser_checks_invalid_locations(location_str: &str) {
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
-        let folder_path = "samples/json/EcdarUniversity";
         let (machine, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(
                 *mock_model,
-                folder_path,
+                FOLDER_PATH,
             );
 
         let mock_state = Box::new(QueryExpression::State(
@@ -39,11 +38,10 @@ mod reachability_parser_location_validation {
     "The location L23 in the state exists in the model")]
     fn query_parser_checks_valid_locations(location_str: &str) {
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
-        let folder_path = "samples/json/EcdarUniversity";
         let (machine, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(
                 *mock_model,
-                folder_path,
+                FOLDER_PATH,
             );
 
         let mock_state = Box::new(QueryExpression::State(
