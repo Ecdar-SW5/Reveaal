@@ -1,18 +1,20 @@
 use std::collections::HashSet;
 
-use crate::{ModelObjects::{component::{Channel, Component, Location}, self}, TransitionSystems::{TransitionSystemPtr, LocationTuple, TransitionSystem}};
+use crate::{ModelObjects::{component::{Channel, Component, Location}, self}, TransitionSystems::{TransitionSystemPtr, LocationTuple, TransitionSystem, CompiledComponent}};
+use mockall::*;
+use mockall::predicate::*;
 
 #[derive(Clone)]
 #[allow(dead_code)]
 pub struct SimulationComponent {
-    transition_system: TransitionSystemPtr,
+    transition_system: CompiledComponent,
     valid_actions: HashSet<String>,
     state: Vec<ModelObjects::component::State>
     // valid_transitions: Vec<&'a Edge>,
 }
 
 impl SimulationComponent {
-    pub fn new(transitionSystem: TransitionSystemPtr) -> Self {
+    pub fn new(transitionSystem: CompiledComponent) -> Self {
         Self {
             valid_actions: transitionSystem.get_actions(),
             transition_system: transitionSystem.clone(),
@@ -25,7 +27,7 @@ impl SimulationComponent {
     }
 }
     
-    fn get_initial_location(transitionSystem: TransitionSystemPtr) -> LocationTuple {
+    fn get_initial_location(transitionSystem: CompiledComponent) -> LocationTuple {
         let initialLocation = match transitionSystem.get_initial_location() {
             None => panic!("no initial location found"),
             Some(x) => x.clone(),
@@ -33,7 +35,7 @@ impl SimulationComponent {
         initialLocation
     }
 
-    fn get_inital_state(transitionSystem: TransitionSystemPtr) -> ModelObjects::component::State {
+    fn get_inital_state(transitionSystem: CompiledComponent) -> ModelObjects::component::State {
         let initialState = match transitionSystem.get_initial_state() {
             None => panic!("Initial state is empty"),
             Some(x) => x.clone(),
@@ -63,10 +65,36 @@ pub fn continue_simulation(
 
 #[cfg(test)]
 mod tests {
-    // use crate::DataReader::json_reader;
-    // use crate::ModelObjects::component::{Channel, Component, Location, State, Transition};
-    // use crate::Simulation::simulation_component;
-    // use crate::TransitionSystems::LocationTuple;
+    use crate::DataReader::json_reader;
+    use crate::ModelObjects::component::{Channel, Component, Location, State, Transition};
+    use crate::Simulation::simulation_component;
+    use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr, CompiledComponent};
+    use mockall::*;
+    use mockall::predicate::*;
+
+    #[test]
+    fn Find_GivenTransitionSystem_InitialState_Returns_State() {
+        
+        // Arrange
+        let test_component: Component = json_reader::read_json_component("samples/json/AG", "Imp");
+        
+        let cc_struct: CompiledComponent = match CompiledComponent::compile(test_component, 0) {
+            None => panic!("Could not Compile"),
+            Some(x) => x.clone(),
+        };
+        
+        let should_equal: State = match cc_struct.get_initial_state() {
+            None => panic!("No initial Location"),
+            Some(x) => x.clone()
+        };
+        
+        // Act
+
+
+        // Assert
+
+
+    }
 
     // #[test]
     // fn Convert_GivenComponent_ReturnsSimulationComponent() {
