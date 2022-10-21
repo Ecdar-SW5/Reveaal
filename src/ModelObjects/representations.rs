@@ -444,10 +444,10 @@ impl BoolExpression {
     }
 
     /// Replaces all occurrences of `ArithExpression::VarName(old)` with `new`
-    ///
+
     /// # Arguments
     /// `old`: The `varname` to be replaced
-    ///
+
     /// `new`: The new varname
     pub fn replace_varname(&mut self, old: &String, new: &String) {
         match self {
@@ -1036,10 +1036,10 @@ impl ArithExpression {
     }
 
     /// Replaces all occurrences of `ArithExpression::VarName(old)` with `new`
-    ///
+
     /// # Arguments
     /// `old`: The `varname` to be replaced
-    ///
+
     /// `new`: The new varname
     pub fn replace_varname(&mut self, old: &String, new: &String) {
         match self {

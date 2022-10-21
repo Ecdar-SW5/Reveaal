@@ -4,7 +4,7 @@ pub mod clock_removal_tests {
     use crate::DataReader::json_reader::read_json_component;
     use std::collections::HashSet;
 
-    // Tests that the clocks that are never never used in any guards are removed.
+    // Tests that the clocks that are never used in any guards are removed.
     #[test]
     fn test_removal_unused_clocks() {
         let mut component = read_json_component(

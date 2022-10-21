@@ -281,7 +281,7 @@ impl Component {
     }
 
     /// Used to find redundant clocks - checks for unused and duplicates clocks.
-    ///
+
     /// Returns [`Vec<RedundantClock>`] with all found redundant clock.
     /// If no redundant clocks are found the vector will be empty
     pub(crate) fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
@@ -390,7 +390,7 @@ impl Component {
     }
 
     /// Removes unused clock
-    ///
+
     /// # Arguments
     /// `clock_updates`: Hashmap where the keys are the indices for the `edges`, and the value is the index in `updates` on said edge
     pub(crate) fn remove_clock(&mut self, clock_updates: &HashMap<usize, usize>) {
@@ -404,10 +404,10 @@ impl Component {
     }
 
     /// Replaces duplicate clock with a new
-    ///
+
     /// # Arguments
     /// `clock`: [`RedundantClock`] representing the clock to be replaced
-    ///
+
     /// `other_clock`: The name of the clock to replace `clock`
     pub(crate) fn replace_clock(&mut self, clock: &RedundantClock, other_clock: &String) {
         for e in &clock.edge_indices {
