@@ -1,5 +1,4 @@
 use crate::DataReader::parse_edge;
-use std::collections::HashSet;
 
 use crate::DataReader::serialization::{
     decode_declarations, decode_guard, decode_invariant, decode_location_type, decode_sync,
@@ -13,7 +12,7 @@ use edbm::util::constraints::ClockIndex;
 
 use crate::ModelObjects::representations::BoolExpression;
 use crate::TransitionSystems::LocationTuple;
-use crate::TransitionSystems::{CompositionType, TransitionSystem, ComposedTransitionSystem};
+use crate::TransitionSystems::{CompositionType, TransitionSystem};
 
 use edbm::zones::OwnedFederation;
 use serde::{Deserialize, Serialize};
