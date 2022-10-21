@@ -7,8 +7,17 @@ pub struct TransitionDecision {
 }
 
 impl TransitionDecision {
+    /// Constructs the inital TransitionDecision for a given TransitionSystemPtr
+    ///
+    /// # Panics
+    /// If the system has no inital state
     pub fn initial_transition_decision(system: TransitionSystemPtr) -> Self {
         let source = system.get_initial_state().unwrap();
+        Self::from(system, source)
+    }
+
+    /// Constructs the TransitionDecision from a source State and a given TransitionSystemPtr
+    pub fn from(system: TransitionSystemPtr, source: State) -> TransitionDecision {
         let mut transitions = vec![];
         let actions = system.get_actions();
 
@@ -22,10 +31,12 @@ impl TransitionDecision {
         // prune transitions that can not be taken
         for (index, transition) in transitions.clone().iter().enumerate() {
             if !transition.use_transition(&mut source.clone()) { 
-                transitions.remove(index); 
+                transitions.remove(index);
             }
         }
 
         TransitionDecision { source: source, transitions: transitions }
     }
+
 }
+
