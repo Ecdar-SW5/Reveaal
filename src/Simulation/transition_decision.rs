@@ -28,5 +28,4 @@ impl TransitionDecision {
 
         TransitionDecision { source: source, transitions: transitions }
     }
-    
 }

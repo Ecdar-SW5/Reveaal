@@ -1,3 +1,3 @@
 pub mod graph_layout;
-pub mod simulation_component;
+pub mod transition_decision;
 
