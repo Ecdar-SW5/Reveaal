@@ -1,5 +1,6 @@
-use services::ProtobufServer::{DecisionPoint, Edge};
+use services::ProtobufServer::{DecisionPoint, Edge, SimulationsInfo};
 use src::TransitionSystem::component;
+use src::ModelObjects::component;
 // TODO: use crate for transDecision
 
 pub struct DecisionPoint {
@@ -10,6 +11,9 @@ pub struct DecisionPoint {
 impl DecisionPoint {
     // Creates the new decision point
     pub fn new(transitionDecision: TransitionDecision) -> &Self {
+        let source = transitionDecision.source;
+        //TODO: make transitions = edge
+
         
     }
 
@@ -26,44 +30,47 @@ impl DecisionPoint {
         let transitions = tranistionDecision.transitions;
     }
 
-    // Create clean edges with no transitions attached
-    pub fn create_edges(transitionDecision: TransitionDecision) -> Vec<Edge> {
+    // Get all edges from components
+    pub fn get_all_edges_from_components(simulationsInfo: SimulationsInfo) -> Vec<Edge> {
 
-        let transitions = get_transitions(transitionDecision);
-        let mut i = 0;
-
-        for Transition in transitions {
-
-            let edges = Vec<Edge> {
-                id: i,
-                specific_component: transitionDecision.source.specific_component
-                };
-            }
-            edges.push();
-            i++;
+        let components = simulationsInfo.components_info.components;
+        let all_edges: Vec<Edge>;
+        for component in components {
+            let edges = get_edges(component);
+            all_edges.push(edges)
         }
-    
-        // Add transitions to corrospondent edge ID
-        pub fn add_transition_to_edge(tranistionDecision: TransitionDecision) -> Vec<Edge>{
+    }
 
-            let transitions = get_transitions(tranistionDecision);
-            let edges = create_edges(transitionDecision);
-            let mut i = 0;
+    // Add transitions to corrospondent edge ID
+    pub fn add_transition_to_edge(tranistionDecision: TransitionDecision, simulationsInfo: SimulationsInfo) -> Vec<Edge>{
 
-            // This is utterly retarded, but if we can choose correct ID/name, this will work
-            for Transition in transitions {
-                if (transitions.source.locationtuple.target_location == edges.specific_component.component_name) {
-                    // TODO: add transition
+        let transitions = get_transitions(tranistionDecision);
+        let locationTuple = get_location_tuple(tranistionDecision);
+        let new_transitions: Vec<Transition>;
+        let edges = get_all_edges_from_components(simulationsInfo);
+        let mut dim: ClockIndex = 0;
+
+        // 1. Loop over transitions
+        for transition in transitions {
+            // 2. Loop over edges
+            for edge in edges {
+                // 3. Check if transions is connected with edges
+                if (locationTuple.id == edge.target_location) {
+                    // 4. Add transition to the corropsondent edge ID
+                    let transition = transition::from(locationTuple.id, edge, dim);
+                    new_transitions.push(transition);
                 }
-                
-                i++;
-            }
-            // Push edges
+            }     
         }
-    
+        // 5. Return the new transitions with corropsodent edge ids
+        new_transitions
+    }
 
+    // Get all edges corrospodent to the chosen ID
+    pub fn get_transitions_for_chosen_component(transitionDecision: TransitionDecision, simulationsInfo: SimulationsInfo, chosen_state: String) -> Vec<Edge> {
 
     }
+}
 
 
 
