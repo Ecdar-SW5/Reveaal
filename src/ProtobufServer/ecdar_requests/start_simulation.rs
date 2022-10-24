@@ -3,13 +3,14 @@ use std::panic::AssertUnwindSafe;
 use crate::DataReader::component_loader::ComponentContainer;
 
 use crate::extract_system_rep::get_system_recipe;
-use crate::parse_queries::parse_to_expression_tree;
-use crate::ProtobufServer::services::{
-    DecisionPoint, SimulationStartRequest, SimulationStepResponse,
-};
+use crate::parse_queries::{build_expression_from_pair, QueryParser};
+use crate::DataReader::parse_queries::Rule;
+use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
+use crate::Simulation::transition_decision::TransitionDecision;
 
 use log::trace;
 
+use pest::Parser;
 use tonic::{Request, Response, Status};
 
 use crate::ProtobufServer::ConcreteEcdarBackend;
@@ -31,25 +32,29 @@ impl ConcreteEcdarBackend {
 
         // Combine components as specified in the composition string
         let mut dimension = 0;
-        let composition_as_expression_tree = parse_to_expression_tree(&composition);
+        let composition = QueryParser::parse(Rule::expr, &composition)
+            .unwrap()
+            .next()
+            .unwrap();
+        let composition = build_expression_from_pair(composition);
         let transition_system = get_system_recipe(
-            &composition_as_expression_tree[0],
+            &composition,
             &mut component_container,
             &mut dimension,
             &mut None,
         )
-        .compile(dimension);
+        .compile(dimension)
+        .unwrap();
 
         // Send the combine component to the Simulation module
-        let initial_decision_point = DecisionPoint {
-            source: todo!(),
-            edges: todo!(),
-        };
+        let _initial_decision_point =
+            TransitionDecision::initial_transition_decision(transition_system);
+
         // get_initial_decision_from(transition_system);
 
         // Serialize and respond with the SimulationState result from the simulation module
         let simulation_step_response = SimulationStepResponse {
-            new_decision_point: Some(initial_decision_point),
+            new_decision_point: None,
         };
 
         Ok(Response::new(simulation_step_response))

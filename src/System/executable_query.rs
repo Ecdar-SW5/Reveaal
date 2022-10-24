@@ -89,7 +89,7 @@ pub struct ReachabilityExecutor {
 
 impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
-        let (sys, s_state, e_state) = (self.transition_system, self.start_state, self.end_state);
+        let (_sys, _s_state, _e_state) = (self.transition_system, self.start_state, self.end_state);
 
         unimplemented!();
     }
