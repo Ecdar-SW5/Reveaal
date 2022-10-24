@@ -11,12 +11,11 @@ pub struct TransitionDecision {
 
 impl TransitionDecision {
     /// Constructs the inital TransitionDecision for a given TransitionSystemPtr
-    ///
-    /// # Panics
-    /// If the system has no inital state
-    pub fn initial(system: TransitionSystemPtr) -> Self {
-        let source = system.get_initial_state().unwrap();
-        Self::from(system, source)
+    pub fn initial(system: TransitionSystemPtr) -> Option<Self> {
+        match system.get_initial_state() {
+            Some(source) => Some(Self::from(system, source)),
+            None => None
+        }
     }
 
     /// Constructs the TransitionDecision from a source State and a given TransitionSystemPtr
@@ -47,14 +46,10 @@ impl TransitionDecision {
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
-
     use edbm::util::{bounds::Bounds, constraints::ClockIndex};
     use mockall::mock;
     use crate::{TransitionSystems::{TransitionSystem, LocationTuple, TransitionSystemPtr, CompositionType}, component::{Transition, Declarations, State}};
-
     use super::TransitionDecision;
-
-
 
     mock! {
         TransitionSystem { }
@@ -91,14 +86,16 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn initial__no_initial_state__panics() {
+    fn initial__no_initial_state__returns_none() {
         // Arrange
         let mut system = Box::new(MockTransitionSystem::new());
         system.expect_get_initial_state().return_const(None);
         
         // Act
-        TransitionDecision::initial(system);
+        let actual = TransitionDecision::initial(system);
+
+        // Assert
+        assert!(actual.is_none())
     }
 
 }
