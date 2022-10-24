@@ -1,6 +1,5 @@
-use src::TransitionSystem::component;
-use src::ModelObjects;
-use src::Simulation::TransitionDecision;
+use crate::{TransitionSystem::component, src::ModelObjects, src::Simulation::TransitionDecision
+};
 
 pub struct DecisionPoint {
     source: State,
