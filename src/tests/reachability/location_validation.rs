@@ -26,10 +26,10 @@ mod reachability_parser_location_validation {
             reachability_test_helper_functions::string_to_locations(location_str),
             None,
         ));
-        match System::extract_state::get_state(&mock_state, &machine, &system) {
-            Err(_) => (),
-            Ok(_) => panic!("Expected Err, recieved Ok"),
-        };
+        assert!(matches!(
+            System::extract_state::get_state(&mock_state, &machine, &system),
+            Err(_)
+        ));
     }
 
     #[test_case("L20";
@@ -48,9 +48,9 @@ mod reachability_parser_location_validation {
             reachability_test_helper_functions::string_to_locations(location_str),
             None,
         ));
-        match System::extract_state::get_state(&mock_state, &machine, &system) {
-            Ok(_) => (),
-            Err(_) => panic!("Expected Ok, recieved Err"),
-        };
+        assert!(matches!(
+            System::extract_state::get_state(&mock_state, &machine, &system),
+            Ok(_)
+        ));
     }
 }

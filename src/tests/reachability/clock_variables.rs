@@ -27,10 +27,10 @@ mod reachability_parser_clock_variable_validation {
             reachability_test_helper_functions::string_to_locations("L20"), // This location exists in Adm2
             reachability_test_helper_functions::string_to_boolexpression(clock_str),
         ));
-        match System::extract_state::get_state(&mock_state, &machine, &system) {
-            Err(_) => (),
-            Ok(_) => panic!("Expected Err, recieved Ok"),
-        };
+        assert!(matches!(
+            System::extract_state::get_state(&mock_state, &machine, &system),
+            Err(_)
+        ));
     }
 
     #[test_case("x>1";
@@ -49,9 +49,9 @@ mod reachability_parser_clock_variable_validation {
             reachability_test_helper_functions::string_to_locations("L20"), // This location exists in Adm2
             reachability_test_helper_functions::string_to_boolexpression(clock_str),
         ));
-        match System::extract_state::get_state(&mock_state, &machine, &system) {
-            Ok(_) => (),
-            Err(_) => panic!("Expected Ok, recieved Err"),
-        };
+        assert!(matches!(
+            System::extract_state::get_state(&mock_state, &machine, &system),
+            Ok(_)
+        ));
     }
 }
