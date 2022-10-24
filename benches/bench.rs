@@ -120,9 +120,9 @@ fn send_expensive_query_different_components(c: &mut Criterion) {
     });
 }
 
-fn send_query_same_components(c: &mut Criterion) {
+fn send_inexpensive_query_same_components(c: &mut Criterion) {
     let json = vec![std::fs::read_to_string(format!("{}/Components/Machine.json", PATH)).unwrap()];
-    c.bench_function("send_query_same_components", |b| {
+    c.bench_function("send_inexpensive_query_same_components", |b| {
         b.to_async(FuturesExecutor).iter(|| async {
             let backend = ConcreteEcdarBackend::default();
             let responses = (0..64)
@@ -137,9 +137,9 @@ fn send_query_same_components(c: &mut Criterion) {
     });
 }
 
-fn send_query_different_components(c: &mut Criterion) {
+fn send_inexpensive_query_different_components(c: &mut Criterion) {
     let json = vec![std::fs::read_to_string(format!("{}/Components/Machine.json", PATH)).unwrap()];
-    c.bench_function("send_query_different_components", |b| {
+    c.bench_function("send_inexpensive_query_different_components", |b| {
         b.to_async(FuturesExecutor).iter(|| async {
             let backend = ConcreteEcdarBackend::default();
             let responses = (0..64)
@@ -179,8 +179,8 @@ criterion_group!(benches, self_refinement, refinement, not_refinement,);
 
 criterion_group!(
     backend_bench,
-    send_query_same_components,
-    send_query_different_components,
+    send_inexpensive_query_same_components,
+    send_inexpensive_query_different_components,
     send_expensive_query_same_components,
     send_expensive_query_different_components,
 );
