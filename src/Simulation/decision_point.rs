@@ -1,11 +1,10 @@
-use services::ProtobufServer::{DecisionPoint, Edge, SimulationsInfo};
 use src::TransitionSystem::component;
-use src::ModelObjects::component;
-// TODO: use crate for transDecision
+use src::ModelObjects;
+use src::Simulation::TransitionDecision;
 
 pub struct DecisionPoint {
     source: State,
-    edges: Edge
+    edges: Vec<Component::Edge>,
 }
 
 impl DecisionPoint {
@@ -18,16 +17,16 @@ impl DecisionPoint {
     }
 
     // Allows us to access location tuple to find locations
-    pub fn get_location_tuple(tranistionDecision: TransitionDecision) -> LocationTuple {
+    pub fn get_location_tuple(transitionDecision: TransitionDecision) -> LocationTuple {
         
-       let locationTuple = tranistionDecision.source.locationTuple;
+       let locationTuple = transitionDecision.source.locationTuple;
         
     }
 
     // Allows us to access transitions to add to edge ids
     pub fn get_transitions(transitionDecision: TransitionDecision) -> Vec<Transition> {
         
-        let transitions = tranistionDecision.transitions;
+        let transitions = transitionDecision.transitions;
     }
 
     // Get all edges from components
@@ -42,10 +41,10 @@ impl DecisionPoint {
     }
 
     // Add transitions to corrospondent edge ID
-    pub fn add_transition_to_edge(tranistionDecision: TransitionDecision, simulationsInfo: SimulationsInfo) -> Vec<Edge>{
+    pub fn add_transition_to_edge(transitionDecision: TransitionDecision, simulationsInfo: SimulationsInfo) -> Vec<Edge>{
 
-        let transitions = get_transitions(tranistionDecision);
-        let locationTuple = get_location_tuple(tranistionDecision);
+        let transitions = get_transitions(transitionDecision);
+        let locationTuple = get_location_tuple(transitionDecision);
         let new_transitions: Vec<Transition>;
         let edges = get_all_edges_from_components(simulationsInfo);
         let mut dim: ClockIndex = 0;
@@ -54,7 +53,7 @@ impl DecisionPoint {
         for transition in transitions {
             // 2. Loop over edges
             for edge in edges {
-                // 3. Check if transions is connected with edges
+                // 3. Check if transitions is connected with edges
                 if (locationTuple.id == edge.target_location) {
                     // 4. Add transition to the corropsondent edge ID
                     let transition = transition::from(locationTuple.id, edge, dim);
