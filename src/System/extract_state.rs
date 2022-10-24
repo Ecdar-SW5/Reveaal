@@ -101,8 +101,9 @@ fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> Locati
             Box::new(get_location_id(locations, left)),
             Box::new(get_location_id(locations, right)),
         ),
-        SystemRecipe::Component(_comp) => {
-            LocationID::Simple(locations.next().unwrap().trim().to_string())
-        }
+        SystemRecipe::Component(_comp) => match locations.next().unwrap().trim() {
+            "_" => LocationID::AnyLocation(),
+            str => LocationID::Simple(str.to_string()),
+        },
     }
 }

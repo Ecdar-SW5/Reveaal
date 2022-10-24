@@ -8,6 +8,7 @@ pub enum LocationID {
     Composition(Box<LocationID>, Box<LocationID>),
     Quotient(Box<LocationID>, Box<LocationID>),
     Simple(String),
+    AnyLocation(),
 }
 
 impl LocationID {
@@ -26,6 +27,27 @@ impl LocationID {
         match query {
             QueryExpression::Consistency(x) => (*x).into(),
             _ => unreachable!(),
+        }
+    }
+
+    pub fn cmp_locations(&self, other: &LocationID) -> bool {
+        match (self, other) {
+            (
+                LocationID::Composition(self_left, self_right),
+                LocationID::Composition(other_left, other_right),
+            )
+            | (
+                LocationID::Conjunction(self_left, self_right),
+                LocationID::Conjunction(other_left, other_right),
+            )
+            | (
+                LocationID::Quotient(self_left, self_right),
+                LocationID::Quotient(other_left, other_right),
+            ) => self_left.cmp_locations(other_left) && self_right.cmp_locations(other_right),
+            (LocationID::AnyLocation(), LocationID::Simple(_))
+            | (LocationID::Simple(_), LocationID::AnyLocation()) => true,
+            (LocationID::Simple(loc1), LocationID::Simple(loc2)) => loc1 == loc2,
+            (_, _) => false,
         }
     }
 }
@@ -93,6 +115,7 @@ impl Display for LocationID {
                 };
             }
             LocationID::Simple(name) => write!(f, "{}", name)?,
+            LocationID::AnyLocation() => write!(f, "_")?,
         }
         Ok(())
     }
