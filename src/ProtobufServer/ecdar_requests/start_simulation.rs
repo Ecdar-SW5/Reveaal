@@ -48,7 +48,7 @@ impl ConcreteEcdarBackend {
 
         // Send the combine component to the Simulation module
         let _initial_decision_point =
-            TransitionDecision::initial_transition_decision(transition_system);
+            TransitionDecision::initial(transition_system);
 
         // get_initial_decision_from(transition_system);
 
