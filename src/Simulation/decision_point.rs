@@ -1,9 +1,14 @@
-use crate::{TransitionSystem::component, src::ModelObjects, src::Simulation::TransitionDecision
-};
+use crate::{component::{State, Edge, Transition}, TransitionSystems::LocationTuple};
+
+use src::Simulation::transition_decision;
+
+use super::transition_decision::TransitionDecision;
+
+
 
 pub struct DecisionPoint {
     source: State,
-    edges: Vec<Component::Edge>,
+    edges: Vec<Edge>,
 }
 
 impl DecisionPoint {
@@ -19,6 +24,7 @@ impl DecisionPoint {
     pub fn get_location_tuple(transitionDecision: TransitionDecision) -> LocationTuple {
         
        let locationTuple = transitionDecision.source.locationTuple;
+       locationTuple
         
     }
 
@@ -26,6 +32,7 @@ impl DecisionPoint {
     pub fn get_transitions(transitionDecision: TransitionDecision) -> Vec<Transition> {
         
         let transitions = transitionDecision.transitions;
+        transitions
     }
 
     // Get all edges from components
@@ -37,10 +44,11 @@ impl DecisionPoint {
             let edges = get_edges(component);
             all_edges.push(edges)
         }
+        all_edges
     }
 
     // Add transitions to corrospondent edge ID
-    pub fn add_transition_to_edge(transitionDecision: TransitionDecision, simulationsInfo: SimulationsInfo) -> Vec<Edge>{
+    pub fn add_transition_to_edge(transitionDecision: TransitionDecision, simulationsInfo: SimulationsInfo) -> Vec<Transition>{
 
         let transitions = get_transitions(transitionDecision);
         let locationTuple = get_location_tuple(transitionDecision);
