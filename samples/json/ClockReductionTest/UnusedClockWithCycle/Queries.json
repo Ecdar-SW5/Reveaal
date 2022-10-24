@@ -1,0 +1,26 @@
+[
+  {
+    "query": "consistency: Component1",
+    "comment": "",
+    "isPeriodic": false,
+    "ignoredInputs": {},
+    "ignoredOutputs": {},
+    "backend": "ivi"
+  },
+  {
+    "query": "consistency: Component2",
+    "comment": "",
+    "isPeriodic": false,
+    "ignoredInputs": {},
+    "ignoredOutputs": {},
+    "backend": "ivi"
+  },
+  {
+    "query": "consistency: Component3",
+    "comment": "",
+    "isPeriodic": false,
+    "ignoredInputs": {},
+    "ignoredOutputs": {},
+    "backend": "ivi"
+  }
+]
