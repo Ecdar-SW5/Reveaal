@@ -1,6 +1,7 @@
-use crate::{TransitionSystems::{TransitionSystemPtr}, component::{State, Transition}};
-use mockall::*;
-use mockall::predicate::*;
+use crate::{
+    component::{State, Transition},
+    TransitionSystems::TransitionSystemPtr,
+};
 
 #[allow(dead_code)]
 pub struct TransitionDecision {
@@ -31,19 +32,21 @@ impl TransitionDecision {
 
         // prune transitions that can not be taken
         for (index, transition) in transitions.clone().iter().enumerate() {
-            if !transition.use_transition(&mut source.clone()) { 
+            if !transition.use_transition(&mut source.clone()) {
                 transitions.remove(index);
             }
         }
 
-        TransitionDecision { source: source, transitions: transitions }
+        TransitionDecision {
+            source: source,
+            transitions: transitions,
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    fn from__source_with_no_transitions__returns_source_with_no_transitions() {
+    fn _from__source_with_no_transitions__returns_source_with_no_transitions() {
         assert!(false);
     }
 }
-
