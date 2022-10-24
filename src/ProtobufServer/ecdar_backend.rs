@@ -1,3 +1,4 @@
+use crate::DataReader::component_loader::ModelCache;
 use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
 
 use crate::ProtobufServer::services::{
@@ -9,7 +10,9 @@ use std::panic::UnwindSafe;
 use tonic::{Request, Response, Status};
 
 #[derive(Debug, Default)]
-pub struct ConcreteEcdarBackend {}
+pub struct ConcreteEcdarBackend {
+    pub model_cache: ModelCache,
+}
 
 async fn catch_unwind<T, O>(future: T) -> Result<O, Status>
 where
@@ -48,7 +51,7 @@ impl EcdarBackend for ConcreteEcdarBackend {
         request: Request<QueryRequest>,
     ) -> Result<Response<QueryResponse>, Status> {
         let request = std::panic::AssertUnwindSafe(request);
-        catch_unwind(self.handle_send_query(request)).await
+        catch_unwind(self.handle_send_query(self.model_cache.clone(), request)).await
     }
 
     async fn start_simulation(
