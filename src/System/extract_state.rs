@@ -75,10 +75,20 @@ fn build_location_tuple(
 ) -> Result<LocationTuple, String> {
     let location_id = get_location_id(&mut locations.iter(), machine)?;
     let locations_system = system.get_all_locations();
-    if let Some(locationtuple) = locations_system.iter().find(|loc| loc.id == location_id) {
-        Ok(locationtuple.clone())
+    if let Some(locationtuple) = locations_system
+        .iter()
+        .find(|loc| loc.id.cmp_partial_locations(&location_id))
+    {
+        if locationtuple.id == location_id {
+            Ok(locationtuple.clone())
+        } else {
+            Ok(LocationTuple::create_partial_location(location_id))
+        }
     } else {
-        Ok(LocationTuple::create_partial_location(location_id))
+        Err(format!(
+            "{} is not a location in the trasistion system ",
+            location_id
+        ))
     }
 }
 
@@ -99,15 +109,9 @@ fn get_location_id(
             Box::new(get_location_id(locations, left)?),
             Box::new(get_location_id(locations, right)?),
         )),
-        SystemRecipe::Component(comp) => match locations.next().unwrap().trim() {
+        SystemRecipe::Component(..) => match locations.next().unwrap().trim() {
             "_" => Ok(LocationID::AnyLocation()),
-            str => {
-                if comp.get_locations().iter().any(|loc| loc.get_id() == str) {
-                    Ok(LocationID::Simple(str.to_string()))
-                } else {
-                    Err(format!("{} is not a location in {} ", str, comp.get_name()))
-                }
-            }
+            str => Ok(LocationID::Simple(str.to_string())),
         },
     }
 }
