@@ -28,7 +28,7 @@ where
         return Ok(None);
     }
 
-    let queries = parse_queries::parse_to_expression_tree(&s);
+    let queries = parse_queries::parse_to_expression_tree(&s).unwrap();
     if queries.len() > 1 {
         panic!("Could not parse query {} contains multiple queries", s);
     } else if queries.is_empty() {
