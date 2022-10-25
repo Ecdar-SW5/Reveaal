@@ -9,6 +9,7 @@ use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
 use crate::EdgeEval::updater::CompiledUpdate;
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
+use mockall::automock;
 
 use crate::ModelObjects::representations::BoolExpression;
 use crate::TransitionSystems::LocationTuple;
@@ -523,6 +524,7 @@ pub struct State {
     zone_sentinel: Option<OwnedFederation>,
 }
 
+#[automock]
 impl State {
     pub fn create(decorated_locations: LocationTuple, zone: OwnedFederation) -> Self {
         State {

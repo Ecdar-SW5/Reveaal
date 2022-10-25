@@ -14,7 +14,7 @@ impl TransitionDecision {
     pub fn initial(system: TransitionSystemPtr) -> Option<Self> {
         match system.get_initial_state() {
             Some(source) => Some(Self::from(system, source)),
-            None => None
+            None => None,
         }
     }
 
@@ -45,57 +45,29 @@ impl TransitionDecision {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
-    use edbm::util::{bounds::Bounds, constraints::ClockIndex};
-    use mockall::mock;
-    use crate::{TransitionSystems::{TransitionSystem, LocationTuple, TransitionSystemPtr, CompositionType}, component::{Transition, Declarations, State}};
     use super::TransitionDecision;
+    use crate::{
+        DataReader::json_reader::read_json_component,
+        TransitionSystems::{CompiledComponent, TransitionSystemPtr},
+    };
 
-    mock! {
-        TransitionSystem { }
-        impl Clone for TransitionSystem {
-            fn clone(&self) -> Self;
-        }
-        impl TransitionSystem for TransitionSystem {
-            fn get_local_max_bounds(&self, loc: &LocationTuple) -> Bounds;
-            fn get_dim(&self) -> ClockIndex;
-            fn next_transitions_if_available(
-                &self,
-                location: &LocationTuple,
-                action: &str,
-            ) -> Vec<Transition>;
-            fn next_transitions(&self, location: &LocationTuple, action: &str) -> Vec<Transition>;
-            fn next_outputs(&self, location: &LocationTuple, action: &str) -> Vec<Transition>;
-            fn next_inputs(&self, location: &LocationTuple, action: &str) -> Vec<Transition>;
-            fn get_input_actions(&self) -> HashSet<String>;
-            fn inputs_contain(&self, action: &str) -> bool;
-            fn get_output_actions(&self) -> HashSet<String>;
-            fn outputs_contain(&self, action: &str) -> bool;
-            fn get_actions(&self) -> HashSet<String>;
-            fn actions_contain(&self, action: &str) -> bool; 
-            fn get_initial_location(&self) -> Option<LocationTuple>;
-            fn get_all_locations(&self) -> Vec<LocationTuple>;
-            fn get_decls(&self) -> Vec<&'static Declarations>;
-            fn precheck_sys_rep(&self) -> bool;
-            fn is_deterministic(&self) -> bool;
-            fn is_locally_consistent(&self) -> bool;
-            fn get_initial_state(&self) -> Option<State>;
-            fn get_children<'a>(&self) -> (&'static TransitionSystemPtr, &'static TransitionSystemPtr);
-            fn get_composition_type(&self) -> CompositionType;
-        }
+    fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
+        let mut component = read_json_component("samples/json/EcdarUniversity", "Machine");
+        component.create_edge_io_split();
+        CompiledComponent::from(vec![component], "Machine")
     }
+
+    fn initial__no_initial_state__returns_none() {}
 
     #[test]
-    fn initial__no_initial_state__returns_none() {
+    fn initial__EcdarUniversity_Machine__return_state_L5() {
         // Arrange
-        let mut system = Box::new(MockTransitionSystem::new());
-        system.expect_get_initial_state().return_const(None);
-        
+        let system = create_EcdarUniversity_Machine_system();
+
         // Act
-        let actual = TransitionDecision::initial(system);
+        let actual = TransitionDecision::initial(system).unwrap();
 
         // Assert
-        assert!(actual.is_none())
+        assert_eq!(actual.source.get_location().id.to_string(), "L5")
     }
-
 }
