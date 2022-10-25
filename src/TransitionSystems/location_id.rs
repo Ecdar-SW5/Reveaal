@@ -8,6 +8,7 @@ pub enum LocationID {
     Composition(Box<LocationID>, Box<LocationID>),
     Quotient(Box<LocationID>, Box<LocationID>),
     Simple(String),
+    ///Used for representing a partial state
     AnyLocation(),
 }
 
@@ -30,7 +31,20 @@ impl LocationID {
         }
     }
 
-    pub fn cmp_locations(&self, other: &LocationID) -> bool {
+    /// This function is used when you want to compare a [`LocationID::Simple`] location to a [`LocationID::AnyLocation`]
+    /// A [`LocationID::AnyLocation`] is used to represent a partial state, which often contains a location where one of the components is a `_` and should always be true when compared to a [`LocationID::Simple`]
+    /// ```
+    /// use reveaal::TransitionSystems::LocationID;
+    /// // Make two locations where `a` has LocationID::AnyLocation
+    /// let a = LocationID::Quotient(Box::new(LocationID::Simple("L5".to_string())), 
+    ///                              Box::new(LocationID::AnyLocation())); 
+    /// 
+    /// let b = LocationID::Quotient(Box::new(LocationID::Simple("L5".to_string())), 
+    ///                              Box::new(LocationID::Simple("L1".to_string())));
+    /// 
+    /// assert!(a.cmp_partial_locations(&b));
+    /// ```
+    pub fn cmp_partial_locations(&self, other: &LocationID) -> bool {
         match (self, other) {
             (
                 LocationID::Composition(self_left, self_right),
@@ -43,7 +57,10 @@ impl LocationID {
             | (
                 LocationID::Quotient(self_left, self_right),
                 LocationID::Quotient(other_left, other_right),
-            ) => self_left.cmp_locations(other_left) && self_right.cmp_locations(other_right),
+            ) => {
+                self_left.cmp_partial_locations(other_left)
+                    && self_right.cmp_partial_locations(other_right)
+            }
             (LocationID::AnyLocation(), LocationID::Simple(_))
             | (LocationID::Simple(_), LocationID::AnyLocation())
             | (LocationID::AnyLocation(), LocationID::AnyLocation()) => true,
