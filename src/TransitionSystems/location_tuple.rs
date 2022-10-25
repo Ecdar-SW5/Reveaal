@@ -66,6 +66,9 @@ impl LocationTuple {
 
     //Merge two locations keeping the invariants seperate
     pub fn merge_as_quotient(left: &Self, right: &Self) -> Self {
+        if left.is_partial_location() || left.is_partial_location() {
+            unreachable!("You cannot merge as quotient of partial locations")
+        }
         let id = LocationID::Quotient(Box::new(left.id.clone()), Box::new(right.id.clone()));
 
         if left.loc_type == right.loc_type
@@ -94,6 +97,9 @@ impl LocationTuple {
 
     //Compose two locations intersecting the invariants
     pub fn compose(left: &Self, right: &Self, comp: CompositionType) -> Self {
+        if left.is_partial_location() || left.is_partial_location() {
+            unreachable!("You cannot merge as quotient of partial locations")
+        }
         let id = match comp {
             CompositionType::Conjunction => {
                 LocationID::Conjunction(Box::new(left.id.clone()), Box::new(right.id.clone()))
