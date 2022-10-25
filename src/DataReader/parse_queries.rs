@@ -28,7 +28,7 @@ pub fn parse_to_query(query: &str) -> Vec<Query> {
 
 pub fn parse_to_expression_tree(edge_attribute_str: &str) -> Result<Vec<QueryExpression>, String> {
     let mut pairs = match QueryParser::parse(Rule::queries, edge_attribute_str) {
-        Ok(_) => QueryParser::parse(Rule::queries, edge_attribute_str).unwrap(),
+        Ok(pairs) => pairs,
         Err(e) => return Err(format!("Could not parse as rule with error: {}", e)),
     };
     let pair = pairs.next().unwrap();
