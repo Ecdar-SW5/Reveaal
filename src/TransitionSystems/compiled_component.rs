@@ -12,6 +12,14 @@ use std::collections::HashMap;
 
 use super::{CompositionType, LocationID};
 
+use crate::DataReader::parse_queries::Rule;
+use crate::{
+    extract_system_rep::get_system_recipe,
+    parse_queries::{build_expression_from_pair, QueryParser},
+    DataReader::component_loader::ComponentContainer,
+};
+use pest::Parser;
+
 type Action = String;
 
 #[derive(Clone)]
@@ -95,6 +103,33 @@ impl CompiledComponent {
             .collect();
 
         Self::compile_with_actions(component, inputs, outputs, dim)
+    }
+
+    pub fn from(components: Vec<Component>, composition: &str) -> TransitionSystemPtr {
+        let mut component_map = HashMap::new();
+
+        for component in components {
+            component_map.insert(component.name.clone(), component);
+        }
+
+        let mut component_container = ComponentContainer {
+            loaded_components: component_map,
+        };
+
+        let mut dimension = 0;
+        let composition = QueryParser::parse(Rule::expr, composition)
+            .unwrap()
+            .next()
+            .unwrap();
+        let composition = build_expression_from_pair(composition);
+        get_system_recipe(
+            &composition,
+            &mut component_container,
+            &mut dimension,
+            &mut None,
+        )
+        .compile(dimension)
+        .unwrap()
     }
 }
 

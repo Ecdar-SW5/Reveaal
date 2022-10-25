@@ -12,12 +12,11 @@ pub struct TransitionDecision {
 
 impl TransitionDecision {
     /// Constructs the inital TransitionDecision for a given TransitionSystemPtr
-    ///
-    /// # Panics
-    /// If the system has no inital state
-    pub fn initial_transition_decision(system: TransitionSystemPtr) -> Self {
-        let source = system.get_initial_state().unwrap();
-        Self::from(system, source)
+    pub fn initial(system: TransitionSystemPtr) -> Option<Self> {
+        match system.get_initial_state() {
+            Some(source) => Some(Self::from(system, source)),
+            None => None,
+        }
     }
 
     /// Constructs the TransitionDecision from a source State and a given TransitionSystemPtr
@@ -47,7 +46,29 @@ impl TransitionDecision {
 
 #[cfg(test)]
 mod tests {
-    fn _from__source_with_no_transitions__returns_source_with_no_transitions() {
-        assert!(false);
+    use super::TransitionDecision;
+    use crate::{
+        DataReader::json_reader::read_json_component,
+        TransitionSystems::{CompiledComponent, TransitionSystemPtr},
+    };
+
+    fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
+        let mut component = read_json_component("samples/json/EcdarUniversity", "Machine");
+        component.create_edge_io_split();
+        CompiledComponent::from(vec![component], "Machine")
+    }
+
+    fn initial__no_initial_state__returns_none() {}
+
+    #[test]
+    fn initial__EcdarUniversity_Machine__return_state_L5() {
+        // Arrange
+        let system = create_EcdarUniversity_Machine_system();
+
+        // Act
+        let actual = TransitionDecision::initial(system).unwrap();
+
+        // Assert
+        assert_eq!(actual.source.get_location().id.to_string(), "L5")
     }
 }
