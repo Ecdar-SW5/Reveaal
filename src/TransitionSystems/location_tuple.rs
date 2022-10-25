@@ -21,6 +21,7 @@ pub struct LocationTuple {
     pub loc_type: LocationType,
     left: Option<Box<LocationTuple>>,
     right: Option<Box<LocationTuple>>,
+    partial_location: bool,
 }
 
 impl PartialEq for LocationTuple {
@@ -44,6 +45,18 @@ impl LocationTuple {
             loc_type: location.get_location_type().clone(),
             left: None,
             right: None,
+            partial_location: false,
+        }
+    }
+
+    pub fn create_partial_location(id: LocationID) -> Self {
+        LocationTuple {
+            id,
+            invariant: None,
+            loc_type: crate::component::LocationType::Normal,
+            left: None,
+            right: None,
+            partial_location: true,
         }
     }
 
@@ -71,6 +84,7 @@ impl LocationTuple {
             loc_type,
             left: Some(Box::new(left.clone())),
             right: Some(Box::new(right.clone())),
+            partial_location: false,
         }
     }
 
@@ -113,6 +127,7 @@ impl LocationTuple {
             loc_type,
             left: Some(Box::new(left.clone())),
             right: Some(Box::new(right.clone())),
+            partial_location: false,
         }
     }
 
@@ -139,6 +154,10 @@ impl LocationTuple {
             return self;
         }
         self.right.as_ref().unwrap()
+    }
+
+    pub fn is_partial_location(&self) -> bool {
+        self.partial_location
     }
 
     pub fn is_initial(&self) -> bool {
