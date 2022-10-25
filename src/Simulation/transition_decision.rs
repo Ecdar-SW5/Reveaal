@@ -5,9 +5,10 @@ use crate::{
 
 #[derive(Debug)]
 #[allow(dead_code)]
+#[derive(Clone)]
 pub struct TransitionDecision {
-    source: State,
-    transitions: Vec<Transition>,
+    pub source: State,
+    pub transitions: Vec<Transition>,
 }
 
 impl TransitionDecision {
