@@ -21,6 +21,10 @@ mod tests {
     use crate::System::save_component::combine_components;
     use crate::System::save_component::PruningStrategy;
     use edbm::util::constraints::ClockIndex;
+    use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
+    use crate::ProtobufServer::services::{
+    DecisionPoint
+};
 
 
     pub struct Setup {
@@ -79,6 +83,15 @@ mod tests {
     #[test]
     fn given_state_return_serialized_state()
     {
+        static PATH: &str = "samples/json/Conjunction";
+        let setup: Setup = setupHelper(PATH, "Test1 && Test1");
+        let mut expected = DecisionPoint::new();
+    
+
+
+
+
+        
         assert!(false);
     }
 }
