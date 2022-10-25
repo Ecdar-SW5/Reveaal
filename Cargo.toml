@@ -60,5 +60,5 @@ name = "bench"
 harness = false
 
 [[bench]]
-name = "alg-bench"
+name = "reachability-bench"
 harness = false
