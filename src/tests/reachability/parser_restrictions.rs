@@ -26,10 +26,10 @@ mod reachability_parser_restrictions_test {
         let queries = q.first().unwrap();
 
         // Runs the "validate_reachability" function from extract_system_rep, which we wish to test.
-        match extract_system_rep::create_executable_query(queries, &mut *comp_loader) {
-            Err(_) => (),
-            Ok(_) => panic!("Expected Err, recieved Ok"),
-        };
+        assert!(matches!(
+            extract_system_rep::create_executable_query(queries, &mut *comp_loader),
+            Err(_)
+        ));
     }
     #[test_case("reachability: Adm2 -> [L21](); [L20]()";
     "Matching amount of locations and machines: 1 machine, 1 loc")]
@@ -49,9 +49,9 @@ mod reachability_parser_restrictions_test {
         let queries = q.first().unwrap();
 
         // Runs the "validate_reachability" function from extract_system_rep, which we wish to test.
-        match extract_system_rep::create_executable_query(queries, &mut *comp_loader) {
-            Ok(_) => (),
-            Err(_) => panic!("Expected Ok, recieved Err"),
-        };
+        assert!(matches!(
+            extract_system_rep::create_executable_query(queries, &mut *comp_loader),
+            Ok(_)
+        ));
     }
 }

@@ -9,7 +9,7 @@ refinement = {"refinement:" ~ expr ~ "<=" ~ expr}
 
 consistency = {"consistency:" ~ expr}
 
-reachability = { "reachability:" ~ expr ~ "->" ~ state ~ ";" ~ state }
+reachability = { "reachability:" ~ expr ~ "->" ~ (state ~ ";")? ~ state }
 
 implementation = {"implementation:" ~ expr}
 

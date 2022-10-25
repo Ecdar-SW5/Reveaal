@@ -207,19 +207,18 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
 
 fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     let mut inner_pair = pair.into_inner();
-    let automata_pair = inner_pair.next().unwrap();
-    let start_state_pair = inner_pair.next().unwrap();
-    let end_state_pair = inner_pair.next().unwrap();
+    let automata = build_expression_from_pair(inner_pair.next().unwrap());
+    let state = build_state_from_pair(inner_pair.next().unwrap());
 
-    let automata = build_expression_from_pair(automata_pair);
-    let start_state = build_state_from_pair(start_state_pair);
-    let end_state = build_state_from_pair(end_state_pair);
-
-    QueryExpression::Reachability(
-        Box::new(automata),
-        Box::new(start_state),
-        Box::new(end_state),
-    )
+    if let Some(pair) = inner_pair.next() {
+        QueryExpression::Reachability(
+            Box::new(automata),
+            Box::new(Some(state)),
+            Box::new(build_state_from_pair(pair)),
+        )
+    } else {
+        QueryExpression::Reachability(Box::new(automata), Box::new(None), Box::new(state))
+    }
 }
 
 fn build_refinement_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
