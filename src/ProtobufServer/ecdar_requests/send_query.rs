@@ -3,8 +3,7 @@ use std::panic::AssertUnwindSafe;
 use std::sync::Arc;
 
 use crate::component::Component;
-use crate::logging;
-use crate::logging::*;
+use crate::logging::get_messages;
 use crate::xml_parser::parse_xml_from_str;
 use crate::DataReader::component_loader::ModelCache;
 use crate::DataReader::json_reader::json_to_component;
@@ -23,8 +22,7 @@ use crate::ProtobufServer::services::{
 };
 use crate::System::executable_query::QueryResult;
 use crate::System::{extract_system_rep, input_enabler};
-use log::{logger, trace};
-use simplelog::WriteLogger;
+use log::trace;
 use tonic::{Request, Response, Status};
 
 use crate::ProtobufServer::ConcreteEcdarBackend;
@@ -50,14 +48,6 @@ impl ConcreteEcdarBackend {
                     .flatten()
                     .flatten()
                     .collect::<Vec<Component>>();
-                /*
-                      for proto_component in proto_components {
-                          let components = parse_components_if_some(proto_component)?;
-                          for component in components {
-                              parsed_components.push(component);
-                          }
-                      }
-                */
 
                 let components = create_components(parsed_components, query_request.should_reduce_clocks);
                 model_cache.insert_model(components_info.components_hash, Arc::new(components))

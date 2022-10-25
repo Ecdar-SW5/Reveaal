@@ -1,11 +1,7 @@
 use crate::ProtobufServer::services::query_response::query_ok::Information;
-use core::marker::Send;
 use log::{LevelFilter, SetLoggerError};
 use simplelog::*;
-use std::fmt::Arguments;
 use std::fs::File;
-use std::io::Write;
-use std::sync::Arc;
 
 #[cfg(feature = "logging")]
 pub fn setup_logger() -> Result<(), SetLoggerError> {
