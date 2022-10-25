@@ -21,20 +21,20 @@ impl TransitionDecision {
     /// Constructs the TransitionDecision from a source State and a given TransitionSystemPtr
     pub fn from(system: TransitionSystemPtr, source: State) -> TransitionDecision {
         let mut transitions = vec![];
-        let actions = system.get_actions();
+        // let actions = system.get_actions();
 
         // get all transitions
-        for action in actions {
-            let transition = system.next_transitions_if_available(source.get_location(), &action);
-            transitions.append(&mut transition.clone());
-        }
+        // for action in actions {
+        //     let transition = system.next_transitions_if_available(source.get_location(), &action);
+        //     transitions.append(&mut transition.clone());
+        // }
 
         // prune transitions that can not be taken
-        for (index, transition) in transitions.clone().iter().enumerate() {
-            if !transition.use_transition(&mut source.clone()) {
-                transitions.remove(index);
-            }
-        }
+        // for (index, transition) in transitions.clone().iter().enumerate() {
+        //     if !transition.use_transition(&mut source.clone()) {
+        //         transitions.remove(index);
+        //     }
+        // }
 
         TransitionDecision {
             source: source,
@@ -45,57 +45,59 @@ impl TransitionDecision {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
+    use std::collections::{HashSet, HashMap};
     use edbm::util::{bounds::Bounds, constraints::ClockIndex};
-    use mockall::mock;
-    use crate::{TransitionSystems::{TransitionSystem, LocationTuple, TransitionSystemPtr, CompositionType}, component::{Transition, Declarations, State}};
+    use crate::{TransitionSystems::{TransitionSystem, LocationTuple, TransitionSystemPtr, CompositionType}, component::{Transition, Declarations, State, Component}, DataReader::{json_reader::read_json_component, component_loader::{self, ComponentContainer}, json_writer::component_to_json}, extract_system_rep::{SystemRecipe, get_system_recipe}, parse_queries::{QueryParser, build_expression_from_pair}};
     use super::TransitionDecision;
+    use crate::DataReader::parse_queries::Rule;
+    use pest::Parser;
 
-    mock! {
-        TransitionSystem { }
-        impl Clone for TransitionSystem {
-            fn clone(&self) -> Self;
+    fn initial__no_initial_state__returns_none() {
+    }
+
+    fn system_from(components: Vec<Component>, composition: &str) -> TransitionSystemPtr {
+        let mut component_map = HashMap::new();
+
+        for component in components  {
+            component_map.insert(component.name.clone(), component);
         }
-        impl TransitionSystem for TransitionSystem {
-            fn get_local_max_bounds(&self, loc: &LocationTuple) -> Bounds;
-            fn get_dim(&self) -> ClockIndex;
-            fn next_transitions_if_available(
-                &self,
-                location: &LocationTuple,
-                action: &str,
-            ) -> Vec<Transition>;
-            fn next_transitions(&self, location: &LocationTuple, action: &str) -> Vec<Transition>;
-            fn next_outputs(&self, location: &LocationTuple, action: &str) -> Vec<Transition>;
-            fn next_inputs(&self, location: &LocationTuple, action: &str) -> Vec<Transition>;
-            fn get_input_actions(&self) -> HashSet<String>;
-            fn inputs_contain(&self, action: &str) -> bool;
-            fn get_output_actions(&self) -> HashSet<String>;
-            fn outputs_contain(&self, action: &str) -> bool;
-            fn get_actions(&self) -> HashSet<String>;
-            fn actions_contain(&self, action: &str) -> bool; 
-            fn get_initial_location(&self) -> Option<LocationTuple>;
-            fn get_all_locations(&self) -> Vec<LocationTuple>;
-            fn get_decls(&self) -> Vec<&'static Declarations>;
-            fn precheck_sys_rep(&self) -> bool;
-            fn is_deterministic(&self) -> bool;
-            fn is_locally_consistent(&self) -> bool;
-            fn get_initial_state(&self) -> Option<State>;
-            fn get_children<'a>(&self) -> (&'static TransitionSystemPtr, &'static TransitionSystemPtr);
-            fn get_composition_type(&self) -> CompositionType;
-        }
+
+        let mut component_container = ComponentContainer {
+            loaded_components: component_map
+        };
+
+        let mut dimension = 0;
+        let composition = QueryParser::parse(Rule::expr, composition)
+            .unwrap()
+            .next()
+            .unwrap();
+        let composition = build_expression_from_pair(composition);
+        get_system_recipe(
+            &composition,
+            &mut component_container,
+            &mut dimension,
+            &mut None,
+        )
+        .compile(dimension)
+        .unwrap()
+    }
+
+
+    fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
+        let mut component = read_json_component("samples/json/EcdarUniversity", "Machine");
+        component.create_edge_io_split();
+        system_from(vec![component], "Machine")
     }
 
     #[test]
-    fn initial__no_initial_state__returns_none() {
+    fn initial__EcdarUniversity_Machine__return_state_L5() {
         // Arrange
-        let mut system = Box::new(MockTransitionSystem::new());
-        system.expect_get_initial_state().return_const(None);
-        
+        let system = create_EcdarUniversity_Machine_system();
+
         // Act
-        let actual = TransitionDecision::initial(system);
-
+        let actual = TransitionDecision::initial(system).unwrap();
+        
         // Assert
-        assert!(actual.is_none())
+        assert_eq!(actual.source.get_location().id.to_string(), "L5")
     }
-
 }
