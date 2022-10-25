@@ -1,12 +1,12 @@
 #[cfg(test)]
-mod reachability_search_algorithm_test{
-    use test_case::test_case;
-    use crate::System::reachability::Path;
+mod reachability_search_algorithm_test {
     use crate::tests::refinement::Helper::json_run_query;
     use crate::QueryResult;
-    use std::fs::{File, self, OpenOptions};
+    use crate::System::reachability::Path;
+    use std::fs::{self, File, OpenOptions};
     use std::io::prelude::*;
     use std::path::Path as PPath;
+    use test_case::test_case;
 
     const PATH: &str = "samples/json/EcdarUniversity";
     const PATH2: &str = "samples/json/AutomatonTestReachability";
@@ -21,8 +21,8 @@ mod reachability_search_algorithm_test{
     #[test_case(PATH, "reachability: Researcher -> [U0](); [L7]()", false; "No possible path between to locations, locations exists in Researcher")]
     fn search_algorithm_returns_result_university(path: &str, query: &str, expected: bool) {
         match json_run_query(path, query) {
-          QueryResult::Reachability(b, _) => assert_eq!(b, expected),
-          _ => panic!("Inconsistent query result, expected Reachability")
+            QueryResult::Reachability(b, _) => assert_eq!(b, expected),
+            _ => panic!("Inconsistent query result, expected Reachability"),
         }
     }
 
@@ -42,30 +42,33 @@ mod reachability_search_algorithm_test{
     #[test_case(PATH2, "reachability: Component7 -> [L16](); [L19](y<2)", false; "Unreachable due to second clock")]
     #[test_case(PATH2, "reachability: Component3 && Component3 -> [L6, L6](); [L7, L7]()", true; "Simple conjunction")]
     fn search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
-
-		TEMPORARY_MISSING_DECLERATIONS_HACK(path);
+        TEMPORARY_MISSING_DECLERATIONS_HACK(path);
 
         match json_run_query(path, query) {
-          QueryResult::Reachability(b, _) => assert_eq!(b, expected),
-          _ => panic!("Inconsistent query result, expected Reachability")
+            QueryResult::Reachability(b, _) => assert_eq!(b, expected),
+            _ => panic!("Inconsistent query result, expected Reachability"),
         }
     }
 
-
     fn TEMPORARY_MISSING_DECLERATIONS_HACK(path: &str) {
-
         if !PPath::new(&(path.to_owned() + "/SystemDeclarations.json")).exists() {
             // Add system declarations
             let mut declarations = String::new();
             let componentNames = fs::read_dir(path.to_string() + "/Components").unwrap();
             declarations += "{\n\"name\": \"System Declarations\",\n\"declarations\": \"system ";
             let mut first = true;
-            for filename in componentNames{
-              if !first{
-                declarations += ", ";
-              }
-              first = false;
-              declarations = declarations + &filename.unwrap().file_name().into_string().unwrap().replace(".json", "");
+            for filename in componentNames {
+                if !first {
+                    declarations += ", ";
+                }
+                first = false;
+                declarations = declarations
+                    + &filename
+                        .unwrap()
+                        .file_name()
+                        .into_string()
+                        .unwrap()
+                        .replace(".json", "");
             }
             declarations += "\"\n}";
 
@@ -74,15 +77,22 @@ mod reachability_search_algorithm_test{
 
             // Set declarations in file
             let componentNames = fs::read_dir(path.to_string() + "/Components").unwrap();
-            for filename in componentNames{
-              let filenamestring = &filename.unwrap().file_name().into_string().unwrap();
-              let contents = fs::read_to_string(path.to_string() + "/Components/" + filenamestring).unwrap();
-              let new = contents.replace("declarations\": \"\",", "declarations\": \"clock x, y, z;\",");
-            
-              let mut file = OpenOptions::new().write(true).truncate(true).open(path.to_string() + "/Components/" + filenamestring).unwrap();
-              file.write(new.as_bytes());		
+            for filename in componentNames {
+                let filenamestring = &filename.unwrap().file_name().into_string().unwrap();
+                let contents =
+                    fs::read_to_string(path.to_string() + "/Components/" + filenamestring).unwrap();
+                let new = contents.replace(
+                    "declarations\": \"\",",
+                    "declarations\": \"clock x, y, z;\",",
+                );
+
+                let mut file = OpenOptions::new()
+                    .write(true)
+                    .truncate(true)
+                    .open(path.to_string() + "/Components/" + filenamestring)
+                    .unwrap();
+                file.write(new.as_bytes());
             }
         }
-
     }
 }
