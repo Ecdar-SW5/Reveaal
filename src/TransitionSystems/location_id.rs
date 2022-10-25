@@ -32,7 +32,7 @@ impl LocationID {
         }
     }
 
-    /// This function is used when you want to compare a [`LocationID`] containing a pratial location [`LocationID::AnyLocation`] with another [`LocationID`].
+    /// This function is used when you want to compare a [`LocationID`] containing a partial location [`LocationID::AnyLocation`] with another [`LocationID`].
     /// [`LocationID::AnyLocation`] should always be true when compared to [`LocationID::Simple`]
     /// ```
     /// use reveaal::TransitionSystems::LocationID;
