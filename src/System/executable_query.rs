@@ -4,6 +4,7 @@ use log::info;
 use crate::DataReader::component_loader::ComponentLoader;
 use crate::ModelObjects::component::Component;
 use crate::ModelObjects::component::State;
+use crate::System::reachability;
 use crate::System::refine;
 use crate::System::save_component::combine_components;
 use crate::TransitionSystems::TransitionSystemPtr;
@@ -91,7 +92,21 @@ impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
         let (sys, s_state, e_state) = (self.transition_system, self.start_state, self.end_state);
 
-        unimplemented!();
+        match reachability::find_path(Some(s_state), e_state, &*sys) {
+            Ok(res) => {
+                match res {
+                    Some(path_res) => QueryResult::Reachability(
+                        true,
+                        Vec::new(), /* Replace with actual path */
+                    ),
+                    None => QueryResult::Reachability(
+                        false,
+                        Vec::new(), /* Replace with actual path */
+                    ),
+                }
+            }
+            Err(err_msg) => QueryResult::Error(err_msg),
+        }
     }
 }
 
