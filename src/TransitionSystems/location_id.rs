@@ -45,7 +45,8 @@ impl LocationID {
                 LocationID::Quotient(other_left, other_right),
             ) => self_left.cmp_locations(other_left) && self_right.cmp_locations(other_right),
             (LocationID::AnyLocation(), LocationID::Simple(_))
-            | (LocationID::Simple(_), LocationID::AnyLocation()) => true,
+            | (LocationID::Simple(_), LocationID::AnyLocation())
+            | (LocationID::AnyLocation(), LocationID::AnyLocation()) => true,
             (LocationID::Simple(loc1), LocationID::Simple(loc2)) => loc1 == loc2,
             (_, _) => false,
         }
