@@ -43,7 +43,7 @@ impl LocationID {
     /// let b = LocationID::Quotient(Box::new(LocationID::Simple("L5".to_string())),
     ///                              Box::new(LocationID::Simple("L1".to_string())));
     ///
-    /// assert!(a.cmp_partial_locations(&b));
+    /// assert!(a.compare_partial_locations(&b));
     /// ```
     pub fn compare_partial_locations(&self, other: &LocationID) -> bool {
         match (self, other) {
