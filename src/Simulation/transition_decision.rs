@@ -3,6 +3,7 @@ use crate::{
     TransitionSystems::TransitionSystemPtr,
 };
 
+#[derive(Debug)]
 #[allow(dead_code)]
 pub struct TransitionDecision {
     source: State,
@@ -10,7 +11,7 @@ pub struct TransitionDecision {
 }
 
 impl TransitionDecision {
-    /// Constructs the inital TransitionDecision for a given TransitionSystemPtr
+    /// Constructs the initial TransitionDecision for a given TransitionSystemPtr
     pub fn initial(system: TransitionSystemPtr) -> Option<Self> {
         match system.get_initial_state() {
             Some(source) => Some(Self::from(system, source)),
@@ -57,17 +58,50 @@ mod tests {
         CompiledComponent::from(vec![component], "Machine")
     }
 
-    fn initial__no_initial_state__returns_none() {}
-
     #[test]
-    fn initial__EcdarUniversity_Machine__return_state_L5() {
+    fn initial__EcdarUniversity_Machine__return_correct_state() {
         // Arrange
         let system = create_EcdarUniversity_Machine_system();
 
         // Act
-        let actual = TransitionDecision::initial(system).unwrap();
+        let actual = format!(
+            "{:?}",
+            TransitionDecision::initial(system.clone()).unwrap().source
+        );
 
         // Assert
-        assert_eq!(actual.source.get_location().id.to_string(), "L5")
+        let expected = format!("{:?}", system.get_initial_state().unwrap());
+        assert_eq!(actual, expected)
+    }
+
+    #[test]
+    fn initial__EcdarUniversity_Machine__correct_transitions() {
+        // Arrange
+        let system = create_EcdarUniversity_Machine_system();
+
+        // Act
+        let actual: Vec<String> = TransitionDecision::initial(system.clone())
+            .unwrap()
+            .transitions
+            .into_iter()
+            .map(|x| format!("{:?}", x)) // shhhhhh, close your eyes, this is not logic
+            .collect();
+
+        // Assert
+        let expected_len = 2;
+        assert_eq!(actual.len(), expected_len);
+
+        let expected_tea_transition = &format!(
+            "{:?}",
+            system.next_transitions_if_available(&system.get_initial_location().unwrap(), "tea")[0]
+        );
+        assert!(actual.contains(expected_tea_transition));
+
+        let expected_coin_transition = &format!(
+            "{:?}",
+            system.next_transitions_if_available(&system.get_initial_location().unwrap(), "coin")
+                [0]
+        );
+        assert!(actual.contains(expected_coin_transition));
     }
 }
