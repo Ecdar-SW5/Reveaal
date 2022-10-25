@@ -23,6 +23,7 @@ impl LocationID {
             "consistency: {}",
             string
         ))
+        .unwrap()
         .remove(0);
 
         match query {
