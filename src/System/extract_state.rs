@@ -86,7 +86,7 @@ fn build_location_tuple(
         }
     } else {
         Err(format!(
-            "{} is not a location in the trasistion system ",
+            "{} is not a location in the transition system ",
             location_id
         ))
     }
