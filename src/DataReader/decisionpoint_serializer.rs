@@ -1,12 +1,17 @@
 use crate::ModelObjects::component::{
-    Component, Declarations, Edge, Location, LocationType, SyncType,
+    Component, Declarations, Edge, Location, LocationType, SyncType, State
 };
-use crate::ModelObjects::state::State;
+
 
 pub struct SerializedDecisionPoint {}
 
 impl SerializedDecisionPoint {}
-pub mod util {
+
+#[cfg(test)]
+mod tests {
+    use crate::ModelObjects::component::{
+        Component, Declarations, Edge, Location, LocationType, SyncType, State  
+    };
     use crate::DataReader::component_loader::JsonProjectLoader;
     use crate::DataReader::parse_queries;
     use crate::ModelObjects::representations::QueryExpression;
@@ -17,9 +22,8 @@ pub mod util {
     use crate::System::save_component::PruningStrategy;
     use edbm::util::constraints::ClockIndex;
 
-#[cfg(test)]
-mod tests {
-    struct setup {
+
+    pub struct Setup {
         testSource: State,
         testEdges: Vec<Edge>,
     }
@@ -54,7 +58,7 @@ mod tests {
 
         let new_comp = new_system.compile(dim);
         if new_comp.is_err() {
-            return;
+            panic!("Error")
         }
 
         let new_comp = combine_components(&new_comp.unwrap(), PruningStrategy::NoPruning);
@@ -64,21 +68,17 @@ mod tests {
             .unwrap();
         let base_system = base_system.compile(dim).unwrap();
         Setup {
-            State: base_system.get_initial_state,
-            testEdges: base_system.get_ed
-        }
-    }
-
-    impl Setup {
-        fn new() -> Self {
-            testSource = State;
-            testEdges = vec![]
+            testSource: match base_system.get_initial_state() {
+                Some(source) => source,
+                None => panic!("No initial state")
+            },
+            testEdges: vec![],
         }
     }
 
     #[test]
     fn given_state_return_serialized_state()
     {
-        assert_eq!(false);
+        assert!(false);
     }
 }
