@@ -49,7 +49,8 @@ impl ConcreteEcdarBackend {
                     .flatten()
                     .collect::<Vec<Component>>();
 
-                let components = create_components(parsed_components, query_request.should_reduce_clocks);
+                let components =
+                    create_components(parsed_components, query_request.should_reduce_clocks);
                 model_cache.insert_model(components_info.components_hash, Arc::new(components))
             }
         };
@@ -129,7 +130,10 @@ fn parse_xml_components(xml: &str) -> Vec<Component> {
     comps
 }
 
-fn create_components(components: Vec<Component>, should_clock_reduce: bool,) -> HashMap<String, Component> {
+fn create_components(
+    components: Vec<Component>,
+    should_clock_reduce: bool,
+) -> HashMap<String, Component> {
     let mut comp_hashmap = HashMap::<String, Component>::new();
     for mut component in components {
         trace!("Adding comp {} to container", component.get_name());

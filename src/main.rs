@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 use clap::{load_yaml, App};
-use reveaal::logging::setup_logger;
+use reveaal::logging::{get_messages, setup_logger};
 
 use reveaal::{
     extract_system_rep, parse_queries, start_grpc_server_with_tokio, xml_parser, ComponentLoader,
@@ -19,6 +19,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         start_grpc_server_with_tokio(ip_endpoint)?;
     } else {
         start_using_cli(&matches);
+    }
+
+    for s in get_messages().iter().enumerate() {
+        println!("{}={}", s.0, s.1);
     }
 
     Ok(())
