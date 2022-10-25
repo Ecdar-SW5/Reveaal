@@ -8,7 +8,7 @@ pub enum LocationID {
     Composition(Box<LocationID>, Box<LocationID>),
     Quotient(Box<LocationID>, Box<LocationID>),
     Simple(String),
-    ///Used for representing a partial state
+    /// Used for representing a partial state and it is generated when a location's name is set as `_`
     AnyLocation(),
 }
 
@@ -32,8 +32,8 @@ impl LocationID {
         }
     }
 
-    /// This function is used when you want to compare a [`LocationID::Simple`] location to a [`LocationID::AnyLocation`]
-    /// A [`LocationID::AnyLocation`] is used to represent a partial state, which often contains a location where one of the components is a `_` and should always be true when compared to a [`LocationID::Simple`]
+    /// This function is used when you want to compare [`LocationID::Simple`] location to [`LocationID::AnyLocation`].
+    /// [`LocationID::AnyLocation`] should always be true when compared to [`LocationID::Simple`]
     /// ```
     /// use reveaal::TransitionSystems::LocationID;
     /// // Make two locations where `a` has LocationID::AnyLocation

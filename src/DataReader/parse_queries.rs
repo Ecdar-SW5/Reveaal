@@ -38,7 +38,7 @@ pub fn parse_to_expression_tree(edge_attribute_str: &str) -> Result<Vec<QueryExp
             build_queries(pair, &mut queries);
             Ok(queries)
         }
-        err => return Err(panic!("Unable to match query string as rule: {:?}", err)),
+        err => Err(format!("Unable to match query string as rule: {:?}", err)),
     }
 }
 
