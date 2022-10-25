@@ -77,7 +77,7 @@ fn build_location_tuple(
     let locations_system = system.get_all_locations();
     if let Some(locationtuple) = locations_system
         .iter()
-        .find(|loc| loc.id.cmp_partial_locations(&location_id))
+        .find(|loc| loc.id.compare_partial_locations(&location_id))
     {
         if locationtuple.id == location_id {
             Ok(locationtuple.clone())

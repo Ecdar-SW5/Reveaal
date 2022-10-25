@@ -32,7 +32,7 @@ impl LocationID {
         }
     }
 
-    /// This function is used when you want to compare [`LocationID::Simple`] location to [`LocationID::AnyLocation`].
+    /// This function is used when you want to compare a [`LocationID`] containing a pratial location [`LocationID::AnyLocation`] with another [`LocationID`].
     /// [`LocationID::AnyLocation`] should always be true when compared to [`LocationID::Simple`]
     /// ```
     /// use reveaal::TransitionSystems::LocationID;
@@ -45,7 +45,7 @@ impl LocationID {
     ///
     /// assert!(a.cmp_partial_locations(&b));
     /// ```
-    pub fn cmp_partial_locations(&self, other: &LocationID) -> bool {
+    pub fn compare_partial_locations(&self, other: &LocationID) -> bool {
         match (self, other) {
             (
                 LocationID::Composition(self_left, self_right),
@@ -59,8 +59,8 @@ impl LocationID {
                 LocationID::Quotient(self_left, self_right),
                 LocationID::Quotient(other_left, other_right),
             ) => {
-                self_left.cmp_partial_locations(other_left)
-                    && self_right.cmp_partial_locations(other_right)
+                self_left.compare_partial_locations(other_left)
+                    && self_right.compare_partial_locations(other_right)
             }
             (LocationID::AnyLocation(), LocationID::Simple(_))
             | (LocationID::Simple(_), LocationID::AnyLocation())

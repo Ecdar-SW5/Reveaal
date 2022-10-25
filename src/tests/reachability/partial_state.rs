@@ -31,7 +31,7 @@ mod reachability_partial_states_test {
                 LocationID::Simple("L_35".to_string());
                 "L_35 == L_35")]
     fn checks_cmp_locations_returns_true(loc1: LocationID, loc2: LocationID) {
-        assert!(loc1.cmp_partial_locations(&loc2));
+        assert!(loc1.compare_partial_locations(&loc2));
     }
 
     #[test_case(LocationID::Composition(Box::new(LocationID::Simple("L2".to_string())),Box::new(LocationID::Simple("L5".to_string()))), 
@@ -74,6 +74,6 @@ mod reachability_partial_states_test {
                 LocationID::Simple("L7".to_string());
                 "__ != L7")]
     fn checks_cmp_locations_returns_false(loc1: LocationID, loc2: LocationID) {
-        assert!(!loc1.cmp_partial_locations(&loc2));
+        assert!(!loc1.compare_partial_locations(&loc2));
     }
 }
