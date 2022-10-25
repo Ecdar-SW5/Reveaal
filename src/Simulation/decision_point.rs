@@ -105,5 +105,43 @@ impl DecisionPoint {
     }
 }
 
+#[cfg(test)]
+
+mod tests {
+
+    use super::{TransitionDecision, DecisionPoint};
+    use crate::{
+        DataReader::json_reader::read_json_component,
+        TransitionSystems::{CompiledComponent, TransitionSystemPtr}, component::{State, Transition},
+    };
+
+    fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
+        let mut component = read_json_component("samples/json/EcdarUniversity", "Machine");
+        component.create_edge_io_split();
+        CompiledComponent::from(vec![component], "Machine")
+    }
+    // get_transitions test
+#[test]
+    fn get_transitions_CorrectTransitionsReturned_ReturnsVectorOfTransitions() {
+        // arrange
+        let system = create_EcdarUniversity_Machine_system();
+        let source = system.get_initial_state().unwrap();
+
+        let dummyTransitionDecision = TransitionDecision::from(system, source);
+        // act
+
+        let actual = DecisionPoint::get_transitions(dummyTransitionDecision);
+        let dummyTransitions: Vec<Transition>;
+
+        // assert
+        //assert_type!(actual, dummyTransitions)
+    }
+    // get_location_tuple test
+    // new test
+    // get_all_edges_from_components test
+    // add_transition_to_edge test
+    // get_edges_with_transitions_for_chosen_component test
+}
+
 
 
