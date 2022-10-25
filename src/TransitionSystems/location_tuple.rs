@@ -21,7 +21,8 @@ pub struct LocationTuple {
     pub loc_type: LocationType,
     left: Option<Box<LocationTuple>>,
     right: Option<Box<LocationTuple>>,
-    partial_location: bool,
+    /// `is_partial_location`is set to `true` if the LocationTuple is partial, meaning the [`LocationID`] consists of [`LocationID::AnyLocation`]
+    is_partial_location: bool,
 }
 
 impl PartialEq for LocationTuple {
@@ -45,10 +46,12 @@ impl LocationTuple {
             loc_type: location.get_location_type().clone(),
             left: None,
             right: None,
-            partial_location: false,
+            is_partial_location: false,
         }
     }
-
+    /// This method is used to create partial [`LocationTuple`]
+    /// A partial LocationTuple means it has a [`LocationID`] that consists of [`LocationID::AnyLocation`] 
+    /// A partial [`LocationTuple`] has no any `invariant`, `left` and `right` since a partial [`LocationTuple`] covers more than one one [`LocationTuple`], and therefore there is no specific `invariant`, `left` and `right` 
     pub fn create_partial_location(id: LocationID) -> Self {
         LocationTuple {
             id,
@@ -56,7 +59,7 @@ impl LocationTuple {
             loc_type: crate::component::LocationType::Normal,
             left: None,
             right: None,
-            partial_location: true,
+            is_partial_location: true,
         }
     }
 
@@ -84,7 +87,7 @@ impl LocationTuple {
             loc_type,
             left: Some(Box::new(left.clone())),
             right: Some(Box::new(right.clone())),
-            partial_location: false,
+            is_partial_location: false,
         }
     }
 
@@ -127,7 +130,7 @@ impl LocationTuple {
             loc_type,
             left: Some(Box::new(left.clone())),
             right: Some(Box::new(right.clone())),
-            partial_location: false,
+            is_partial_location: false,
         }
     }
 
@@ -157,7 +160,7 @@ impl LocationTuple {
     }
 
     pub fn is_partial_location(&self) -> bool {
-        self.partial_location
+        self.is_partial_location
     }
 
     pub fn is_initial(&self) -> bool {
