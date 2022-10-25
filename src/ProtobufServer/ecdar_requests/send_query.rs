@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::panic::AssertUnwindSafe;
 
 use crate::component::Component;
+use crate::logging;
+use crate::logging::*;
 use crate::xml_parser::parse_xml_from_str;
 use crate::DataReader::component_loader::ComponentContainer;
 use crate::DataReader::json_reader::json_to_component;
@@ -20,7 +22,8 @@ use crate::ProtobufServer::services::{
 };
 use crate::System::executable_query::QueryResult;
 use crate::System::{extract_system_rep, input_enabler};
-use log::trace;
+use log::{logger, trace};
+use simplelog::WriteLogger;
 use tonic::{Request, Response, Status};
 
 use crate::ProtobufServer::ConcreteEcdarBackend;
@@ -36,14 +39,20 @@ impl ConcreteEcdarBackend {
         let proto_components = &components_info.components;
         let query = parse_query(&query_request)?;
 
-        let mut parsed_components = vec![];
-
-        for proto_component in proto_components {
-            let components = parse_components_if_some(proto_component)?;
-            for component in components {
-                parsed_components.push(component);
-            }
-        }
+        let parsed_components: Vec<Component> = proto_components
+            .iter()
+            .map(|p: &ProtobufComponent| parse_components_if_some(p))
+            .flatten()
+            .flatten()
+            .collect::<Vec<Component>>();
+        /*
+              for proto_component in proto_components {
+                  let components = parse_components_if_some(proto_component)?;
+                  for component in components {
+                      parsed_components.push(component);
+                  }
+              }
+        */
 
         let mut component_container =
             create_component_container(parsed_components, query_request.should_reduce_clocks);
@@ -65,6 +74,9 @@ impl ConcreteEcdarBackend {
                 }
             };
         let result = executable_query.execute();
+
+        let msgs = get_messages(); // TODO: Not raw
+        println!("{:?}", msgs);
 
         let reply = QueryResponse {
             response: Some(QueryOkOrErrorResponse::QueryOk(QueryOk {

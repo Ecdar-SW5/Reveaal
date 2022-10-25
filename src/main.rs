@@ -1,7 +1,6 @@
 #![allow(non_snake_case)]
 use clap::{load_yaml, App};
-mod logging;
-use logging::setup_logger;
+use reveaal::logging::setup_logger;
 
 use reveaal::{
     extract_system_rep, parse_queries, start_grpc_server_with_tokio, xml_parser, ComponentLoader,

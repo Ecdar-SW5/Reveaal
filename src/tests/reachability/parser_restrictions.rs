@@ -16,7 +16,7 @@ mod reachability_parser_restrictions_test {
     fn query_parser_checks_invalid_amount_of_location_and_machine_args(parser_input: &str) {
         let folder_path = "samples/json/EcdarUniversity".to_string();
         let mut comp_loader = if xml_parser::is_xml_project(&folder_path) {
-            XmlProjectLoader::new(folder_path, true)
+            XmlProjectLoader::new(folder_path, false)
         } else {
             JsonProjectLoader::new(folder_path, true)
         }
@@ -39,7 +39,7 @@ mod reachability_parser_restrictions_test {
     fn query_parser_checks_valid_amount_of_location_and_machine_args(parser_input: &str) {
         let folder_path = "samples/json/EcdarUniversity".to_string();
         let mut comp_loader = if xml_parser::is_xml_project(&folder_path) {
-            XmlProjectLoader::new(folder_path, true)
+            XmlProjectLoader::new(folder_path, false)
         } else {
             JsonProjectLoader::new(folder_path, true)
         }

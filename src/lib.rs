@@ -7,7 +7,7 @@ pub mod ProtobufServer;
 pub mod Simulation;
 pub mod System;
 pub mod TransitionSystems;
-pub(crate) mod logging;
+pub mod logging;
 pub mod tests;
 
 pub use crate::DataReader::component_loader::{
