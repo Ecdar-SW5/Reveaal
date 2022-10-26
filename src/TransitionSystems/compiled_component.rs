@@ -1,3 +1,4 @@
+use crate::ComponentLoader;
 use crate::ModelObjects::component::{
     Component, DeclarationProvider, Declarations, State, Transition,
 };
@@ -116,6 +117,10 @@ impl CompiledComponent {
             loaded_components: component_map,
         };
 
+        Self::from_component_loader(&mut component_container, composition)
+    }
+
+    pub fn from_component_loader (loader: &mut dyn ComponentLoader, composition: &str) -> TransitionSystemPtr {
         let mut dimension = 0;
         let composition = QueryParser::parse(Rule::expr, composition)
             .unwrap()
@@ -124,7 +129,7 @@ impl CompiledComponent {
         let composition = build_expression_from_pair(composition);
         get_system_recipe(
             &composition,
-            &mut component_container,
+            loader,
             &mut dimension,
             &mut None,
         )

@@ -2,15 +2,12 @@ use std::panic::AssertUnwindSafe;
 
 use crate::DataReader::component_loader::ComponentContainer;
 
-use crate::extract_system_rep::get_system_recipe;
-use crate::parse_queries::{build_expression_from_pair, QueryParser};
-use crate::DataReader::parse_queries::Rule;
+use crate::TransitionSystems::CompiledComponent;
 use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
 use crate::Simulation::transition_decision::TransitionDecision;
 
 use log::trace;
 
-use pest::Parser;
 use tonic::{Request, Response, Status};
 
 use crate::ProtobufServer::ConcreteEcdarBackend;
@@ -31,20 +28,7 @@ impl ConcreteEcdarBackend {
         let mut component_container = ComponentContainer::from(&component_info).unwrap();
 
         // Combine components as specified in the composition string
-        let mut dimension = 0;
-        let composition = QueryParser::parse(Rule::expr, &composition)
-            .unwrap()
-            .next()
-            .unwrap();
-        let composition = build_expression_from_pair(composition);
-        let transition_system = get_system_recipe(
-            &composition,
-            &mut component_container,
-            &mut dimension,
-            &mut None,
-        )
-        .compile(dimension)
-        .unwrap();
+        let transition_system = CompiledComponent::from_component_loader(&mut component_container, &composition);
 
         // Send the combine component to the Simulation module
         let _initial_decision_point = TransitionDecision::initial(transition_system);
