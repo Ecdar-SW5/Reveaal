@@ -58,7 +58,10 @@ impl LocationID {
             | (
                 LocationID::Quotient(self_left, self_right),
                 LocationID::Quotient(other_left, other_right),
-            ) => self_left.compare_partial_locations(other_left) && self_right.compare_partial_locations(other_right),
+            ) => {
+                self_left.compare_partial_locations(other_left)
+                    && self_right.compare_partial_locations(other_right)
+            }
             (LocationID::AnyLocation(), LocationID::Simple(_))
             | (LocationID::Simple(_), LocationID::AnyLocation())
             | (LocationID::AnyLocation(), LocationID::AnyLocation()) => true,
