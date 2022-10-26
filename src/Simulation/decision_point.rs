@@ -1,7 +1,8 @@
 use super::transition_decision::TransitionDecision;
+use crate::ProtobufServer::services::DecisionPoint as ProtoDecisionPoint;
 use crate::{
     component::{Component, Edge, State, Transition},
-    TransitionSystems::{LocationID, LocationTuple},
+    TransitionSystems::{LocationID, LocationTuple}, ComponentLoader,
 };
 use edbm::util::constraints::ClockIndex;
 
@@ -13,6 +14,17 @@ pub struct DecisionPoint {
 }
 
 impl DecisionPoint {
+    pub fn from(
+        transition_decision: &TransitionDecision, 
+        component_loader: &dyn ComponentLoader
+    ) -> Self {
+        DecisionPoint { source: todo!(), edges: todo!() }
+    }
+
+    pub fn serialize(&self) -> ProtoDecisionPoint {
+        ProtoDecisionPoint { source: todo!(), edges: todo!() }
+    }
+
     // Creates the new decision point
     pub fn new(
         transitionDecision: TransitionDecision,

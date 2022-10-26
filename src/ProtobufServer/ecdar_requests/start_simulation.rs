@@ -2,6 +2,7 @@ use std::panic::AssertUnwindSafe;
 
 use crate::DataReader::component_loader::ComponentContainer;
 
+use crate::Simulation::decision_point::DecisionPoint;
 use crate::TransitionSystems::CompiledComponent;
 use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
 use crate::Simulation::transition_decision::TransitionDecision;
@@ -31,11 +32,15 @@ impl ConcreteEcdarBackend {
         let transition_system = CompiledComponent::from_component_loader(&mut component_container, &composition);
 
         // Send the combine component to the Simulation module
-        let _initial_decision_point = TransitionDecision::initial(transition_system);
+        let initial = &TransitionDecision::initial(transition_system).unwrap();
+
+        // Convert initial TransitionDecision to DecisionPoint
+        let initial = DecisionPoint::from(&initial, &component_container);
 
         // Serialize and respond with the SimulationState result from the simulation module
+        let initial = initial.serialize();
         let simulation_step_response = SimulationStepResponse {
-            new_decision_point: None,
+            new_decision_point: Some(initial),
         };
 
         Ok(Response::new(simulation_step_response))

@@ -55,7 +55,7 @@ mod tests {
 
     fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
         let mut component = read_json_component("samples/json/EcdarUniversity", "Machine");
-        component.create_edge_io_split();
+        component.create_edge_io_split();//used to get input and output edges, if it is not called, the input and output edges will be empty
         CompiledComponent::from(vec![component], "Machine")
     }
 
