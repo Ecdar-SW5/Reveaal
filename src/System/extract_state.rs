@@ -79,7 +79,7 @@ fn build_location_tuple(
         .iter()
         .find(|loc| loc.id.compare_partial_locations(&location_id))
     {
-        if locationtuple.id == location_id {
+        if !location_id.is_partial_location() {
             Ok(locationtuple.clone())
         } else {
             Ok(LocationTuple::create_partial_location(location_id))
