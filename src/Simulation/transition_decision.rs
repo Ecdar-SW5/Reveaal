@@ -59,6 +59,12 @@ mod tests {
         CompiledComponent::from(vec![component], "Machine")
     }
 
+    fn create_EcdarUniversity_Machine4_system() -> TransitionSystemPtr {
+        let mut component = read_json_component("samples/json/EcdarUniversity", "Machine4");
+        component.create_edge_io_split();
+        CompiledComponent::from(vec![component], "Machine4")
+    }
+
     #[test]
     fn initial__EcdarUniversity_Machine__return_correct_state() {
         // Arrange
@@ -100,8 +106,31 @@ mod tests {
 
         let expected_coin_transition = &format!(
             "{:?}",
-            system.next_transitions_if_available(&system.get_initial_location().unwrap(), "coin")
-                [0]
+            system.next_transitions_if_available(&system.get_initial_location().unwrap(), "coin")[0]
+        );
+        assert!(actual.contains(expected_coin_transition));
+    }
+
+    #[test]
+    fn initial__EcdarUniversity_Machine4__correct_transitions() {
+        // Arrange
+        let system = create_EcdarUniversity_Machine4_system();
+
+        // Act
+        let actual: Vec<String> = TransitionDecision::initial(system.clone())
+            .unwrap()
+            .transitions
+            .into_iter()
+            .map(|x| format!("{:?}", x)) // shhhhhh, close your eyes, this is not logic
+            .collect();
+
+        // Assert
+        let expected_len = 1;
+        assert_eq!(actual.len(), expected_len);
+
+        let expected_coin_transition = &format!(
+            "{:?}",
+            system.next_transitions_if_available(&system.get_initial_location().unwrap(), "coin")[0]
         );
         assert!(actual.contains(expected_coin_transition));
     }
