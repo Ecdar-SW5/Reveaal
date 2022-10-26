@@ -44,8 +44,7 @@ impl ConcreteEcdarBackend {
             None => {
                 let parsed_components: Vec<Component> = proto_components
                     .iter()
-                    .map(|p: &ProtobufComponent| parse_components_if_some(p))
-                    .flatten()
+                    .flat_map(parse_components_if_some)
                     .flatten()
                     .collect::<Vec<Component>>();
 

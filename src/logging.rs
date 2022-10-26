@@ -76,7 +76,7 @@ impl Write for G {
             } else {
                 MSGS.push(str.trim_end().to_string());
             }
-            if str.chars().last() == Some('\n') {
+            if str.ends_with('\n') {
                 MSGS.push("".to_string());
             }
         }
@@ -96,7 +96,7 @@ impl Write for G {
     }
 
     fn write_fmt(&mut self, fmt: Arguments<'_>) -> std::io::Result<()> {
-        self.write(fmt.to_string().as_bytes()).expect("FAIL");
+        let _ = self.write(fmt.to_string().as_bytes())?;
         Ok(())
     }
 }

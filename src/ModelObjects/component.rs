@@ -14,10 +14,10 @@ use crate::ModelObjects::representations::BoolExpression;
 use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
 use edbm::zones::OwnedFederation;
+use log::info;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
-use log::info;
 
 /// The basic struct used to represent components read from either Json or xml
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -266,7 +266,7 @@ impl Component {
                 ClockReductionReason::Duplicate(global) => {
                     info!(target: "clock-reduction", "Replaced Clock {} with {global}", clock.clock);
                     self.replace_clock(&clock, global);
-                },
+                }
                 ClockReductionReason::Unused => {
                     info!(target: "clock-reduction", "Removed Clock {}", clock.clock);
                     self.remove_clock(&clock.updates);
