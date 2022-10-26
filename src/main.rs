@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 use clap::{load_yaml, App};
-use reveaal::logging::{get_messages, setup_logger};
+use reveaal::logging::setup_logger;
 
 use reveaal::{
     extract_system_rep, parse_queries, start_grpc_server_with_tokio, xml_parser, ComponentLoader,
@@ -10,19 +10,14 @@ use std::env;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "logging")]
-    setup_logger().unwrap();
-
     let yaml = load_yaml!("cli.yml");
     let matches = App::from(yaml).get_matches();
+    setup_logger(matches.value_of("endpoint").is_some()).unwrap();
 
     if let Some(ip_endpoint) = matches.value_of("endpoint") {
         start_grpc_server_with_tokio(ip_endpoint)?;
     } else {
         start_using_cli(&matches);
-    }
-
-    for s in get_messages().iter().enumerate() {
-        println!("{}={}", s.0, s.1);
     }
 
     Ok(())

@@ -5,7 +5,6 @@ use crate::DataReader::xml_parser::parse_xml_from_file;
 use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
 use crate::System::input_enabler;
-use log::info;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
@@ -155,7 +154,6 @@ impl JsonProjectLoader {
         let mut component = json_reader::read_json_component(&self.project_path, component_name);
         if self.should_reduce_clocks {
             component.reduce_clocks(component.find_redundant_clocks());
-            info!(target: "clock-reduction", "YOOOOOO");
         }
 
         component.create_edge_io_split();

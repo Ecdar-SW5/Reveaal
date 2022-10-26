@@ -7,7 +7,7 @@ use crate::System::extract_system_rep::create_executable_query;
 
 fn try_setup_logging() {
     #[cfg(feature = "logging")]
-    let _ = setup_logger();
+    let _ = setup_logger(false);
 }
 
 pub fn xml_refinement_check(PATH: &str, QUERY: &str) -> bool {

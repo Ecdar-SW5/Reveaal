@@ -13,7 +13,7 @@ use crate::ModelObjects::queries::Query;
 use crate::ProtobufServer::services::component::Rep;
 use crate::ProtobufServer::services::query_response::query_ok::Result as ProtobufResult;
 use crate::ProtobufServer::services::query_response::query_ok::{
-    ComponentResult, ConsistencyResult, DeterminismResult, Information, RefinementResult,
+    ComponentResult, ConsistencyResult, DeterminismResult, RefinementResult,
 };
 use crate::ProtobufServer::services::query_response::QueryOk;
 use crate::ProtobufServer::services::query_response::Response as QueryOkOrErrorResponse;
@@ -73,17 +73,11 @@ impl ConcreteEcdarBackend {
             };
         let result = executable_query.execute();
 
-        let msgs = get_messages(); // TODO: Not raw
-        println!("{:?}", msgs);
-
         let reply = QueryResponse {
             response: Some(QueryOkOrErrorResponse::QueryOk(QueryOk {
                 query_id: query_request.query_id,
                 result: convert_ecdar_result(&result),
-                info: vec![Information {
-                    subject: "test".to_string(),
-                    message: "nsoedundo".to_string(),
-                }], //TODO: Should be whatever is written through `info!` (logging)
+                info: get_messages(),
             })),
         };
 
