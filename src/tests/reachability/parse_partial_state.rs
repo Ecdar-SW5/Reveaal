@@ -2,22 +2,23 @@
 mod reachability_parse_partial_state {
     use crate::{
         extract_system_rep, parse_queries,
-        tests::reachability::helper_functions::reachability_test_helper_functions, xml_parser,
+        tests::reachability::helper_functions::reachability_test_helper_functions,
         JsonProjectLoader, ModelObjects::representations::QueryExpression, System,
-        XmlProjectLoader,
     };
     use test_case::test_case;
+
+    const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
+
     #[test_case("_", true;
     "State gets parsed as partial")]
     #[test_case("L20", false;
     "State gets parsed as not partial")]
     fn query_parser_checks_invalid_locations(location_str: &str, expect_partial: bool) {
-        let folder_path = "samples/json/EcdarUniversity".to_string();
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
         let (machine, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(
                 *mock_model,
-                &folder_path,
+                FOLDER_PATH,
             );
 
         let mock_state = Box::new(QueryExpression::State(
@@ -46,13 +47,7 @@ mod reachability_parse_partial_state {
     #[test_case("reachability: Adm2 -> [_](); [_]()";
     "Both end and start are partial")]
     fn query_parser_reject_partial_start(parser_input: &str) {
-        let folder_path = "samples/json/EcdarUniversity".to_string();
-        let mut comp_loader = if xml_parser::is_xml_project(&folder_path) {
-            XmlProjectLoader::new(folder_path)
-        } else {
-            JsonProjectLoader::new(folder_path)
-        }
-        .to_comp_loader();
+        let mut comp_loader = JsonProjectLoader::new(String::from(FOLDER_PATH)).to_comp_loader();
         // Make query:
         let q = parse_queries::parse_to_query(parser_input);
         let queries = q.first().unwrap();
