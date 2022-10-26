@@ -73,13 +73,13 @@ fn build_location_tuple(
     machine: &SystemRecipe,
     system: &TransitionSystemPtr,
 ) -> Result<LocationTuple, String> {
-    let location_id = get_location_id(&mut locations.iter(), machine)?;
+    let location_id = get_location_id(&mut locations.iter(), machine);
     let locations_system = system.get_all_locations();
     if let Some(locationtuple) = locations_system
         .iter()
         .find(|loc| loc.id.compare_partial_locations(&location_id))
     {
-        if locationtuple.id == location_id {
+        if !location_id.is_partial_location() {
             Ok(locationtuple.clone())
         } else {
             Ok(LocationTuple::create_partial_location(location_id))
@@ -92,26 +92,23 @@ fn build_location_tuple(
     }
 }
 
-fn get_location_id(
-    locations: &mut Iter<&str>,
-    machine: &SystemRecipe,
-) -> Result<LocationID, String> {
+fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
     match machine {
-        SystemRecipe::Composition(left, right) => Ok(LocationID::Composition(
-            Box::new(get_location_id(locations, left)?),
-            Box::new(get_location_id(locations, right)?),
-        )),
-        SystemRecipe::Conjunction(left, right) => Ok(LocationID::Conjunction(
-            Box::new(get_location_id(locations, left)?),
-            Box::new(get_location_id(locations, right)?),
-        )),
-        SystemRecipe::Quotient(left, right, _clock_index) => Ok(LocationID::Quotient(
-            Box::new(get_location_id(locations, left)?),
-            Box::new(get_location_id(locations, right)?),
-        )),
+        SystemRecipe::Composition(left, right) => LocationID::Composition(
+            Box::new(get_location_id(locations, left)),
+            Box::new(get_location_id(locations, right)),
+        ),
+        SystemRecipe::Conjunction(left, right) => LocationID::Conjunction(
+            Box::new(get_location_id(locations, left)),
+            Box::new(get_location_id(locations, right)),
+        ),
+        SystemRecipe::Quotient(left, right, _clock_index) => LocationID::Quotient(
+            Box::new(get_location_id(locations, left)),
+            Box::new(get_location_id(locations, right)),
+        ),
         SystemRecipe::Component(..) => match locations.next().unwrap().trim() {
-            "_" => Ok(LocationID::AnyLocation()),
-            str => Ok(LocationID::Simple(str.to_string())),
+            "_" => LocationID::AnyLocation(),
+            str => LocationID::Simple(str.to_string()),
         },
     }
 }

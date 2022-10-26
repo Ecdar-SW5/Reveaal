@@ -21,8 +21,6 @@ pub struct LocationTuple {
     pub loc_type: LocationType,
     left: Option<Box<LocationTuple>>,
     right: Option<Box<LocationTuple>>,
-    /// `is_partial_location`is set to `true` if the LocationTuple is partial, meaning the [`LocationID`] consists of [`LocationID::AnyLocation`]
-    is_partial_location: bool,
 }
 
 impl PartialEq for LocationTuple {
@@ -46,7 +44,6 @@ impl LocationTuple {
             loc_type: location.get_location_type().clone(),
             left: None,
             right: None,
-            is_partial_location: false,
         }
     }
     /// This method is used to a create partial [`LocationTuple`].
@@ -60,15 +57,11 @@ impl LocationTuple {
             loc_type: crate::component::LocationType::Normal,
             left: None,
             right: None,
-            is_partial_location: true,
         }
     }
 
     //Merge two locations keeping the invariants seperate
     pub fn merge_as_quotient(left: &Self, right: &Self) -> Self {
-        if left.is_partial_location() || left.is_partial_location() {
-            panic!("You cannot merge as quotient of partial locations")
-        }
         let id = LocationID::Quotient(Box::new(left.id.clone()), Box::new(right.id.clone()));
 
         if left.loc_type == right.loc_type
@@ -91,15 +84,11 @@ impl LocationTuple {
             loc_type,
             left: Some(Box::new(left.clone())),
             right: Some(Box::new(right.clone())),
-            is_partial_location: false,
         }
     }
 
     //Compose two locations intersecting the invariants
     pub fn compose(left: &Self, right: &Self, comp: CompositionType) -> Self {
-        if left.is_partial_location() || left.is_partial_location() {
-            panic!("You cannot merge as quotient of partial locations")
-        }
         let id = match comp {
             CompositionType::Conjunction => {
                 LocationID::Conjunction(Box::new(left.id.clone()), Box::new(right.id.clone()))
@@ -137,7 +126,6 @@ impl LocationTuple {
             loc_type,
             left: Some(Box::new(left.clone())),
             right: Some(Box::new(right.clone())),
-            is_partial_location: false,
         }
     }
 
@@ -164,10 +152,6 @@ impl LocationTuple {
             return self;
         }
         self.right.as_ref().unwrap()
-    }
-
-    pub fn is_partial_location(&self) -> bool {
-        self.is_partial_location
     }
 
     pub fn is_initial(&self) -> bool {

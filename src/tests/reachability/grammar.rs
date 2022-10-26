@@ -19,7 +19,7 @@ mod reachability_grammar_test {
     #[test_case("reachability: Hi -> [L1](); [_]()"; "no location or clock values specified for end state")] // 1 location argument provided
     #[test_case("reachability: Hi -> [_](); [_]()"; "no location or clock values specified")] // 1 location argument provided
     #[test_case("reachability: Hi -> [L2, L3](y<2)"; "No start state is given")]
-    #[test_case("reachability: Hi -> [_]()"; "No start state is given, valid grammar, but invalid query")]
+    #[test_case("reachability: Hi -> [_]()"; "No start state is given, valid grammar")]
     fn query_grammar_test_valid_queries(parser_input: &str) {
         // This tests that the grammar accepts this string, and does not panic:
         assert!(matches!(

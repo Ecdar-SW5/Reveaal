@@ -47,7 +47,7 @@ pub fn create_executable_query<'a>(
                 let start_state: State = if let Some(state) = &**start {
                     validate_reachability_input(&machine, state)?;
                     let state = get_state(state, &machine, &transition_system)?;
-                    if state.get_location().is_partial_location() {
+                    if state.get_location().id.is_partial_location() {
                         return Err("Start state is a partial state, which it must not be".into())
                     }
                     state

@@ -45,7 +45,7 @@ impl LocationID {
     ///
     /// assert!(a.compare_partial_locations(&b));
     /// ```
-    pub fn compare_partial_locations(&self, other: &LocationID) -> bool {
+    pub fn compare_partial_locations(&self, other: &Self) -> bool {
         match (self, other) {
             (
                 LocationID::Composition(self_left, self_right),
@@ -67,6 +67,18 @@ impl LocationID {
             | (LocationID::AnyLocation(), LocationID::AnyLocation()) => true,
             (LocationID::Simple(loc1), LocationID::Simple(loc2)) => loc1 == loc2,
             (_, _) => false,
+        }
+    }
+
+    pub fn is_partial_location(&self) -> bool {
+        match self {
+            LocationID::Composition(left, right)
+            | LocationID::Conjunction(left, right)
+            | LocationID::Quotient(left, right) => {
+                left.is_partial_location() || right.is_partial_location()
+            }
+            LocationID::Simple(_) => false,
+            LocationID::AnyLocation() => true,
         }
     }
 }
