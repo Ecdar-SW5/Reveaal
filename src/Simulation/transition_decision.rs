@@ -11,6 +11,11 @@ pub struct TransitionDecisionPoint {
     pub transitions: Vec<Transition>,
 }
 
+pub struct TransitionDecision {
+    pub source: State,
+    pub choice: Transition,
+}
+
 impl TransitionDecisionPoint {
     /// Constructs the initial `TransitionDecisionPoint` for a given `TransitionSystemPtr`
     pub fn initial(system: TransitionSystemPtr) -> Option<Self> {
