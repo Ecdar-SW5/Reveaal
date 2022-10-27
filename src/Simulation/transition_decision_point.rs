@@ -147,7 +147,7 @@ mod tests {
         assert!(actual.contains(expected_coin_transition));
     }
 
-    // Yes this test is stupid, no I will not remove it >:( 
+    // Yes this test is stupid, no you will not remove it >:( 
     #[test]
     fn resolve__EcdarUniversity_Machine__correct_TransitionDecisionPoint() {
         // Arrange
