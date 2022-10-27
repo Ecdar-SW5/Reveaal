@@ -22,21 +22,13 @@ impl TransitionDecision {
 
     /// Constructs the TransitionDecision from a source State and a given TransitionSystemPtr
     pub fn from(system: TransitionSystemPtr, source: State) -> TransitionDecision {
-        let mut transitions = vec![];
         let actions = system.get_actions();
 
-        // get all transitions
-        for action in actions {
-            let transition = system.next_transitions_if_available(source.get_location(), &action);
-            transitions.append(&mut transition.clone());
-        }
-
-        // prune transitions that can not be taken
-        for (index, transition) in transitions.clone().iter().enumerate() {
-            if !transition.use_transition(&mut source.clone()) {
-                transitions.remove(index);
-            }
-        }
+        let transitions: Vec<Transition> = actions
+            .into_iter()
+            .flat_map(|action| system.next_transitions_if_available(source.get_location(), &action))
+            .filter(|transition| transition.use_transition(&mut source.clone()))
+            .collect();
 
         TransitionDecision {
             source: source,
