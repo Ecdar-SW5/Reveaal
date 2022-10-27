@@ -1,4 +1,4 @@
-use super::transition_decision::TransitionDecisionPoint;
+use super::transition_decision_point::TransitionDecisionPoint;
 use crate::ProtobufServer::services::DecisionPoint as ProtoDecisionPoint;
 use crate::{
     component::{Component, Edge, State, Transition},

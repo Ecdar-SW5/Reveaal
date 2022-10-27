@@ -4,7 +4,7 @@ use crate::DataReader::component_loader::ComponentContainer;
 
 use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
 use crate::Simulation::decision_point::DecisionPoint;
-use crate::Simulation::transition_decision::TransitionDecisionPoint;
+use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
 use crate::TransitionSystems::CompiledComponent;
 
 use log::trace;
