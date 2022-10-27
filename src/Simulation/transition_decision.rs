@@ -3,17 +3,18 @@ use crate::{
     TransitionSystems::TransitionSystemPtr,
 };
 
-/// Represents a choice in a transition system: In the current `source` state there is a choice of using one of the `transitions`
+/// Represents a decision in a transition system: In the current `source` state there is a decision of using one of the `possible_decisions`.
 #[derive(Debug)]
 #[derive(Clone)]
 pub struct TransitionDecisionPoint {
     pub source: State,
-    pub choices: Vec<Transition>,
+    pub possible_decisions: Vec<Transition>,
 }
 
+/// Represent a decision in a transition system, that has been taken: In the current `source` state I have `decided` to use this `Transition`.  
 pub struct TransitionDecision {
     pub source: State,
-    pub choice: Transition,
+    pub decided: Transition,
 }
 
 impl TransitionDecisionPoint {
@@ -39,7 +40,7 @@ impl TransitionDecisionPoint {
 
         TransitionDecisionPoint {
             source: source,
-            choices: transitions,
+            possible_decisions: transitions,
         }
     }
 }
@@ -88,7 +89,7 @@ mod tests {
         // Act
         let actual: Vec<String> = TransitionDecisionPoint::initial(system.clone())
             .unwrap()
-            .choices
+            .possible_decisions
             .into_iter()
             .map(|x| format!("{:?}", x)) // shhhhhh, close your eyes, this is not logic
             .collect();
@@ -119,7 +120,7 @@ mod tests {
         // Act
         let actual: Vec<String> = TransitionDecisionPoint::initial(system.clone())
             .unwrap()
-            .choices
+            .possible_decisions
             .into_iter()
             .map(|x| format!("{:?}", x)) // still no logic to be found here
             .collect();
