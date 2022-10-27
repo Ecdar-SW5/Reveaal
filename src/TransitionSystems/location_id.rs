@@ -70,6 +70,7 @@ impl LocationID {
         }
     }
 
+    /// It check whether the [`LocationID`] is a partial location by search through [`LocationID`] structure and see if there is any [`LocationID::AnyLocation`]
     pub fn is_partial_location(&self) -> bool {
         match self {
             LocationID::Composition(left, right)
