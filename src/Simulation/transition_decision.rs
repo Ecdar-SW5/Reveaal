@@ -5,7 +5,6 @@ use crate::{
 
 /// Represents a choice in a transition system: In the current `source` state there is a choice of using one of the `transitions`
 #[derive(Debug)]
-#[allow(dead_code)]
 #[derive(Clone)]
 pub struct TransitionDecision {
     pub source: State,
