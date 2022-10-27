@@ -48,6 +48,7 @@ impl TransitionDecisionPoint {
 }
 
 impl TransitionDecision {
+    /// Resolves a `TransitionDecision`: use the `decided: Transition` and return the `TransitionDecisionPoint` of the destination `State`  
     pub fn resolve(mut self, system: TransitionSystemPtr) -> TransitionDecisionPoint {
         self.decided.use_transition(&mut self.source);
         TransitionDecisionPoint::from(system, self.source)
