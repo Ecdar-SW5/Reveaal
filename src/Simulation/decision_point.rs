@@ -58,7 +58,7 @@ impl DecisionPoint {
 
     // Allows us to access transitions to add to edge ids
     pub fn get_transitions(transitionDecision: TransitionDecisionPoint) -> Vec<Transition> {
-        let transitions = transitionDecision.transitions;
+        let transitions = transitionDecision.choices;
         transitions
     }
 

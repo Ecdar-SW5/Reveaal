@@ -8,7 +8,7 @@ use crate::{
 #[derive(Clone)]
 pub struct TransitionDecisionPoint {
     pub source: State,
-    pub transitions: Vec<Transition>,
+    pub choices: Vec<Transition>,
 }
 
 pub struct TransitionDecision {
@@ -39,7 +39,7 @@ impl TransitionDecisionPoint {
 
         TransitionDecisionPoint {
             source: source,
-            transitions: transitions,
+            choices: transitions,
         }
     }
 }
@@ -88,7 +88,7 @@ mod tests {
         // Act
         let actual: Vec<String> = TransitionDecisionPoint::initial(system.clone())
             .unwrap()
-            .transitions
+            .choices
             .into_iter()
             .map(|x| format!("{:?}", x)) // shhhhhh, close your eyes, this is not logic
             .collect();
@@ -119,7 +119,7 @@ mod tests {
         // Act
         let actual: Vec<String> = TransitionDecisionPoint::initial(system.clone())
             .unwrap()
-            .transitions
+            .choices
             .into_iter()
             .map(|x| format!("{:?}", x)) // still no logic to be found here
             .collect();
