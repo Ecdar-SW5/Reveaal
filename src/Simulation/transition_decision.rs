@@ -28,7 +28,7 @@ impl TransitionDecision {
             .into_iter()
             // Map actions to transitions. An action can map to multiple actions thus flatten
             .flat_map(|action| system.next_transitions_if_available(source.get_location(), &action))
-            // Filter transitions that can not be used
+            // Filter transitions that can be used
             .filter(|transition| transition.use_transition(&mut source.clone()))
             .collect();
 
