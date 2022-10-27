@@ -26,7 +26,9 @@ impl TransitionDecision {
 
         let transitions: Vec<Transition> = actions
             .into_iter()
+            // Map actions to transitions. An action can map to multiple actions thus flatten
             .flat_map(|action| system.next_transitions_if_available(source.get_location(), &action))
+            // Filter transitions that can not be used
             .filter(|transition| transition.use_transition(&mut source.clone()))
             .collect();
 
