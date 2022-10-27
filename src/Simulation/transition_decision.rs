@@ -3,6 +3,7 @@ use crate::{
     TransitionSystems::TransitionSystemPtr,
 };
 
+/// Represents a choice in a transition system: In the current `source` state there is a choice of using one of the `transitions`
 #[derive(Debug)]
 #[allow(dead_code)]
 #[derive(Clone)]
@@ -12,7 +13,7 @@ pub struct TransitionDecision {
 }
 
 impl TransitionDecision {
-    /// Constructs the initial TransitionDecision for a given TransitionSystemPtr
+    /// Constructs the initial `TransitionDecision` for a given `TransitionSystemPtr`
     pub fn initial(system: TransitionSystemPtr) -> Option<Self> {
         match system.get_initial_state() {
             Some(source) => Some(Self::from(system, source)),
@@ -20,7 +21,7 @@ impl TransitionDecision {
         }
     }
 
-    /// Constructs the TransitionDecision from a source State and a given TransitionSystemPtr
+    /// Constructs the `TransitionDecision` from a `source: State` and a given `TransitionSystemPtr`
     pub fn from(system: TransitionSystemPtr, source: State) -> TransitionDecision {
         let actions = system.get_actions();
 
@@ -49,7 +50,7 @@ mod tests {
 
     fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
         let mut component = read_json_component("samples/json/EcdarUniversity", "Machine");
-        component.create_edge_io_split();//used to get input and output edges, if it is not called, the input and output edges will be empty
+        component.create_edge_io_split(); //used to get input and output edges, if it is not called, the input and output edges will be empty
         CompiledComponent::from(vec![component], "Machine")
     }
 
@@ -100,7 +101,8 @@ mod tests {
 
         let expected_coin_transition = &format!(
             "{:?}",
-            system.next_transitions_if_available(&system.get_initial_location().unwrap(), "coin")[0]
+            system.next_transitions_if_available(&system.get_initial_location().unwrap(), "coin")
+                [0]
         );
         assert!(actual.contains(expected_coin_transition));
     }
@@ -115,7 +117,7 @@ mod tests {
             .unwrap()
             .transitions
             .into_iter()
-            .map(|x| format!("{:?}", x)) // still no logic to be found here 
+            .map(|x| format!("{:?}", x)) // still no logic to be found here
             .collect();
 
         // Assert
@@ -124,7 +126,8 @@ mod tests {
 
         let expected_coin_transition = &format!(
             "{:?}",
-            system.next_transitions_if_available(&system.get_initial_location().unwrap(), "coin")[0]
+            system.next_transitions_if_available(&system.get_initial_location().unwrap(), "coin")
+                [0]
         );
         assert!(actual.contains(expected_coin_transition));
     }

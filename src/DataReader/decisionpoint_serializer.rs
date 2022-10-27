@@ -18,19 +18,18 @@ mod tests {
     use crate::ModelObjects::representations::QueryExpression;
     use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
     use crate::ProtobufServer::services::{
-        DecisionPoint, Federation, Location as ProtoLocation, LocationTuple as ProtoTuple, SpecificComponent, State as ProtoState,
+        DecisionPoint, Federation, Location as ProtoLocation, LocationTuple as ProtoTuple,
+        SpecificComponent, State as ProtoState,
     };
     use crate::System::extract_system_rep;
     use crate::System::extract_system_rep::SystemRecipe;
     use crate::System::refine;
     use crate::System::save_component::combine_components;
     use crate::System::save_component::PruningStrategy;
-    use crate::TransitionSystems::{TransitionSystem, LocationID};
     use crate::TransitionSystems::LocationTuple;
+    use crate::TransitionSystems::{LocationID, TransitionSystem};
     use chrono::Local;
     use edbm::util::constraints::ClockIndex;
-
-
 
     pub fn setupHelper(input_path: &str, system: &str) -> Box<dyn TransitionSystem> {
         let project_loader = JsonProjectLoader::new(String::from(input_path));
@@ -84,7 +83,7 @@ mod tests {
     //         testEdges: vec![],
     //     }
     // }
-    
+
     // pub fn protoStateSetup(transition_system: Box<dyn TransitionSystem>) -> ProtoState {
     //     let location_tuple: LocationTuple = match transition_system.get_initial_location()
     //     {
@@ -113,7 +112,7 @@ mod tests {
     #[test]
     fn given_state_return_serialized_state() {
         static PATH: &str = "samples/json/Conjunction";
-        
+
         let transition_system: Box<dyn TransitionSystem> = setupHelper(PATH, "Test1 && Test1");
 
         assert!(false);
