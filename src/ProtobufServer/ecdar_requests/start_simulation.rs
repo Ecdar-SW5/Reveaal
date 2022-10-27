@@ -4,7 +4,7 @@ use crate::DataReader::component_loader::ComponentContainer;
 
 use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
 use crate::Simulation::decision_point::DecisionPoint;
-use crate::Simulation::transition_decision::TransitionDecision;
+use crate::Simulation::transition_decision::TransitionDecisionPoint;
 use crate::TransitionSystems::CompiledComponent;
 
 use log::trace;
@@ -33,7 +33,7 @@ impl ConcreteEcdarBackend {
             CompiledComponent::from_component_loader(&mut component_container, &composition);
 
         // Send the combine component to the Simulation module
-        let initial = &TransitionDecision::initial(transition_system).unwrap();
+        let initial = &TransitionDecisionPoint::initial(transition_system).unwrap();
 
         // Convert initial TransitionDecision to DecisionPoint
         let initial = DecisionPoint::from(&initial, &component_container);

@@ -1,4 +1,4 @@
-use super::transition_decision::TransitionDecision;
+use super::transition_decision::TransitionDecisionPoint;
 use crate::ProtobufServer::services::DecisionPoint as ProtoDecisionPoint;
 use crate::{
     component::{Component, Edge, State, Transition},
@@ -16,7 +16,7 @@ pub struct DecisionPoint {
 
 impl DecisionPoint {
     pub fn from(
-        transition_decision: &TransitionDecision,
+        transition_decision: &TransitionDecisionPoint,
         component_loader: &dyn ComponentLoader,
     ) -> Self {
         DecisionPoint {
@@ -34,7 +34,7 @@ impl DecisionPoint {
 
     // Creates the new decision point
     pub fn new(
-        transitionDecision: TransitionDecision,
+        transitionDecision: TransitionDecisionPoint,
         components: Vec<Component>,
         chosen_state: usize,
     ) -> Self {
@@ -51,13 +51,13 @@ impl DecisionPoint {
     }
 
     // Allows us to access location tuple to find locations
-    pub fn get_location_tuple(transitionDecision: TransitionDecision) -> LocationTuple {
+    pub fn get_location_tuple(transitionDecision: TransitionDecisionPoint) -> LocationTuple {
         let locationTuple = transitionDecision.source.decorated_locations;
         locationTuple
     }
 
     // Allows us to access transitions to add to edge ids
-    pub fn get_transitions(transitionDecision: TransitionDecision) -> Vec<Transition> {
+    pub fn get_transitions(transitionDecision: TransitionDecisionPoint) -> Vec<Transition> {
         let transitions = transitionDecision.transitions;
         transitions
     }
@@ -83,7 +83,7 @@ impl DecisionPoint {
 
     // Add transitions to corrospondent edge ID
     pub fn add_transition_to_edge(
-        transitionDecision: TransitionDecision,
+        transitionDecision: TransitionDecisionPoint,
         components: Vec<Component>,
     ) -> Vec<Transition> {
         let transitions = Self::get_transitions(transitionDecision.clone());
@@ -112,7 +112,7 @@ impl DecisionPoint {
 
     // Get all edges corrospodent to the chosen ID
     pub fn get_edges_with_transitions_for_chosen_component(
-        transitionDecision: TransitionDecision,
+        transitionDecision: TransitionDecisionPoint,
         components: Vec<Component>,
         chosen_state: usize,
     ) -> Vec<Edge> {
@@ -140,7 +140,7 @@ impl DecisionPoint {
 
 mod tests {
 
-    use super::{DecisionPoint, TransitionDecision};
+    use super::{DecisionPoint, TransitionDecisionPoint};
     use crate::{
         component::{State, Transition},
         DataReader::json_reader::read_json_component,
@@ -159,7 +159,7 @@ mod tests {
         let system = create_EcdarUniversity_Machine_system();
         let source = system.get_initial_state().unwrap();
 
-        let dummyTransitionDecision = TransitionDecision::from(system, source);
+        let dummyTransitionDecision = TransitionDecisionPoint::from(system, source);
         // act
 
         let actual = DecisionPoint::get_transitions(dummyTransitionDecision);

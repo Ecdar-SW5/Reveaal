@@ -6,13 +6,13 @@ use crate::{
 /// Represents a choice in a transition system: In the current `source` state there is a choice of using one of the `transitions`
 #[derive(Debug)]
 #[derive(Clone)]
-pub struct TransitionDecision {
+pub struct TransitionDecisionPoint {
     pub source: State,
     pub transitions: Vec<Transition>,
 }
 
-impl TransitionDecision {
-    /// Constructs the initial `TransitionDecision` for a given `TransitionSystemPtr`
+impl TransitionDecisionPoint {
+    /// Constructs the initial `TransitionDecisionPoint` for a given `TransitionSystemPtr`
     pub fn initial(system: TransitionSystemPtr) -> Option<Self> {
         match system.get_initial_state() {
             Some(source) => Some(Self::from(system, source)),
@@ -20,8 +20,8 @@ impl TransitionDecision {
         }
     }
 
-    /// Constructs the `TransitionDecision` from a `source: State` and a given `TransitionSystemPtr`
-    pub fn from(system: TransitionSystemPtr, source: State) -> TransitionDecision {
+    /// Constructs the `TransitionDecisionPoint` from a `source: State` and a given `TransitionSystemPtr`
+    pub fn from(system: TransitionSystemPtr, source: State) -> TransitionDecisionPoint {
         let actions = system.get_actions();
 
         let transitions: Vec<Transition> = actions
@@ -32,7 +32,7 @@ impl TransitionDecision {
             .filter(|transition| transition.use_transition(&mut source.clone()))
             .collect();
 
-        TransitionDecision {
+        TransitionDecisionPoint {
             source: source,
             transitions: transitions,
         }
@@ -41,7 +41,7 @@ impl TransitionDecision {
 
 #[cfg(test)]
 mod tests {
-    use super::TransitionDecision;
+    use super::TransitionDecisionPoint;
     use crate::{
         DataReader::json_reader::read_json_component,
         TransitionSystems::{CompiledComponent, TransitionSystemPtr},
@@ -67,7 +67,7 @@ mod tests {
         // Act
         let actual = format!(
             "{:?}",
-            TransitionDecision::initial(system.clone()).unwrap().source
+            TransitionDecisionPoint::initial(system.clone()).unwrap().source
         );
 
         // Assert
@@ -81,7 +81,7 @@ mod tests {
         let system = create_EcdarUniversity_Machine_system();
 
         // Act
-        let actual: Vec<String> = TransitionDecision::initial(system.clone())
+        let actual: Vec<String> = TransitionDecisionPoint::initial(system.clone())
             .unwrap()
             .transitions
             .into_iter()
@@ -112,7 +112,7 @@ mod tests {
         let system = create_EcdarUniversity_Machine4_system();
 
         // Act
-        let actual: Vec<String> = TransitionDecision::initial(system.clone())
+        let actual: Vec<String> = TransitionDecisionPoint::initial(system.clone())
             .unwrap()
             .transitions
             .into_iter()
