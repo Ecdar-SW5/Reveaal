@@ -10,7 +10,6 @@ use crate::System::local_consistency;
 use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use super::{CompositionType, LocationID};
 

@@ -87,14 +87,15 @@ impl ComponentContainer {
         components_info: &services::ComponentsInfo,
     ) -> Result<ComponentContainer, tonic::Status> {
         let proto_components = &components_info.components;
-        let mut parsed_components = vec![];
-        for proto_component in proto_components {
-            let components = Self::parse_components_if_some(proto_component)?;
-            for component in components {
-                parsed_components.push(component);
-            }
-        }
-        let component_container = Self::create_component_container(parsed_components);
+
+        let components = proto_components
+            .into_iter()
+            .flat_map(|x| Self::parse_components_if_some(x))
+            .flatten()
+            .collect();
+
+        let component_container = Self::create_component_container(components);
+
         Ok(component_container)
     }
 
