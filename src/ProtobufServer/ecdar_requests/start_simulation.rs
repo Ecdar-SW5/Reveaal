@@ -15,7 +15,6 @@ use crate::ProtobufServer::ConcreteEcdarBackend;
 
 impl ConcreteEcdarBackend {
     pub async fn handle_start_simulation(
-        &self,
         request: AssertUnwindSafe<Request<SimulationStartRequest>>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
         trace!("Received query: {:?}", request);
