@@ -139,7 +139,7 @@ impl ComponentContainer {
             input_enabler::make_input_enabled(&mut component, &inputs);
             comp_hashmap.insert(component.get_name().to_string(), component);
         }
-        ComponentContainer::new(comp_hashmap)
+        ComponentContainer::new(Arc::new(comp_hashmap))
     }
 }
 

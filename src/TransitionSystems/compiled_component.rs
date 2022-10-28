@@ -10,6 +10,7 @@ use crate::System::local_consistency;
 use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use super::{CompositionType, LocationID};
 
@@ -114,7 +115,7 @@ impl CompiledComponent {
         }
 
         let mut component_container = ComponentContainer {
-            loaded_components: component_map,
+            loaded_components: Arc::new(component_map),
         };
 
         Self::from_component_loader(&mut component_container, composition)
