@@ -125,7 +125,7 @@ impl ComponentContainer {
         comps
     }
 
-    fn create_component_container(components: Vec<Component>) -> ComponentContainer {
+    pub fn create_component_container(components: Vec<Component>) -> ComponentContainer {
         let mut comp_hashmap = HashMap::<String, Component>::new();
         for mut component in components {
             log::trace!("Adding comp {} to container", component.get_name());

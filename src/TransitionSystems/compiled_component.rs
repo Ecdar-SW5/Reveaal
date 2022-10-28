@@ -108,16 +108,7 @@ impl CompiledComponent {
     }
 
     pub fn from(components: Vec<Component>, composition: &str) -> TransitionSystemPtr {
-        let mut component_map = HashMap::new();
-
-        for component in components {
-            component_map.insert(component.name.clone(), component);
-        }
-
-        let mut component_container = ComponentContainer {
-            loaded_components: Arc::new(component_map),
-        };
-
+        let mut component_container = ComponentContainer::create_component_container(components);
         Self::from_component_loader(&mut component_container, composition)
     }
 
