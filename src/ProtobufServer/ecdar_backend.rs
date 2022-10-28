@@ -13,7 +13,7 @@ use super::threadpool::ThreadPool;
 
 #[derive(Debug, Default)]
 pub struct ConcreteEcdarBackend {
-    pub model_cache: ModelCache,
+    pub thread_pool: ThreadPool,
 }
 
 async fn catch_unwind<T, O>(future: T) -> Result<O, Status>
@@ -52,23 +52,24 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<QueryResponse>, Status> {
-        let request = std::panic::AssertUnwindSafe(request);
-        catch_unwind(self.handle_send_query(self.model_cache.clone(), request)).await
+        let res = catch_unwind(self.thread_pool.enqueue(request.into_inner())).await;
+        res.map(Response::new)
     }
 
     async fn start_simulation(
         &self,
         request: Request<SimulationStartRequest>,
-    ) -> Result<Response<SimulationStepResponse>, Status> {
-        let request = std::panic::AssertUnwindSafe(request);
-        catch_unwind(self.handle_start_simulation(request)).await
+        ) -> Result<Response<SimulationStepResponse>, Status> {
+        todo!();
+        // let request = std::panic::AssertUnwindSafe(request);
+        // catch_unwind(self.handle_start_simulation(request)).await
     }
 
     async fn take_simulation_step(
         &self,
         _request: Request<SimulationStepRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        Err(Status::unimplemented(""))
+        todo!();
         // let request = std::panic::AssertUnwindSafe(request);
         // catch_unwind(self.handle_step_simulation_step(request)).await
     }
