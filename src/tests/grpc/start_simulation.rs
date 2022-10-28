@@ -48,7 +48,7 @@ mod test {
     )]
     #[tokio::test]
     async fn start_simulation__bad_data__responds_with_error(
-        request: Request<SimulationStartRequest>
+        request: Request<SimulationStartRequest>,
     ) {
         // Arrange
         let backend = ProtobufServer::ConcreteEcdarBackend::default();
@@ -59,7 +59,6 @@ mod test {
         // Assert
         assert!(actual_response.is_err());
     }
-
 
     fn create_good_request() -> Request<SimulationStartRequest> {
         create_simulation_start_request(String::from("Machine"), create_sample_json_component())
