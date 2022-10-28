@@ -17,7 +17,7 @@ use tonic::Request;
 
 use criterion::async_executor::FuturesExecutor;
 use futures::stream::FuturesUnordered;
-use futures::{Stream, StreamExt};
+use futures::StreamExt;
 
 static PATH: &str = "samples/json/EcdarUniversity";
 
