@@ -13,7 +13,7 @@ use super::threadpool::ThreadPool;
 
 #[derive(Debug, Default)]
 pub struct ConcreteEcdarBackend {
-    pub thread_pool: ThreadPool,
+    thread_pool: ThreadPool,
 }
 
 async fn catch_unwind<T, O>(future: T) -> Result<O, Status>
