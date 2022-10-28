@@ -86,11 +86,8 @@ pub struct ReachabilityExecutor {
     // e_state is the end state, where we want to see whether end state is reachable from start state
     pub end_state: State,
 }
-
 impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
-        let (_sys, _s_state, _e_state) = (self.transition_system, self.start_state, self.end_state);
-
         unimplemented!();
     }
 }

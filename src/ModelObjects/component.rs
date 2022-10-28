@@ -891,7 +891,7 @@ impl Edge {
 
     pub fn apply_guard(&self, decl: &Declarations, mut fed: OwnedFederation) -> OwnedFederation {
         if let Some(guards) = self.get_guard() {
-            fed = apply_constraints_to_state(guards, decl, fed);
+            fed = apply_constraints_to_state(guards, decl, fed).unwrap();
         };
 
         fed
@@ -964,7 +964,7 @@ impl<'a> DecoratedLocation<'a> {
 
     pub fn apply_invariant(&self, mut fed: OwnedFederation) -> OwnedFederation {
         if let Some(inv) = self.get_location().get_invariant() {
-            fed = apply_constraints_to_state(inv, self.decls, fed);
+            fed = apply_constraints_to_state(inv, self.decls, fed).unwrap();
         }
 
         fed

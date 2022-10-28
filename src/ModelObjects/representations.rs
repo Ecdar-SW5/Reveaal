@@ -1268,7 +1268,7 @@ pub enum QueryExpression {
     Consistency(Box<QueryExpression>),
     Reachability(
         Box<QueryExpression>,
-        Box<QueryExpression>,
+        Box<Option<QueryExpression>>,
         Box<QueryExpression>,
     ),
     State(Vec<Box<QueryExpression>>, Option<Box<BoolExpression>>),
@@ -1309,12 +1309,19 @@ impl QueryExpression {
                 left.pretty_string(),
                 right.pretty_string()
             ),
-            QueryExpression::Reachability(left, middle, right) => format!(
-                "reachability: {} -> {} {}",
-                left.pretty_string(),
-                middle.pretty_string(),
-                right.pretty_string()
-            ),
+            QueryExpression::Reachability(automata, start, end) => {
+                let start_state = match &**start {
+                    Some(expr) => expr.pretty_string(),
+                    None => "".to_string(),
+                };
+
+                format!(
+                    "reachability: {} -> {} {}",
+                    automata.pretty_string(),
+                    start_state,
+                    end.pretty_string()
+                )
+            }
             QueryExpression::Consistency(system) => {
                 format!("consistency: {}", system.pretty_string())
             }

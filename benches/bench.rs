@@ -14,6 +14,8 @@ use reveaal::{
 use tonic::Request;
 
 use criterion::async_executor::FuturesExecutor;
+use futures::stream::FuturesUnordered;
+use futures::StreamExt;
 
 static PATH: &str = "samples/json/EcdarUniversity";
 

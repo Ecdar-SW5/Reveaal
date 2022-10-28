@@ -1,4 +1,6 @@
 use std::panic::AssertUnwindSafe;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::DataReader::component_loader::ComponentContainer;
 use crate::DataReader::json_writer::component_to_json;
@@ -17,17 +19,18 @@ use crate::ProtobufServer::services::{
 use crate::System::executable_query::QueryResult;
 use crate::System::extract_system_rep;
 use log::trace;
-use tonic::{Request, Response, Status};
+use tonic::Status;
 
 use crate::ProtobufServer::ConcreteEcdarBackend;
 
 impl ConcreteEcdarBackend {
-    pub async fn handle_send_query(
-        &self,
-        request: AssertUnwindSafe<Request<QueryRequest>>,
-    ) -> Result<Response<QueryResponse>, Status> {
-        trace!("Received query: {:?}", request);
-        let query_request = request.0.into_inner();
+    pub fn handle_send_query(
+        query_request: QueryRequest,
+        mut model_cache: ModelCache,
+    ) -> Result<QueryResponse, Status> {
+        trace!("Received query: {:?}", query_request);
+        let components_info = query_request.components_info.as_ref().unwrap();
+        let proto_components = &components_info.components;
         let query = parse_query(&query_request)?;
 
         let components_info = query_request.components_info.as_ref().unwrap();
@@ -58,7 +61,7 @@ impl ConcreteEcdarBackend {
             })),
         };
 
-        Ok(Response::new(reply))
+        Ok(reply)
     }
 }
 

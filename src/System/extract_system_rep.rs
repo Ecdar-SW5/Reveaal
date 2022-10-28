@@ -12,6 +12,7 @@ use crate::TransitionSystems::{
     CompiledComponent, Composition, Conjunction, Quotient, TransitionSystemPtr,
 };
 
+use crate::component::State;
 use crate::System::pruning;
 use edbm::util::constraints::ClockIndex;
 use log::debug;
@@ -32,28 +33,33 @@ pub fn create_executable_query<'a>(
             QueryExpression::Refinement(left_side, right_side) => {
                 let mut quotient_index = None;
                 let left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
-                let right =get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
+                let right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
                 Ok(Box::new(RefinementExecutor {
                 sys1: left.compile(dim)?,
                 sys2: right.compile(dim)?,
             }))},
             QueryExpression::Reachability(automata, start, end) => {
-                let mut quotient_index = None;
-                let machine = get_system_recipe(automata, component_loader, &mut dim, &mut quotient_index);
-                if let Err(e) = validate_reachability_input(&machine, start, end){
-                    return Err(e.into());
-                }
+                let machine = get_system_recipe(automata, component_loader, &mut dim, &mut None);
                 let transition_system = machine.clone().compile(dim)?;
 
+                validate_reachability_input(&machine, end)?;
 
-                let start_state = match get_state(start, &machine, &transition_system) {
-                    Ok(s) => s,
-                    Err(location)=> return Err(location.into()),
+                let start_state: State = if let Some(state) = &**start {
+                    validate_reachability_input(&machine, state)?;
+                    let state = get_state(state, &machine, &transition_system)?;
+                    if state.get_location().id.is_partial_location() {
+                        return Err("Start state is a partial state, which it must not be".into())
+                    }
+                    state
+                }
+                else {
+                    match transition_system.get_initial_state() {
+                        Some(state)=> state,
+                        None => return Err("No start state in the transition system".into())
+                    }
                 };
-                let end_state = match get_state(end, &machine, &transition_system) {
-                    Ok(s) => s,
-                    Err(location)=> return Err(location.into()),
-                };
+
+                let end_state: State = get_state(end, &machine, &transition_system)?;
 
                 Ok(Box::new(ReachabilityExecutor {
                     transition_system,
@@ -196,19 +202,21 @@ pub fn get_system_recipe(
 
 fn validate_reachability_input(
     machine: &SystemRecipe,
-    start: &QueryExpression,
-    end: &QueryExpression,
+    state: &QueryExpression,
 ) -> Result<(), String> {
-    let components: usize = count_component(machine);
-
-    for (state, str) in [(start, "start"), (end, "end")] {
-        if component_to_location_count_equal(components, state) {
-            return Err(format!(
-                "The number of automata does not match the number of locations in the {}",
-                str
-            ));
+    if let QueryExpression::State(loc_names, _) = state {
+        if loc_names.len() != count_component(machine) {
+            return Err(
+                "The number of automata does not match the number of locations".to_string(),
+            );
         }
+    } else {
+        return Err(format!(
+            "Expected QueryExpression::State but got {:?}",
+            state
+        ));
     }
+
     Ok(())
 }
 
@@ -218,12 +226,5 @@ fn count_component(system: &SystemRecipe) -> usize {
         SystemRecipe::Conjunction(left, right) => count_component(left) + count_component(right),
         SystemRecipe::Quotient(left, right, _) => count_component(left) + count_component(right),
         SystemRecipe::Component(_) => 1,
-    }
-}
-
-fn component_to_location_count_equal(components: usize, state: &QueryExpression) -> bool {
-    match state {
-        QueryExpression::State(loc_names, _) => loc_names.len() != components,
-        _ => panic!("Wrong type of QueryExpression"),
     }
 }

@@ -16,7 +16,7 @@ pub struct QueryParser;
 ///For clarification see documentation on pest crate
 
 pub fn parse_to_query(query: &str) -> Vec<Query> {
-    let queries = parse_to_expression_tree(query);
+    let queries = parse_to_expression_tree(query).unwrap();
     queries
         .into_iter()
         .map(|q| Query {
@@ -26,19 +26,19 @@ pub fn parse_to_query(query: &str) -> Vec<Query> {
         .collect()
 }
 
-pub fn parse_to_expression_tree(edge_attribute_str: &str) -> Vec<QueryExpression> {
-    let mut pairs = QueryParser::parse(Rule::queries, edge_attribute_str)
-        .unwrap_or_else(|e| panic!("Could not parse as rule with error: {}", e));
+pub fn parse_to_expression_tree(edge_attribute_str: &str) -> Result<Vec<QueryExpression>, String> {
+    let mut pairs = match QueryParser::parse(Rule::queries, edge_attribute_str) {
+        Ok(pairs) => pairs,
+        Err(e) => return Err(format!("Could not parse as rule with error: {}", e)),
+    };
     let pair = pairs.next().unwrap();
     let mut queries = vec![];
     match pair.as_rule() {
         Rule::queries => {
             build_queries(pair, &mut queries);
-            queries
+            Ok(queries)
         }
-        err => {
-            panic!("Unable to match query string as rule: {:?}", err)
-        }
+        err => Err(format!("Unable to match query string as rule: {:?}", err)),
     }
 }
 
@@ -207,19 +207,18 @@ fn build_state_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
 
 fn build_reachability_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     let mut inner_pair = pair.into_inner();
-    let automata_pair = inner_pair.next().unwrap();
-    let start_state_pair = inner_pair.next().unwrap();
-    let end_state_pair = inner_pair.next().unwrap();
+    let automata = build_expression_from_pair(inner_pair.next().unwrap());
+    let state = build_state_from_pair(inner_pair.next().unwrap());
 
-    let automata = build_expression_from_pair(automata_pair);
-    let start_state = build_state_from_pair(start_state_pair);
-    let end_state = build_state_from_pair(end_state_pair);
-
-    QueryExpression::Reachability(
-        Box::new(automata),
-        Box::new(start_state),
-        Box::new(end_state),
-    )
+    if let Some(pair) = inner_pair.next() {
+        QueryExpression::Reachability(
+            Box::new(automata),
+            Box::new(Some(state)),
+            Box::new(build_state_from_pair(pair)),
+        )
+    } else {
+        QueryExpression::Reachability(Box::new(automata), Box::new(None), Box::new(state))
+    }
 }
 
 fn build_refinement_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {

@@ -33,7 +33,7 @@ impl LocationTuple {
     pub fn simple(location: &Location, decls: &Declarations, dim: ClockIndex) -> Self {
         let invariant = if let Some(inv) = location.get_invariant() {
             let mut fed = OwnedFederation::universe(dim);
-            fed = apply_constraints_to_state(inv, decls, fed);
+            fed = apply_constraints_to_state(inv, decls, fed).unwrap();
             Some(fed)
         } else {
             None
@@ -42,6 +42,19 @@ impl LocationTuple {
             id: LocationID::Simple(location.get_id().clone()),
             invariant,
             loc_type: location.get_location_type().clone(),
+            left: None,
+            right: None,
+        }
+    }
+    /// This method is used to a create partial [`LocationTuple`].
+    /// A partial [`LocationTuple`] means it has a [`LocationID`] that consists of atleast one [`LocationID::AnyLocation`].
+    /// A partial [`LocationTuple`] has `None` in these fields: `invariant`, `left` and `right` since a partial [`LocationTuple`]
+    /// covers more than one [`LocationTuple`], and therefore there is no specific `invariant`, `left` and `right`
+    pub fn create_partial_location(id: LocationID) -> Self {
+        LocationTuple {
+            id,
+            invariant: None,
+            loc_type: crate::component::LocationType::Normal,
             left: None,
             right: None,
         }

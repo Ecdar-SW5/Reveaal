@@ -8,8 +8,12 @@ use futures::FutureExt;
 use std::panic::UnwindSafe;
 use tonic::{Request, Response, Status};
 
+use super::threadpool::ThreadPool;
+
 #[derive(Debug, Default)]
-pub struct ConcreteEcdarBackend {}
+pub struct ConcreteEcdarBackend {
+    thread_pool: ThreadPool,
+}
 
 async fn catch_unwind<T, O>(future: T) -> Result<O, Status>
 where
@@ -47,8 +51,8 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<QueryResponse>, Status> {
-        let request = std::panic::AssertUnwindSafe(request);
-        catch_unwind(self.handle_send_query(request)).await
+        let res = catch_unwind(self.thread_pool.enqueue(request.into_inner())).await;
+        res.map(Response::new)
     }
 
     async fn start_simulation(

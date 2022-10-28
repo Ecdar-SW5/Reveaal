@@ -164,7 +164,7 @@ fn add_inconsistent_parts_to_invariants(
             // get invariant
             let mut invariant_fed = OwnedFederation::universe(dim);
             if let Some(inv) = location.get_invariant() {
-                invariant_fed = apply_constraints_to_state(inv, &decls, invariant_fed);
+                invariant_fed = apply_constraints_to_state(inv, &decls, invariant_fed).unwrap();
             }
             // Remove inconsistent part
             invariant_fed = invariant_fed.subtraction(incons);
@@ -183,7 +183,8 @@ fn handle_input(edge: &Edge, context: &mut PruneContext) {
 
     // apply target invariant
     if let Some(inv) = target_loc.get_invariant() {
-        inconsistent_part = apply_constraints_to_state(inv, context.decl(), inconsistent_part);
+        inconsistent_part =
+            apply_constraints_to_state(inv, context.decl(), inconsistent_part).unwrap();
     }
     // apply updates as guard
     if let Some(updates) = edge.get_update() {
@@ -217,7 +218,7 @@ fn handle_input(edge: &Edge, context: &mut PruneContext) {
             let source_loc = context.get_loc(edge.get_source_location());
             if let Some(inv) = source_loc.get_invariant() {
                 inconsistent_part =
-                    apply_constraints_to_state(inv, context.decl(), inconsistent_part);
+                    apply_constraints_to_state(inv, context.decl(), inconsistent_part).unwrap();
             }
         }
 
@@ -232,7 +233,7 @@ fn remove_transition_if_unsat(edge: &Edge, context: &mut PruneContext) {
     // apply target invariant
     let target_loc = context.get_loc(edge.get_target_location());
     if let Some(inv) = target_loc.get_invariant() {
-        edge_fed = apply_constraints_to_state(inv, context.decl(), edge_fed);
+        edge_fed = apply_constraints_to_state(inv, context.decl(), edge_fed).unwrap();
     }
 
     // Subtract target inconsistent part
@@ -256,13 +257,13 @@ fn remove_transition_if_unsat(edge: &Edge, context: &mut PruneContext) {
 
     // Apply guards
     if let Some(guard) = edge.get_guard() {
-        edge_fed = apply_constraints_to_state(guard, context.decl(), edge_fed);
+        edge_fed = apply_constraints_to_state(guard, context.decl(), edge_fed).unwrap();
     }
 
     // Apply source invariant
     let source_loc = context.get_loc(edge.get_source_location());
     if let Some(inv) = source_loc.get_invariant() {
-        edge_fed = apply_constraints_to_state(inv, context.decl(), edge_fed);
+        edge_fed = apply_constraints_to_state(inv, context.decl(), edge_fed).unwrap();
     }
 
     // Subtract source inconsistent part
@@ -320,7 +321,7 @@ fn predt_of_all_outputs(
         let mut saving_fed = OwnedFederation::universe(context.dim);
         // apply target invariant
         if let Some(inv) = target_loc.get_invariant() {
-            saving_fed = apply_constraints_to_state(inv, context.decl(), saving_fed);
+            saving_fed = apply_constraints_to_state(inv, context.decl(), saving_fed).unwrap();
         }
 
         // remove the parts of the target transition that are inconsistent.
@@ -344,12 +345,12 @@ fn predt_of_all_outputs(
 
         // apply edge guard
         if let Some(guard) = other_edge.get_guard() {
-            saving_fed = apply_constraints_to_state(guard, context.decl(), saving_fed);
+            saving_fed = apply_constraints_to_state(guard, context.decl(), saving_fed).unwrap();
         }
 
         // apply source invariant
         if let Some(inv) = source_loc.get_invariant() {
-            saving_fed = apply_constraints_to_state(inv, context.decl(), saving_fed);
+            saving_fed = apply_constraints_to_state(inv, context.decl(), saving_fed).unwrap();
         }
 
         // do temporal predecessor avoiding saving fed
@@ -377,13 +378,15 @@ fn back_exploration_on_transition(
 
     // apply edge guard
     if let Some(guard) = edge.get_guard() {
-        inconsistent_part = apply_constraints_to_state(guard, context.decl(), inconsistent_part);
+        inconsistent_part =
+            apply_constraints_to_state(guard, context.decl(), inconsistent_part).unwrap();
     }
 
     // apply source invariant
     let source = context.get_loc(edge.get_source_location());
     if let Some(inv) = source.get_invariant() {
-        inconsistent_part = apply_constraints_to_state(inv, context.decl(), inconsistent_part);
+        inconsistent_part =
+            apply_constraints_to_state(inv, context.decl(), inconsistent_part).unwrap();
     }
 
     inconsistent_part
@@ -418,7 +421,7 @@ fn handle_output(edge: &Edge, context: &mut PruneContext) {
         let mut guard_fed = OwnedFederation::universe(context.dim);
         // Apply guards
         if let Some(guard) = edge.get_guard() {
-            guard_fed = apply_constraints_to_state(guard, context.decl(), guard_fed);
+            guard_fed = apply_constraints_to_state(guard, context.decl(), guard_fed).unwrap();
         }
         guard_fed = guard_fed.subtraction(&incons_after_reset);
 
@@ -433,7 +436,8 @@ fn handle_output(edge: &Edge, context: &mut PruneContext) {
     let mut source_invariant = OwnedFederation::universe(context.dim);
     let source_loc = context.get_loc(edge.get_source_location());
     if let Some(inv) = source_loc.get_invariant() {
-        source_invariant = apply_constraints_to_state(inv, context.decl(), source_invariant);
+        source_invariant =
+            apply_constraints_to_state(inv, context.decl(), source_invariant).unwrap();
     }
 
     if source_invariant.can_delay_indefinitely() {
@@ -449,7 +453,7 @@ fn handle_output(edge: &Edge, context: &mut PruneContext) {
             let mut good_part = OwnedFederation::universe(context.dim);
             let target_loc = context.get_loc(other_edge.get_target_location());
             if let Some(inv) = target_loc.get_invariant() {
-                good_part = apply_constraints_to_state(inv, context.decl(), good_part);
+                good_part = apply_constraints_to_state(inv, context.decl(), good_part).unwrap();
             }
 
             // If target is inconsistent we must avoid that part
@@ -474,7 +478,7 @@ fn handle_output(edge: &Edge, context: &mut PruneContext) {
 
             // Apply guards
             if let Some(guard) = other_edge.get_guard() {
-                good_part = apply_constraints_to_state(guard, context.decl(), good_part);
+                good_part = apply_constraints_to_state(guard, context.decl(), good_part).unwrap();
             }
             // We are allowed to delay into outputs
             good_part = good_part.down().intersection(&source_invariant);
