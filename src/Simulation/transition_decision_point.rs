@@ -1,5 +1,3 @@
-use std::borrow::BorrowMut;
-
 use crate::{
     component::{State, Transition},
     TransitionSystems::TransitionSystemPtr,
@@ -149,6 +147,7 @@ mod tests {
     }
 
     // Yes this test is stupid, no you will not remove it >:(
+    #[allow(unused_must_use)]
     #[test]
     fn resolve__EcdarUniversity_Machine__correct_TransitionDecisionPoint() {
         // Arrange
@@ -192,6 +191,7 @@ mod tests {
             actual_possible_decisions.len(),
             expected_possible_decisions.len()
         );
+
         expected_possible_decisions.map(|x| assert!(actual_possible_decisions.contains(&x)));
     }
 }

@@ -1,4 +1,3 @@
-use crate::DataReader::component_loader::ModelCache;
 use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
 
 use crate::ProtobufServer::services::{
@@ -58,8 +57,8 @@ impl EcdarBackend for ConcreteEcdarBackend {
 
     async fn start_simulation(
         &self,
-        request: Request<SimulationStartRequest>,
-        ) -> Result<Response<SimulationStepResponse>, Status> {
+        _request: Request<SimulationStartRequest>,
+    ) -> Result<Response<SimulationStepResponse>, Status> {
         todo!();
         // let request = std::panic::AssertUnwindSafe(request);
         // catch_unwind(self.handle_start_simulation(request)).await

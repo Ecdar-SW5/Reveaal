@@ -1,37 +1,12 @@
-use crate::ModelObjects::component::{
-    Component, Declarations, Edge, Location, LocationType, State, SyncType,
-};
-
 pub struct SerializedDecisionPoint {}
 
 impl SerializedDecisionPoint {}
 
 #[cfg(test)]
 mod tests {
-    use std::convert::TryInto;
+    use crate::TransitionSystems::TransitionSystem;
 
-    use crate::DataReader::component_loader::JsonProjectLoader;
-    use crate::DataReader::parse_queries;
-    use crate::ModelObjects::component::{
-        Component, Declarations, Edge, Location, LocationType, State, SyncType,
-    };
-    use crate::ModelObjects::representations::QueryExpression;
-    use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
-    use crate::ProtobufServer::services::{
-        DecisionPoint, Federation, Location as ProtoLocation, LocationTuple as ProtoTuple,
-        SpecificComponent, State as ProtoState,
-    };
-    use crate::System::extract_system_rep;
-    use crate::System::extract_system_rep::SystemRecipe;
-    use crate::System::refine;
-    use crate::System::save_component::combine_components;
-    use crate::System::save_component::PruningStrategy;
-    use crate::TransitionSystems::LocationTuple;
-    use crate::TransitionSystems::{LocationID, TransitionSystem};
-    use chrono::Local;
-    use edbm::util::constraints::ClockIndex;
-
-    pub fn setupHelper(input_path: &str, system: &str) -> Box<dyn TransitionSystem> {
+    pub fn setupHelper(_input_path: &str, _system: &str) -> Box<dyn TransitionSystem> {
         todo!();
         // let project_loader = JsonProjectLoader::new(String::from(input_path));
 
@@ -114,7 +89,7 @@ mod tests {
     fn given_state_return_serialized_state() {
         static PATH: &str = "samples/json/Conjunction";
 
-        let transition_system: Box<dyn TransitionSystem> = setupHelper(PATH, "Test1 && Test1");
+        let _transition_system: Box<dyn TransitionSystem> = setupHelper(PATH, "Test1 && Test1");
 
         assert!(false);
     }

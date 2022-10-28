@@ -16,20 +16,14 @@ pub struct DecisionPoint {
 
 impl DecisionPoint {
     pub fn from(
-        transition_decision: &TransitionDecisionPoint,
-        component_loader: &dyn ComponentLoader,
+        _transition_decision: &TransitionDecisionPoint,
+        _component_loader: &dyn ComponentLoader,
     ) -> Self {
-        DecisionPoint {
-            source: todo!(),
-            edges: todo!(),
-        }
+        todo!()
     }
 
     pub fn serialize(&self) -> ProtoDecisionPoint {
-        ProtoDecisionPoint {
-            source: todo!(),
-            edges: todo!(),
-        }
+        todo!()
     }
 
     // Creates the new decision point
@@ -81,7 +75,7 @@ impl DecisionPoint {
         return all_edges;
     }
 
-    // Add transitions to corrospondent edge ID
+    // Add transitions to correspondent edge ID
     pub fn add_transition_to_edge(
         transitionDecision: TransitionDecisionPoint,
         components: Vec<Component>,
@@ -98,7 +92,7 @@ impl DecisionPoint {
             for edge in &edges {
                 // 3. Check if transitions is connected with edges
                 if locationTuple.id == LocationID::from_string(edge.get_target_location()) {
-                    // 4. Add transition to the corropsondent edge ID
+                    // 4. Add transition to the correspondent edge ID
                     for component in &components {
                         let transition = Transition::from(&component, &edge, dim);
                         new_transitions.push(transition);
@@ -106,11 +100,11 @@ impl DecisionPoint {
                 }
             }
         }
-        // 5. Return the new transitions with corropsodent edge ids
+        // 5. Return the new transitions with correspondent edge ids
         new_transitions
     }
 
-    // Get all edges corrospodent to the chosen ID
+    // Get all edges correspondent to the chosen ID
     pub fn get_edges_with_transitions_for_chosen_component(
         transitionDecision: TransitionDecisionPoint,
         components: Vec<Component>,
@@ -142,7 +136,7 @@ mod tests {
 
     use super::{DecisionPoint, TransitionDecisionPoint};
     use crate::{
-        component::{State, Transition},
+        component::Transition,
         DataReader::json_reader::read_json_component,
         TransitionSystems::{CompiledComponent, TransitionSystemPtr},
     };
@@ -162,8 +156,8 @@ mod tests {
         let dummyTransitionDecision = TransitionDecisionPoint::from(system, source);
         // act
 
-        let actual = DecisionPoint::get_transitions(dummyTransitionDecision);
-        let dummyTransitions: Vec<Transition>;
+        let _actual = DecisionPoint::get_transitions(dummyTransitionDecision);
+        let _dummyTransitions: Vec<Transition>;
 
         // assert
         //assert_type!(actual, dummyTransitions)
