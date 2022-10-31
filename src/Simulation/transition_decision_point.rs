@@ -3,6 +3,8 @@ use crate::{
     TransitionSystems::TransitionSystemPtr,
 };
 
+use super::decision_point::Decision;
+
 /// Represents a decision in a transition system: In the current `source` state there is a decision of using one of the `possible_decisions`.
 #[derive(Debug, Clone)]
 pub struct TransitionDecisionPoint {
@@ -14,6 +16,12 @@ pub struct TransitionDecisionPoint {
 pub struct TransitionDecision {
     pub source: State,
     pub decided: Transition,
+}
+
+impl From<Decision> for TransitionDecision {
+    fn from(_: Decision) -> Self {
+        todo!()
+    }
 }
 
 impl TransitionDecisionPoint {

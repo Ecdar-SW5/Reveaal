@@ -2,7 +2,7 @@ use std::panic::AssertUnwindSafe;
 
 use crate::DataReader::component_loader::ComponentContainer;
 
-use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
+use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse, DecisionPoint as ProtoDecisionPoint};
 use crate::Simulation::decision_point::DecisionPoint;
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
 use crate::TransitionSystems::CompiledComponent;
@@ -27,22 +27,29 @@ impl ConcreteEcdarBackend {
         // Extract components from the request message
         let mut component_container = ComponentContainer::from(&component_info).unwrap();
 
-        // Combine components as specified in the composition string
+        // Build transition_system as specified in the composition string
         let transition_system =
             CompiledComponent::from_component_loader(&mut component_container, &composition);
 
-        // Send the combine component to the Simulation module
-        let initial = &TransitionDecisionPoint::initial(transition_system).unwrap();
+        // Find Initial TransitionDecisionPoint in transition system
+        let initial= TransitionDecisionPoint::initial(transition_system).unwrap();
 
-        // Convert initial TransitionDecision to DecisionPoint
-        let initial = DecisionPoint::from(&initial, &component_container);
+        // Convert initial from TransitionDecision to DecisionPoint
+        let initial:DecisionPoint = initial.into();
 
-        // Serialize and respond with the SimulationState result from the simulation module
-        let initial = initial.serialize();
+        // Convert initial from DecisionPoint to ProtoDecisionPoint
+        let initial:ProtoDecisionPoint = initial.into();
+
+        // Respond with initial
         let simulation_step_response = SimulationStepResponse {
             new_decision_point: Some(initial),
         };
-
         Ok(Response::new(simulation_step_response))
+    }
+}
+
+impl From<DecisionPoint> for ProtoDecisionPoint {
+    fn from(_: DecisionPoint) -> Self {
+        todo!()
     }
 }
