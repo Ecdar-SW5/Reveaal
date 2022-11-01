@@ -853,6 +853,7 @@ pub struct Edge {
     pub update: Option<Vec<parse_edge::Update>>,
     #[serde(deserialize_with = "decode_sync")]
     pub sync: String,
+    pub id: String,
 }
 
 const TRUE: BoolExpression = BoolExpression::Bool(true);

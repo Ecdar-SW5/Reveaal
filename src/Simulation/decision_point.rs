@@ -1,16 +1,31 @@
 use super::transition_decision_point::TransitionDecisionPoint;
-use crate:: component::{Edge, State};
+use crate:: component::{Edge, State, Transition};
 use crate::ProtobufServer::services::Decision as ProtoDecision;
 
 #[allow(dead_code)]
 #[derive(Clone)]
+#[derive(Debug)]
 pub struct DecisionPoint {
     source: State,
     possible_decisions: Vec<Edge>,
 }
 
 impl From<TransitionDecisionPoint> for DecisionPoint {
-    fn from(_: TransitionDecisionPoint) -> Self {
+    fn from(transition_decision_point: TransitionDecisionPoint) -> Self {
+        let possible_decisions = transition_decision_point.possible_decisions
+            .iter()
+            .flat_map(|t| Vec::<Edge>::from(t))
+            .collect();
+
+        DecisionPoint { 
+            source: transition_decision_point.source, 
+            possible_decisions
+        } 
+    }
+}
+
+impl From<&Transition> for Vec<Edge> {
+    fn from(_: &Transition) -> Self {
         todo!()
     }
 }
@@ -24,6 +39,35 @@ impl From<ProtoDecision> for Decision {
     fn from(_: ProtoDecision) -> Self {
         todo!()
     }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{Simulation::transition_decision_point::TransitionDecisionPoint, tests::Simulation::helper::create_EcdarUniversity_Machine_system, component::Edge};
+    use super::DecisionPoint;
+
+    #[test]
+    fn DecisionPoint_from__initial_EcdarUniversity_Machine__returns_correct_DecisionPoint() {
+        // Arrange
+        let transition_decision_point = initial_transition_decision_point();
+
+        // Act
+        let actual = DecisionPoint::from(transition_decision_point);
+        let actual_edge_ids: Vec<&str> = actual.possible_decisions
+            .iter()
+            .map(|e| e.id.as_str())
+            .collect();
+
+        // Assert
+        assert_eq!(actual.possible_decisions.len(), 2);
+        assert!(actual_edge_ids.contains(&"E5"));
+        assert!(actual_edge_ids.contains(&"E3"));
+    }
+
+    fn initial_transition_decision_point() -> TransitionDecisionPoint {
+        let system = create_EcdarUniversity_Machine_system();
+        TransitionDecisionPoint::initial(system).unwrap()
+     }
 }
 
 // impl DecisionPoint {

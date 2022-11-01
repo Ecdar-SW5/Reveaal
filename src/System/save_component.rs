@@ -189,6 +189,7 @@ fn collect_specific_edges_from_location(
                 guard,
                 update: transition.get_renamed_updates(clock_map),
                 sync: sync.clone(),
+                id: "".to_string(),
             };
             edges.push(edge);
         }
