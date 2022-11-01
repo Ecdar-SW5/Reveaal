@@ -65,7 +65,7 @@ pub(crate) mod tests {
     use super::{TransitionDecision, TransitionDecisionPoint};
     use crate::{
         DataReader::json_reader::read_json_component,
-        TransitionSystems::{CompiledComponent, TransitionSystemPtr},
+        TransitionSystems::{CompiledComponent, TransitionSystemPtr}, tests::Simulation::helper::{create_EcdarUniversity_Machine_system, create_EcdarUniversity_Machine4_system},
     };
 
     pub fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
