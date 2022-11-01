@@ -49,7 +49,7 @@ impl ConcreteEcdarBackend {
 }
 
 impl From<DecisionPoint> for ProtoDecisionPoint {
-    fn from(_: DecisionPoint) -> Self {
-        todo!()
+    fn from(decision_point: DecisionPoint) -> Self {
+        todo!();
     }
 }

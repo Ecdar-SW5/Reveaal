@@ -42,7 +42,7 @@ impl From<ProtoDecision> for Decision {
 }
 
 #[cfg(test)]
-mod test {
+pub(crate) mod test {
     use crate::{Simulation::transition_decision_point::TransitionDecisionPoint, tests::Simulation::helper::create_EcdarUniversity_Machine_system, component::Edge};
     use super::DecisionPoint;
 
@@ -64,7 +64,7 @@ mod test {
         assert!(actual_edge_ids.contains(&"E3"));
     }
 
-    fn initial_transition_decision_point() -> TransitionDecisionPoint {
+    pub fn initial_transition_decision_point() -> TransitionDecisionPoint {
         let system = create_EcdarUniversity_Machine_system();
         TransitionDecisionPoint::initial(system).unwrap()
      }
