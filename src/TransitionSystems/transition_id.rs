@@ -1,7 +1,5 @@
 use std::fmt::{Display, Formatter};
 
-use crate::ModelObjects::representations::QueryExpression;
-
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum TransitionID {
     Conjunction(Box<TransitionID>, Box<TransitionID>),
@@ -51,7 +49,6 @@ impl Display for TransitionID {
                 };
             }
             TransitionID::Simple(name) => write!(f, "{}", name)?,
-            TransitionID::AnyLocation() => write!(f, "_")?,
         }
         Ok(())
     }
