@@ -55,6 +55,7 @@ opt-level = 3
 tonic-build = "0.8.2"
 
 [dev-dependencies]
+pprof = { version = "0.10.1", features = ["flamegraph"] }
 criterion = { version = "0.4.0", features = ["async_futures"] }
 
 [[bench]]
