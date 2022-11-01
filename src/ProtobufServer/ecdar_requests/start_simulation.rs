@@ -2,6 +2,7 @@ use std::panic::AssertUnwindSafe;
 
 use crate::DataReader::component_loader::ComponentContainer;
 
+use crate::ProtobufServer::ecdar_requests::helpers;
 use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse, DecisionPoint as ProtoDecisionPoint};
 use crate::Simulation::decision_point::DecisionPoint;
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
@@ -21,16 +22,8 @@ impl ConcreteEcdarBackend {
 
         let request_message = request.0.into_inner();
         let simulation_info = request_message.simulation_info.unwrap();
-        let composition = simulation_info.component_composition;
-        let component_info = simulation_info.components_info.unwrap();
-
-        // Extract components from the request message
-        let mut component_container = ComponentContainer::from(&component_info).unwrap();
-
-        // Build transition_system as specified in the composition string
-        let transition_system =
-            CompiledComponent::from_component_loader(&mut component_container, &composition);
-
+        let transition_system = helpers::simulation_info_to_transition_system(simulation_info);
+        
         // Find Initial TransitionDecisionPoint in transition system
         let initial= TransitionDecisionPoint::initial(transition_system).unwrap();
 
