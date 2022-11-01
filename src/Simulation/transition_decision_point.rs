@@ -68,16 +68,6 @@ pub(crate) mod tests {
         TransitionSystems::{CompiledComponent, TransitionSystemPtr}, tests::Simulation::helper::{create_EcdarUniversity_Machine_system, create_EcdarUniversity_Machine4_system},
     };
 
-    pub fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
-        let component = read_json_component("samples/json/EcdarUniversity", "Machine");
-        CompiledComponent::from(vec![component], "Machine")
-    }
-
-    fn create_EcdarUniversity_Machine4_system() -> TransitionSystemPtr {
-        let component = read_json_component("samples/json/EcdarUniversity", "Machine4");
-        CompiledComponent::from(vec![component], "Machine4")
-    }
-
     #[test]
     fn initial__EcdarUniversity_Machine__return_correct_state() {
         // Arrange
