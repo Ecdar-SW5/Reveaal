@@ -61,3 +61,7 @@ criterion = { version = "0.4.0", features = ["async_futures"] }
 [[bench]]
 name = "bench"
 harness = false
+
+[[bench]]
+name = "threadpool_bench"
+harness = false
