@@ -5,8 +5,13 @@ use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
 
 pub struct Path {
-    //start_state: State,
-    //transition: Transition,
+    path: Vec<Transition>,
+}
+
+#[derive(Clone)]
+struct SubPath {
+    source_state: State,
+    transition: Transition,
 }
 
 fn validate_input(
@@ -106,11 +111,14 @@ fn search_algorithm(
 
     // hashmap linking every location to all its current zones
     let mut visited_states: HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
+    let mut made_transitions: Vec<SubPath> = Vec::new();
 
     // List of states that are to be visited
     let mut frontier_states: Vec<State> = Vec::new();
 
     let actions = system.get_actions();
+
+    let mut found_path = false;
 
     frontier_states.push(start_clone);
     loop {
@@ -121,7 +129,9 @@ fn search_algorithm(
         }
         let next_state = next_state.unwrap();
         if reached_end_state(&next_state, end_state) {
-            return Ok(Some(Path {})); /* TODO: Return the actual path */
+            found_path = true;
+            break;
+             /* TODO: Return the actual path */
         }
         for action in &actions {
             for transition in &system.next_transitions(&next_state.decorated_locations, action) {
@@ -132,8 +142,34 @@ fn search_algorithm(
                     &mut visited_states,
                     system,
                 );
+                made_transitions.push(
+                    SubPath {
+                        source_state: next_state.clone(),
+                        transition: transition.clone(),
+                    }
+                );
             }
         }
+    }
+
+    if found_path {
+        let mut path: Vec<Transition> = Vec::new();
+        made_transitions.reverse();
+        let mut prev_state: State = made_transitions[0].source_state.clone();
+
+        for sub_path in &made_transitions[1..] {
+            if prev_state.get_location().id != sub_path.source_state.get_location().id {
+                if sub_path.source_state.get_location().id == start_state.get_location().id {
+                    path.push(sub_path.transition.clone());
+                    break;
+                }
+                path.push(sub_path.transition.clone());
+                prev_state = sub_path.source_state.clone();
+            }
+        }
+        
+        path.reverse();
+        return Ok(Some(Path {path}));
     }
 
     // If nothing has been found, it is not reachable
