@@ -61,14 +61,14 @@ impl TransitionDecision {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::{TransitionDecision, TransitionDecisionPoint};
     use crate::{
         DataReader::json_reader::read_json_component,
         TransitionSystems::{CompiledComponent, TransitionSystemPtr},
     };
 
-    fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
+    pub fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
         let component = read_json_component("samples/json/EcdarUniversity", "Machine");
         CompiledComponent::from(vec![component], "Machine")
     }

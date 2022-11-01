@@ -5,8 +5,8 @@ use crate::ProtobufServer::services::Decision as ProtoDecision;
 #[allow(dead_code)]
 #[derive(Clone)]
 pub struct DecisionPoint {
-    source: State,
-    possible_decisions: Vec<Edge>,
+    pub(crate) source: State,
+    pub(crate) possible_decisions: Vec<Edge>,
 }
 
 impl From<TransitionDecisionPoint> for DecisionPoint {
