@@ -1,7 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use reveaal::{
-    tests::refinement::Helper::json_refinement_check,
-};
+use reveaal::tests::refinement::Helper::json_refinement_check;
 
 mod flamegraph_profiler;
 use flamegraph_profiler::FlamegraphProfiler;

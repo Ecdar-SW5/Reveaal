@@ -1,14 +1,11 @@
 use std::vec;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use reveaal::{
-    ProtobufServer::{
-        services::{
-            component::Rep, ecdar_backend_server::EcdarBackend, Component, ComponentsInfo,
-            QueryRequest,
-        },
-        ConcreteEcdarBackend,
+use reveaal::ProtobufServer::{
+    services::{
+        component::Rep, ecdar_backend_server::EcdarBackend, Component, ComponentsInfo, QueryRequest,
     },
+    ConcreteEcdarBackend,
 };
 use tonic::Request;
 
@@ -18,7 +15,13 @@ use futures::StreamExt;
 
 static PATH: &str = "samples/json/EcdarUniversity";
 
-fn send_query_with_components(id: String, c: &mut Criterion, components: &Vec<String>, query: &String, active_cache: bool) {
+fn send_query_with_components(
+    id: String,
+    c: &mut Criterion,
+    components: &Vec<String>,
+    query: &String,
+    active_cache: bool,
+) {
     c.bench_function(&id, |b| {
         b.to_async(FuturesExecutor).iter(|| async {
             let backend = ConcreteEcdarBackend::default();
@@ -27,13 +30,7 @@ fn send_query_with_components(id: String, c: &mut Criterion, components: &Vec<St
                     let request = create_query_request(
                         &components,
                         &query,
-                        if active_cache 
-                        {
-                            0
-                        } 
-                        else {
-                            hash
-                        },
+                        if active_cache { 0 } else { hash },
                     );
                     backend.send_query(request)
                 })
@@ -65,7 +62,7 @@ fn create_components(json: &Vec<String>) -> Vec<Component> {
         .collect()
 }
 
-fn threadpool_cache(c: &mut Criterion){
+fn threadpool_cache(c: &mut Criterion) {
     let json = vec![
         std::fs::read_to_string(format!("{}/Components/Administration.json", PATH)).unwrap(),
         std::fs::read_to_string(format!("{}/Components/Researcher.json", PATH)).unwrap(),
@@ -74,15 +71,36 @@ fn threadpool_cache(c: &mut Criterion){
     let expensive_query = String::from("determinism: Administration || Researcher || Machine");
     let cheap_query = String::from("determinism: Machine");
 
-    send_query_with_components(String::from("Expensive queries with identical models"), c, &json, &expensive_query, true);
-    send_query_with_components(String::from("Expensive queries with different models"), c, &json, &expensive_query, false);
-    send_query_with_components(String::from("Cheap queries with identical models"), c, &json, &cheap_query, true);
-    send_query_with_components(String::from("Cheap queries with different models"), c, &json, &cheap_query, false);
+    send_query_with_components(
+        String::from("Expensive queries with identical models"),
+        c,
+        &json,
+        &expensive_query,
+        true,
+    );
+    send_query_with_components(
+        String::from("Expensive queries with different models"),
+        c,
+        &json,
+        &expensive_query,
+        false,
+    );
+    send_query_with_components(
+        String::from("Cheap queries with identical models"),
+        c,
+        &json,
+        &cheap_query,
+        true,
+    );
+    send_query_with_components(
+        String::from("Cheap queries with different models"),
+        c,
+        &json,
+        &cheap_query,
+        false,
+    );
 }
 
-criterion_group!(
-    backend_bench,
-    threadpool_cache,
-);
+criterion_group!(backend_bench, threadpool_cache,);
 
 criterion_main!(backend_bench);
