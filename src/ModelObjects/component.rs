@@ -666,7 +666,7 @@ impl Transition {
         }
 
         Transition {
-            id: TransitionID::Simple(edge.id),
+            id: TransitionID::Simple(edge.id.clone()),
             guard_zone: Transition::combine_edge_guards(&vec![(comp, edge)], dim),
             target_locations,
             updates: compiled_updates,
