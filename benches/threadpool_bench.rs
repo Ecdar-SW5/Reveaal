@@ -18,6 +18,8 @@ use flamegraph_profiler::FlamegraphProfiler;
 
 static PATH: &str = "samples/json/EcdarUniversity";
 
+const NUM_OF_REQUESTS: u32 = 512;
+
 fn send_query_with_components(
     id: String,
     c: &mut Criterion,
@@ -28,7 +30,7 @@ fn send_query_with_components(
     c.bench_function(&id, |b| {
         b.to_async(FuturesExecutor).iter(|| async {
             let backend = ConcreteEcdarBackend::default();
-            let responses = (0..512)
+            let responses = (0..NUM_OF_REQUESTS)
                 .map(|hash| {
                     let request = create_query_request(
                         &components,
