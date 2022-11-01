@@ -33,7 +33,7 @@ pub fn create_executable_query<'a>(
             QueryExpression::Refinement(left_side, right_side) => {
                 let mut quotient_index = None;
                 let left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
-                let right =get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
+                let right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
                 Ok(Box::new(RefinementExecutor {
                 sys1: left.compile(dim)?,
                 sys2: right.compile(dim)?,
@@ -46,7 +46,11 @@ pub fn create_executable_query<'a>(
 
                 let start_state: State = if let Some(state) = &**start {
                     validate_reachability_input(&machine, state)?;
-                    get_state(state, &machine, &transition_system)?
+                    let state = get_state(state, &machine, &transition_system)?;
+                    if state.get_location().id.is_partial_location() {
+                        return Err("Start state is a partial state, which it must not be".into())
+                    }
+                    state
                 }
                 else {
                     match transition_system.get_initial_state() {

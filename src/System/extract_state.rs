@@ -75,16 +75,21 @@ fn build_location_tuple(
 ) -> Result<LocationTuple, String> {
     let location_id = get_location_id(&mut locations.iter(), machine);
     let locations_system = system.get_all_locations();
-    let locationtuple = locations_system.iter().find(|loc| loc.id == location_id);
-
-    if locationtuple.is_none() {
-        return Err(format!(
-            "The location {} is not found in the system",
+    if let Some(locationtuple) = locations_system
+        .iter()
+        .find(|loc| loc.id.compare_partial_locations(&location_id))
+    {
+        if !location_id.is_partial_location() {
+            Ok(locationtuple.clone())
+        } else {
+            Ok(LocationTuple::create_partial_location(location_id))
+        }
+    } else {
+        Err(format!(
+            "{} is not a location in the transition system ",
             location_id
-        ));
+        ))
     }
-
-    Ok(locationtuple.unwrap().clone())
 }
 
 fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
@@ -101,8 +106,10 @@ fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> Locati
             Box::new(get_location_id(locations, left)),
             Box::new(get_location_id(locations, right)),
         ),
-        SystemRecipe::Component(_comp) => {
-            LocationID::Simple(locations.next().unwrap().trim().to_string())
-        }
+        SystemRecipe::Component(..) => match locations.next().unwrap().trim() {
+            // It is ensured .next() will not give a None, since the number of location is same as number of component. This is also being checked in validate_reachability_input function, that is called before get_state
+            "_" => LocationID::AnyLocation(),
+            str => LocationID::Simple(str.to_string()),
+        },
     }
 }

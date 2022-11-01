@@ -1,5 +1,3 @@
-use std::future::Future;
-use std::process::Output;
 use std::vec;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
@@ -17,7 +15,7 @@ use tonic::Request;
 
 use criterion::async_executor::FuturesExecutor;
 use futures::stream::FuturesUnordered;
-use futures::{Stream, StreamExt};
+use futures::StreamExt;
 
 static PATH: &str = "samples/json/EcdarUniversity";
 
