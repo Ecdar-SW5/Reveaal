@@ -13,6 +13,9 @@ use criterion::async_executor::FuturesExecutor;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 
+mod flamegraph_profiler;
+use flamegraph_profiler::FlamegraphProfiler;
+
 static PATH: &str = "samples/json/EcdarUniversity";
 
 fn send_query_with_components(
@@ -101,6 +104,10 @@ fn threadpool_cache(c: &mut Criterion) {
     );
 }
 
-criterion_group!(backend_bench, threadpool_cache,);
+criterion_group! {
+    name = backend_bench;
+    config = Criterion::default().with_profiler(FlamegraphProfiler::new(100));
+    targets = threadpool_cache
+}
 
 criterion_main!(backend_bench);
