@@ -140,6 +140,7 @@ fn collect_edges(xml_edges: FindChildren) -> Vec<Edge> {
             }
         }
         let edge = component::Edge {
+            id: "NotImplemented".to_string(), //NEEDS TO BE FIXED
             source_location: e
                 .find("source")
                 .expect("source edge not found")
