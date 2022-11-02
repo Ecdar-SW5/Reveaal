@@ -6,7 +6,7 @@ mod conjunction;
 mod location_id;
 mod location_tuple;
 mod quotient;
-mod transition_system;
+pub mod transition_system;
 
 pub use compiled_component::CompiledComponent;
 pub use composition::Composition;
