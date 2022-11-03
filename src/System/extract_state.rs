@@ -26,7 +26,7 @@ pub fn get_state(
             let mut locations: Vec<&str> = Vec::new();
 
             for location in loc {
-                match &**location {
+                match location.as_ref() {
                     QueryExpression::LocName(name) => locations.push(name),
                     _ => panic!(),
                 };

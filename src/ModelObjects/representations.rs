@@ -1316,7 +1316,7 @@ impl QueryExpression {
                 };
 
                 format!(
-                    "reachability: {} -> {} {}",
+                    "reachability: {} -> {}; {}",
                     automata.pretty_string(),
                     start_state,
                     end.pretty_string()
@@ -1345,7 +1345,26 @@ impl QueryExpression {
             }
             QueryExpression::Parentheses(system) => format!("({})", system.pretty_string()),
             QueryExpression::VarName(name) => name.clone(),
-            _ => panic!("Rule not implemented yet"),
+            //QueryExpression::LocName(name) => name.clone(),
+            QueryExpression::State(locs, clock) => {
+                let mut locs_str = locs[0].pretty_string();
+                if locs.len() > 1 {
+                    for e in locs {
+                        locs_str.push_str(", ");
+                        locs_str.push_str(e.pretty_string().as_str());
+                    }
+                }
+                format!(
+                    "[{}]({})",
+                    locs_str,
+                    clock
+                        .clone()
+                        .map_or_else(|| "".to_string(), |c| format!("{}", c))
+                        .replace(" && ", ", ")
+                )
+            }
+            QueryExpression::LocName(name) => name.clone(),
+            _ => panic!("Rule not implemented yet {:?}", self),
         }
     }
 }

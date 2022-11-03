@@ -156,22 +156,32 @@ fn search_algorithm(
 
     if found_path {
         let mut path: Vec<Transition> = Vec::new();
-        made_transitions.reverse();
-        let mut prev_state: State = made_transitions[0].source_state.clone();
-        path.push(made_transitions[0].transition.clone());
+        if made_transitions.len() > 0 {
+            made_transitions.reverse();
+            let mut prev_state: State = made_transitions[0].source_state.clone();
+            path.push(made_transitions[0].transition.clone());
 
-        for sub_path in &made_transitions[1..] {
-            if prev_state.get_location().id != sub_path.source_state.get_location().id {
-                if sub_path.source_state.get_location().id == start_state.get_location().id {
-                    path.push(sub_path.transition.clone());
-                    break;
+            if made_transitions.len() > 1 {
+                for sub_path in &made_transitions[1..] {
+                    if prev_state.get_location().id != sub_path.source_state.get_location().id {
+                        if sub_path.source_state.get_location().id == start_state.get_location().id
+                        {
+                            path.push(sub_path.transition.clone());
+                            break;
+                        }
+                        path.push(sub_path.transition.clone());
+                        prev_state = sub_path.source_state.clone();
+                    }
                 }
-                path.push(sub_path.transition.clone());
-                prev_state = sub_path.source_state.clone();
             }
+
+            path.reverse();
         }
 
-        path.reverse();
+        for e in &path {
+            println!("id: {}", e.id);
+        }
+
         return Ok(Path {
             path: Some(path),
             was_reachable: found_path,
