@@ -1344,16 +1344,22 @@ impl QueryExpression {
                 format!("prune: {}", comp.pretty_string())
             }
             QueryExpression::Parentheses(system) => format!("({})", system.pretty_string()),
-            QueryExpression::VarName(name) => name.clone(),
-            //QueryExpression::LocName(name) => name.clone(),
+            QueryExpression::VarName(name) | QueryExpression::LocName(name) => name.clone(),
             QueryExpression::State(locs, clock) => {
-                let mut locs_str = locs[0].pretty_string();
-                if locs.len() > 1 {
-                    for e in locs {
-                        locs_str.push_str(", ");
-                        locs_str.push_str(e.pretty_string().as_str());
-                    }
-                }
+                let locs_str: String = locs
+                    .iter()
+                    .enumerate()
+                    .map(|loc| {
+                        format!(
+                            "{}",
+                            if loc.0 == 0 {
+                                loc.1.pretty_string()
+                            } else {
+                                format!(", {}", loc.1.pretty_string())
+                            }
+                        )
+                    })
+                    .collect();
                 format!(
                     "[{}]({})",
                     locs_str,
@@ -1363,7 +1369,6 @@ impl QueryExpression {
                         .replace(" && ", ", ")
                 )
             }
-            QueryExpression::LocName(name) => name.clone(),
             _ => panic!("Rule not implemented yet {:?}", self),
         }
     }
