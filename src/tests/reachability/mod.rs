@@ -7,3 +7,4 @@ pub mod parse_partial_state;
 pub mod parser_output_datatypes;
 pub mod parser_restrictions;
 pub mod partial_state;
+pub mod transition_id_tests;
