@@ -156,6 +156,7 @@ fn search_algorithm(
         let mut path: Vec<Transition> = Vec::new();
         made_transitions.reverse();
         let mut prev_state: State = made_transitions[0].source_state.clone();
+        path.push(made_transitions[0].transition.clone());
 
         for sub_path in &made_transitions[1..] {
             if prev_state.get_location().id != sub_path.source_state.get_location().id {
