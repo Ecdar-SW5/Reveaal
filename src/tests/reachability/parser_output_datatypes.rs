@@ -39,6 +39,7 @@ mod reachability_parser_output_datatypes_test {
     ) {
         // Functionality to be tested:
         let parser_result: QueryExpression = parse_queries::parse_to_expression_tree(parser_input)
+            .unwrap()
             .first()
             .unwrap()
             .to_owned();
@@ -75,6 +76,7 @@ mod reachability_parser_output_datatypes_test {
     ) {
         // Functionality to be tested:
         let parser_result: QueryExpression = parse_queries::parse_to_expression_tree(parser_input)
+            .unwrap()
             .first()
             .unwrap()
             .to_owned();
@@ -95,6 +97,7 @@ mod reachability_parser_output_datatypes_test {
         let parser_result: QueryExpression = parse_queries::parse_to_expression_tree(
             "reachability: HalfAdm1 -> [L1](y<3); [L2](z<2)",
         )
+        .unwrap()
         .first()
         .unwrap()
         .to_owned();
@@ -122,6 +125,7 @@ mod reachability_parser_output_datatypes_test {
         let parserResult: QueryExpression = parse_queries::parse_to_expression_tree(
             "reachability: HalfAdm1 || HalfAdm2 -> [L1, L2](y<3, z>1); [L3, L4](y<4, z<2)",
         )
+        .unwrap()
         .first()
         .unwrap()
         .to_owned();

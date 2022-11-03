@@ -1,5 +1,3 @@
-use std::future::Future;
-use std::process::Output;
 use std::vec;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
@@ -17,7 +15,10 @@ use tonic::Request;
 
 use criterion::async_executor::FuturesExecutor;
 use futures::stream::FuturesUnordered;
-use futures::{Stream, StreamExt};
+use futures::StreamExt;
+
+mod flamegraph_profiler;
+use flamegraph_profiler::FlamegraphProfiler;
 
 static PATH: &str = "samples/json/EcdarUniversity";
 
@@ -177,14 +178,16 @@ fn create_components(json: &Vec<String>) -> Vec<Component> {
         .collect()
 }
 
-criterion_group!(benches, self_refinement, refinement, not_refinement,);
+criterion_group! {
+    name = benches;
+    config = Criterion::default().with_profiler(FlamegraphProfiler::new(100));
+    targets = self_refinement, refinement, not_refinement,
+}
 
-criterion_group!(
-    backend_bench,
-    send_query_same_components,
-    send_query_different_components,
-    send_expensive_query_same_components,
-    send_expensive_query_different_components,
-);
+criterion_group! {
+    name = backend_bench;
+    config = Criterion::default().with_profiler(FlamegraphProfiler::new(100));
+    targets = send_query_same_components, send_query_different_components, send_expensive_query_same_components, send_expensive_query_different_components
+}
 
 criterion_main!(benches, backend_bench);
