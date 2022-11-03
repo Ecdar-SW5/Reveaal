@@ -74,17 +74,13 @@ fn build_location_tuple(
     system: &TransitionSystemPtr,
 ) -> Result<LocationTuple, String> {
     let location_id = get_location_id(&mut locations.iter(), machine);
-    let locations_system = system.get_all_locations();
-    let locationtuple = locations_system.iter().find(|loc| loc.id == location_id);
 
-    if locationtuple.is_none() {
-        return Err(format!(
-            "The location {} is not found in the system",
-            location_id
-        ));
-    }
-
-    Ok(locationtuple.unwrap().clone())
+    system
+        .get_all_locations()
+        .iter()
+        .find(|loc| loc.id == location_id)
+        .ok_or(format!("The location {} is not found in the system",location_id))
+        .map(|loc_tuple| loc_tuple.clone())
 }
 
 fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
