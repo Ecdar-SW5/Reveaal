@@ -4,6 +4,7 @@ use crate::DataReader::component_loader::ComponentLoader;
 use crate::ModelObjects::component::Component;
 use crate::ModelObjects::component::State;
 use crate::System::reachability;
+use crate::System::reachability::Path;
 use crate::System::refine;
 use crate::System::save_component::combine_components;
 use crate::TransitionSystems::transition_system::PrecheckResult;
@@ -15,7 +16,7 @@ use super::refine::RefinementResult;
 use super::save_component::PruningStrategy;
 
 pub enum QueryResult {
-    Reachability(bool, Vec<String>), // This represents a path from start state to end state
+    Reachability(Path), // This represents a path from start state to end state
     Refinement(RefinementResult),
     GetComponent(Component),
     Consistency(ConsistencyResult),
@@ -32,8 +33,13 @@ impl QueryResult {
                 println!("\nGot failure: {}", failure);
             }
 
-            QueryResult::Reachability(true, _) => satisfied(query_str),
-            QueryResult::Reachability(false, _) => not_satisfied(query_str),
+            QueryResult::Reachability(path) => {
+                if path.was_reachable {
+                    satisfied(query_str)
+                } else {
+                    not_satisfied(query_str)
+                }
+            }
 
             QueryResult::Consistency(ConsistencyResult::Success) => satisfied(query_str),
             QueryResult::Consistency(ConsistencyResult::Failure(_)) => not_satisfied(query_str),
@@ -95,21 +101,10 @@ impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
         let (sys, s_state, e_state) = (self.transition_system, self.start_state, self.end_state);
 
-        match reachability::find_path(Some(s_state), e_state, &*sys) {
-            Ok(res) => {
-                match res {
-                    Some(path_res) => QueryResult::Reachability(
-                        true,
-                        Vec::new(), /* Replace with actual path */
-                    ),
-                    None => QueryResult::Reachability(
-                        false,
-                        Vec::new(), /* Replace with actual path */
-                    ),
-                }
-            }
-            Err(err_msg) => QueryResult::Error(err_msg),
-        }
+        reachability::find_path(Some(s_state), e_state, &*sys).map_or_else(
+            |err_msg| QueryResult::Error(err_msg),
+            |res| QueryResult::Reachability(res),
+        )
     }
 }
 

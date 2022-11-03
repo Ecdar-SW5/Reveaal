@@ -158,7 +158,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
             refine::RefinementResult::Failure(failure) => convert_refinement_failure(failure),
         },
 
-        QueryResult::Reachability(_, _) => {
+        QueryResult::Reachability(_) => {
             unimplemented!("Not implemented, but should be implemented");
         }
 

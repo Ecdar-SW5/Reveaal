@@ -5,7 +5,8 @@ use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
 
 pub struct Path {
-    path: Vec<Transition>,
+    pub path: Option<Vec<Transition>>,
+    pub was_reachable: bool,
 }
 
 #[derive(Clone)]
@@ -77,7 +78,7 @@ pub fn find_path(
     begin_state: Option<State>,
     end_state: State,
     system: &dyn TransitionSystem,
-) -> Result<Option<Path>, String> {
+) -> Result<Path, String> {
     let start_state: State;
     if let Some(s) = begin_state {
         start_state = s;
@@ -92,7 +93,10 @@ pub fn find_path(
     }
 
     if is_trivially_uncreachable(&start_state, &end_state, system) {
-        return Ok(None);
+        return Ok(Path {
+            path: None,
+            was_reachable: false,
+        });
     }
 
     search_algorithm(&start_state, &end_state, system)
@@ -102,7 +106,7 @@ fn search_algorithm(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem,
-) -> Result<Option<Path>, String> {
+) -> Result<Path, String> {
     // Apply the invariant of the start state to the start state
     let mut start_clone = start_state.clone();
     let start_zone = start_clone.take_zone();
@@ -131,7 +135,7 @@ fn search_algorithm(
         if reached_end_state(&next_state, end_state) {
             found_path = true;
             break;
-             /* TODO: Return the actual path */
+            /* TODO: Return the actual path */
         }
         for action in &actions {
             for transition in &system.next_transitions(&next_state.decorated_locations, action) {
@@ -142,12 +146,10 @@ fn search_algorithm(
                     &mut visited_states,
                     system,
                 );
-                made_transitions.push(
-                    SubPath {
-                        source_state: next_state.clone(),
-                        transition: transition.clone(),
-                    }
-                );
+                made_transitions.push(SubPath {
+                    source_state: next_state.clone(),
+                    transition: transition.clone(),
+                });
             }
         }
     }
@@ -168,13 +170,19 @@ fn search_algorithm(
                 prev_state = sub_path.source_state.clone();
             }
         }
-        
+
         path.reverse();
-        return Ok(Some(Path {path}));
+        return Ok(Path {
+            path: Some(path),
+            was_reachable: found_path,
+        });
     }
 
     // If nothing has been found, it is not reachable
-    Ok(None)
+    Ok(Path {
+        path: None,
+        was_reachable: found_path,
+    })
 }
 
 fn reached_end_state(cur_state: &State, end_state: &State) -> bool {

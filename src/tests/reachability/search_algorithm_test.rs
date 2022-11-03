@@ -21,7 +21,7 @@ mod reachability_search_algorithm_test {
     #[test_case(PATH, "reachability: Researcher -> [U0](); [L7]()", false; "No possible path between to locations, locations exists in Researcher")]
     fn search_algorithm_returns_result_university(path: &str, query: &str, expected: bool) {
         match json_run_query(path, query) {
-            QueryResult::Reachability(b, _) => assert_eq!(b, expected),
+            QueryResult::Reachability(path) => assert_eq!(path.was_reachable, expected),
             _ => panic!("Inconsistent query result, expected Reachability"),
         }
     }
@@ -45,7 +45,7 @@ mod reachability_search_algorithm_test {
         TEMPORARY_MISSING_DECLERATIONS_HACK(path);
 
         match json_run_query(path, query) {
-            QueryResult::Reachability(b, _) => assert_eq!(b, expected),
+            QueryResult::Reachability(path) => assert_eq!(path.was_reachable, expected),
             _ => panic!("Inconsistent query result, expected Reachability"),
         }
     }
