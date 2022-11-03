@@ -707,9 +707,9 @@ impl Transition {
 
                 out.push(Transition {
                     id: match comp {
-                        CompositionType::Conjunction => TransitionID::Conjunction(Box::new(l.id.clone()), Box::new(l.id.clone())),
-                        CompositionType::Composition => TransitionID::Composition(Box::new(l.id.clone()), Box::new(l.id.clone())),
-                        CompositionType::Quotient => TransitionID::Quotient(Box::new(l.id.clone()), Box::new(l.id.clone())),
+                        CompositionType::Conjunction => TransitionID::Conjunction(Box::new(l.id.clone()), Box::new(r.id.clone())),
+                        CompositionType::Composition => TransitionID::Composition(Box::new(l.id.clone()), Box::new(r.id.clone())),
+                        CompositionType::Quotient => TransitionID::Quotient(Box::new(l.id.clone()), Box::new(r.id.clone())),
                     },
                     guard_zone,
                     target_locations,
