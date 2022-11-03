@@ -5,6 +5,8 @@ use log::{debug, warn};
 use crate::EdgeEval::updater::CompiledUpdate;
 use crate::ModelObjects::component::Declarations;
 use crate::ModelObjects::component::{Location, LocationType, State, Transition};
+use crate::System::local_consistency::{ConsistencyResult, DeterminismResult};
+use crate::TransitionSystems::transition_system::PrecheckResult;
 use edbm::util::bounds::Bounds;
 
 use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
@@ -47,12 +49,17 @@ impl Quotient {
             ));
         }
 
-        if !T.precheck_sys_rep() {
-            return Err("T (left) must be least consistent for quotient".to_string());
+        match T.precheck_sys_rep() {
+            PrecheckResult::Success => {}
+            _ => {
+                return Err("T (left) must be least consistent for quotient".to_string());
+            }
         }
-
-        if !S.precheck_sys_rep() {
-            return Err("S (right) must be least consistent for quotient".to_string());
+        match S.precheck_sys_rep() {
+            PrecheckResult::Success => {}
+            _ => {
+                return Err("T (left) must be least consistent for quotient".to_string());
+            }
         }
 
         let universal_location = Location {
@@ -382,26 +389,41 @@ impl TransitionSystem for Quotient {
         comps
     }
 
-    fn precheck_sys_rep(&self) -> bool {
-        if !self.is_deterministic() {
+    fn precheck_sys_rep(&self) -> PrecheckResult {
+        if let DeterminismResult::Failure(location) = self.is_deterministic() {
             warn!("Not deterministic");
-            return false;
+            return PrecheckResult::NotDeterministic(location);
         }
 
-        if !self.is_locally_consistent() {
+        if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {
             warn!("Not consistent");
-            return false;
+            return PrecheckResult::NotConsistent(failure);
         }
-
-        true
+        PrecheckResult::Success
     }
 
-    fn is_deterministic(&self) -> bool {
-        self.T.is_deterministic() && self.S.is_deterministic()
+    fn is_deterministic(&self) -> DeterminismResult {
+        if let DeterminismResult::Success = self.T.is_deterministic() {
+            if let DeterminismResult::Success = self.S.is_deterministic() {
+                DeterminismResult::Success
+            } else {
+                self.S.is_deterministic()
+            }
+        } else {
+            self.T.is_deterministic()
+        }
     }
 
-    fn is_locally_consistent(&self) -> bool {
-        self.T.is_locally_consistent() && self.S.is_locally_consistent()
+    fn is_locally_consistent(&self) -> ConsistencyResult {
+        if let ConsistencyResult::Success = self.T.is_locally_consistent() {
+            if let ConsistencyResult::Success = self.S.is_locally_consistent() {
+                ConsistencyResult::Success
+            } else {
+                self.S.is_locally_consistent()
+            }
+        } else {
+            self.T.is_locally_consistent()
+        }
     }
 
     fn get_initial_state(&self) -> Option<State> {

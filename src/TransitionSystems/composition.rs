@@ -2,6 +2,7 @@ use edbm::util::constraints::ClockIndex;
 
 use crate::ModelObjects::component::Transition;
 
+use crate::System::local_consistency::ConsistencyResult;
 use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use std::collections::hash_set::HashSet;
 
@@ -104,8 +105,16 @@ impl ComposedTransitionSystem for Composition {
         unreachable!()
     }
 
-    fn is_locally_consistent(&self) -> bool {
-        self.left.is_locally_consistent() && self.right.is_locally_consistent()
+    fn is_locally_consistent(&self) -> ConsistencyResult {
+        if let ConsistencyResult::Success = self.left.is_locally_consistent() {
+            if let ConsistencyResult::Success = self.right.is_locally_consistent() {
+                ConsistencyResult::Success
+            } else {
+                self.right.is_locally_consistent()
+            }
+        } else {
+            self.left.is_locally_consistent()
+        }
     }
 
     fn get_children(&self) -> (&TransitionSystemPtr, &TransitionSystemPtr) {

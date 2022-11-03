@@ -1,7 +1,7 @@
 use edbm::util::constraints::ClockIndex;
 
 use crate::ModelObjects::component::Transition;
-use crate::System::local_consistency;
+use crate::System::local_consistency::{self, ConsistencyResult};
 use crate::TransitionSystems::{
     CompositionType, LocationTuple, TransitionSystem, TransitionSystemPtr,
 };
@@ -54,7 +54,7 @@ impl Conjunction {
             outputs,
             dim,
         });
-        if !local_consistency::is_least_consistent(ts.as_ref()) {
+        if let ConsistencyResult::Failure(_) = local_consistency::is_least_consistent(ts.as_ref()) {
             return Err("Conjunction is empty after pruning".to_string());
         }
         Ok(ts)
@@ -74,8 +74,8 @@ impl ComposedTransitionSystem for Conjunction {
         Transition::combinations(&left, &right, CompositionType::Conjunction)
     }
 
-    fn is_locally_consistent(&self) -> bool {
-        true // By definition from the Conjunction::new()
+    fn is_locally_consistent(&self) -> ConsistencyResult {
+        ConsistencyResult::Success // By definition from the Conjunction::new()
     }
 
     fn get_children(&self) -> (&TransitionSystemPtr, &TransitionSystemPtr) {
