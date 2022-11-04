@@ -37,8 +37,12 @@ pub struct Decision {
 }
 
 impl From<ProtoDecision> for Decision {
-    fn from(_: ProtoDecision) -> Self {
-        todo!()
+    fn from(proto_decision: ProtoDecision) -> Self {
+        todo!();
+        // let serialized_source: ProtoDecision = proto_decision;
+        // Decision {
+        //     source: todo!(),
+        //     decided: todo!(),
     }
 }
 
