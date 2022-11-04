@@ -92,23 +92,6 @@ fn build_location_tuple(
                 LocationTuple::create_partial_location(location_id)
             }
         })
-        
-        /*if let Some(locationtuple) = system
-        .get_all_locations()
-        .iter()
-        .find(|loc| loc.id.compare_partial_locations(&location_id))
-    {
-        Ok(if !location_id.is_partial_location() {
-            locationtuple.clone()
-        } else {
-            LocationTuple::create_partial_location(location_id)
-        })
-    } else {
-        Err(format!(
-            "{} is not a location in the transition system ",
-            location_id
-        ))
-    }*/
 }
 
 fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {

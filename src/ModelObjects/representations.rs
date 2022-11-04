@@ -1310,15 +1310,13 @@ impl QueryExpression {
                 right.pretty_string()
             ),
             QueryExpression::Reachability(automata, start, end) => {
-                let start_state = match &**start {
-                    Some(expr) => expr.pretty_string(),
-                    None => "".to_string(),
-                };
-
                 format!(
                     "reachability: {} -> {}; {}",
                     automata.pretty_string(),
-                    start_state,
+                    match start.as_ref() {
+                        Some(expr) => expr.pretty_string(),
+                        None => "".to_string(),
+                    },
                     end.pretty_string()
                 )
             }
