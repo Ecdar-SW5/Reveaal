@@ -1,10 +1,9 @@
 use super::transition_decision_point::TransitionDecisionPoint;
-use crate:: component::{Edge, State, Transition};
+use crate::component::{Edge, State, Transition};
 use crate::ProtobufServer::services::Decision as ProtoDecision;
 
 #[allow(dead_code)]
-#[derive(Clone)]
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct DecisionPoint {
     pub(crate) source: State,
     pub(crate) possible_decisions: Vec<Edge>,
@@ -12,15 +11,16 @@ pub struct DecisionPoint {
 
 impl From<TransitionDecisionPoint> for DecisionPoint {
     fn from(transition_decision_point: TransitionDecisionPoint) -> Self {
-        let possible_decisions = transition_decision_point.possible_decisions
+        let possible_decisions = transition_decision_point
+            .possible_decisions
             .iter()
             .flat_map(|t| Vec::<Edge>::from(t))
             .collect();
 
-        DecisionPoint { 
-            source: transition_decision_point.source, 
-            possible_decisions
-        } 
+        DecisionPoint {
+            source: transition_decision_point.source,
+            possible_decisions,
+        }
     }
 }
 
@@ -43,8 +43,11 @@ impl From<ProtoDecision> for Decision {
 
 #[cfg(test)]
 pub(crate) mod test {
-    use crate::{Simulation::transition_decision_point::TransitionDecisionPoint, tests::Simulation::helper::create_EcdarUniversity_Machine_system, component::Edge};
     use super::DecisionPoint;
+    use crate::{
+        component::Edge, tests::Simulation::helper::create_EcdarUniversity_Machine_system,
+        Simulation::transition_decision_point::TransitionDecisionPoint,
+    };
 
     #[test]
     fn DecisionPoint_from__initial_EcdarUniversity_Machine__returns_correct_DecisionPoint() {
@@ -53,7 +56,8 @@ pub(crate) mod test {
 
         // Act
         let actual = DecisionPoint::from(transition_decision_point);
-        let actual_edge_ids: Vec<&str> = actual.possible_decisions
+        let actual_edge_ids: Vec<&str> = actual
+            .possible_decisions
             .iter()
             .map(|e| e.id.as_str())
             .collect();
@@ -67,5 +71,5 @@ pub(crate) mod test {
     pub fn initial_transition_decision_point() -> TransitionDecisionPoint {
         let system = create_EcdarUniversity_Machine_system();
         TransitionDecisionPoint::initial(system).unwrap()
-     }
+    }
 }

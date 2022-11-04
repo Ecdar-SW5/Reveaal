@@ -6,30 +6,33 @@ impl SerializedDecisionPoint {}
 mod tests {
     use std::process::id;
 
+    use crate::component::Component;
+    use crate::tests::Simulation::helper::create_EcdarUniversity_Machine_system;
     use crate::DataReader::json_reader::read_json_component;
     use crate::DataReader::parse_edge::EdgeParser;
-    use crate::ProtobufServer::ConcreteEcdarBackend;
-    use crate::ProtobufServer::services::Decision;
     use crate::ProtobufServer::services::component;
-    use crate::Simulation::decision_point;
-    use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
-    use crate::TransitionSystems::TransitionSystem;
-    use crate::Simulation::decision_point::DecisionPoint;
-    use crate::tests::Simulation::helper::create_EcdarUniversity_Machine_system;
-    use crate::component::Component;
-    use crate::ProtobufServer::services::DecisionPoint as ProtoDecisionPoint;
-    use crate::ProtobufServer::services::Edge as ProtoEdge;
-    use crate::ProtobufServer::services::State as ProtoState;
-    use crate::ProtobufServer::services::LocationTuple as ProtoLocationTuple;
-    use crate::ProtobufServer::services::Location as ProtoLocation;
-    use crate::ProtobufServer::services::SpecificComponent as ProtoSpecificComponent;
-    use crate::ProtobufServer::services::Federation as ProtoFederation;
-    use crate::ProtobufServer::services::Disjunction as ProtoDisjunction;
+    use crate::ProtobufServer::services::ComponentClock as ProtoComponentClock;
     use crate::ProtobufServer::services::Conjunction as ProtoConjunction;
     use crate::ProtobufServer::services::Constraint as ProtoConstraint;
-    use crate::ProtobufServer::services::ComponentClock as ProtoComponentClock;
+    use crate::ProtobufServer::services::Decision;
+    use crate::ProtobufServer::services::Decision as ProtoDecision;
+    use crate::ProtobufServer::services::DecisionPoint as ProtoDecisionPoint;
+    use crate::ProtobufServer::services::Disjunction as ProtoDisjunction;
+    use crate::ProtobufServer::services::Edge as ProtoEdge;
+    use crate::ProtobufServer::services::Federation as ProtoFederation;
+    use crate::ProtobufServer::services::Location as ProtoLocation;
+    use crate::ProtobufServer::services::LocationTuple as ProtoLocationTuple;
+    use crate::ProtobufServer::services::SpecificComponent as ProtoSpecificComponent;
+    use crate::ProtobufServer::services::State as ProtoState;
+    use crate::ProtobufServer::ConcreteEcdarBackend;
+    use crate::Simulation::decision_point;
+    use crate::Simulation::decision_point::DecisionPoint;
+    use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
+    use crate::TransitionSystems::TransitionSystem;
 
-    pub fn setupHelper(_input_path: &str, _system: &str) -> Box<dyn TransitionSystem> { todo!(); }
+    pub fn setupHelper(_input_path: &str, _system: &str) -> Box<dyn TransitionSystem> {
+        todo!();
+    }
 
     fn create_EcdarUniversity_Machine_System_Component() -> Component {
         let component = read_json_component("samples/json/EcdarUniversity", "machine");
@@ -37,7 +40,7 @@ mod tests {
         return component;
     }
 
-    fn create_EcdarUnversity_Machine_Initial_Decision_Point() -> ProtoDecisionPoint{
+    fn create_EcdarUnversity_Machine_Initial_Decision_Point() -> ProtoDecisionPoint {
         //
         // LET STATEMENT PURGATORY
         // ENJOY
@@ -104,14 +107,14 @@ mod tests {
             id: "E5".to_string(),
             specific_component: Some(specific_comp_dp.clone()),
         };
-        
+
         let initial_dp = ProtoDecisionPoint {
             source: Some(source_dp),
             edges: vec![edge_dp1, edge_dp2],
         };
         return initial_dp;
     }
-        
+
     #[test]
     fn given_state_return_serialized_state() {
         static PATH: &str = "samples/json/Conjunction";
@@ -121,14 +124,13 @@ mod tests {
         assert!(false);
     }
 
-
-     #[test]
-     fn from_decisionpoint_to_protoDecisionPoint__correctProtoDecisionPoint__returnsProtoDecisionPoint() {
+    #[test]
+    fn from_decisionpoint_to_protoDecisionPoint__correctProtoDecisionPoint__returnsProtoDecisionPoint(
+    ) {
         // Arrange
         let system = create_EcdarUniversity_Machine_system();
         let transitionDecisionPoint = decision_point::test::initial_transition_decision_point();
         let decisionPoint = DecisionPoint::from(transitionDecisionPoint);
-
 
         let expected = create_EcdarUnversity_Machine_Initial_Decision_Point();
 
@@ -138,7 +140,6 @@ mod tests {
         //     iter().
         //     map(|e| Vec::<ProtoEdge>:).
         //     collect();
-
 
         // };
         // Act

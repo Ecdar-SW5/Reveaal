@@ -1,6 +1,6 @@
 use crate::{
     component::{State, Transition},
-    TransitionSystems::TransitionSystemPtr,
+    TransitionSystems::{TransitionSystem, TransitionSystemPtr},
 };
 
 use super::decision_point::Decision;
@@ -13,6 +13,7 @@ pub struct TransitionDecisionPoint {
 }
 
 /// Represent a decision in a transition system, that has been taken: In the current `source` state I have `decided` to use this `Transition`.  
+#[derive(Debug)]
 pub struct TransitionDecision {
     pub source: State,
     pub decided: Transition,
@@ -35,21 +36,28 @@ impl TransitionDecisionPoint {
 
     /// Constructs the `TransitionDecisionPoint` from a `source: State` and a given `TransitionSystemPtr`
     pub fn from(system: TransitionSystemPtr, source: State) -> TransitionDecisionPoint {
-        let actions = system.get_actions();
-
-        let transitions: Vec<Transition> = actions
-            .into_iter()
-            // Map actions to transitions. An action can map to multiple actions thus flatten
-            .flat_map(|action| system.next_transitions_if_available(source.get_location(), &action))
-            // Filter transitions that can be used
-            .filter(|transition| transition.use_transition(&mut source.clone()))
-            .collect();
+        let transitions = from_action_to_transitions(system, &source);
 
         TransitionDecisionPoint {
             source: source,
             possible_decisions: transitions,
         }
     }
+}
+
+pub fn from_action_to_transitions(
+    system: Box<dyn TransitionSystem>,
+    source: &State,
+) -> Vec<Transition> {
+    let actions = system.get_actions();
+    let transitions: Vec<Transition> = actions
+        .into_iter()
+        // Map actions to transitions. An action can map to multiple actions thus flatten
+        .flat_map(|action| system.next_transitions_if_available(source.get_location(), &action))
+        // Filter transitions that can be used
+        .filter(|transition| transition.use_transition(&mut source.clone()))
+        .collect();
+    transitions
 }
 
 impl TransitionDecision {
@@ -62,10 +70,16 @@ impl TransitionDecision {
 
 #[cfg(test)]
 pub(crate) mod tests {
-    use super::{TransitionDecision, TransitionDecisionPoint};
+    use super::{from_action_to_transitions, TransitionDecision, TransitionDecisionPoint};
+    use crate::tests::Simulation::helper::*;
+    use crate::ProtobufServer::services::Decision as ProtoDecision;
     use crate::{
+        tests::Simulation::helper::{
+            create_EcdarUniversity_Machine4_system, create_EcdarUniversity_Machine_system,
+        },
         DataReader::json_reader::read_json_component,
-        TransitionSystems::{CompiledComponent, TransitionSystemPtr}, tests::Simulation::helper::{create_EcdarUniversity_Machine_system, create_EcdarUniversity_Machine4_system},
+        Simulation::decision_point::{test::initial_transition_decision_point, Decision},
+        TransitionSystems::{CompiledComponent, TransitionSystemPtr},
     };
 
     #[test]
@@ -189,5 +203,36 @@ pub(crate) mod tests {
         );
 
         expected_possible_decisions.map(|x| assert!(actual_possible_decisions.contains(&x)));
+    }
+
+    #[test]
+    fn TransitionDecision_from__Decision__returns_correct_TransitionDecision() {
+        // Arrange
+        let system = create_EcdarUniversity_Machine_system();
+        let proto_decision: ProtoDecision = create_EcdarUniversity_Machine_Decision();
+        let actual_decision: Decision = Decision::from(proto_decision);
+
+        let expected_source = match system.get_initial_state() {
+            None => panic!("No initial state found"),
+            Some(state) => state,
+        };
+        let expected_transitions = from_action_to_transitions(system, &expected_source);
+        let expected_transition = match expected_transitions.into_iter().next() {
+            None => panic!("No transition found!"),
+            Some(transition) => transition,
+        };
+
+        // Act
+        let actual_transitition_decision = TransitionDecision::from(actual_decision);
+        let expected_transition_decision: TransitionDecision = TransitionDecision {
+            source: expected_source,
+            decided: expected_transition,
+        };
+
+        let actual_transitition_decision = format!("{:?}", actual_transitition_decision);
+        let expected_transition_decision = format!("{:?}", expected_transition_decision);
+
+        // Assert
+        assert_eq!(actual_transitition_decision, expected_transition_decision);
     }
 }
