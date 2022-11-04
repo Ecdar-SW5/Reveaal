@@ -75,37 +75,40 @@ fn build_location_tuple(
 ) -> Result<LocationTuple, String> {
     let location_id = get_location_id(&mut locations.iter(), machine);
 
-    let locations_system = system.get_all_locations();
-
-    if let Some(locationtuple) = locations_system
+    system
+        .get_all_locations()
+        .iter()
+        .find(|loc| loc.id.compare_partial_locations(&location_id))
+        .ok_or_else(|| {
+            format!(
+                "{} is not a location in the transition system ",
+                location_id
+            )
+        })
+        .map(|location_tuple| {
+            if !location_id.is_partial_location() {
+                location_tuple.clone()
+            } else {
+                LocationTuple::create_partial_location(location_id)
+            }
+        })
+        
+        /*if let Some(locationtuple) = system
+        .get_all_locations()
         .iter()
         .find(|loc| loc.id.compare_partial_locations(&location_id))
     {
-        if !location_id.is_partial_location() {
-            Ok(locationtuple.clone())
+        Ok(if !location_id.is_partial_location() {
+            locationtuple.clone()
         } else {
-            Ok(LocationTuple::create_partial_location(location_id))
-        }
+            LocationTuple::create_partial_location(location_id)
+        })
     } else {
         Err(format!(
             "{} is not a location in the transition system ",
             location_id
         ))
-    }
-
-    /*let a = system
-        .get_all_locations()
-        .iter()
-        .find(|loc| loc.id == location_id)
-        .ok_or(format!("The location {} is not found in the system",location_id))
-        .map(|loc_tuple|
-            if !location_id.is_partial_location() {
-                loc_tuple.clone()
-            } else {
-                LocationTuple::create_partial_location(location_id)
-            });
-    println!("{:?}", a);
-    a*/
+    }*/
 }
 
 fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
