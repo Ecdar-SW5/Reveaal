@@ -1346,23 +1346,21 @@ impl QueryExpression {
             QueryExpression::Parentheses(system) => format!("({})", system.pretty_string()),
             QueryExpression::VarName(name) | QueryExpression::LocName(name) => name.clone(),
             QueryExpression::State(locs, clock) => {
-                let locs_str: String = locs
-                    .iter()
-                    .enumerate()
-                    .map(|loc| {
-                        format!(
-                            "{}",
-                            if loc.0 == 0 {
-                                loc.1.pretty_string()
-                            } else {
-                                format!(", {}", loc.1.pretty_string())
-                            }
-                        )
-                    })
-                    .collect();
                 format!(
                     "[{}]({})",
-                    locs_str,
+                    locs.iter()
+                        .enumerate()
+                        .map(|loc| {
+                            format!(
+                                "{}",
+                                if loc.0 == 0 {
+                                    loc.1.pretty_string()
+                                } else {
+                                    format!(", {}", loc.1.pretty_string())
+                                }
+                            )
+                        })
+                        .collect::<String>(),
                     clock
                         .clone()
                         .map_or_else(|| "".to_string(), |c| format!("{}", c))
