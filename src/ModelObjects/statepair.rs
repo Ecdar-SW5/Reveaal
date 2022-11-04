@@ -3,7 +3,7 @@ use edbm::zones::OwnedFederation;
 use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct StatePair {
     pub locations1: LocationTuple,
     pub locations2: LocationTuple,
