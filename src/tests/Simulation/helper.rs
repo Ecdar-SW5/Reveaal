@@ -1,7 +1,7 @@
 use crate::{
     DataReader::json_reader::read_json_component,
+    Simulation::transition_decision_point::TransitionDecisionPoint,
     TransitionSystems::{CompiledComponent, TransitionSystemPtr},
-    Simulation::transition_decision_point::TransitionDecisionPoint
 };
 
 use crate::ProtobufServer::services::ComponentClock as ProtoComponentClock;

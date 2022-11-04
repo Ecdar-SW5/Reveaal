@@ -45,7 +45,11 @@ impl From<ProtoDecision> for Decision {
 pub(crate) mod test {
     use super::DecisionPoint;
     use crate::{
-        component::Edge, tests::Simulation::helper::{create_EcdarUniversity_Machine_system, initial_transition_decision_point_EcdarUniversity_Machine},
+        component::Edge,
+        tests::Simulation::helper::{
+            create_EcdarUniversity_Machine_system,
+            initial_transition_decision_point_EcdarUniversity_Machine,
+        },
         Simulation::transition_decision_point::TransitionDecisionPoint,
     };
 
