@@ -189,8 +189,7 @@ mod tests {
     };
 
     #[test]
-    fn from__good_DecisionPoint__returns_good_ProtoDecisionPoint(
-    ) {
+    fn from__good_DecisionPoint__returns_good_ProtoDecisionPoint() {
         // Arrange
         let transitionDecisionPoint = initial_transition_decision_point_EcdarUniversity_Machine();
         let decisionPoint = DecisionPoint::from(&transitionDecisionPoint);
