@@ -48,3 +48,31 @@ impl From<DecisionPoint> for ProtoDecisionPoint {
         todo!();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        tests::{grpc::grpc_helper::create_initial_decision_point, Simulation::helper::initial_transition_decision_point_EcdarUniversity_Machine},
+        Simulation::decision_point::DecisionPoint,
+        ProtobufServer::services::DecisionPoint as ProtoDecisionPoint,
+    };
+
+    #[test]
+    fn from__good_DecisionPoint__returns_good_ProtoDecisionPoint(
+    ) {
+        // Arrange
+        let transitionDecisionPoint = initial_transition_decision_point_EcdarUniversity_Machine();
+        let decisionPoint = DecisionPoint::from(transitionDecisionPoint);
+
+        // Act
+        let actual = ProtoDecisionPoint::from(decisionPoint);
+
+        // Assert
+        let expected = create_initial_decision_point();
+
+        assert_eq!(actual.edges.len(), 2);
+        assert!(actual.edges.contains(&expected.edges[0]));
+        assert!(actual.edges.contains(&expected.edges[1]));
+        assert_eq!(actual.source, expected.source);
+    }
+}

@@ -1,6 +1,7 @@
 use crate::{
     DataReader::json_reader::read_json_component,
     TransitionSystems::{CompiledComponent, TransitionSystemPtr},
+    Simulation::transition_decision_point::TransitionDecisionPoint
 };
 
 use crate::ProtobufServer::services::ComponentClock as ProtoComponentClock;
@@ -89,4 +90,8 @@ pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {
         edge: Some(edge),
     };
     return decision;
+}
+pub fn initial_transition_decision_point_EcdarUniversity_Machine() -> TransitionDecisionPoint {
+    let system = create_EcdarUniversity_Machine_system();
+    TransitionDecisionPoint::initial(system).unwrap()
 }

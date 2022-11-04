@@ -45,14 +45,14 @@ impl From<ProtoDecision> for Decision {
 pub(crate) mod test {
     use super::DecisionPoint;
     use crate::{
-        component::Edge, tests::Simulation::helper::create_EcdarUniversity_Machine_system,
+        component::Edge, tests::Simulation::helper::{create_EcdarUniversity_Machine_system, initial_transition_decision_point_EcdarUniversity_Machine},
         Simulation::transition_decision_point::TransitionDecisionPoint,
     };
 
     #[test]
     fn DecisionPoint_from__initial_EcdarUniversity_Machine__returns_correct_DecisionPoint() {
         // Arrange
-        let transition_decision_point = initial_transition_decision_point();
+        let transition_decision_point = initial_transition_decision_point_EcdarUniversity_Machine();
 
         // Act
         let actual = DecisionPoint::from(transition_decision_point);
