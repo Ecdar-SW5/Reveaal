@@ -9,7 +9,7 @@ use crate::{
         ConcreteEcdarBackend,
     },
     Simulation::{
-        decision_point::{Decision, DecisionPoint},
+        decision_point::{Decision, DecisionPoint, self},
         transition_decision_point::TransitionDecision,
     },
     TransitionSystems,
@@ -26,13 +26,12 @@ impl ConcreteEcdarBackend {
         let chosen_decision: TransitionDecision = chosen_decision.into();
 
         let transition_system = helpers::simulation_info_to_transition_system(simulation_info);
-        let decision_point = chosen_decision.resolve(transition_system);
+        let decision_point = chosen_decision.resolve(transition_system.clone()); // TODO remove clone
 
-        let decision_point: DecisionPoint = decision_point.into();
-        let decicion_point: ProtoDecisionPoint = decision_point.into();
+        let decision_point = ProtoDecisionPoint::from_transition_decision_point(&decision_point, &transition_system);
 
         let simulation_step_response = SimulationStepResponse {
-            new_decision_point: Some(decicion_point),
+            new_decision_point: Some(decision_point),
         };
 
         Ok(Response::new(simulation_step_response))

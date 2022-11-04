@@ -9,8 +9,8 @@ pub struct DecisionPoint {
     pub(crate) possible_decisions: Vec<Edge>,
 }
 
-impl From<TransitionDecisionPoint> for DecisionPoint {
-    fn from(transition_decision_point: TransitionDecisionPoint) -> Self {
+impl From<&TransitionDecisionPoint> for DecisionPoint {
+    fn from(transition_decision_point: &TransitionDecisionPoint) -> Self {
         let possible_decisions = transition_decision_point
             .possible_decisions
             .iter()
@@ -18,7 +18,7 @@ impl From<TransitionDecisionPoint> for DecisionPoint {
             .collect();
 
         DecisionPoint {
-            source: transition_decision_point.source,
+            source: transition_decision_point.source.clone(),
             possible_decisions,
         }
     }
@@ -55,7 +55,7 @@ pub(crate) mod test {
         let transition_decision_point = initial_transition_decision_point_EcdarUniversity_Machine();
 
         // Act
-        let actual = DecisionPoint::from(transition_decision_point);
+        let actual = DecisionPoint::from(&transition_decision_point);
         let actual_edge_ids: Vec<&str> = actual
             .possible_decisions
             .iter()
