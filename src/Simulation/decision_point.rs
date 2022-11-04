@@ -31,7 +31,6 @@ impl From<&Transition> for Vec<Edge> {
 }
 #[derive(Debug)]
 pub struct Decision {
-
     source: State,
     decided: Edge,
 }
@@ -48,16 +47,16 @@ impl From<ProtoDecision> for Decision {
 
 #[cfg(test)]
 pub(crate) mod test {
-    use super::{DecisionPoint, Decision};
+    use super::{Decision, DecisionPoint};
+    use crate::ProtobufServer::services::Decision as ProtoDecision;
     use crate::{
         component::Edge,
         tests::Simulation::helper::{
-            create_EcdarUniversity_Machine_system,
-            initial_transition_decision_point_EcdarUniversity_Machine, create_EcdarUniversity_Machine_Decision,
+            create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_system,
+            initial_transition_decision_point_EcdarUniversity_Machine,
         },
         Simulation::transition_decision_point::TransitionDecisionPoint,
     };
-    use crate::ProtobufServer::services::Decision as ProtoDecision;
 
     #[test]
     fn DecisionPoint_from__initial_EcdarUniversity_Machine__returns_correct_DecisionPoint() {
@@ -84,8 +83,7 @@ pub(crate) mod test {
     }
 
     #[test]
-    fn Decision_from__ProtoDecision__returns_correct_Decision()
-    {
+    fn Decision_from__ProtoDecision__returns_correct_Decision() {
         // Arrange
         let proto_decision = create_EcdarUniversity_Machine_Decision();
 
@@ -101,9 +99,8 @@ pub(crate) mod test {
             Some(edge) => edge,
         };
 
-        
         let actual_decision = Decision::from(proto_decision);
-    
+
         let system = create_EcdarUniversity_Machine_system();
         let expected_source = match system.get_initial_state() {
             None => panic!("No inital state found"),
