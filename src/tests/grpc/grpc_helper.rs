@@ -2,7 +2,7 @@ use tonic::Request;
 
 use crate::ProtobufServer::services::{
     self, Component, ComponentsInfo, DecisionPoint, Edge, Location, LocationTuple, SimulationInfo,
-    SimulationStartRequest, SimulationStepRequest, SpecificComponent, State,
+    SimulationStartRequest, SimulationStepRequest, SpecificComponent, State, DecisionPoint as ProtoDecisionPoint
 };
 use std::fs;
 

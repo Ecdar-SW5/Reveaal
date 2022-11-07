@@ -182,23 +182,29 @@ impl From<&Edge> for ProtoEdge {
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{
-            grpc::grpc_helper::create_initial_decision_point,
-            Simulation::helper::{
-                create_EcdarUniversity_Machine_system,
-                initial_transition_decision_point_EcdarUniversity_Machine,
-            },
-        },
-        ProtobufServer::services::DecisionPoint as ProtoDecisionPoint,
-        Simulation::decision_point::DecisionPoint,
+        tests::{grpc::grpc_helper::{create_initial_decision_point}, Simulation::helper::{initial_transition_decision_point_EcdarUniversity_Machine, create_EcdarUniversity_Machine_system}},
+        Simulation::{decision_point::DecisionPoint, transition_decision_point::TransitionDecisionPoint},
+        ProtobufServer::services::{DecisionPoint as ProtoDecisionPoint, Decision},
+        ModelObjects::component::{Edge, Transition}, DataReader::json_reader::read_json_component,
     };
+
 
     #[test]
     fn from__good_DecisionPoint__returns_good_ProtoDecisionPoint() {
         // Arrange
         let transitionDecisionPoint = initial_transition_decision_point_EcdarUniversity_Machine();
-        let decisionPoint = DecisionPoint::from(&transitionDecisionPoint);
+        let component = read_json_component("samples/json/EcdarUniversity", "Machine");
+        let edges: Vec<Edge> = component.get_edges().clone();
+        let start_edges: Vec<Edge> = edges.iter().filter(|edge| edge.source_location == "L5").cloned().collect();
+        
+
+
         let system = create_EcdarUniversity_Machine_system();
+        
+        let decisionPoint = DecisionPoint { 
+            source: transitionDecisionPoint.source,
+            possible_decisions: start_edges,
+        };
 
         // Act
         let actual = ProtoDecisionPoint::from(&decisionPoint, &system);

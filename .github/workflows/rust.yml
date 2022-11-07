@@ -1,0 +1,92 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'true'
+    - uses: arduino/setup-protoc@v1.1.2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: true
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+    - name: Test
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+    - name: Upload artifacts 
+      uses: actions/upload-artifact@v2
+      with:
+        name: reveaal-${{ matrix.os }}
+        path: target/debug/Reveaal
+        
+  fmt:
+    name: Check code is formatted
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+      - uses: arduino/setup-protoc@v1.1.2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+          
+  check:
+    name: Lint and check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+      - uses: arduino/setup-protoc@v1.1.2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          #args: --no-deps -- -D warnings

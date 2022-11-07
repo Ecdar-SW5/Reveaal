@@ -1,6 +1,9 @@
 use super::transition_decision_point::TransitionDecisionPoint;
-use crate::component::{Edge, State, Transition};
-use crate::ProtobufServer::services::Decision as ProtoDecision;
+use crate::component::{Edge, LocationType, State, Transition};
+use crate::ProtobufServer::services::{
+    Decision as ProtoDecision, LocationTuple as ProtoLocation, SimulationInfo,
+};
+use crate::TransitionSystems::{LocationID, LocationTuple};
 
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
@@ -37,11 +40,26 @@ pub struct Decision {
 
 impl From<ProtoDecision> for Decision {
     fn from(proto_decision: ProtoDecision) -> Self {
-        todo!();
-        // let serialized_source: ProtoDecision = proto_decision;
-        // Decision {
-        //     source: todo!(),
-        //     decided: todo!(),
+        let proto_state = match proto_decision.source {
+            None => panic!("Not found"),
+            Some(source) => source,
+        };
+
+        let proto_location_tuple = match proto_state.location_tuple {
+            None => panic!("No loc tuple"),
+            Some(loc_tuple) => loc_tuple,
+        };
+
+        let proto_location_ids: Vec<LocationID> = proto_location_tuple
+            .locations
+            .iter()
+            .map(|loc| LocationID::from_string(loc.id.as_str()))
+            .collect();
+
+        return Decision {
+            source: todo!(),
+            decided: todo!(),
+        };
     }
 }
 

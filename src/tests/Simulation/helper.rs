@@ -1,5 +1,5 @@
 use crate::{
-    DataReader::json_reader::read_json_component,
+    DataReader::json_reader::{read_json_component, read_json},
     Simulation::transition_decision_point::TransitionDecisionPoint,
     TransitionSystems::{CompiledComponent, TransitionSystemPtr},
 };
