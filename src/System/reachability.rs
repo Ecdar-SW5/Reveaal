@@ -12,7 +12,7 @@ pub struct Path {
 #[derive(Clone)]
 struct SubPath {
     source_state: State,
-    transition: Transition,
+    transition: Option<Transition>,
 }
 
 fn validate_input(
@@ -134,6 +134,10 @@ fn search_algorithm(
         let next_state = next_state.unwrap();
         if reached_end_state(&next_state, end_state) {
             found_path = true;
+            made_transitions.push(SubPath {
+                source_state: next_state.clone(),
+                transition: None,
+            });
             break;
             /* TODO: Return the actual path */
         }
@@ -148,7 +152,7 @@ fn search_algorithm(
                 );
                 made_transitions.push(SubPath {
                     source_state: next_state.clone(),
-                    transition: transition.clone(),
+                    transition: Some(transition.clone()),
                 });
             }
         }
@@ -156,34 +160,32 @@ fn search_algorithm(
 
     if found_path {
         let mut path: Vec<Transition> = Vec::new();
-        if made_transitions.len() > 0 {
-            made_transitions.reverse();
-            let mut prev_state: State = made_transitions[0].source_state.clone();
-            path.push(made_transitions[0].transition.clone());
+        made_transitions.reverse();
+        let mut prev_state: State = made_transitions[0].source_state.clone();
+        //path.push(made_transitions[0].transition.map_or_else(default, f).clone());
 
-            if made_transitions.len() > 1 {
-                for sub_path in &made_transitions[1..] {
-                    if prev_state.get_location().id != sub_path.source_state.get_location().id {
-                        if sub_path.source_state.get_location().id == start_state.get_location().id
-                        {
-                            path.push(sub_path.transition.clone());
-                            break;
-                        }
-                        path.push(sub_path.transition.clone());
-                        prev_state = sub_path.source_state.clone();
+        if made_transitions.len() > 1 {
+            for sub_path in &made_transitions[1..] {
+                //if prev_state.get_location().id != sub_path.source_state.get_location().id {
+                    if sub_path.source_state.get_location().id == start_state.get_location().id
+                    {
+                        path.push(sub_path.transition.clone().unwrap());
+                        break;
                     }
-                }
+                    path.push(sub_path.transition.clone().unwrap());
+                    prev_state = sub_path.source_state.clone();
+                //}
             }
 
             path.reverse();
         }
 
         for e in &path {
-            println!("id: {}", e.id);
+            println!("Id: {}", e.id);
         }
 
         return Ok(Path {
-            path: Some(path),
+            path: Some(Vec::new()),
             was_reachable: found_path,
         });
     }
