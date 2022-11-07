@@ -10,7 +10,7 @@ use crate::{
         },
         ConcreteEcdarBackend,
     },
-    Simulation::{transition_decision::TransitionDecision, decision::Decision},
+    Simulation::{decision::Decision, transition_decision::TransitionDecision},
 };
 impl ConcreteEcdarBackend {
     pub async fn handle_take_simulation_step(

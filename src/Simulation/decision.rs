@@ -1,8 +1,6 @@
+use crate::component::{Edge, State};
+use crate::ProtobufServer::services::Decision as ProtoDecision;
 use crate::TransitionSystems::LocationID;
-use crate::component::{State, Edge};
-use crate::ProtobufServer::services::{
-    Decision as ProtoDecision,
-};
 
 #[derive(Debug)]
 pub struct Decision {
@@ -38,7 +36,14 @@ impl From<ProtoDecision> for Decision {
 
 #[cfg(test)]
 mod tests {
-    use crate::{tests::Simulation::helper::{create_EcdarUniversity_Machine_Decision, initial_transition_decision_point_EcdarUniversity_Machine, create_EcdarUniversity_Machine_system}, component::Edge, Simulation::decision::Decision};
+    use crate::{
+        component::Edge,
+        tests::Simulation::helper::{
+            create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_system,
+            initial_transition_decision_point_EcdarUniversity_Machine,
+        },
+        Simulation::decision::Decision,
+    };
 
     // TODO this test is badly formatted
     #[test]

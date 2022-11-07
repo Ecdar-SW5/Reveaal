@@ -47,10 +47,8 @@ pub fn from_action_to_transitions(
 #[cfg(test)]
 pub(crate) mod tests {
     use super::TransitionDecisionPoint;
-    use crate::{
-        tests::Simulation::helper::{
-            create_EcdarUniversity_Machine4_system, create_EcdarUniversity_Machine_system,
-        },
+    use crate::tests::Simulation::helper::{
+        create_EcdarUniversity_Machine4_system, create_EcdarUniversity_Machine_system,
     };
 
     #[test]
