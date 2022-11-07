@@ -96,7 +96,7 @@ mod tests {
     }
 
     #[test]
-    fn TransitionDecision_from__Decision__returns_correct_TransitionDecision() {
+    fn from__edge_with_action_that_maps_to_single_transition__returns_correct_TransitionDecision() {
         // Arrange
         let system = create_EcdarUniversity_Machine_system();
         let component = read_json_component("samples/json/EcdarUniversity", "Machine");
@@ -128,7 +128,7 @@ mod tests {
     }
 
     #[test]
-    fn from__edge_with_action_that_maps_to_multiple_transitions__returns_correct_transitions() {
+    fn from__edge_with_action_that_maps_to_multiple_transitions__returns_correct_TransitionDecision() {
         // Arrange
         // let transition = Transition::from(comp, edge, 0);
 
