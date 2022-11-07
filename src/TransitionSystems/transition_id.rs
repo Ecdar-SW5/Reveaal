@@ -6,6 +6,7 @@ pub enum TransitionID {
     Composition(Box<TransitionID>, Box<TransitionID>),
     Quotient(Vec<TransitionID>, Vec<TransitionID>),
     Simple(String),
+    None,
 }
 
 impl Display for TransitionID {
@@ -53,6 +54,7 @@ impl Display for TransitionID {
                 }
             }
             TransitionID::Simple(name) => write!(f, "{}", name)?,
+            TransitionID::None => write!(f, "NoID")?,            
         }
         Ok(())
     }

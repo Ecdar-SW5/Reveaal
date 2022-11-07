@@ -640,9 +640,9 @@ pub struct Transition {
     pub updates: Vec<CompiledUpdate>,
 }
 impl Transition {
-    pub fn new(target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
+    pub fn new(transition_id: TransitionID, target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
         Transition {
-            id: TransitionID::Simple("None".to_string()),
+            id: transition_id,
             guard_zone: OwnedFederation::universe(dim),
             target_locations: target_locations.clone(),
             updates: vec![],
