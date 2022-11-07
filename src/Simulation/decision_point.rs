@@ -1,9 +1,7 @@
 use super::transition_decision_point::TransitionDecisionPoint;
-use crate::component::{Edge, LocationType, State, Transition};
-use crate::ProtobufServer::services::{
-    Decision as ProtoDecision, LocationTuple as ProtoLocation, SimulationInfo,
-};
-use crate::TransitionSystems::{LocationID, LocationTuple};
+use crate::component::{Edge, State, Transition};
+use crate::ProtobufServer::services::Decision as ProtoDecision;
+use crate::TransitionSystems::LocationID;
 
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
@@ -17,7 +15,7 @@ impl From<&TransitionDecisionPoint> for DecisionPoint {
         let possible_decisions = transition_decision_point
             .possible_decisions
             .iter()
-            .flat_map(|t| Vec::<Edge>::from(t))
+            .flat_map(Vec::<Edge>::from)
             .collect();
 
         DecisionPoint {
@@ -50,30 +48,29 @@ impl From<ProtoDecision> for Decision {
             Some(loc_tuple) => loc_tuple,
         };
 
-        let proto_location_ids: Vec<LocationID> = proto_location_tuple
+        let _proto_location_ids: Vec<LocationID> = proto_location_tuple
             .locations
             .iter()
             .map(|loc| LocationID::from_string(loc.id.as_str()))
             .collect();
 
-        return Decision {
-            source: todo!(),
-            decided: todo!(),
-        };
+        todo!();
+        // return Decision {
+        //     source: todo!(),
+        //     decided: todo!(),
+        // };
     }
 }
 
 #[cfg(test)]
 pub(crate) mod test {
     use super::{Decision, DecisionPoint};
-    use crate::ProtobufServer::services::Decision as ProtoDecision;
     use crate::{
         component::Edge,
         tests::Simulation::helper::{
             create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_system,
             initial_transition_decision_point_EcdarUniversity_Machine,
         },
-        Simulation::transition_decision_point::TransitionDecisionPoint,
     };
 
     #[test]
@@ -95,11 +92,7 @@ pub(crate) mod test {
         assert!(actual_edge_ids.contains(&"E3"));
     }
 
-    pub fn initial_transition_decision_point() -> TransitionDecisionPoint {
-        let system = create_EcdarUniversity_Machine_system();
-        TransitionDecisionPoint::initial(system).unwrap()
-    }
-
+    // TODO this test is badly formatted
     #[test]
     fn Decision_from__ProtoDecision__returns_correct_Decision() {
         // Arrange

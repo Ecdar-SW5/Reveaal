@@ -39,10 +39,9 @@ impl TransitionDecision {
 impl TransitionDecisionPoint {
     /// Constructs the initial `TransitionDecisionPoint` for a given `TransitionSystemPtr`
     pub fn initial(system: TransitionSystemPtr) -> Option<Self> {
-        match system.get_initial_state() {
-            Some(source) => Some(Self::from(system, source)),
-            None => None,
-        }
+        system
+            .get_initial_state()
+            .map(|source| Self::from(system, source))
     }
 
     /// Constructs the `TransitionDecisionPoint` from a `source: State` and a given `TransitionSystemPtr`
@@ -50,7 +49,7 @@ impl TransitionDecisionPoint {
         let transitions = from_action_to_transitions(system, &source);
 
         TransitionDecisionPoint {
-            source: source,
+            source,
             possible_decisions: transitions,
         }
     }
@@ -81,17 +80,13 @@ impl TransitionDecision {
 
 #[cfg(test)]
 pub(crate) mod tests {
-    use super::{from_action_to_transitions, TransitionDecision, TransitionDecisionPoint};
-    use crate::component::{Edge, Transition};
-    use crate::tests::Simulation::helper::*;
-    use crate::ProtobufServer::services::Decision as ProtoDecision;
+    use super::{TransitionDecision, TransitionDecisionPoint};
     use crate::{
         tests::Simulation::helper::{
             create_EcdarUniversity_Machine4_system, create_EcdarUniversity_Machine_system,
         },
         DataReader::json_reader::read_json_component,
-        Simulation::decision_point::{test::initial_transition_decision_point, Decision},
-        TransitionSystems::{CompiledComponent, TransitionSystemPtr},
+        Simulation::decision_point::Decision,
     };
 
     #[test]

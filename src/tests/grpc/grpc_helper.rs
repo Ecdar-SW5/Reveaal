@@ -2,7 +2,7 @@ use tonic::Request;
 
 use crate::ProtobufServer::services::{
     self, Component, ComponentsInfo, DecisionPoint, Edge, Location, LocationTuple, SimulationInfo,
-    SimulationStartRequest, SimulationStepRequest, SpecificComponent, State, DecisionPoint as ProtoDecisionPoint
+    SimulationStartRequest, SimulationStepRequest, SpecificComponent, State,
 };
 use std::fs;
 
@@ -42,7 +42,7 @@ pub fn create_1tuple_state_with_single_constraint(
                 id: String::from(id),
                 specific_component: Some(SpecificComponent {
                     component_name: String::from(component_name),
-                    component_index: component_index,
+                    component_index,
                 }),
             }],
         }),
@@ -55,14 +55,14 @@ pub fn create_1tuple_state_with_single_constraint(
                             x: Some(services::ComponentClock {
                                 specific_component: Some(SpecificComponent {
                                     component_name: String::from(component_name),
-                                    component_index: component_index,
+                                    component_index,
                                 }),
                                 clock_name: String::from(clock_x_name),
                             }),
                             y: Some(services::ComponentClock {
                                 specific_component: Some(SpecificComponent {
                                     component_name: String::from(component_name),
-                                    component_index: component_index,
+                                    component_index,
                                 }),
                                 clock_name: String::from(clock_y_name),
                             }),

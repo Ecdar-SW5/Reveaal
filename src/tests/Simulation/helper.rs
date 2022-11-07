@@ -1,5 +1,5 @@
 use crate::{
-    DataReader::json_reader::{read_json_component, read_json},
+    DataReader::json_reader::read_json_component,
     Simulation::transition_decision_point::TransitionDecisionPoint,
     TransitionSystems::{CompiledComponent, TransitionSystemPtr},
 };
@@ -82,14 +82,13 @@ pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {
 
     let edge = ProtoEdge {
         id: "E3".to_string(),
-        specific_component: Some(specific_comp_dp.clone()),
+        specific_component: Some(specific_comp_dp),
     };
 
-    let decision = ProtoDecision {
+    ProtoDecision {
         source: Some(source_dp),
         edge: Some(edge),
-    };
-    return decision;
+    }
 }
 pub fn initial_transition_decision_point_EcdarUniversity_Machine() -> TransitionDecisionPoint {
     let system = create_EcdarUniversity_Machine_system();

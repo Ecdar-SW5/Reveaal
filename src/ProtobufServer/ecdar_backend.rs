@@ -65,10 +65,9 @@ impl EcdarBackend for ConcreteEcdarBackend {
 
     async fn take_simulation_step(
         &self,
-        _request: Request<SimulationStepRequest>,
+        request: Request<SimulationStepRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        todo!();
-        // let request = std::panic::AssertUnwindSafe(request);
-        // catch_unwind(self.handle_step_simulation_step(request)).await
+        let request = std::panic::AssertUnwindSafe(request);
+        catch_unwind(Self::handle_take_simulation_step(request)).await
     }
 }

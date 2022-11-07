@@ -89,8 +89,8 @@ impl ComponentContainer {
         let proto_components = &components_info.components;
 
         let components = proto_components
-            .into_iter()
-            .flat_map(|x| Self::parse_components_if_some(x))
+            .iter()
+            .flat_map(Self::parse_components_if_some)
             .flatten()
             .collect();
 

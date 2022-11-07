@@ -9,7 +9,6 @@ use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
 use crate::EdgeEval::updater::CompiledUpdate;
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
-use mockall::automock;
 
 use crate::ModelObjects::representations::BoolExpression;
 use crate::TransitionSystems::LocationTuple;
@@ -20,7 +19,7 @@ use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 /// The basic struct used to represent components read from either Json or xml
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(into = "DummyComponent")]
 pub struct Component {
     pub name: String,
@@ -524,7 +523,6 @@ pub struct State {
     zone_sentinel: Option<OwnedFederation>,
 }
 
-#[automock]
 impl State {
     pub fn create(decorated_locations: LocationTuple, zone: OwnedFederation) -> Self {
         State {
@@ -935,7 +933,7 @@ impl Edge {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Channel {
     pub name: String,
 }

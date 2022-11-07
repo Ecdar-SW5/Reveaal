@@ -14,5 +14,5 @@ pub fn simulation_info_to_transition_system(
     let mut component_container = ComponentContainer::from(&component_info).unwrap();
 
     // Build transition_system as specified in the composition string
-    return CompiledComponent::from_component_loader(&mut component_container, &composition);
+    CompiledComponent::from_component_loader(&mut component_container, &composition)
 }

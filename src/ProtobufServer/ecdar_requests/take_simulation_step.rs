@@ -1,3 +1,5 @@
+use std::panic::AssertUnwindSafe;
+
 use tonic::{Request, Response, Status};
 
 use crate::{
@@ -8,17 +10,13 @@ use crate::{
         },
         ConcreteEcdarBackend,
     },
-    Simulation::{
-        decision_point::{self, Decision, DecisionPoint},
-        transition_decision_point::TransitionDecision,
-    },
-    TransitionSystems,
+    Simulation::{decision_point::Decision, transition_decision_point::TransitionDecision},
 };
 impl ConcreteEcdarBackend {
-    async fn handle_take_simulation_step(
-        request: Request<SimulationStepRequest>,
+    pub async fn handle_take_simulation_step(
+        request: AssertUnwindSafe<Request<SimulationStepRequest>>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        let request_message = request.into_inner();
+        let request_message = request.0.into_inner();
         let simulation_info = request_message.simulation_info.unwrap();
 
         let transition_system = helpers::simulation_info_to_transition_system(simulation_info);
