@@ -183,41 +183,35 @@ impl From<&Edge> for ProtoEdge {
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{grpc::grpc_helper::{create_initial_decision_point, create_initial_proto_decision_point}, Simulation::helper::{initial_transition_decision_point_EcdarUniversity_Machine, create_EcdarUniversity_Machine_system}},
+        tests::{grpc::grpc_helper::{create_initial_decision_point}, Simulation::helper::{initial_transition_decision_point_EcdarUniversity_Machine, create_EcdarUniversity_Machine_system}},
         Simulation::{decision_point::DecisionPoint, transition_decision_point::TransitionDecisionPoint},
         ProtobufServer::services::{DecisionPoint as ProtoDecisionPoint, Decision},
-        ModelObjects::component::{Edge, Transition},
+        ModelObjects::component::{Edge, Transition}, DataReader::json_reader::read_json_component,
     };
 
-
-    fn create_decision_point_EcdarMachine(transitionDecisionPoint: TransitionDecisionPoint) -> DecisionPoint{
-
-        let possible_decisions = transitionDecisionPoint
-        .possible_decisions
-        .iter()
-        .map(|x| transition_to_edges(x))
-        .collect();
-        let source = transitionDecisionPoint.source;
-
-        DecisionPoint {
-            source: source,
-            possible_decisions: possible_decisions,
-        }
-    }
 
     #[test]
     fn from__good_DecisionPoint__returns_good_ProtoDecisionPoint() {
         // Arrange
         let transitionDecisionPoint = initial_transition_decision_point_EcdarUniversity_Machine();
-        let decisionPoint = create_initial_decision_point();
-        // let decisionPoint = DecisionPoint::from(&transitionDecisionPoint);
+        let component = read_json_component("samples/json/EcdarUniversity", "Machine");
+        let edges: Vec<Edge> = component.get_edges().clone();
+        let start_edges: Vec<Edge> = edges.iter().filter(|edge| edge.source_location == "L5").cloned().collect();
+        
+
+
         let system = create_EcdarUniversity_Machine_system();
+        
+        let decisionPoint = DecisionPoint { 
+            source: transitionDecisionPoint.source,
+            possible_decisions: start_edges,
+        };
 
         // Act
         let actual = ProtoDecisionPoint::from(&decisionPoint, &system);
 
         // Assert
-        let expected = create_initial_proto_decision_point();
+        let expected = create_initial_decision_point();
 
         assert_eq!(actual.edges.len(), 2);
         assert!(actual.edges.contains(&expected.edges[0]));

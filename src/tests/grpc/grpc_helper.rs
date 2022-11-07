@@ -174,12 +174,3 @@ pub fn create_simulation_info_from(composition: String, component_json: String) 
         }),
     }
 }
-
-pub fn create_initial_proto_decision_point() -> ProtoDecisionPoint{
-    let decisionPoint = create_initial_decision_point();
-
-    ProtoDecisionPoint {
-        source: decisionPoint.source,
-        edges: decisionPoint.edges,
-    }
-}
