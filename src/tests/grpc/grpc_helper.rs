@@ -2,7 +2,7 @@ use tonic::Request;
 
 use crate::ProtobufServer::services::{
     self, Component, ComponentsInfo, DecisionPoint, Edge, Location, LocationTuple, SimulationInfo,
-    SimulationStartRequest, SimulationStepRequest, SpecificComponent, State,
+    SimulationStartRequest, SimulationStepRequest, SpecificComponent, State, DecisionPoint as ProtoDecisionPoint
 };
 use std::fs;
 
@@ -172,5 +172,14 @@ pub fn create_simulation_info_from(composition: String, component_json: String) 
             }],
             components_hash: 0, // TODO this is incorrect
         }),
+    }
+}
+
+pub fn create_initial_proto_decision_point() -> ProtoDecisionPoint{
+    let decisionPoint = create_initial_decision_point();
+
+    ProtoDecisionPoint {
+        source: decisionPoint.source,
+        edges: decisionPoint.edges,
     }
 }

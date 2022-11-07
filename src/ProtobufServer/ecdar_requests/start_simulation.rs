@@ -183,23 +183,41 @@ impl From<&Edge> for ProtoEdge {
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{grpc::grpc_helper::create_initial_decision_point, Simulation::helper::{initial_transition_decision_point_EcdarUniversity_Machine, create_EcdarUniversity_Machine_system}},
-        Simulation::decision_point::DecisionPoint,
-        ProtobufServer::services::DecisionPoint as ProtoDecisionPoint,
+        tests::{grpc::grpc_helper::{create_initial_decision_point, create_initial_proto_decision_point}, Simulation::helper::{initial_transition_decision_point_EcdarUniversity_Machine, create_EcdarUniversity_Machine_system}},
+        Simulation::{decision_point::DecisionPoint, transition_decision_point::TransitionDecisionPoint},
+        ProtobufServer::services::{DecisionPoint as ProtoDecisionPoint, Decision},
+        ModelObjects::component::{Edge, Transition},
     };
+
+
+    fn create_decision_point_EcdarMachine(transitionDecisionPoint: TransitionDecisionPoint) -> DecisionPoint{
+
+        let possible_decisions = transitionDecisionPoint
+        .possible_decisions
+        .iter()
+        .map(|x| transition_to_edges(x))
+        .collect();
+        let source = transitionDecisionPoint.source;
+
+        DecisionPoint {
+            source: source,
+            possible_decisions: possible_decisions,
+        }
+    }
 
     #[test]
     fn from__good_DecisionPoint__returns_good_ProtoDecisionPoint() {
         // Arrange
         let transitionDecisionPoint = initial_transition_decision_point_EcdarUniversity_Machine();
-        let decisionPoint = DecisionPoint::from(&transitionDecisionPoint);
+        let decisionPoint = create_initial_decision_point();
+        // let decisionPoint = DecisionPoint::from(&transitionDecisionPoint);
         let system = create_EcdarUniversity_Machine_system();
 
         // Act
         let actual = ProtoDecisionPoint::from(&decisionPoint, &system);
 
         // Assert
-        let expected = create_initial_decision_point();
+        let expected = create_initial_proto_decision_point();
 
         assert_eq!(actual.edges.len(), 2);
         assert!(actual.edges.contains(&expected.edges[0]));
