@@ -104,7 +104,7 @@ fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> Locati
             box_location_id(locations, left),
             box_location_id(locations, right),
         ),
-        SystemRecipe::Quotient(left, right, _clock_index) => LocationID::Quotient(
+        SystemRecipe::Quotient(left, right, ..) => LocationID::Quotient(
             box_location_id(locations, left),
             box_location_id(locations, right),
         ),
