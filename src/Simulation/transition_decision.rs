@@ -1,6 +1,6 @@
 use crate::{component::{State, Transition}, TransitionSystems::TransitionSystemPtr};
 
-use super::{decision_point::Decision, transition_decision_point::TransitionDecisionPoint};
+use super::{transition_decision_point::TransitionDecisionPoint, decision::Decision};
 
 // Represent a decision in a transition system, that has been taken: In the current `source` state I have `decided` to use this `Transition`.  
 #[derive(Debug)]
@@ -34,7 +34,7 @@ impl TransitionDecision {
 
 #[cfg(test)]
 mod tests {
-    use crate::{tests::Simulation::helper::create_EcdarUniversity_Machine_system, Simulation::{transition_decision::TransitionDecision, transition_decision_point::TransitionDecisionPoint, decision_point::Decision}, DataReader::json_reader::read_json_component};
+    use crate::{tests::Simulation::helper::create_EcdarUniversity_Machine_system, Simulation::{transition_decision::TransitionDecision, transition_decision_point::TransitionDecisionPoint, decision::Decision}, DataReader::json_reader::read_json_component};
 
     // Yes this test is stupid, no you will not remove it >:(
     #[allow(unused_must_use)]
