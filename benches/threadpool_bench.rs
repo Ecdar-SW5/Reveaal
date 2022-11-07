@@ -13,8 +13,8 @@ use criterion::async_executor::FuturesExecutor;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 
-mod flamegraph_profiler;
-use flamegraph_profiler::FlamegraphProfiler;
+pub mod flamegraph;
+use flamegraph::flamegraph_profiler::FlamegraphProfiler;
 
 static PATH: &str = "samples/json/EcdarUniversity";
 

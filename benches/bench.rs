@@ -1,8 +1,8 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use reveaal::tests::refinement::Helper::json_refinement_check;
 
-mod flamegraph_profiler;
-use flamegraph_profiler::FlamegraphProfiler;
+pub mod flamegraph;
+use flamegraph::flamegraph_profiler::FlamegraphProfiler;
 
 static PATH: &str = "samples/json/EcdarUniversity";
 
