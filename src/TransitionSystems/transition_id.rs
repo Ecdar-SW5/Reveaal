@@ -4,7 +4,7 @@ use std::fmt::{Display, Formatter};
 pub enum TransitionID {
     Conjunction(Box<TransitionID>, Box<TransitionID>),
     Composition(Box<TransitionID>, Box<TransitionID>),
-    Quotient(Box<TransitionID>, Box<TransitionID>),
+    Quotient(Vec<TransitionID>, Vec<TransitionID>),
     Simple(String),
 }
 
@@ -38,15 +38,19 @@ impl Display for TransitionID {
                 };
             }
             TransitionID::Quotient(left, right) => {
-                match *(*left) {
-                    TransitionID::Simple(_) => write!(f, "{}", (*left))?,
-                    _ => write!(f, "({})", (*left))?,
-                };
+                for l in left {
+                    match *(l) {
+                        TransitionID::Simple(_) => write!(f, "{}", (l))?,
+                        _ => write!(f, "({})", (l))?,
+                    };
+                }
                 write!(f, "\\\\")?;
-                match *(*right) {
-                    TransitionID::Simple(_) => write!(f, "{}", (*right))?,
-                    _ => write!(f, "({})", (*right))?,
-                };
+                for r in right {
+                    match *(r) {
+                        TransitionID::Simple(_) => write!(f, "{}", (r))?,
+                        _ => write!(f, "({})", (r))?,
+                    };
+                }
             }
             TransitionID::Simple(name) => write!(f, "{}", name)?,
         }

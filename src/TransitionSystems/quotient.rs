@@ -9,7 +9,9 @@ use edbm::util::bounds::Bounds;
 
 use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
 
-use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr, TransitionID};
+use crate::TransitionSystems::{
+    LocationTuple, TransitionID, TransitionSystem, TransitionSystemPtr,
+};
 use std::collections::hash_set::HashSet;
 
 use super::CompositionType;

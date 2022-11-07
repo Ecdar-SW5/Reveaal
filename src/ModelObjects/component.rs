@@ -11,8 +11,8 @@ use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 
 use crate::ModelObjects::representations::BoolExpression;
-use crate::TransitionSystems::{LocationTuple, TransitionID};
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
+use crate::TransitionSystems::{LocationTuple, TransitionID};
 use edbm::zones::OwnedFederation;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -707,9 +707,15 @@ impl Transition {
 
                 out.push(Transition {
                     id: match comp {
-                        CompositionType::Conjunction => TransitionID::Conjunction(Box::new(l.id.clone()), Box::new(r.id.clone())),
-                        CompositionType::Composition => TransitionID::Composition(Box::new(l.id.clone()), Box::new(r.id.clone())),
-                        CompositionType::Quotient => TransitionID::Quotient(Box::new(l.id.clone()), Box::new(r.id.clone())),
+                        CompositionType::Conjunction => TransitionID::Conjunction(
+                            Box::new(l.id.clone()),
+                            Box::new(r.id.clone()),
+                        ),
+                        CompositionType::Composition => TransitionID::Composition(
+                            Box::new(l.id.clone()),
+                            Box::new(r.id.clone()),
+                        ),
+                       _ => panic!("Invalid composition type {:?}", comp),
                     },
                     guard_zone,
                     target_locations,

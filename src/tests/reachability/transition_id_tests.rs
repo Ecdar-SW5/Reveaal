@@ -77,26 +77,29 @@ mod reachability_transition_id_test {
                 Box::new(TransitionID::Simple("E35".to_string()))
             )
             ])]
-    fn transition_id_test(path: &str, machineExpression: QueryExpression, transition_ids: Vec<TransitionID>) {
+    fn transition_id_test(
+        path: &str,
+        machineExpression: QueryExpression,
+        transition_ids: Vec<TransitionID>,
+    ) {
         let mock_model = Box::new(machineExpression);
         let mut expected_ids: HashSet<&TransitionID> = HashSet::from_iter(transition_ids.iter());
         let (_, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(*mock_model, path);
-            for loc in system.get_all_locations() {
-                for ac in system.get_actions() {
-                    for tran in system.next_transitions(&loc, &ac){
-                        println!("{}", &tran.id);
-                    }
-                }
-            }
-    
         for loc in system.get_all_locations() {
             for ac in system.get_actions() {
-                for tran in system.next_transitions(&loc, &ac){
-                    if expected_ids.contains(&tran.id){
+                for tran in system.next_transitions(&loc, &ac) {
+                    println!("{}", &tran.id);
+                }
+            }
+        }
+
+        for loc in system.get_all_locations() {
+            for ac in system.get_actions() {
+                for tran in system.next_transitions(&loc, &ac) {
+                    if expected_ids.contains(&tran.id) {
                         expected_ids.remove(&tran.id);
-                    }
-                    else{
+                    } else {
                         panic!("Found unexpected ID in transition system: {}", &tran.id)
                     }
                 }
