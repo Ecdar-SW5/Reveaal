@@ -31,8 +31,8 @@ impl From<&Transition> for Vec<Edge> {
 }
 #[derive(Debug)]
 pub struct Decision {
-    source: State,
-    decided: Edge,
+    pub source: State,
+    pub decided: Edge,
 }
 
 impl From<ProtoDecision> for Decision {

@@ -19,9 +19,20 @@ pub struct TransitionDecision {
     pub decided: Transition,
 }
 
-impl From<Decision> for TransitionDecision {
-    fn from(_: Decision) -> Self {
-        todo!()
+impl TransitionDecision {
+    pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Self {
+        let source = decision.source.to_owned();
+        let action = decision.decided.get_sync();
+
+        let transitions = system.next_transitions_if_available(source.get_location(), action);
+
+        let decided = match transitions.len() {
+            0 => panic!("No transitions for {}", action),
+            1 => transitions.first().unwrap().to_owned(),
+            _ => todo!(),
+        };
+
+        TransitionDecision { source, decided }
     }
 }
 
@@ -71,6 +82,7 @@ impl TransitionDecision {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::{from_action_to_transitions, TransitionDecision, TransitionDecisionPoint};
+    use crate::component::{Edge, Transition};
     use crate::tests::Simulation::helper::*;
     use crate::ProtobufServer::services::Decision as ProtoDecision;
     use crate::{
@@ -209,30 +221,43 @@ pub(crate) mod tests {
     fn TransitionDecision_from__Decision__returns_correct_TransitionDecision() {
         // Arrange
         let system = create_EcdarUniversity_Machine_system();
-        let proto_decision: ProtoDecision = create_EcdarUniversity_Machine_Decision();
-        let actual_decision: Decision = Decision::from(proto_decision);
+        let component = read_json_component("samples/json/EcdarUniversity", "Machine");
+        let initial = system.get_initial_state().unwrap();
+        let edge = component.get_edges()[4].clone();
 
-        let expected_source = match system.get_initial_state() {
-            None => panic!("No initial state found"),
-            Some(state) => state,
+        let decision = Decision {
+            source: initial.clone(),
+            decided: edge.clone(),
         };
-        let expected_transitions = from_action_to_transitions(system, &expected_source);
-        let expected_transition = match expected_transitions.into_iter().next() {
-            None => panic!("No transition found!"),
-            Some(transition) => transition,
+
+        let expected = TransitionDecision {
+            source: initial.clone(),
+            decided: system
+                .next_transitions(initial.get_location(), "tea")
+                .first()
+                .unwrap()
+                .to_owned(),
         };
 
         // Act
-        let actual_transitition_decision = TransitionDecision::from(actual_decision);
-        let expected_transition_decision: TransitionDecision = TransitionDecision {
-            source: expected_source,
-            decided: expected_transition,
-        };
-
-        let actual_transitition_decision = format!("{:?}", actual_transitition_decision);
-        let expected_transition_decision = format!("{:?}", expected_transition_decision);
+        let actual = TransitionDecision::from(&decision, &system);
 
         // Assert
-        assert_eq!(actual_transitition_decision, expected_transition_decision);
+        let actual = format!("{:?}", actual);
+        let expected = format!("{:?}", expected);
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn from__edge_with_action_that_maps_to_multiple_transitions__returns_correct_transitions() {
+        // Arrange
+        // let transition = Transition::from(comp, edge, 0);
+
+        // Act
+
+        // Assert
+
+        assert!(false);
     }
 }

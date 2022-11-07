@@ -1,25 +1,19 @@
 use std::collections::HashMap;
 use std::panic::AssertUnwindSafe;
 
+use crate::component::{Edge, State};
 use crate::ProtobufServer::ecdar_requests::helpers;
 use crate::ProtobufServer::services::{
-    DecisionPoint as ProtoDecisionPoint, 
-    SimulationStartRequest, SimulationStepResponse, 
-    State as ProtoState, 
-    Edge as ProtoEdge, 
-    LocationTuple as ProtoLocationTuple, 
-    Federation as ProtoFederation,
-    Location as ProtoLocation,
-    Disjunction as ProtoDisjunction,
-    Conjunction as ProtoConjunction,
-    Constraint as ProtoConstraint, ComponentClock,
+    ComponentClock, Conjunction as ProtoConjunction, Constraint as ProtoConstraint,
+    DecisionPoint as ProtoDecisionPoint, Disjunction as ProtoDisjunction, Edge as ProtoEdge,
+    Federation as ProtoFederation, Location as ProtoLocation, LocationTuple as ProtoLocationTuple,
+    SimulationStartRequest, SimulationStepResponse, State as ProtoState,
 };
 use crate::Simulation::decision_point::DecisionPoint;
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
-use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
-use crate::component::{State, Edge};
 use crate::TransitionSystems::location_id::LocationID;
-use edbm::util::constraints::{Disjunction, Conjunction, Constraint, ClockIndex};
+use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
+use edbm::util::constraints::{ClockIndex, Conjunction, Constraint, Disjunction};
 use edbm::zones::OwnedFederation;
 use log::trace;
 
@@ -40,7 +34,7 @@ impl ConcreteEcdarBackend {
         // Find Initial TransitionDecisionPoint in transition system
         let initial = TransitionDecisionPoint::initial(transition_system.clone()).unwrap(); // TODO remove clone
 
-        let initial = 
+        let initial =
             ProtoDecisionPoint::from_transition_decision_point(&initial, &transition_system);
 
         // Respond with initial
@@ -52,7 +46,10 @@ impl ConcreteEcdarBackend {
 }
 
 impl ProtoDecisionPoint {
-    pub fn from_transition_decision_point(decision_point: &TransitionDecisionPoint, system: &TransitionSystemPtr) -> ProtoDecisionPoint {
+    pub fn from_transition_decision_point(
+        decision_point: &TransitionDecisionPoint,
+        system: &TransitionSystemPtr,
+    ) -> ProtoDecisionPoint {
         let decision_point: DecisionPoint = DecisionPoint::from(decision_point);
         let decision_point: ProtoDecisionPoint = ProtoDecisionPoint::from(&decision_point, system);
         decision_point
@@ -63,7 +60,7 @@ impl ProtoDecisionPoint {
     fn from(decision_point: &DecisionPoint, system: &TransitionSystemPtr) -> Self {
         let source = ProtoState::from(&decision_point.source, system);
 
-        let edges =  decision_point
+        let edges = decision_point
             .possible_decisions
             .iter()
             .map(|x| ProtoEdge::from(x))
@@ -90,26 +87,27 @@ impl ProtoState {
 
 fn location_id_to_proto_location_vec(is: &LocationID) -> Vec<ProtoLocation> {
     match is {
-        LocationID::Simple(s) => vec![ProtoLocation { id: s.clone(), specific_component: None }], // TODO figure out how to find specific_component
-        LocationID::Conjunction(l, r) 
-        | LocationID::Composition(l, r) 
-        | LocationID::Quotient(l, r) 
-            => location_id_to_proto_location_vec(l)
-                .into_iter()
-                .chain(location_id_to_proto_location_vec(r).into_iter())
-                .collect(),
+        LocationID::Simple(s) => vec![ProtoLocation {
+            id: s.clone(),
+            specific_component: None,
+        }], // TODO figure out how to find specific_component
+        LocationID::Conjunction(l, r)
+        | LocationID::Composition(l, r)
+        | LocationID::Quotient(l, r) => location_id_to_proto_location_vec(l)
+            .into_iter()
+            .chain(location_id_to_proto_location_vec(r).into_iter())
+            .collect(),
         LocationID::AnyLocation() => vec![],
     }
 }
 
 impl From<&LocationTuple> for ProtoLocationTuple {
     fn from(l: &LocationTuple) -> Self {
-        ProtoLocationTuple { 
-          locations:  location_id_to_proto_location_vec(&l.id),
+        ProtoLocationTuple {
+            locations: location_id_to_proto_location_vec(&l.id),
         }
     }
 }
-
 
 impl ProtoFederation {
     fn from(f: &OwnedFederation, system: &TransitionSystemPtr) -> Self {
@@ -134,10 +132,11 @@ impl ProtoDisjunction {
 impl ProtoConjunction {
     fn from(c: &Conjunction, system: &TransitionSystemPtr) -> Self {
         ProtoConjunction {
-            constraints: c.constraints
-            .iter()
-            .map(|x| ProtoConstraint::from(x, system))
-            .collect(),
+            constraints: c
+                .constraints
+                .iter()
+                .map(|x| ProtoConstraint::from(x, system))
+                .collect(),
         }
     }
 }
@@ -157,11 +156,11 @@ impl ProtoConstraint {
             .map(|x| naming.insert(*x.1, x.0));
 
         ProtoConstraint {
-            x: Some(ComponentClock{
+            x: Some(ComponentClock {
                 specific_component: None, // TODO how?
                 clock_name: naming.get(&constraint.i).unwrap().to_string(),
             }),
-            y: Some(ComponentClock{
+            y: Some(ComponentClock {
                 specific_component: None, // TODO how?
                 clock_name: naming.get(&constraint.j).unwrap().to_string(),
             }),
@@ -183,9 +182,15 @@ impl From<&Edge> for ProtoEdge {
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{grpc::grpc_helper::create_initial_decision_point, Simulation::helper::{initial_transition_decision_point_EcdarUniversity_Machine, create_EcdarUniversity_Machine_system}},
-        Simulation::decision_point::DecisionPoint,
+        tests::{
+            grpc::grpc_helper::create_initial_decision_point,
+            Simulation::helper::{
+                create_EcdarUniversity_Machine_system,
+                initial_transition_decision_point_EcdarUniversity_Machine,
+            },
+        },
         ProtobufServer::services::DecisionPoint as ProtoDecisionPoint,
+        Simulation::decision_point::DecisionPoint,
     };
 
     #[test]
