@@ -220,9 +220,11 @@ fn make_path(mut made_transitions: Vec<SubPath>, start_state: &State) -> Result<
 
     if made_transitions.len() > 1 {
         made_transitions.reverse();
+        
         for sub_path in &made_transitions[1..] {
             if sub_path.source_state.get_location().id == start_state.get_location().id {
-                path.push(sub_path.transition.clone().unwrap());
+                //Cannot unwrap None since made_transistion from > 0 will provide a SubPath with a transition.
+                path.push(sub_path.transition.clone().unwrap()); 
                 break;
             }
             path.push(sub_path.transition.clone().unwrap());
@@ -235,10 +237,10 @@ fn make_path(mut made_transitions: Vec<SubPath>, start_state: &State) -> Result<
         println!("Id: {}", e.id);
     }
 
-    return Ok(Path {
+    Ok(Path {
         path: Some(path),
         was_reachable: true,
-    });
+    })
 }
 
 /// Removes everything in existing_zones that is a subset of zone
