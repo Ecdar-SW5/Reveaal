@@ -5,9 +5,7 @@ use crate::DataTypes::{PassedStateList, PassedStateListExt, WaitingStateList};
 use crate::ModelObjects::component::Transition;
 
 use crate::ModelObjects::statepair::StatePair;
-use crate::System::local_consistency::ConsistencyFailure;
-use crate::TransitionSystems::transition_system::PrecheckResult;
-use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
+use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr, TransitionID};
 use std::collections::HashSet;
 use std::fmt;
 
@@ -190,7 +188,7 @@ pub fn check_refinement(sys1: TransitionSystemPtr, sys2: TransitionSystemPtr) ->
 
             let output_transition1 = sys1.next_outputs(curr_pair.get_locations1(), output);
             let output_transition2 = if extra {
-                vec![Transition::new(curr_pair.get_locations2(), dimensions)]
+                vec![Transition::new(TransitionID::None ,curr_pair.get_locations2(), dimensions)]
             } else {
                 sys2.next_outputs(curr_pair.get_locations2(), output)
             };
@@ -247,7 +245,7 @@ pub fn check_refinement(sys1: TransitionSystemPtr, sys2: TransitionSystemPtr) ->
             let extra = extra_inputs.contains(input);
 
             let input_transitions1 = if extra {
-                vec![Transition::new(curr_pair.get_locations1(), dimensions)]
+                vec![Transition::new(TransitionID::None, curr_pair.get_locations1(), dimensions)]
             } else {
                 sys1.next_inputs(curr_pair.get_locations1(), input)
             };

@@ -4,8 +4,9 @@ use std::fmt::{Display, Formatter};
 pub enum TransitionID {
     Conjunction(Box<TransitionID>, Box<TransitionID>),
     Composition(Box<TransitionID>, Box<TransitionID>),
-    Quotient(Box<TransitionID>, Box<TransitionID>),
+    Quotient(i32,Vec<TransitionID>, Vec<TransitionID>),
     Simple(String),
+    None,
 }
 
 impl Display for TransitionID {
@@ -37,18 +38,24 @@ impl Display for TransitionID {
                     _ => write!(f, "({})", (*right))?,
                 };
             }
-            TransitionID::Quotient(left, right) => {
-                match *(*left) {
-                    TransitionID::Simple(_) => write!(f, "{}", (*left))?,
-                    _ => write!(f, "({})", (*left))?,
-                };
+            TransitionID::Quotient(ruleNr, left, right) => {
+                write!(f, "{}|", ruleNr)?;
+                for l in left {
+                    match *(l) {
+                        TransitionID::Simple(_) => write!(f, "{}", (l))?,
+                        _ => write!(f, "({})", (l))?,
+                    };
+                }
                 write!(f, "\\\\")?;
-                match *(*right) {
-                    TransitionID::Simple(_) => write!(f, "{}", (*right))?,
-                    _ => write!(f, "({})", (*right))?,
-                };
+                for r in right {
+                    match *(r) {
+                        TransitionID::Simple(_) => write!(f, "{}", (r))?,
+                        _ => write!(f, "({})", (r))?,
+                    };
+                }
             }
             TransitionID::Simple(name) => write!(f, "{}", name)?,
+            TransitionID::None => write!(f, "NoID")?,            
         }
         Ok(())
     }

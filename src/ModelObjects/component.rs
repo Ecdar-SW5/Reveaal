@@ -640,9 +640,9 @@ pub struct Transition {
     pub updates: Vec<CompiledUpdate>,
 }
 impl Transition {
-    pub fn new(target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
+    pub fn new(transition_id: TransitionID, target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
         Transition {
-            id: TransitionID::Simple("None".to_string()),
+            id: transition_id,
             guard_zone: OwnedFederation::universe(dim),
             target_locations: target_locations.clone(),
             updates: vec![],
@@ -709,15 +709,13 @@ impl Transition {
                     id: match comp {
                         CompositionType::Conjunction => TransitionID::Conjunction(
                             Box::new(l.id.clone()),
-                            Box::new(l.id.clone()),
+                            Box::new(r.id.clone()),
                         ),
                         CompositionType::Composition => TransitionID::Composition(
                             Box::new(l.id.clone()),
-                            Box::new(l.id.clone()),
+                            Box::new(r.id.clone()),
                         ),
-                        CompositionType::Quotient => {
-                            TransitionID::Quotient(Box::new(l.id.clone()), Box::new(l.id.clone()))
-                        }
+                       _ => panic!("Invalid composition type {:?}", comp),
                     },
                     guard_zone,
                     target_locations,
