@@ -1,6 +1,4 @@
 
-use std::borrow::BorrowMut;
-
 use crate::{
     component::{State, Transition},
     TransitionSystems::TransitionSystemPtr,
@@ -19,31 +17,30 @@ pub struct TransitionDecision {
 impl TransitionDecision {
     // Takes a decision and system as input, and transforms
     // the decision into a TransitionDecision
-    // TODO this is horrible...
+    // TODO this less is horrible... 
+    // TODO an explanation would be in order
     pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Self {
         let source = decision.source.to_owned();
+
         let mut mut_source = decision.source.to_owned();
-        let action = decision.decided.get_sync();
         let guard = decision.decided
             .get_guard()
             .as_ref()
             .unwrap();
-
-        let transitions = system.next_transitions_if_available(mut_source.get_location(), action);
-        
         let zone = apply_constraints_to_state(&guard, &system.get_decls()[0], mut_source.take_zone()).expect("idk");
         mut_source.set_zone(zone);
 
+        let action = decision.decided.get_sync();
+        let transitions = system.next_transitions_if_available(mut_source.get_location(), action);
         let decided = match transitions.len() {
             0 => panic!("No transitions for {}", action),
             1 => transitions.first().unwrap().to_owned(),
             _ => transitions
-                .iter()
-                .filter(|t| t.use_transition(mut_source.clone().to_owned().borrow_mut()))
+                .into_iter()
+                .filter(|t| t.use_transition(&mut mut_source.clone()))
                 .collect::<Vec<_>>()
                 .first()
                 .unwrap()
-                .to_owned()
                 .to_owned()
         };
 
