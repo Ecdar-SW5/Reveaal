@@ -12,6 +12,7 @@ pub enum LocationID {
     AnyLocation(),
 }
 
+/// Represents the complete identifier of location in a single component
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub struct SimpleID {
     location_id: String,
@@ -26,7 +27,7 @@ impl SimpleID {
         }
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code)] // TODO for further use in Simulation
     fn component_id(&self) -> Option<&String> {
         self.component_id.as_ref()
     }
