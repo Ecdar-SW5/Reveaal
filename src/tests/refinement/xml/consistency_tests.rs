@@ -6,11 +6,9 @@ mod test {
 
     static PATH: &str = "samples/xml/ConsTests.xml";
 
-    fn convert_to_bool(a: QueryResult) -> bool {
-        if let QueryResult::Consistency(ConsistencyResult::Success) = a {
-            return true;
-        }
-        false
+
+    fn convert_to_bool(result: QueryResult) -> bool {
+        matches!(result, QueryResult::Consistency(ConsistencyResult::Success))
     }
 
     #[test]

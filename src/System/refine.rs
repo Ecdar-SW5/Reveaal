@@ -150,15 +150,15 @@ pub fn check_refinement(sys1: TransitionSystemPtr, sys2: TransitionSystemPtr) ->
     debug!("Extra inputs {:?}", extra_inputs);
     debug!("Extra outputs {:?}", extra_outputs);
 
-    if initial_locations_1 == None {
-        if initial_locations_2 == None {
+    if initial_locations_1.is_none() {
+        if initial_locations_2.is_none() {
             // Both are empty, so trivially true
             return RefinementResult::Success;
         }
         return RefinementResult::Failure(RefinementFailure::EmptyImplementation);
     }
 
-    if initial_locations_2 == None {
+    if initial_locations_2.is_none() {
         //The empty automata cannot implement
         return RefinementResult::Failure(RefinementFailure::EmptySpecification);
     }

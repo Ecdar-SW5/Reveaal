@@ -1,0 +1,4 @@
+{
+  "name": "System Declarations",
+  "declarations": "system A, A2, B, B2, C, D, disjoint1, disjoint2, notSubset1, notSubset2, notDisjointAndNotSubset1, notDisjointAndNotSubset2;\n"
+}
