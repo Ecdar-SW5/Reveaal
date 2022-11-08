@@ -7,6 +7,7 @@ use crate::extract_system_rep::SystemRecipe;
 use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
 use crate::ModelObjects::component::State;
 use crate::ModelObjects::representations::QueryExpression;
+use crate::TransitionSystems::location_id::SimpleID;
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use std::slice::Iter;
 
@@ -106,10 +107,13 @@ fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> Locati
             Box::new(get_location_id(locations, left)),
             Box::new(get_location_id(locations, right)),
         ),
-        SystemRecipe::Component(..) => match locations.next().unwrap().trim() {
+        SystemRecipe::Component(component) => match locations.next().unwrap().trim() {
             // It is ensured .next() will not give a None, since the number of location is same as number of component. This is also being checked in validate_reachability_input function, that is called before get_state
             "_" => LocationID::AnyLocation(),
-            str => LocationID::Simple(str.to_string()),
+            str => LocationID::Simple(SimpleID::new(
+                str.to_string(),
+                Some(component.get_name().to_owned()),
+            )),
         },
     }
 }

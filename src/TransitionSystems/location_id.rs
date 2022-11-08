@@ -7,9 +7,34 @@ pub enum LocationID {
     Conjunction(Box<LocationID>, Box<LocationID>),
     Composition(Box<LocationID>, Box<LocationID>),
     Quotient(Box<LocationID>, Box<LocationID>),
-    Simple(String),
+    Simple(SimpleID),
     /// Used for representing a partial state and it is generated when a location's name is set as `_`
     AnyLocation(),
+}
+
+/// Represents the complete identifier of location in a single component
+#[derive(Debug, Clone, Eq, Hash, PartialEq)]
+pub struct SimpleID {
+    location_id: String,
+    component_id: Option<String>,
+}
+
+impl SimpleID {
+    pub fn new(location_id: String, component_id: Option<String>) -> Self {
+        Self {
+            location_id,
+            component_id,
+        }
+    }
+
+    #[allow(dead_code)] // TODO for further use in Simulation
+    fn component_id(&self) -> Option<&String> {
+        self.component_id.as_ref()
+    }
+
+    fn location_id(&self) -> &str {
+        self.location_id.as_ref()
+    }
 }
 
 impl LocationID {
@@ -36,12 +61,13 @@ impl LocationID {
     /// [`LocationID::AnyLocation`] should always be true when compared to [`LocationID::Simple`]
     /// ```
     /// use reveaal::TransitionSystems::LocationID;
+    /// use reveaal::TransitionSystems::location_id::SimpleID;
     /// // Make two locations where `a` has LocationID::AnyLocation
-    /// let a = LocationID::Quotient(Box::new(LocationID::Simple("L5".to_string())),
+    /// let a = LocationID::Quotient(Box::new(LocationID::Simple(SimpleID::new("L5".to_string(), None))),
     ///                              Box::new(LocationID::AnyLocation()));
     ///
-    /// let b = LocationID::Quotient(Box::new(LocationID::Simple("L5".to_string())),
-    ///                              Box::new(LocationID::Simple("L1".to_string())));
+    /// let b = LocationID::Quotient(Box::new(LocationID::Simple(SimpleID::new("L5".to_string(), None))),
+    ///                              Box::new(LocationID::Simple(SimpleID::new("L1".to_string(), None))));
     ///
     /// assert!(a.compare_partial_locations(&b));
     /// ```
@@ -97,7 +123,7 @@ impl From<QueryExpression> for LocationID {
                 LocationID::Quotient(Box::new((*left).into()), Box::new((*right).into()))
             }
             QueryExpression::Parentheses(inner) => (*inner).into(),
-            QueryExpression::VarName(name) => LocationID::Simple(name),
+            QueryExpression::VarName(name) => LocationID::Simple(SimpleID::new(name, None)),
             _ => panic!(
                 "Cannot convert queryexpression with {:?} to LocationID",
                 item
@@ -146,7 +172,7 @@ impl Display for LocationID {
                     _ => write!(f, "({})", (*right))?,
                 };
             }
-            LocationID::Simple(name) => write!(f, "{}", name)?,
+            LocationID::Simple(id) => write!(f, "{}", id.location_id())?,
             LocationID::AnyLocation() => write!(f, "_")?,
         }
         Ok(())
