@@ -9,7 +9,7 @@ use crate::DataReader::json_writer::component_to_json;
 use crate::DataReader::parse_queries;
 use crate::ModelObjects::queries::Query;
 use crate::ProtobufServer::services::component::Rep;
-use crate::ProtobufServer::services::query_response::query_ok::Result as ProtobufResult;
+use crate::ProtobufServer::services::query_response::query_ok::{Result as ProtobufResult, ReachabilityResult};
 use crate::ProtobufServer::services::query_response::query_ok::{
     ComponentResult, ConsistencyResult as ProtobufConsistencyResult,
     DeterminismResult as ProtobufDeterminismResult, RefinementResult,
@@ -27,7 +27,7 @@ use crate::System::executable_query::QueryResult;
 use crate::System::local_consistency::{ConsistencyFailure, ConsistencyResult, DeterminismResult};
 use crate::System::refine::{self, RefinementFailure};
 use crate::System::{extract_system_rep, input_enabler};
-use crate::TransitionSystems::{self, LocationID};
+use crate::TransitionSystems::{self, LocationID, TransitionID};
 use edbm::util::constraints::Disjunction;
 use log::trace;
 use tonic::Status;
@@ -158,7 +158,25 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
             refine::RefinementResult::Failure(failure) => convert_refinement_failure(failure),
         },
 
-        QueryResult::Reachability(_) => {
+        QueryResult::Reachability(path) => {
+
+
+
+            TransitionID::split_into_component_lists(path.path.unwrap().iter().map(|p| p.id).collect());
+/* 
+            if (path.was_reachable){
+                Some(ProtobufResult::Reachability( ReachabilityResult {
+                    success: true,
+                    reason: "".to_string(),
+                    state: None,
+
+                }
+                    
+                ))*/
+                /*Some(ProtobufResult::Reachability {
+
+                })*/
+            }
             unimplemented!("Not implemented, but should be implemented");
         }
 
