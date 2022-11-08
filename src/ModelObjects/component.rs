@@ -640,7 +640,11 @@ pub struct Transition {
     pub updates: Vec<CompiledUpdate>,
 }
 impl Transition {
-    pub fn new(transition_id: TransitionID, target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
+    pub fn new(
+        transition_id: TransitionID,
+        target_locations: &LocationTuple,
+        dim: ClockIndex,
+    ) -> Transition {
         Transition {
             id: transition_id,
             guard_zone: OwnedFederation::universe(dim),
@@ -715,7 +719,7 @@ impl Transition {
                             Box::new(l.id.clone()),
                             Box::new(r.id.clone()),
                         ),
-                       _ => panic!("Invalid composition type {:?}", comp),
+                        _ => unreachable!("Invalid composition type {:?}", comp),
                     },
                     guard_zone,
                     target_locations,

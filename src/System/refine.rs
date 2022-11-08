@@ -5,7 +5,7 @@ use crate::DataTypes::{PassedStateList, PassedStateListExt, WaitingStateList};
 use crate::ModelObjects::component::Transition;
 
 use crate::ModelObjects::statepair::StatePair;
-use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr, TransitionID};
+use crate::TransitionSystems::{LocationTuple, TransitionID, TransitionSystemPtr};
 use std::collections::HashSet;
 
 fn common_actions(
@@ -131,7 +131,11 @@ pub fn check_refinement(
 
             let output_transition1 = sys1.next_outputs(curr_pair.get_locations1(), output);
             let output_transition2 = if extra {
-                vec![Transition::new(TransitionID::None ,curr_pair.get_locations2(), dimensions)]
+                vec![Transition::new(
+                    TransitionID::None,
+                    curr_pair.get_locations2(),
+                    dimensions,
+                )]
             } else {
                 sys2.next_outputs(curr_pair.get_locations2(), output)
             };
@@ -170,7 +174,11 @@ pub fn check_refinement(
             let extra = extra_inputs.contains(input);
 
             let input_transitions1 = if extra {
-                vec![Transition::new(TransitionID::None, curr_pair.get_locations1(), dimensions)]
+                vec![Transition::new(
+                    TransitionID::None,
+                    curr_pair.get_locations1(),
+                    dimensions,
+                )]
             } else {
                 sys1.next_inputs(curr_pair.get_locations1(), input)
             };

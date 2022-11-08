@@ -3,21 +3,15 @@ mod reachability_transition_id_test {
     use std::collections::HashSet;
     use std::iter::FromIterator;
 
-    use crate::DataReader::parse_queries;
     use crate::TransitionSystems::TransitionID;
     use crate::{
-        extract_system_rep::create_executable_query, JsonProjectLoader, System::executable_query,
-    };
-    use crate::{
         tests::reachability::helper_functions::reachability_test_helper_functions,
-        ModelObjects::representations::QueryExpression, System,
+        ModelObjects::representations::QueryExpression,
     };
     use test_case::test_case;
     const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
 
-    #[test_case(FOLDER_PATH, 
-        QueryExpression::VarName("Machine".to_string()), 
-    vec![
+    #[test_case(FOLDER_PATH, QueryExpression::VarName("Machine".to_string()), vec![
         TransitionID::Simple("E25".to_string()), 
         TransitionID::Simple("E26".to_string()), 
         TransitionID::Simple("E27".to_string()), 
@@ -77,17 +71,16 @@ mod reachability_transition_id_test {
                 Box::new(TransitionID::Simple("E35".to_string()))
             )
             ]; "Conjunction HalfAdm1 and HalfAdm2")]
-            #[test_case(FOLDER_PATH, QueryExpression::Quotient(
-                Box::new(QueryExpression::VarName("HalfAdm1".to_string())),
-                Box::new(QueryExpression::VarName("HalfAdm2".to_string()))
-            ), 
-            vec![
+    /*#[test_case(FOLDER_PATH, QueryExpression::Quotient(
+                Box::new(QueryExpression::VarName("Spec".to_string())),
+                Box::new(QueryExpression::VarName("Machine".to_string()))
+            ), vec![
               TransitionID::Simple("E25".to_string()), 
               TransitionID::Simple("E26".to_string()), 
               TransitionID::Simple("E27".to_string()), 
               TransitionID::Simple("E28".to_string()), 
-              TransitionID::Simple("E29".to_string())]; "Quotient HalfAdm1 and HalfAdm2")]
-    fn transition_id_test(
+              TransitionID::Simple("E29".to_string())]; "Quotient Spec and Machine")]*/
+    fn transition_id_checker(
         path: &str,
         machineExpression: QueryExpression,
         transition_ids: Vec<TransitionID>,
@@ -97,9 +90,11 @@ mod reachability_transition_id_test {
         let (_, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(*mock_model, path);
         for loc in system.get_all_locations() {
+            print!("Location: {}\n", loc.id);
             for ac in system.get_actions() {
+                println!("   Action:{}", ac);
                 for tran in system.next_transitions(&loc, &ac) {
-                    println!("{}", &tran.id);
+                    println!("      {}", &tran.id);
                 }
             }
         }
