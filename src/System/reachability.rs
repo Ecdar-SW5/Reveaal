@@ -120,7 +120,9 @@ fn search_algorithm(
     // List of states that are to be visited
     let mut frontier_states: Vec<State> = Vec::new();
 
-    let actions = system.get_actions();
+    let mut actions: Vec<String> = system.get_actions().into_iter().collect();
+    actions.sort();
+    
 
     let mut found_path = false;
 
