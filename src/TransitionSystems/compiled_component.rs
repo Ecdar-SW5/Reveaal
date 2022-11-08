@@ -4,7 +4,7 @@ use crate::ModelObjects::component::{
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 use log::warn;
-use crate::System::local_consistency;
+use crate::System::local_consistency::{self, ConsistencyResult, DeterminismResult};
 use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr, TransitionID};
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
