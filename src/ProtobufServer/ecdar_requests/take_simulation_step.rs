@@ -22,7 +22,7 @@ impl ConcreteEcdarBackend {
         let transition_system = helpers::simulation_info_to_transition_system(simulation_info);
 
         let chosen_decision = request_message.chosen_decision.unwrap();
-        let chosen_decision: Decision = chosen_decision.into();
+        let chosen_decision: Decision = Decision::from(chosen_decision, &transition_system);
         let chosen_decision: TransitionDecision =
             TransitionDecision::from(&chosen_decision, &transition_system);
 
