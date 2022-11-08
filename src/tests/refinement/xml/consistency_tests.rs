@@ -10,7 +10,7 @@ mod test {
         if let QueryResult::Consistency(ConsistencyResult::Success) = a {
             return true;
         }
-        return false;
+        false
     }
 
     #[test]
