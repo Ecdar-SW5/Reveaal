@@ -1,5 +1,4 @@
 use edbm::util::constraints::ClockIndex;
-use log::info;
 
 use crate::DataReader::component_loader::ComponentLoader;
 use crate::ModelObjects::component::Component;
@@ -7,34 +6,40 @@ use crate::ModelObjects::component::State;
 use crate::System::reachability;
 use crate::System::refine;
 use crate::System::save_component::combine_components;
+use crate::TransitionSystems::transition_system::PrecheckResult;
 use crate::TransitionSystems::TransitionSystemPtr;
 
 use super::extract_system_rep::SystemRecipe;
+use super::local_consistency::{ConsistencyFailure, ConsistencyResult, DeterminismResult};
+use super::refine::RefinementResult;
 use super::save_component::PruningStrategy;
 
 pub enum QueryResult {
-    Refinement(bool),
     Reachability(bool, Vec<String>), // This represents a path from start state to end state
+    Refinement(RefinementResult),
     GetComponent(Component),
-    Consistency(bool),
-    Determinism(bool),
+    Consistency(ConsistencyResult),
+    Determinism(DeterminismResult),
     Error(String),
 }
 
 impl QueryResult {
     pub fn print_result(&self, query_str: &str) {
         match self {
-            QueryResult::Refinement(true) => satisfied(query_str),
-            QueryResult::Refinement(false) => not_satisfied(query_str),
+            QueryResult::Refinement(RefinementResult::Success) => satisfied(query_str),
+            QueryResult::Refinement(RefinementResult::Failure(failure)) => {
+                not_satisfied(query_str);
+                println!("\nGot failure: {}", failure);
+            }
 
             QueryResult::Reachability(true, _) => satisfied(query_str),
             QueryResult::Reachability(false, _) => not_satisfied(query_str),
 
-            QueryResult::Consistency(true) => satisfied(query_str),
-            QueryResult::Consistency(false) => not_satisfied(query_str),
+            QueryResult::Consistency(ConsistencyResult::Success) => satisfied(query_str),
+            QueryResult::Consistency(ConsistencyResult::Failure(_)) => not_satisfied(query_str),
 
-            QueryResult::Determinism(true) => satisfied(query_str),
-            QueryResult::Determinism(false) => not_satisfied(query_str),
+            QueryResult::Determinism(DeterminismResult::Success) => satisfied(query_str),
+            QueryResult::Determinism(DeterminismResult::Failure(_)) => not_satisfied(query_str),
 
             QueryResult::GetComponent(_) => {
                 println!("{} -- Component succesfully created", query_str)
@@ -67,11 +72,10 @@ impl ExecutableQuery for RefinementExecutor {
         let (sys1, sys2) = (self.sys1, self.sys2);
 
         match refine::check_refinement(sys1, sys2) {
-            Ok(res) => {
-                info!("Refinement result: {:?}", res);
-                QueryResult::Refinement(res)
+            RefinementResult::Success => QueryResult::Refinement(RefinementResult::Success),
+            RefinementResult::Failure(the_failure) => {
+                QueryResult::Refinement(RefinementResult::Failure(the_failure))
             }
-            Err(err_msg) => QueryResult::Error(err_msg),
         }
     }
 }
@@ -87,7 +91,6 @@ pub struct ReachabilityExecutor {
     // e_state is the end state, where we want to see whether end state is reachable from start state
     pub end_state: State,
 }
-
 impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
         let (sys, s_state, e_state) = (self.transition_system, self.start_state, self.end_state);
@@ -137,11 +140,18 @@ pub struct ConsistencyExecutor {
 impl ExecutableQuery for ConsistencyExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
         let res = match self.recipe.compile(self.dim) {
-            Ok(system) => system.precheck_sys_rep(),
-            Err(_) => false,
+            Ok(system) => match system.precheck_sys_rep() {
+                PrecheckResult::Success => QueryResult::Consistency(ConsistencyResult::Success),
+                PrecheckResult::NotDeterministic(location) => QueryResult::Consistency(
+                    ConsistencyResult::Failure(ConsistencyFailure::NotDeterministicFrom(location)),
+                ),
+                PrecheckResult::NotConsistent(failure) => {
+                    QueryResult::Consistency(ConsistencyResult::Failure(failure))
+                }
+            },
+            Err(error) => QueryResult::Error(error),
         };
-
-        QueryResult::Consistency(res)
+        res
     }
 }
 

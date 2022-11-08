@@ -4,6 +4,7 @@ use crate::DataReader::parse_queries;
 use crate::ModelObjects::queries::Query;
 use crate::System::executable_query::QueryResult;
 use crate::System::extract_system_rep::create_executable_query;
+use crate::System::refine::RefinementResult;
 
 fn try_setup_logging() {
     #[cfg(feature = "logging")]
@@ -13,7 +14,8 @@ fn try_setup_logging() {
 pub fn xml_refinement_check(PATH: &str, QUERY: &str) -> bool {
     try_setup_logging();
     match xml_run_query(PATH, QUERY) {
-        QueryResult::Refinement(result) => result,
+        QueryResult::Refinement(RefinementResult::Success) => true,
+        QueryResult::Refinement(RefinementResult::Failure(_)) => false,
         QueryResult::Error(err) => panic!("{}", err),
         _ => panic!("Not a refinement check"),
     }
@@ -23,7 +25,8 @@ pub fn json_refinement_check(PATH: &str, QUERY: &str) -> bool {
     try_setup_logging();
 
     match json_run_query(PATH, QUERY) {
-        QueryResult::Refinement(result) => result,
+        QueryResult::Refinement(RefinementResult::Success) => true,
+        QueryResult::Refinement(RefinementResult::Failure(_)) => false,
         QueryResult::Error(err) => panic!("{}", err),
         _ => panic!("Not a refinement check"),
     }
@@ -32,7 +35,9 @@ pub fn json_refinement_check(PATH: &str, QUERY: &str) -> bool {
 pub fn xml_run_query(PATH: &str, QUERY: &str) -> QueryResult {
     let project_path = String::from(PATH);
     let project_loader = XmlProjectLoader::new(project_path);
-    let query = parse_queries::parse_to_expression_tree(QUERY).remove(0);
+    let query = parse_queries::parse_to_expression_tree(QUERY)
+        .unwrap()
+        .remove(0);
     let q = Query {
         query: Option::from(query),
         comment: "".to_string(),
@@ -46,7 +51,9 @@ pub fn xml_run_query(PATH: &str, QUERY: &str) -> QueryResult {
 
 pub fn json_run_query(PATH: &str, QUERY: &str) -> QueryResult {
     let project_loader = JsonProjectLoader::new(String::from(PATH));
-    let query = parse_queries::parse_to_expression_tree(QUERY).remove(0);
+    let query = parse_queries::parse_to_expression_tree(QUERY)
+        .unwrap()
+        .remove(0);
     let q = Query {
         query: Option::from(query),
         comment: "".to_string(),
