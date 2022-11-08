@@ -60,8 +60,14 @@ pub mod util {
 
         //Only do refinement check if both pass precheck
         if helper(&base_precheck) && helper(&new_precheck) {
-            assert!(matches!(refine::check_refinement(new_comp.clone(), base_system.clone()), RefinementResult::Success));
-            assert!(matches!(refine::check_refinement(base_system.clone(), new_comp.clone()), RefinementResult::Success));
+            assert!(matches!(
+                refine::check_refinement(new_comp.clone(), base_system.clone()),
+                RefinementResult::Success
+            ));
+            assert!(matches!(
+                refine::check_refinement(base_system.clone(), new_comp.clone()),
+                RefinementResult::Success
+            ));
         }
     }
 
