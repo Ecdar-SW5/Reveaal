@@ -88,7 +88,7 @@ impl ProtoState {
 fn location_id_to_proto_location_vec(is: &LocationID) -> Vec<ProtoLocation> {
     match is {
         LocationID::Simple(s) => vec![ProtoLocation {
-            id: s.clone(),
+            id: s.location_id().to_string(),
             specific_component: None,
         }], // TODO figure out how to find specific_component
         LocationID::Conjunction(l, r)
