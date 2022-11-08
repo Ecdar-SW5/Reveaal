@@ -19,31 +19,31 @@ pub struct TransitionDecision {
 impl TransitionDecision {
     // Takes a decision and system as input, and transforms
     // the decision into a TransitionDecision
+    // TODO this is horrible...
     pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Self {
         let source = decision.source.to_owned();
+        let mut mut_source = decision.source.to_owned();
         let action = decision.decided.get_sync();
         let guard = decision.decided
             .get_guard()
             .as_ref()
             .unwrap();
 
-        let transitions = system.next_transitions_if_available(source.get_location(), action);
+        let transitions = system.next_transitions_if_available(mut_source.get_location(), action);
+        
+        let zone = apply_constraints_to_state(&guard, &system.get_decls()[0], mut_source.take_zone()).expect("idk");
+        mut_source.set_zone(zone);
 
         let decided = match transitions.len() {
             0 => panic!("No transitions for {}", action),
             1 => transitions.first().unwrap().to_owned(),
             _ => transitions
                 .iter()
-                .map(|t| {
-                    let federation = apply_constraints_to_state(&guard, &system.get_decls()[0], t.guard_zone.clone());
-                    let mut new = t.clone();
-                    new.guard_zone = federation.expect("A guard federation?");
-                    new
-                })
-                .filter(|t| t.use_transition(source.clone().to_owned().borrow_mut()))
+                .filter(|t| t.use_transition(mut_source.clone().to_owned().borrow_mut()))
                 .collect::<Vec<_>>()
                 .first()
                 .unwrap()
+                .to_owned()
                 .to_owned()
         };
 
