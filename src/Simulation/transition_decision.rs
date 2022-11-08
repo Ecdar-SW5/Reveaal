@@ -1,3 +1,5 @@
+use edbm::zones::OwnedFederation;
+
 use crate::{
     component::{State, Transition},
     TransitionSystems::TransitionSystemPtr,
@@ -13,16 +15,23 @@ pub struct TransitionDecision {
 }
 
 impl TransitionDecision {
+    // Takes a decision and system as input, and transforms
+    // the decision into a TransitionDecision
     pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Self {
         let source = decision.source.to_owned();
         let action = decision.decided.get_sync();
+        let fed = OwnedFederation::init(system.get_dim());
 
         let transitions = system.next_transitions_if_available(source.get_location(), action);
+
+        for transition in &transitions {
+            transition.apply_guards(fed.clone());
+        }
 
         let decided = match transitions.len() {
             0 => panic!("No transitions for {}", action),
             1 => transitions.first().unwrap().to_owned(),
-            _ => todo!(),
+            _ => panic!("Multiple transitions for {}", action),
         };
 
         TransitionDecision { source, decided }
@@ -37,8 +46,12 @@ impl TransitionDecision {
 
 #[cfg(test)]
 mod tests {
+    use edbm::zones::OwnedFederation;
+
     use crate::{
-        tests::Simulation::helper::create_EcdarUniversity_Machine_system,
+        tests::Simulation::helper::{
+            create_EcdarUniversity_Machine_system, create_Simulation_Machine_system,
+        },
         DataReader::json_reader::read_json_component,
         Simulation::{
             decision::Decision, transition_decision::TransitionDecision,
@@ -128,14 +141,41 @@ mod tests {
     }
 
     #[test]
-    fn from__edge_with_action_that_maps_to_multiple_transitions__returns_correct_TransitionDecision() {
+    fn from__edge_with_action_that_maps_to_multiple_transitions__returns_correct_TransitionDecision(
+    ) {
         // Arrange
-        // let transition = Transition::from(comp, edge, 0);
+        let system = create_Simulation_Machine_system();
+        let component = read_json_component("samples/json/Simulation", "SimMachine");
+        let initial = system.get_initial_state().unwrap();
+        let edges = component.get_edges().clone();
+        let fed = OwnedFederation::init(system.get_dim());
+
+        let decision = Decision {
+            source: initial.clone(),
+            decided: edges[0].clone(),
+        };
+
+        let edge_action = edges[0].get_sync();
+
+        let transitions = system
+            .next_transitions_if_available(initial.get_location(), edge_action)
+            .first()
+            .unwrap()
+            .to_owned();
+        transitions.apply_guards(fed.clone());
+
+        let expected = TransitionDecision {
+            source: initial.clone(),
+            decided: transitions,
+        };
 
         // Act
+        let actual = TransitionDecision::from(&decision, &system);
 
         // Assert
+        let actual = format!("{:?}", actual);
+        let expected = format!("{:?}", expected);
 
-        assert!(false);
+        assert_eq!(actual, expected);
     }
 }
