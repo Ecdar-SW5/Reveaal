@@ -18,8 +18,8 @@ fn validate_input(
     if !locations.contains(start_state.get_location()) {
         return Err("The transition system does not contain the start location".into());
     }
-    if !locations.contains(end_state.get_location()) {
-        return Err("The transition system does not contain the end location".into());
+    if !locations.contains(end_state.get_location()) { //TODO MAKE THIS CHECKER WORK WITH PARTIAL END STATES
+        //return Err("The transition system does not contain the end location".into());    
     }
 
     Ok(())
