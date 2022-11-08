@@ -1,3 +1,5 @@
+use lru::LruCache;
+
 use crate::component::Component;
 use crate::DataReader::json_reader;
 use crate::DataReader::json_writer::component_to_json_file;
@@ -6,6 +8,7 @@ use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
 use crate::System::input_enabler;
 use std::collections::HashMap;
+use std::num::NonZeroUsize;
 use std::sync::{Arc, RwLock};
 
 type ComponentsMap = HashMap<String, Component>;
@@ -15,6 +18,7 @@ type ComponentsMap = HashMap<String, Component>;
 pub struct ModelCache {
     // TODO: A concurrent hashmap may be faster to use and cause less prone to locking, but is not part of the standard library.
     cache: Arc<RwLock<HashMap<u32, Arc<ComponentsMap>>>>,
+    user_cache: LruCache<u32, u32>
 }
 
 impl ModelCache {
@@ -23,12 +27,19 @@ impl ModelCache {
     /// # Arguments
     ///
     /// * `components_hash` - A hash of the components
-    pub fn get_model(&self, components_hash: u32) -> Option<ComponentContainer> {
+    pub fn get_model(&self, user_id: u32, components_hash: u32) -> Option<ComponentContainer> {
         self.cache
             .read()
             .unwrap()
             .get(&components_hash)
             .map(|model| ComponentContainer::new(Arc::clone(model)))
+    }
+
+    pub fn remove_model(&self){
+        let user_id = self.user_access.last().unwrap();
+        self.cache.write().unwrap().remove(self.user_cache.get(user_id).unwrap());
+        self.user_cache.remove(user_id);
+        self.user_access.remove(self.user_access.len());
     }
 
     /// A method that inserts a new model into the cache.
@@ -39,13 +50,19 @@ impl ModelCache {
     /// * `container_components` - The `ComponentContainer's` loaded components (aka Model) to be cached.
     pub fn insert_model(
         &mut self,
+        user_id: u32,
         components_hash: u32,
-        container_components: Arc<ComponentsMap>,
+        container_components: Arc<ComponentsMap>
     ) -> ComponentContainer {
+        if self.user_counter >= 100{
+            self.remove_model();
+            self.user_counter -= 1;
+        }
         self.cache
             .write()
             .unwrap()
             .insert(components_hash, Arc::clone(&container_components));
+        self.user_counter += 1;
 
         ComponentContainer::new(container_components)
     }
