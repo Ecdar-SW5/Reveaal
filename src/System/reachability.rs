@@ -122,7 +122,6 @@ fn search_algorithm(
 
     let mut actions: Vec<String> = system.get_actions().into_iter().collect();
     actions.sort();
-    
 
     let mut found_path = false;
 
@@ -145,17 +144,18 @@ fn search_algorithm(
         }
         for action in &actions {
             for transition in &system.next_transitions(&next_state.decorated_locations, action) {
-                take_transition(
+                if take_transition(
                     &next_state,
                     transition,
                     &mut frontier_states,
                     &mut visited_states,
                     system,
-                );
-                made_transitions.push(SubPath {
-                    source_state: next_state.clone(),
-                    transition: Some(transition.clone()),
-                });
+                ) {
+                    made_transitions.push(SubPath {
+                        source_state: next_state.clone(),
+                        transition: Some(transition.clone()),
+                    })
+                }
             }
         }
     }
@@ -182,7 +182,7 @@ fn take_transition(
     frontier_states: &mut Vec<State>,
     visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>,
     system: &dyn TransitionSystem,
-) {
+) -> bool {
     let mut new_state = next_state.clone();
     if transition.use_transition(&mut new_state) {
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
@@ -196,8 +196,10 @@ fn take_transition(
                 .unwrap()
                 .push(new_state.zone_ref().clone());
             frontier_states.push(new_state);
+            return true
         }
     }
+    false
 }
 
 /// Checks if this zone is redundant by being a subset of any other zone
