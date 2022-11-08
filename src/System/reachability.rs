@@ -124,7 +124,9 @@ fn search_algorithm(
     actions.sort();
 
     let mut found_path = false;
+    
 
+    visited_states.insert(start_clone.get_location().id.clone(), vec![start_clone.zone_ref().clone()]);
     frontier_states.push(start_clone);
     loop {
         let next_state = frontier_states.pop();
