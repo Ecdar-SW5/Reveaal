@@ -15,13 +15,15 @@ pub struct TransitionDecision {
 }
 
 impl TransitionDecision {
+    // Takes a decision and system as input, and transforms
+    // the decision into a TransitionDecision
     pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Self {
         let source = decision.source.to_owned();
         let action = decision.decided.get_sync();
         let fed = OwnedFederation::init(system.get_dim());
 
         let transitions = system.next_transitions_if_available(source.get_location(), action);
-
+        
         for transition in &transitions {
             transition.apply_guards(fed.clone());
         }
@@ -149,20 +151,13 @@ mod tests {
         let edges = component.get_edges().clone();
         let fed = OwnedFederation::init(system.get_dim());
 
-        // let system_decls = system.get_decls();
-        // let decl: &Declarations = system_decls[0];
-
         let decision = Decision {
             source: initial.clone(),
             decided: edges[0].clone(),
         };
 
-        // let decision_fed = edges[0].apply_guard(decl, fed);
-
         let edge_action = edges[0].get_sync();
 
-        // let mut applied_guards_initial: State = initial.clone();
-        // applied_guards_initial.set_zone(decision_fed);
         let transitions = system.next_transitions_if_available(initial.get_location(), edge_action).first().unwrap().to_owned();
         transitions.apply_guards(fed.clone());
         
