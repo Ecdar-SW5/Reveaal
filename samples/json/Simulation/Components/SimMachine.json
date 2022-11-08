@@ -56,7 +56,7 @@
         "select": "",
         "guard": "1\u003cx",
         "update": "",
-        "sync": "cof",
+        "sync": "a",
         "isLocked": false,
         "nails": [
           {
@@ -84,7 +84,7 @@
         "select": "",
         "guard": "x\u003c\u003d1",
         "update": "",
-        "sync": "tea",
+        "sync": "a",
         "isLocked": false,
         "nails": [
           {

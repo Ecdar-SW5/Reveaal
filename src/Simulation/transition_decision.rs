@@ -1,8 +1,10 @@
-use edbm::zones::OwnedFederation;
+
+use std::borrow::BorrowMut;
 
 use crate::{
     component::{State, Transition},
     TransitionSystems::TransitionSystemPtr,
+    EdgeEval::constraint_applyer::apply_constraints_to_state,
 };
 
 use super::{decision::Decision, transition_decision_point::TransitionDecisionPoint};
@@ -20,18 +22,29 @@ impl TransitionDecision {
     pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Self {
         let source = decision.source.to_owned();
         let action = decision.decided.get_sync();
-        let fed = OwnedFederation::init(system.get_dim());
+        let guard = decision.decided
+            .get_guard()
+            .as_ref()
+            .unwrap();
 
         let transitions = system.next_transitions_if_available(source.get_location(), action);
-
-        for transition in &transitions {
-            transition.apply_guards(fed.clone());
-        }
 
         let decided = match transitions.len() {
             0 => panic!("No transitions for {}", action),
             1 => transitions.first().unwrap().to_owned(),
-            _ => panic!("Multiple transitions for {}", action),
+            _ => transitions
+                .iter()
+                .map(|t| {
+                    let federation = apply_constraints_to_state(&guard, &system.get_decls()[0], t.guard_zone.clone());
+                    let mut new = t.clone();
+                    new.guard_zone = federation.expect("A guard federation?");
+                    new
+                })
+                .filter(|t| t.use_transition(source.clone().to_owned().borrow_mut()))
+                .collect::<Vec<_>>()
+                .first()
+                .unwrap()
+                .to_owned()
         };
 
         TransitionDecision { source, decided }
@@ -46,8 +59,6 @@ impl TransitionDecision {
 
 #[cfg(test)]
 mod tests {
-    use edbm::zones::OwnedFederation;
-
     use crate::{
         tests::Simulation::helper::{
             create_EcdarUniversity_Machine_system, create_Simulation_Machine_system,
@@ -148,7 +159,6 @@ mod tests {
         let component = read_json_component("samples/json/Simulation", "SimMachine");
         let initial = system.get_initial_state().unwrap();
         let edges = component.get_edges().clone();
-        let fed = OwnedFederation::init(system.get_dim());
 
         let decision = Decision {
             source: initial.clone(),
@@ -157,16 +167,9 @@ mod tests {
 
         let edge_action = edges[0].get_sync();
 
-        let transitions = system
-            .next_transitions_if_available(initial.get_location(), edge_action)
-            .first()
-            .unwrap()
-            .to_owned();
-        transitions.apply_guards(fed.clone());
-
         let expected = TransitionDecision {
             source: initial.clone(),
-            decided: transitions,
+            decided: system.next_transitions(initial.get_location(), &edge_action)[0].clone(),
         };
 
         // Act
