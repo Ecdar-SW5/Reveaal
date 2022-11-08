@@ -1,4 +1,4 @@
-use super::{CompositionType, LocationID, LocationTuple};
+use super::{CompositionType, LocationTuple};
 use crate::{
     ModelObjects::component::{Declarations, State, Transition},
     System::local_consistency::DeterminismResult,
@@ -7,13 +7,14 @@ use crate::{
 use dyn_clone::{clone_trait_object, DynClone};
 use edbm::util::{bounds::Bounds, constraints::ClockIndex};
 use std::collections::hash_set::HashSet;
+use crate::TransitionSystems::location_id::SimpleID;
 
 pub type TransitionSystemPtr = Box<dyn TransitionSystem>;
 
 /// Precheck can fail because of either consistency or determinism.
 pub enum PrecheckResult {
     Success,
-    NotDeterministic(LocationID, String),
+    NotDeterministic(SimpleID, String),
     NotConsistent(ConsistencyFailure),
 }
 

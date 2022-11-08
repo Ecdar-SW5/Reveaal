@@ -6,6 +6,7 @@ use crate::ModelObjects::component::Transition;
 
 use crate::ModelObjects::statepair::StatePair;
 use crate::System::local_consistency::ConsistencyFailure;
+use crate::TransitionSystems::location_id::SimpleID;
 use crate::TransitionSystems::transition_system::PrecheckResult;
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use std::collections::HashSet;
@@ -32,8 +33,8 @@ pub enum RefinementFailure {
     EmptyImplementation,
     EmptyTransition2s(StatePair),
     NotEmptyResult(StatePair),
-    ConsistencyFailure(Option<LocationID>, Option<String>),
-    DeterminismFailure(Option<LocationID>, Option<String>),
+    ConsistencyFailure(Option<SimpleID>, Option<String>),
+    DeterminismFailure(Option<SimpleID>, Option<String>),
 }
 enum StatePairResult {
     Valid,
@@ -58,7 +59,7 @@ impl fmt::Display for RefinementFailure {
                 write!(
                     f,
                     "Not Consistent From {} failing action {}",
-                    location.as_ref().unwrap(),
+                    location.as_ref().unwrap().location_id(),
                     action.as_ref().unwrap()
                 )
             }
@@ -66,7 +67,7 @@ impl fmt::Display for RefinementFailure {
                 write!(
                     f,
                     "Not Deterministic From {} failing action {}",
-                    location.as_ref().unwrap(),
+                    location.as_ref().unwrap().location_id(),
                     action.as_ref().unwrap()
                 )
             }

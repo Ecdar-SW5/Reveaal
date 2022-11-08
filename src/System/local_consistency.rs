@@ -4,6 +4,7 @@ use edbm::zones::OwnedFederation;
 use log::warn;
 
 use crate::ModelObjects::component::State;
+use crate::TransitionSystems::location_id::SimpleID;
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 
 /// The result of a consistency check.
@@ -27,8 +28,8 @@ impl fmt::Display for ConsistencyResult {
 pub enum ConsistencyFailure {
     NoInitialLocation,
     EmptyInitialState,
-    NotConsistentFrom(LocationID, String),
-    NotDeterministicFrom(LocationID, String),
+    NotConsistentFrom(SimpleID, String),
+    NotDeterministicFrom(SimpleID, String),
 }
 
 impl fmt::Display for ConsistencyFailure {
@@ -39,15 +40,15 @@ impl fmt::Display for ConsistencyFailure {
             ConsistencyFailure::NotConsistentFrom(location, action) => {
                 write!(
                     f,
-                    "Not Consistent From {} Failing action {}",
-                    location, action
+                    "Not Consistent From {}  Failing action {}",
+                    location.location_id(), action
                 )
             }
             ConsistencyFailure::NotDeterministicFrom(location, action) => {
                 write!(
                     f,
                     "Not Deterministic From {} Failing action {}",
-                    location, action
+                    location.location_id(), action
                 )
             }
         }
@@ -58,7 +59,7 @@ impl fmt::Display for ConsistencyFailure {
 /// Failure includes the [LocationID].
 pub enum DeterminismResult {
     Success,
-    Failure(LocationID, String),
+    Failure(SimpleID, String),
 }
 
 impl fmt::Display for DeterminismResult {
@@ -69,7 +70,7 @@ impl fmt::Display for DeterminismResult {
                 write!(
                     f,
                     "Not Deterministic From {} failing action {}",
-                    location, action
+                    location.location_id(), action
                 )
             }
         }
@@ -133,7 +134,7 @@ fn is_deterministic_helper(
                         state.get_location().id,
                         action
                     );
-                    return DeterminismResult::Failure(state.get_location().id.clone(), action);
+                    return DeterminismResult::Failure(SimpleID::new(state.get_location().id.clone().to_string(), None), action);
                 }
                 location_fed += allowed_fed;
                 new_state.extrapolate_max_bounds(system);
@@ -180,7 +181,7 @@ pub fn consistency_least_helper(
     }
     if state.decorated_locations.is_inconsistent() {
         return ConsistencyResult::Failure(ConsistencyFailure::NotConsistentFrom(
-            state.get_location().id.clone(),
+            SimpleID::new(state.get_location().id.clone().to_string(), None),
             failing_action,
         ));
     }
@@ -228,7 +229,7 @@ pub fn consistency_least_helper(
     }
     warn!("No saving outputs from {}", state.get_location().id);
     ConsistencyResult::Failure(ConsistencyFailure::NotConsistentFrom(
-        state.get_location().id.clone(),
+        SimpleID::new(state.get_location().id.clone().to_string(), None),
         failing_action,
     ))
 }
@@ -293,7 +294,7 @@ fn consistency_fully_helper(
         let last_state = passed_list.last().unwrap();
         match last_state.zone_ref().can_delay_indefinitely() {
             false => ConsistencyResult::Failure(ConsistencyFailure::NotConsistentFrom(
-                last_state.get_location().id.clone(),
+                SimpleID::new(state.get_location().id.clone().to_string(), None),
                 failing_action,
             )),
             true => ConsistencyResult::Success,

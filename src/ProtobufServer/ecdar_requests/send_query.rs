@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use crate::TransitionSystems::location_id::SimpleID;
 use crate::component::Component;
 use crate::xml_parser::parse_xml_from_str;
 use crate::DataReader::component_loader::ModelCache;
@@ -194,7 +195,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         state: Some(State {
                             location_tuple: Some(LocationTuple {
                                 locations: vec![Location {
-                                    id: location_id.to_string(),
+                                    id: String::from(location_id.location_id()),
                                     specific_component: None,
                                 }],
                             }),
@@ -221,7 +222,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     state: Some(State {
                         location_tuple: Some(LocationTuple {
                             locations: vec![Location {
-                                id: location_id.to_string(),
+                                id: String::from(location_id.location_id()),
                                 specific_component: None,
                             }],
                         }),
@@ -335,9 +336,9 @@ fn make_proto_zone(disjunction: Disjunction) -> Option<Federation> {
     })
 }
 
-fn value_in_location(maybe_location: &Option<LocationID>) -> String {
+fn value_in_location(maybe_location: &Option<SimpleID>) -> String {
     match maybe_location {
-        Some(location_id) => location_id.to_string(),
+        Some(location_id) => String::from(location_id.location_id()),
         None => "".to_string(),
     }
 }
