@@ -120,10 +120,13 @@ fn search_algorithm(
     // List of states that are to be visited
     let mut frontier_states: Vec<State> = Vec::new();
 
-    let actions = system.get_actions();
+    let mut actions: Vec<String> = system.get_actions().into_iter().collect();
+    actions.sort();
 
     let mut found_path = false;
+    
 
+    visited_states.insert(start_clone.get_location().id.clone(), vec![start_clone.zone_ref().clone()]);
     frontier_states.push(start_clone);
     loop {
         let next_state = frontier_states.pop();
@@ -143,17 +146,18 @@ fn search_algorithm(
         }
         for action in &actions {
             for transition in &system.next_transitions(&next_state.decorated_locations, action) {
-                take_transition(
+                if take_transition(
                     &next_state,
                     transition,
                     &mut frontier_states,
                     &mut visited_states,
                     system,
-                );
-                made_transitions.push(SubPath {
-                    source_state: next_state.clone(),
-                    transition: Some(transition.clone()),
-                });
+                ) {
+                    made_transitions.push(SubPath {
+                        source_state: next_state.clone(),
+                        transition: Some(transition.clone()),
+                    })
+                }
             }
         }
     }
@@ -180,7 +184,7 @@ fn take_transition(
     frontier_states: &mut Vec<State>,
     visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>,
     system: &dyn TransitionSystem,
-) {
+) -> bool {
     let mut new_state = next_state.clone();
     if transition.use_transition(&mut new_state) {
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
@@ -194,8 +198,10 @@ fn take_transition(
                 .unwrap()
                 .push(new_state.zone_ref().clone());
             frontier_states.push(new_state);
+            return true
         }
     }
+    false
 }
 
 /// Checks if this zone is redundant by being a subset of any other zone
@@ -216,12 +222,18 @@ fn make_path(mut made_transitions: Vec<SubPath>, start_state: &State) -> Result<
 
     if made_transitions.len() > 1 {
         made_transitions.reverse();
+        let mut prev_state: State = made_transitions[0].source_state.clone();
+
         for sub_path in &made_transitions[1..] {
-            if sub_path.source_state.get_location().id == start_state.get_location().id {
+            if prev_state.get_location().id != sub_path.source_state.get_location().id {
+                if sub_path.source_state.get_location().id == start_state.get_location().id {
+                    //Cannot unwrap None since made_transistion from > 0 will provide a SubPath with a transition.
+                    path.push(sub_path.transition.clone().unwrap());
+                    break;
+                }
                 path.push(sub_path.transition.clone().unwrap());
-                break;
+                prev_state = sub_path.source_state.clone();
             }
-            path.push(sub_path.transition.clone().unwrap());
         }
 
         path.reverse();
@@ -231,10 +243,10 @@ fn make_path(mut made_transitions: Vec<SubPath>, start_state: &State) -> Result<
         println!("Id: {}", e.id);
     }
 
-    return Ok(Path {
+    Ok(Path {
         path: Some(path),
         was_reachable: true,
-    });
+    })
 }
 
 /// Removes everything in existing_zones that is a subset of zone

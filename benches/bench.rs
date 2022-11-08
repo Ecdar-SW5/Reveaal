@@ -4,7 +4,6 @@ use reveaal::tests::refinement::Helper::json_refinement_check;
 pub mod flamegraph;
 use flamegraph::flamegraph_profiler::FlamegraphProfiler;
 
-
 static PATH: &str = "samples/json/EcdarUniversity";
 
 fn bench_refinement(c: &mut Criterion, query: &str) {
