@@ -23,11 +23,11 @@ impl TransitionDecision {
         let fed = OwnedFederation::init(system.get_dim());
 
         let transitions = system.next_transitions_if_available(source.get_location(), action);
-        
+
         for transition in &transitions {
             transition.apply_guards(fed.clone());
         }
-        
+
         let decided = match transitions.len() {
             0 => panic!("No transitions for {}", action),
             1 => transitions.first().unwrap().to_owned(),
@@ -49,7 +49,6 @@ mod tests {
     use edbm::zones::OwnedFederation;
 
     use crate::{
-        component::{Declarations, State},
         tests::Simulation::helper::{
             create_EcdarUniversity_Machine_system, create_Simulation_Machine_system,
         },
@@ -158,12 +157,16 @@ mod tests {
 
         let edge_action = edges[0].get_sync();
 
-        let transitions = system.next_transitions_if_available(initial.get_location(), edge_action).first().unwrap().to_owned();
+        let transitions = system
+            .next_transitions_if_available(initial.get_location(), edge_action)
+            .first()
+            .unwrap()
+            .to_owned();
         transitions.apply_guards(fed.clone());
-        
+
         let expected = TransitionDecision {
             source: initial.clone(),
-            decided: transitions
+            decided: transitions,
         };
 
         // Act
