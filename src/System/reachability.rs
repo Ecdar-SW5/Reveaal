@@ -222,14 +222,18 @@ fn make_path(mut made_transitions: Vec<SubPath>, start_state: &State) -> Result<
 
     if made_transitions.len() > 1 {
         made_transitions.reverse();
-        
+        let mut prev_state: State = made_transitions[0].source_state.clone();
+
         for sub_path in &made_transitions[1..] {
-            if sub_path.source_state.get_location().id == start_state.get_location().id {
-                //Cannot unwrap None since made_transistion from > 0 will provide a SubPath with a transition.
-                path.push(sub_path.transition.clone().unwrap()); 
-                break;
+            if prev_state.get_location().id != sub_path.source_state.get_location().id {
+                if sub_path.source_state.get_location().id == start_state.get_location().id {
+                    //Cannot unwrap None since made_transistion from > 0 will provide a SubPath with a transition.
+                    path.push(sub_path.transition.clone().unwrap());
+                    break;
+                }
+                path.push(sub_path.transition.clone().unwrap());
+                prev_state = sub_path.source_state.clone();
             }
-            path.push(sub_path.transition.clone().unwrap());
         }
 
         path.reverse();
