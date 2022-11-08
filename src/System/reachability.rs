@@ -159,42 +159,14 @@ fn search_algorithm(
     }
 
     if found_path {
-        let mut path: Vec<Transition> = Vec::new();
-        made_transitions.reverse();
-        let mut prev_state: State = made_transitions[0].source_state.clone();
-        //path.push(made_transitions[0].transition.map_or_else(default, f).clone());
-
-        if made_transitions.len() > 1 {
-            for sub_path in &made_transitions[1..] {
-                //if prev_state.get_location().id != sub_path.source_state.get_location().id {
-                    if sub_path.source_state.get_location().id == start_state.get_location().id
-                    {
-                        path.push(sub_path.transition.clone().unwrap());
-                        break;
-                    }
-                    path.push(sub_path.transition.clone().unwrap());
-                    prev_state = sub_path.source_state.clone();
-                //}
-            }
-
-            path.reverse();
-        }
-
-        for e in &path {
-            println!("Id: {}", e.id);
-        }
-
-        return Ok(Path {
-            path: Some(Vec::new()),
+        make_path(made_transitions, start_state)
+    } else {
+        // If nothing has been found, it is not reachable
+        Ok(Path {
+            path: None,
             was_reachable: found_path,
-        });
+        })
     }
-
-    // If nothing has been found, it is not reachable
-    Ok(Path {
-        path: None,
-        was_reachable: found_path,
-    })
 }
 
 fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
@@ -237,6 +209,32 @@ fn zone_subset_of_existing_zones(
         }
     }
     false
+}
+
+fn make_path(mut made_transitions: Vec<SubPath>, start_state: &State) -> Result<Path, String> {
+    let mut path: Vec<Transition> = Vec::new();
+
+    if made_transitions.len() > 1 {
+        made_transitions.reverse();
+        for sub_path in &made_transitions[1..] {
+            if sub_path.source_state.get_location().id == start_state.get_location().id {
+                path.push(sub_path.transition.clone().unwrap());
+                break;
+            }
+            path.push(sub_path.transition.clone().unwrap());
+        }
+
+        path.reverse();
+    }
+
+    for e in &path {
+        println!("Id: {}", e.id);
+    }
+
+    return Ok(Path {
+        path: Some(path),
+        was_reachable: true,
+    });
 }
 
 /// Removes everything in existing_zones that is a subset of zone
