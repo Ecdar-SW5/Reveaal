@@ -11,6 +11,7 @@ use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystem
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
 
+use super::location_id::SimpleID;
 use super::transition_system::PrecheckResult;
 use super::{CompositionType, LocationID};
 
@@ -57,7 +58,12 @@ impl CompiledComponent {
             .get_locations()
             .iter()
             .map(|loc| {
-                let tuple = LocationTuple::simple(loc, component.get_declarations(), dim);
+                let tuple = LocationTuple::simple(
+                    loc,
+                    Some(component.get_name().to_owned()),
+                    component.get_declarations(),
+                    dim,
+                );
                 (tuple.id.clone(), tuple)
             })
             .collect();
@@ -66,7 +72,10 @@ impl CompiledComponent {
             locations.keys().map(|k| (k.clone(), vec![])).collect();
 
         for edge in component.get_edges() {
-            let id = LocationID::Simple(edge.source_location.clone());
+            let id = LocationID::Simple(SimpleID::new(
+                edge.source_location.clone(),
+                Some(component.get_name().to_owned()),
+            ));
             let transition = Transition::from(&component, edge, dim);
             location_edges
                 .get_mut(&id)
