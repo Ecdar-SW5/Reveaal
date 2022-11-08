@@ -3,6 +3,7 @@ use edbm::zones::OwnedFederation;
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
+use std::process::id;
 
 pub struct Path {
     //start_state: State,
@@ -18,10 +19,9 @@ fn validate_input(
     if !locations.contains(start_state.get_location()) {
         return Err("The transition system does not contain the start location".into());
     }
-    if !locations.contains(end_state.get_location()) { //TODO MAKE THIS CHECKER WORK WITH PARTIAL END STATES
-        //return Err("The transition system does not contain the end location".into());    
+    if !locations.iter().any(|loc| loc.id.compare_partial_locations(&end_state.get_location().id)) {
+        return Err("The transition system does not contain the end location".into());
     }
-
     Ok(())
 }
 
