@@ -19,7 +19,7 @@ fn validate_input(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<	(), Box<dyn std::error::Error>> {
     let locations = system.get_all_locations();
     if !locations.contains(start_state.get_location()) {
         return Err("The transition system does not contain the start location".into());

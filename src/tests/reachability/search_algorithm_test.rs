@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod reachability_search_algorithm_test {
+    use crate::component::Transition;
     use crate::tests::refinement::Helper::json_run_query;
     use crate::QueryResult;
     use crate::System::reachability::Path;
@@ -46,6 +47,39 @@ mod reachability_search_algorithm_test {
 
         match json_run_query(path, query) {
             QueryResult::Reachability(path) => assert_eq!(path.was_reachable, expected),
+            _ => panic!("Inconsistent query result, expected Reachability"),
+        }
+    }
+
+    #[test_case(PATH2, "reachability: Component1 -> [L0](); [L2]()", Vec::from(["E3", "E2"]); "Path in Component1 from L0 to L2")]
+    #[test_case(PATH2, "reachability: Component3 -> [L6](); [L7]()", Vec::from(["E5"]); "Path in Component3 from L6 to L7")]
+    #[test_case(PATH2, "reachability: Component3 -> [L7](); [L8]()", Vec::from(["E6"]); "Path in Component3 from L7 to L8")]
+    #[test_case(PATH2, "reachability: Component5 -> [L11](); [L12]()", Vec::from(["E8"]); "Path in Component5 from L11 to L12")]
+    #[test_case(PATH2, "reachability: Component6 -> [L13](); [L15]()", Vec::from(["E12", "", "", "", "E13"]); "Path in Component6 from L3 to L15")] // This fails due to missing nessesary self loop
+    #[test_case(PATH2, "reachability: Component7 -> [L16](); [L19]()", Vec::from(["E11", "E12", "E10"]); "Path in Component7 from L16 to L19")]
+    #[test_case(PATH2, "reachability: Component8 -> [L20](); [L22]()", Vec::from(["E13", "E15", "E14"]); "Path in Component8 from L20 to L22")] // This fails due to missing nessesary self loop
+    #[test_case(PATH2, "reachability: Component3 && Component3 -> [L6, L6](); [L7, L7]()", Vec::from(["E5&&E5"]); "Path in Component3 && Component3 from L6 && L6 to L7 && L7")]
+    fn path_gen_test_correct_path(folder_path: &str, query: &str, expected_path: Vec<&str>) {
+        TEMPORARY_MISSING_DECLERATIONS_HACK(folder_path);
+
+        match json_run_query(folder_path, query) {
+            QueryResult::Reachability(actual_path) => {
+                if actual_path.was_reachable {
+                    let path: Vec<Transition> = actual_path.path.unwrap().clone();
+                    if expected_path.len() != path.len() {
+                        assert!(false);
+                    }
+                for i in 0..path.len() {
+                    if expected_path[i] != path[i].id.to_string() {
+                            assert!(false);
+                        }
+                    }
+                    assert!(true);
+                }
+                else {
+                    assert!(true);
+                }
+            },
             _ => panic!("Inconsistent query result, expected Reachability"),
         }
     }
