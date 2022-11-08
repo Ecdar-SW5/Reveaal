@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter};
+use std::{fmt::{Display, Formatter}, vec};
 
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum TransitionID {
@@ -7,6 +7,51 @@ pub enum TransitionID {
     Quotient(i32,Vec<TransitionID>, Vec<TransitionID>),
     Simple(String),
     None,
+}
+
+impl TransitionID {
+
+    pub fn get_leaves(&self) -> Vec<TransitionID>{
+        let mut result = Vec::new();
+        self.get_leaves_helper(&mut result);
+        result
+    }
+
+    fn get_leaves_helper(&self, current_leaves: &mut Vec<TransitionID>) {
+        match self {
+            TransitionID::Conjunction(l, r) => {l.get_leaves_helper(current_leaves); r.get_leaves_helper(current_leaves); },
+            TransitionID::Composition(l, r) => {l.get_leaves_helper(current_leaves); r.get_leaves_helper(current_leaves); },
+            TransitionID::Quotient(_, l, r) => {current_leaves.push(self.clone());},
+            TransitionID::Simple(_) => {current_leaves.push(self.clone());},
+            TransitionID::None => {current_leaves.push(self.clone());},
+        };
+    }
+
+    pub fn split_into_component_lists(path: Vec<TransitionID>) -> Vec<Vec<TransitionID>> {
+        
+        let mut count: usize = Self::count_leaves(path[0]);
+
+        let paths: Vec<Vec<TransitionID>> = vec![Vec::new(); count];
+
+
+
+        for id in path{
+            for (i, subId) in id.get_leaves().iter().enumerate() {
+                paths[i].push(subId.clone());
+            }
+        }
+        paths
+    }
+    fn count_leaves(transition_id: TransitionID) -> usize{
+        match transition_id {
+            TransitionID::Conjunction(l, r) => Self::count_leaves(*l) + Self::count_leaves(*r),
+            TransitionID::Composition(l, r) => Self::count_leaves(*l) + Self::count_leaves(*r),
+            TransitionID::Quotient(_, l, r) => 1,
+            TransitionID::Simple(_) => 1,
+            TransitionID::None => 1,
+        }
+
+    }
 }
 
 impl Display for TransitionID {
