@@ -63,7 +63,7 @@ impl ProtoDecisionPoint {
         let edges = decision_point
             .possible_decisions
             .iter()
-            .map(ProtoEdge::from)
+            .map(|e| ProtoEdge::from(e,decision_point.source.clone()))
             .collect();
 
         ProtoDecisionPoint {
@@ -174,11 +174,13 @@ impl ProtoConstraint {
     }
 }
 
-impl From<&Edge> for ProtoEdge {
-    fn from(e: &Edge) -> Self {
+impl ProtoEdge {
+    fn from(e: &Edge, s: State) -> Self {
+        let protolocations = location_id_to_proto_location_vec(&s.decorated_locations.id);
+        let components: Vec<_> = protolocations.iter().filter(|pl| pl.id == e.source_location).cloned().collect();
         ProtoEdge {
             id: e.id.clone(),
-            specific_component: None, // TODO fix this
+            specific_component: Some(SpecificComponent { component_name: components[0].specific_component.clone().unwrap().component_name, component_index: 0 }) // TODO: Find a way to pick correct index for component if combined.
         }
     }
 }
@@ -225,8 +227,8 @@ mod tests {
         let expected = create_initial_decision_point();
 
         assert_eq!(actual.edges.len(), 2);
-        // assert!(actual.edges.contains(&expected.edges[0]));
-        // assert!(actual.edges.contains(&expected.edges[1]));
+        assert!(actual.edges.contains(&expected.edges[0]));
+        assert!(actual.edges.contains(&expected.edges[1]));
         assert_eq!(actual.source, expected.source);
     }
 }
