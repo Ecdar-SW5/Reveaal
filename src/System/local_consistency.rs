@@ -66,7 +66,7 @@ impl fmt::Display for DeterminismResult {
 
 ///Local consistency check WITH pruning.
 pub fn is_least_consistent(system: &dyn TransitionSystem) -> ConsistencyResult {
-    if system.get_initial_location() == None {
+    if system.get_initial_location().is_none() {
         return ConsistencyResult::Failure(ConsistencyFailure::NoInitialLocation);
         //TODO: figure out whether we want empty TS to be consistent
     }
@@ -84,7 +84,7 @@ pub fn is_least_consistent(system: &dyn TransitionSystem) -> ConsistencyResult {
 
 ///Checks if a [TransitionSystem] is deterministic.
 pub fn is_deterministic(system: &dyn TransitionSystem) -> DeterminismResult {
-    if system.get_initial_location() == None {
+    if system.get_initial_location().is_none() {
         return DeterminismResult::Success;
     }
     let mut passed = vec![];
@@ -139,7 +139,7 @@ fn is_deterministic_helper(
 /// Local consistency check WITHOUT pruning
 #[allow(dead_code)]
 pub fn is_fully_consistent(system: &dyn TransitionSystem) -> ConsistencyResult {
-    if system.get_initial_location() == None {
+    if system.get_initial_location().is_none() {
         return ConsistencyResult::Failure(ConsistencyFailure::NoInitialLocation);
     }
 
