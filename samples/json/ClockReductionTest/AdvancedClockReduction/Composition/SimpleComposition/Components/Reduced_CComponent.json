@@ -1,0 +1,183 @@
+{
+  "name": "CComponent",
+  "declarations": "clock x;",
+  "locations": [
+    {
+      "id": "L0||L2",
+      "nickname": "",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 321.584,
+      "y": 325.1815,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L0||L3",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 177.08322,
+      "y": 321.56442,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L1||L3",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 177.99808,
+      "y": 177.55765,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L1||L2",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 321.28043,
+      "y": 179.86205,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "E2",
+      "group": "",
+      "sourceLocation": "L0||L2",
+      "targetLocation": "L0||L3",
+      "status": "INPUT",
+      "select": "",
+      "guard": "x\u003e3",
+      "update": "",
+      "sync": "i1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 298.79883,
+          "y": 451.85294,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 194.65775,
+          "y": 449.27686,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    },
+    {
+      "id": "E2",
+      "group": "",
+      "sourceLocation": "L0||L2",
+      "targetLocation": "L1||L2",
+      "status": "INPUT",
+      "select": "",
+      "guard": "x\u003e3",
+      "update": "",
+      "sync": "i",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 448.1556,
+          "y": 304.9631,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 447.96442,
+          "y": 200.3013,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    },
+    {
+      "id": "E2",
+      "group": "",
+      "sourceLocation": "L0||L3",
+      "targetLocation": "L1||L3",
+      "status": "INPUT",
+      "select": "",
+      "guard": "x\u003e3",
+      "update": "",
+      "sync": "i",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 50.0,
+          "y": 299.6477,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 50.63293,
+          "y": 195.20596,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    },
+    {
+      "id": "E2",
+      "group": "",
+      "sourceLocation": "L1||L2",
+      "targetLocation": "L1||L3",
+      "status": "INPUT",
+      "select": "",
+      "guard": "x\u003e3",
+      "update": "",
+      "sync": "i1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 302.34106,
+          "y": 51.695545,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 198.39772,
+          "y": 50.0,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "x": 425.0,
+  "y": 182.0,
+  "width": 498.1556,
+  "height": 501.85294,
+  "color": "4",
+  "includeInPeriodicCheck": false
+}
