@@ -15,8 +15,7 @@ pub struct TransitionDecision {
 }
 
 impl TransitionDecision {
-    // Takes a decision and system as input, and transforms
-    // the decision into a TransitionDecision
+    /// Returns a `TransitionDecision` equivalent to the given `&Decision` in relation to the given `&TransitionSystemPtr` 
     // TODO this less is horrible... 
     // TODO an explanation would be in order
     pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Self {
