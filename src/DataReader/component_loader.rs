@@ -7,6 +7,7 @@ use crate::ModelObjects::system_declarations::SystemDeclarations;
 use crate::System::input_enabler;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
+use chrono::{Utc, DateTime};
 
 type ComponentsMap = HashMap<String, Component>;
 
@@ -48,6 +49,24 @@ impl ModelCache {
             .insert(components_hash, Arc::clone(&container_components));
 
         ComponentContainer::new(container_components)
+    }
+}
+
+#[derive(Debug, Default, Clone)]
+struct TimedUserToken {
+    u_token: u32,
+    time_of_addition: DateTime<Utc>,
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct UserCache {
+    cache: HashMap<u32, TimedUserToken>,
+}
+
+impl UserCache {
+    pub fn instert_user(&mut self, user_hash: u32, user_token: u32) {
+        let u_token = TimedUserToken {u_token: user_token, time_of_addition: Utc::now() };
+        self.cache.insert(user_hash, u_token).unwrap();
     }
 }
 
