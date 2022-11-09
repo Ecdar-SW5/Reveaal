@@ -7,7 +7,7 @@ use crate::{
 
 use super::{decision::Decision, transition_decision_point::TransitionDecisionPoint};
 
-// Represent a decision in a transition system, that has been taken: In the current `source` state I have `decided` to use this `Transition`.
+/// Represent a decision in a transition system, that has been taken: In the current `source` state I have `decided` to use this `Transition`.
 #[derive(Debug)]
 pub struct TransitionDecision {
     pub source: State,
