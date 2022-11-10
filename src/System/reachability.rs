@@ -11,17 +11,17 @@ pub struct Path {
 
 #[derive(Clone)]
 struct SubPath {
-    previous_link: Box<Option<&SubPath>>,
+    previous_link: Option<Box<SubPath>>,
     destination_state: State,
     transition: Option<Transition>,
 }
 
 impl SubPath {
     fn new(
-        previous_link: Box<Option<&SubPath>>,
+        previous_link: Option<Box<SubPath>>,
         destination_state: State,
         transition: Option<Transition>,
-    ) -> self {
+    ) -> Self {
         SubPath {
             previous_link,
             destination_state,
@@ -124,7 +124,7 @@ fn search_algorithm(
     //let mut made_transitions: Vec<SubPath> = Vec::new();
 
     // List of states that are to be visited
-    let mut frontier_states: Vec<SubPath> = Vec::new();
+    let mut frontier_states: Vec<Box<SubPath>> = Vec::new();
 
     let mut actions: Vec<String> = system.get_actions().into_iter().collect();
     actions.sort();
@@ -134,7 +134,7 @@ fn search_algorithm(
         vec![start_clone.zone_ref().clone()],
     );
 
-    frontier_states.push(Box::new(SubPath::new(Box::new(None), start_clone, None)));
+    frontier_states.push(Box::new(SubPath::new(None, start_clone, None)));
 
     loop {
         let sub_path = match frontier_states.pop() {
@@ -149,7 +149,7 @@ fn search_algorithm(
         for action in &actions {
             for transition in &system.next_transitions(&sub_path.destination_state.decorated_locations, action) {
                 take_transition(
-                    &sub_path,
+                    sub_path,
                     transition,
                     &mut frontier_states,
                     &mut visited_states,
@@ -171,9 +171,9 @@ fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
 }
 
 fn take_transition(
-    sub_path: &SubPath,
+    sub_path: Box<SubPath>,
     transition: &Transition,
-    frontier_states: &mut Vec<State>,
+    frontier_states: &mut Vec<Box<SubPath>>,
     visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>,
     system: &dyn TransitionSystem,
 ){
@@ -190,7 +190,7 @@ fn take_transition(
                 .unwrap()
                 .push(new_state.zone_ref().clone());
             frontier_states.push(Box::new(SubPath::new(
-                sub_path,
+                Some(sub_path),
                 new_state,
                 Some(transition.clone()),
             )));
@@ -211,12 +211,12 @@ fn zone_subset_of_existing_zones(
     false
 }
 
-fn make_path(sub_path: SubPath) -> Result<Path, String> {
+fn make_path(sub_path: Box<SubPath>) -> Result<Path, String> {
     let mut path: Vec<Transition> = Vec::new();
 
     while sub_path.previous_link.is_some() {
-        path.push(sub_path.transition);
-        sub_path = sub_path.previous_link;
+        path.push(sub_path.transition.unwrap());
+        sub_path = sub_path.previous_link.unwrap();
     }
 
     path.reverse();
