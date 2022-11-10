@@ -137,12 +137,7 @@ fn search_algorithm(
 
     frontier_states.push(Rc::new(SubPath::new(None, start_clone, None)));
 
-    loop {
-        let sub_path = match frontier_states.pop() {
-            Some(s) => s,
-            None => break,
-        };
-
+    while let Some(sub_path) = frontier_states.pop() {
         if reached_end_state(&sub_path.destination_state, end_state) {
             return make_path(sub_path);
         }
@@ -191,7 +186,7 @@ fn take_transition(
                 .unwrap()
                 .push(new_state.zone_ref().clone());
             frontier_states.push(Rc::new(SubPath::new(
-                Some(Rc::clone(&sub_path)),
+                Some(Rc::clone(sub_path)),
                 new_state,
                 Some(transition.clone()),
             )));
