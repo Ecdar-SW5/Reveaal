@@ -141,7 +141,9 @@ fn search_algorithm(
         }
 
         for action in &actions {
-            for transition in &system.next_transitions(&sub_path.destination_state.decorated_locations, action) {
+            for transition in
+                &system.next_transitions(&sub_path.destination_state.decorated_locations, action)
+            {
                 take_transition(
                     &sub_path,
                     transition,
@@ -173,7 +175,7 @@ fn take_transition(
     frontier_states: &mut Vec<Rc<SubPath>>,
     visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>,
     system: &dyn TransitionSystem,
-){
+) {
     let mut new_state = sub_path.destination_state.clone();
     if transition.use_transition(&mut new_state) {
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this

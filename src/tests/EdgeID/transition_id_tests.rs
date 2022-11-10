@@ -1,32 +1,27 @@
 #[cfg(test)]
 mod reachability_transition_id_test {
-    use std::collections::HashSet;
-    use std::iter::FromIterator;
-
-    use crate::DataReader::parse_queries;
     use crate::TransitionSystems::TransitionID;
     use crate::{
-        extract_system_rep::create_executable_query, JsonProjectLoader, System::executable_query,
-    };
-    use crate::{
         tests::reachability::helper_functions::reachability_test_helper_functions,
-        ModelObjects::representations::QueryExpression, System,
+        ModelObjects::representations::QueryExpression,
     };
+    use std::collections::HashSet;
+    use std::iter::FromIterator;
     use test_case::test_case;
     const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
 
     #[test_case(FOLDER_PATH,
-        QueryExpression::VarName("Machine".to_string()), 
+        QueryExpression::VarName("Machine".to_string()),
     vec![
-        TransitionID::Simple("E25".to_string()), 
-        TransitionID::Simple("E26".to_string()), 
-        TransitionID::Simple("E27".to_string()), 
-        TransitionID::Simple("E28".to_string()), 
+        TransitionID::Simple("E25".to_string()),
+        TransitionID::Simple("E26".to_string()),
+        TransitionID::Simple("E27".to_string()),
+        TransitionID::Simple("E28".to_string()),
         TransitionID::Simple("E29".to_string())]; "Simple transition id test")]
     #[test_case(FOLDER_PATH,
         QueryExpression::Conjunction(
             Box::new(QueryExpression::VarName("HalfAdm1".to_string())),
-            Box::new(QueryExpression::VarName("HalfAdm2".to_string()))), 
+            Box::new(QueryExpression::VarName("HalfAdm2".to_string()))),
         vec![
             TransitionID::Conjunction(
                 Box::new(TransitionID::Simple("E43".to_string())),
@@ -82,10 +77,10 @@ mod reachability_transition_id_test {
                 Box::new(QueryExpression::VarName("HalfAdm2".to_string()))
             ),
             vec![
-              TransitionID::Simple("E25".to_string()), 
-              TransitionID::Simple("E26".to_string()), 
-              TransitionID::Simple("E27".to_string()), 
-              TransitionID::Simple("E28".to_string()), 
+              TransitionID::Simple("E25".to_string()),
+              TransitionID::Simple("E26".to_string()),
+              TransitionID::Simple("E27".to_string()),
+              TransitionID::Simple("E28".to_string()),
               TransitionID::Simple("E29".to_string())]; "Quotient HalfAdm1 and HalfAdm2")]
     fn transition_id_test(
         path: &str,
