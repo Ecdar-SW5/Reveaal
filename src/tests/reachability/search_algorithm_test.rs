@@ -19,6 +19,13 @@ mod reachability_search_algorithm_test {
     #[test_case(PATH, "reachability: Machine || Researcher -> [L5, L6](); [L4, L9]()", true; "Composition between Machine & Researcher, with existing locations and not clocks")]
     #[test_case(PATH, "reachability: Machine || Researcher -> [L5, U0](); [L5, L7]()", false; "No valid path from the two states")]
     #[test_case(PATH, "reachability: Researcher -> [U0](); [L7]()", false; "No possible path between to locations, locations exists in Researcher")]
+    #[test_case(PATH, "reachability: Machine || Researcher -> [L5, L6](); [L4, _]()", true; "Machine || Researcher with Partial end state")]
+    #[test_case(PATH, "reachability: Machine || Researcher -> [L5, L6](); [_, L9]()", true; "Machine || Researcher with Partial end state 2")]
+    #[test_case(PATH, "reachability: Machine || Researcher -> [L5, U0](); [L5, _]()", true; "Machine || Researcher reachable with partial end state")]
+    #[test_case(PATH, "reachability: Machine || Researcher -> [L5, U0](); [L4, _]()", true; "Machine || Researcher reachable with partial end state 2")]
+    #[test_case(PATH, "reachability: Machine || Researcher -> [L5, U0](); [_, L7]()", false; "Machine || Researcher not reachable with partial end state")]
+    #[test_case(PATH, "reachability: Researcher && Researcher -> [L7, _]()", true; "Machine || Researcher with partial state reachable from intial")]
+
     fn search_algorithm_returns_result_university(path: &str, query: &str, expected: bool) {
         match json_run_query(path, query) {
             QueryResult::Reachability(path) => assert_eq!(path.was_reachable, expected),
@@ -61,23 +68,24 @@ mod reachability_search_algorithm_test {
     fn path_gen_test_correct_path(folder_path: &str, query: &str, expected_path: Vec<&str>) {
         TEMPORARY_MISSING_DECLERATIONS_HACK(folder_path);
 
-        if let QueryResult::Reachability(actual_path) = json_run_query(folder_path, query) {
-            if actual_path.was_reachable {
-                let path: Vec<Transition> = actual_path.path.unwrap();
-                if expected_path.len() != path.len() {
-                    assert!(false);
-                }
-                for i in 0..path.len() {
-                    if expected_path[i] != path[i].id.to_string() {
+        match json_run_query(folder_path, query) {
+            QueryResult::Reachability(actual_path) => {
+                if actual_path.was_reachable {
+                    let path: Vec<Transition> = actual_path.path.unwrap().clone();
+                    if expected_path.len() != path.len() {
                         assert!(false);
                     }
+                    for i in 0..path.len() {
+                        if expected_path[i] != path[i].id.to_string() {
+                            assert!(false);
+                        }
+                    }
+                    assert!(true);
+                } else {
+                    assert!(true);
                 }
-                assert!(true);
-            } else {
-                assert!(true);
             }
-        } else {
-            panic!("Inconsistent query result, expected Reachability")
+            _ => panic!("Inconsistent query result, expected Reachability"),
         }
     }
 

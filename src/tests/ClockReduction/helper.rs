@@ -107,7 +107,7 @@ pub mod test {
         for redundancy in redundant_clocks {
             match &redundancy.reason {
                 ClockReductionReason::Duplicate(replaced_by) => {
-                    if global_clock == "" {
+                    if global_clock.is_empty() {
                         global_clock = replaced_by.clone();
                     }
                     assert!(

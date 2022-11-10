@@ -45,7 +45,7 @@ impl QueryResult {
             QueryResult::Consistency(ConsistencyResult::Failure(_)) => not_satisfied(query_str),
 
             QueryResult::Determinism(DeterminismResult::Success) => satisfied(query_str),
-            QueryResult::Determinism(DeterminismResult::Failure(_)) => not_satisfied(query_str),
+            QueryResult::Determinism(DeterminismResult::Failure(_, _)) => not_satisfied(query_str),
 
             QueryResult::GetComponent(_) => {
                 println!("{} -- Component succesfully created", query_str)
@@ -99,9 +99,10 @@ pub struct ReachabilityExecutor {
 }
 impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
-        let (sys, s_state, e_state) = (self.transition_system, self.start_state, self.end_state);
-        reachability::find_path(Some(s_state), e_state, sys.as_ref())
-            .map_or_else(QueryResult::Error, QueryResult::Reachability)
+        match reachability::find_path(self.start_state, self.end_state, self.transition_system.as_ref()){
+            Ok(res) => QueryResult::Reachability(res),
+            Err(err_msg) => QueryResult::Error(err_msg),
+        }
     }
 }
 
@@ -134,9 +135,11 @@ impl ExecutableQuery for ConsistencyExecutor {
         let res = match self.recipe.compile(self.dim) {
             Ok(system) => match system.precheck_sys_rep() {
                 PrecheckResult::Success => QueryResult::Consistency(ConsistencyResult::Success),
-                PrecheckResult::NotDeterministic(location) => QueryResult::Consistency(
-                    ConsistencyResult::Failure(ConsistencyFailure::NotDeterministicFrom(location)),
-                ),
+                PrecheckResult::NotDeterministic(location, action) => {
+                    QueryResult::Consistency(ConsistencyResult::Failure(
+                        ConsistencyFailure::NotDeterministicFrom(location, action),
+                    ))
+                }
                 PrecheckResult::NotConsistent(failure) => {
                     QueryResult::Consistency(ConsistencyResult::Failure(failure))
                 }
