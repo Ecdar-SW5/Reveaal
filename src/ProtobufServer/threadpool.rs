@@ -6,7 +6,6 @@ use std::task::{Poll, Waker};
 use std::thread::{self, JoinHandle};
 
 type ThreadPoolFunction = Box<dyn FnOnce() + Send + 'static>;
-type EnqueueableFunction<T> = Box<dyn FnOnce() -> T + Send + 'static>;
 
 /// A construct that uses a fixed amount of threads to do work in parallel.
 #[derive(Debug)]
@@ -51,7 +50,7 @@ impl ThreadPool {
     /// * `function` - The function to execute on the threadpool.
     pub fn enqueue<T: Send + 'static>(
         &self,
-        function: EnqueueableFunction<T>,
+        function: impl FnOnce() -> T + Send + 'static,
     ) -> ThreadPoolFuture<T> {
         let mut thread_future = ThreadPoolFuture::default();
         let return_future = thread_future.clone();

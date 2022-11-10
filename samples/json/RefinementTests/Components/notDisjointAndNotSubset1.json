@@ -1,0 +1,120 @@
+{
+  "name": "notDisjointAndNotSubset1",
+  "declarations": "clock y;",
+  "locations": [
+    {
+      "id": "L0",
+      "nickname": "",
+      "invariant": "y \u003e 0",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 20.0,
+      "y": 130.0,
+      "color": "5",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L1",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 120.00000999999997,
+      "y": 130.0,
+      "color": "5",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L2",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 120.00000999999997,
+      "y": 40.0,
+      "color": "5",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "E0",
+      "group": "",
+      "sourceLocation": "L0",
+      "targetLocation": "L1",
+      "status": "INPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "In",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 70.0,
+          "y": 130.0,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E1",
+      "group": "",
+      "sourceLocation": "L1",
+      "targetLocation": "L2",
+      "status": "INPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "In",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 120.0,
+          "y": 80.0,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E5",
+      "group": "",
+      "sourceLocation": "L2",
+      "targetLocation": "L0",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "Out",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 47.39999999999999,
+          "y": 71.1,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "x": 271.2,
+  "y": 192.0,
+  "width": 160.0,
+  "height": 160.0,
+  "color": "5",
+  "includeInPeriodicCheck": true
+}

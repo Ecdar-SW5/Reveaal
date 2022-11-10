@@ -6,11 +6,8 @@ mod test {
 
     static PATH: &str = "samples/xml/ConsTests.xml";
 
-    fn is_deterministic_converter(result: DeterminismResult) -> bool {
-        if let DeterminismResult::Success = result {
-            return true;
-        }
-        false
+    fn convert_to_bool(result: DeterminismResult) -> bool {
+        matches!(result, DeterminismResult::Success)
     }
 
     #[test]
@@ -18,7 +15,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G1");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -28,7 +25,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G2");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -39,7 +36,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G3");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -49,7 +46,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G4");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -60,7 +57,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G5");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -70,7 +67,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G6");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -81,7 +78,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G7");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -92,7 +89,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G8");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -104,7 +101,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G9");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(!is_deterministic_converter(is_deterministic));
+            assert!(!convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -115,7 +112,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G10");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -126,7 +123,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G11");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -137,7 +134,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G12");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -148,7 +145,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G13");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -159,7 +156,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G14");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(!is_deterministic_converter(is_deterministic));
+            assert!(!convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -170,7 +167,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G15");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -181,7 +178,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G16");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(!is_deterministic_converter(is_deterministic));
+            assert!(!convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -192,7 +189,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G17");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -203,7 +200,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G22");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(is_deterministic_converter(is_deterministic));
+            assert!(convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
@@ -215,7 +212,7 @@ mod test {
         let result = xml_run_query(PATH, "determinism: G23");
 
         if let QueryResult::Determinism(is_deterministic) = result {
-            assert!(!is_deterministic_converter(is_deterministic));
+            assert!(!convert_to_bool(is_deterministic));
         } else {
             panic!("Not determinism query");
         }
