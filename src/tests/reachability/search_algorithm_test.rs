@@ -3,7 +3,6 @@ mod reachability_search_algorithm_test {
     use crate::component::Transition;
     use crate::tests::refinement::Helper::json_run_query;
     use crate::QueryResult;
-    use crate::System::reachability::Path;
     use std::fs::{self, File, OpenOptions};
     use std::io::prelude::*;
     use std::path::Path as PPath;
