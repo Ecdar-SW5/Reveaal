@@ -6,7 +6,6 @@ use crate::TransitionSystems::{
     LocationTuple, TransitionID, TransitionSystem, TransitionSystemPtr,
 };
 use crate::System::local_consistency::ConsistencyResult;
-use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use std::collections::hash_set::HashSet;
 
 use super::common::ComposedTransitionSystem;
