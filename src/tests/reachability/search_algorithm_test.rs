@@ -3,7 +3,6 @@ mod reachability_search_algorithm_test {
     use crate::component::Transition;
     use crate::tests::refinement::Helper::json_run_query;
     use crate::QueryResult;
-    use crate::System::reachability::Path;
     use std::fs::{self, File, OpenOptions};
     use std::io::prelude::*;
     use std::path::Path as PPath;
@@ -62,25 +61,23 @@ mod reachability_search_algorithm_test {
     fn path_gen_test_correct_path(folder_path: &str, query: &str, expected_path: Vec<&str>) {
         TEMPORARY_MISSING_DECLERATIONS_HACK(folder_path);
 
-        match json_run_query(folder_path, query) {
-            QueryResult::Reachability(actual_path) => {
-                if actual_path.was_reachable {
-                    let path: Vec<Transition> = actual_path.path.unwrap().clone();
-                    if expected_path.len() != path.len() {
-                        assert!(false);
-                    }
+        if let QueryResult::Reachability(actual_path) = json_run_query(folder_path, query) {
+            if actual_path.was_reachable {
+                let path: Vec<Transition> = actual_path.path.unwrap();
+                if expected_path.len() != path.len() {
+                    assert!(false);
+                }
                 for i in 0..path.len() {
                     if expected_path[i] != path[i].id.to_string() {
-                            assert!(false);
-                        }
+                        assert!(false);
                     }
-                    assert!(true);
                 }
-                else {
-                    assert!(true);
-                }
-            },
-            _ => panic!("Inconsistent query result, expected Reachability"),
+                assert!(true);
+            } else {
+                assert!(true);
+            }
+        } else {
+            panic!("Inconsistent query result, expected Reachability")
         }
     }
 

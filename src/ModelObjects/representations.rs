@@ -1349,14 +1349,11 @@ impl QueryExpression {
                     locs.iter()
                         .enumerate()
                         .map(|loc| {
-                            format!(
-                                "{}",
-                                if loc.0 == 0 {
-                                    loc.1.pretty_string()
-                                } else {
-                                    format!(", {}", loc.1.pretty_string())
-                                }
-                            )
+                            if loc.0 == 0 {
+                                loc.1.pretty_string()
+                            } else {
+                                format!(", {}", loc.1.pretty_string())
+                            }
                         })
                         .collect::<String>(),
                     clock

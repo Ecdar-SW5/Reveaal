@@ -9,15 +9,17 @@ use crate::DataReader::json_writer::component_to_json;
 use crate::DataReader::parse_queries;
 use crate::ModelObjects::queries::Query;
 use crate::ProtobufServer::services::component::Rep;
-use crate::ProtobufServer::services::query_response::query_ok::{Result as ProtobufResult, ReachabilityResult};
 use crate::ProtobufServer::services::query_response::query_ok::{
     ComponentResult, ConsistencyResult as ProtobufConsistencyResult,
     DeterminismResult as ProtobufDeterminismResult, RefinementResult,
 };
+use crate::ProtobufServer::services::query_response::query_ok::{
+    ReachabilityResult, Result as ProtobufResult,
+};
 use crate::ProtobufServer::services::query_response::QueryOk;
 use crate::ProtobufServer::services::query_response::Response as QueryOkOrErrorResponse;
 use crate::ProtobufServer::services::{
-    Component as ProtobufComponent, ComponentClock as ProtobufComponentClock,
+    self, Component as ProtobufComponent, ComponentClock as ProtobufComponentClock,
     Conjunction as ProtobufConjunction, Constraint as ProtobufConstraint,
     Disjunction as ProtobufDisjunction, Federation, Location, LocationTuple, QueryRequest,
     QueryResponse, State,
@@ -159,26 +161,36 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
         },
 
         QueryResult::Reachability(path) => {
-            let mut pathIds = vec![];
-            pathIds = path.path.as_ref().unwrap().iter().map(|p| p.id.clone()).collect();
-
-            TransitionID::split_into_component_lists(&pathIds);
-
-/*
-            if (path.was_reachable){
-                Some(ProtobufResult::Reachability( ReachabilityResult {
+            let protoPath = TransitionID::split_into_component_lists(
+                &path
+                    .path
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .map(|p| p.id.clone())
+                    .collect(),
+            )
+            .iter()
+            .map(|component_path| services::Path {
+                edge_ids: component_path.iter().map(|id| id.to_string()).collect(),
+            })
+            .collect();
+            if path.was_reachable {
+                Some(ProtobufResult::Reachability(ReachabilityResult {
                     success: true,
                     reason: "".to_string(),
                     state: None,
-
-                }
-
-                ))*/
-                /*Some(ProtobufResult::Reachability {
-
-                })*/
-                unimplemented!("Not implemented, but should be implemented");
+                    component_paths: protoPath,
+                }))
+            } else {
+                Some(ProtobufResult::Reachability(ReachabilityResult {
+                    success: false,
+                    reason: "Path was not reachable".to_string(),
+                    state: None,
+                    component_paths: vec![],
+                }))
             }
+        }
 
         QueryResult::GetComponent(comp) => Some(ProtobufResult::Component(ComponentResult {
             component: Some(ProtobufComponent {

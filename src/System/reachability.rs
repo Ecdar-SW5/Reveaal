@@ -19,7 +19,7 @@ fn validate_input(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem,
-) -> Result<	(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error>> {
     let locations = system.get_all_locations();
     if !locations.contains(start_state.get_location()) {
         return Err("The transition system does not contain the start location".into());
@@ -124,9 +124,11 @@ fn search_algorithm(
     actions.sort();
 
     let mut found_path = false;
-    
 
-    visited_states.insert(start_clone.get_location().id.clone(), vec![start_clone.zone_ref().clone()]);
+    visited_states.insert(
+        start_clone.get_location().id.clone(),
+        vec![start_clone.zone_ref().clone()],
+    );
     frontier_states.push(start_clone);
     loop {
         let next_state = frontier_states.pop();
@@ -198,7 +200,7 @@ fn take_transition(
                 .unwrap()
                 .push(new_state.zone_ref().clone());
             frontier_states.push(new_state);
-            return true
+            return true;
         }
     }
     false

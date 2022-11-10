@@ -10,8 +10,8 @@ pub mod test {
         expected_locations: &HashSet<String>,
         expected_edges: &HashSet<String>,
     ) {
-        assert_locations_in_component(&component, expected_locations);
-        assert_edges_in_component(&component, expected_edges);
+        assert_locations_in_component(component, expected_locations);
+        assert_edges_in_component(component, expected_edges);
     }
 
     /// Asserts that component contains given locations.
