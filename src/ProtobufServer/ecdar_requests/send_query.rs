@@ -159,11 +159,12 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
         },
 
         QueryResult::Reachability(path) => {
+            let mut pathIds = vec![];
+            pathIds = path.path.as_ref().unwrap().iter().map(|p| p.id.clone()).collect();
 
+            TransitionID::split_into_component_lists(&pathIds);
 
-
-            TransitionID::split_into_component_lists(path.path.unwrap().iter().map(|p| p.id).collect());
-/* 
+/*
             if (path.was_reachable){
                 Some(ProtobufResult::Reachability( ReachabilityResult {
                     success: true,
@@ -171,14 +172,13 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     state: None,
 
                 }
-                    
+
                 ))*/
                 /*Some(ProtobufResult::Reachability {
 
                 })*/
+                unimplemented!("Not implemented, but should be implemented");
             }
-            unimplemented!("Not implemented, but should be implemented");
-        }
 
         QueryResult::GetComponent(comp) => Some(ProtobufResult::Component(ComponentResult {
             component: Some(ProtobufComponent {

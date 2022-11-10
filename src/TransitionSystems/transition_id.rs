@@ -27,13 +27,11 @@ impl TransitionID {
         };
     }
 
-    pub fn split_into_component_lists(path: Vec<TransitionID>) -> Vec<Vec<TransitionID>> {
-        
-        let mut count: usize = Self::count_leaves(path[0]);
+    pub fn split_into_component_lists(path: &Vec<TransitionID>) -> Vec<Vec<TransitionID>> {
 
-        let paths: Vec<Vec<TransitionID>> = vec![Vec::new(); count];
+        let count: usize = Self::count_leaves(path[0].clone());
 
-
+        let mut paths: Vec<Vec<TransitionID>> = vec![Vec::new(); count];
 
         for id in path{
             for (i, subId) in id.get_leaves().iter().enumerate() {
@@ -100,7 +98,7 @@ impl Display for TransitionID {
                 }
             }
             TransitionID::Simple(name) => write!(f, "{}", name)?,
-            TransitionID::None => write!(f, "NoID")?,            
+            TransitionID::None => write!(f, "NoID")?,
         }
         Ok(())
     }
