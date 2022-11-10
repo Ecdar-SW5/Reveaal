@@ -5,9 +5,9 @@ use crate::DataTypes::{PassedStateList, PassedStateListExt, WaitingStateList};
 use crate::ModelObjects::component::Transition;
 
 use crate::ModelObjects::statepair::StatePair;
-use crate::TransitionSystems::{LocationTuple, TransitionID, TransitionSystemPtr, LocationID};
 use crate::System::local_consistency::ConsistencyFailure;
 use crate::TransitionSystems::transition_system::PrecheckResult;
+use crate::TransitionSystems::{LocationID, LocationTuple, TransitionID, TransitionSystemPtr};
 use std::collections::HashSet;
 use std::fmt;
 
