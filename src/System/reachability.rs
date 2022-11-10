@@ -3,6 +3,7 @@ use edbm::zones::OwnedFederation;
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
+use std::rc::Rc;
 
 pub struct Path {
     pub path: Option<Vec<Transition>>,
@@ -11,14 +12,14 @@ pub struct Path {
 
 #[derive(Clone)]
 struct SubPath {
-    previous_link: Option<Box<SubPath>>,
+    previous_link: Option<Rc<SubPath>>,
     destination_state: State,
     transition: Option<Transition>,
 }
 
 impl SubPath {
     fn new(
-        previous_link: Option<Box<SubPath>>,
+        previous_link: Option<Rc<SubPath>>,
         destination_state: State,
         transition: Option<Transition>,
     ) -> Self {
@@ -124,7 +125,7 @@ fn search_algorithm(
     //let mut made_transitions: Vec<SubPath> = Vec::new();
 
     // List of states that are to be visited
-    let mut frontier_states: Vec<Box<SubPath>> = Vec::new();
+    let mut frontier_states: Vec<Rc<SubPath>> = Vec::new();
 
     let mut actions: Vec<String> = system.get_actions().into_iter().collect();
     actions.sort();
@@ -134,7 +135,7 @@ fn search_algorithm(
         vec![start_clone.zone_ref().clone()],
     );
 
-    frontier_states.push(Box::new(SubPath::new(None, start_clone, None)));
+    frontier_states.push(Rc::new(SubPath::new(None, start_clone, None)));
 
     loop {
         let sub_path = match frontier_states.pop() {
@@ -149,7 +150,7 @@ fn search_algorithm(
         for action in &actions {
             for transition in &system.next_transitions(&sub_path.destination_state.decorated_locations, action) {
                 take_transition(
-                    sub_path,
+                    &sub_path,
                     transition,
                     &mut frontier_states,
                     &mut visited_states,
@@ -171,13 +172,13 @@ fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
 }
 
 fn take_transition(
-    sub_path: Box<SubPath>,
+    sub_path: &Rc<SubPath>,
     transition: &Transition,
-    frontier_states: &mut Vec<Box<SubPath>>,
+    frontier_states: &mut Vec<Rc<SubPath>>,
     visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>,
     system: &dyn TransitionSystem,
 ){
-    let mut new_state = sub_path.destination_state;
+    let mut new_state = sub_path.destination_state.clone();
     if transition.use_transition(&mut new_state) {
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
         let existing_zones = visited_states
@@ -189,8 +190,8 @@ fn take_transition(
                 .get_mut(&new_state.get_location().id)
                 .unwrap()
                 .push(new_state.zone_ref().clone());
-            frontier_states.push(Box::new(SubPath::new(
-                Some(sub_path),
+            frontier_states.push(Rc::new(SubPath::new(
+                Some(Rc::clone(&sub_path)),
                 new_state,
                 Some(transition.clone()),
             )));
@@ -211,12 +212,13 @@ fn zone_subset_of_existing_zones(
     false
 }
 
-fn make_path(sub_path: Box<SubPath>) -> Result<Path, String> {
+fn make_path(sub_path: Rc<SubPath>) -> Result<Path, String> {
     let mut path: Vec<Transition> = Vec::new();
 
+    let mut sub_path = sub_path;
     while sub_path.previous_link.is_some() {
-        path.push(sub_path.transition.unwrap());
-        sub_path = sub_path.previous_link.unwrap();
+        path.push(sub_path.transition.clone().unwrap());
+        sub_path = Rc::clone(sub_path.previous_link.as_ref().unwrap());
     }
 
     path.reverse();
