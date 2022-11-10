@@ -16,43 +16,43 @@ type ComponentsMap = HashMap<String, Component>;
 /// A struct used for caching the models.
 #[derive(Debug, Clone)]
 pub struct ModelCache {
-    // TODO: A concurrent hashmap may be faster to use and cause less prone to locking, but is not part of the standard library.
-    cache: Arc<RwLock<HashMap<u32, Arc<ComponentsMap>>>>,
-    user_cache: Arc<RwLock<LruCache<u32, u32>>>,
+    // TODO: A concurrent hashmap may be faster to use and cause less prone to lock contention, but is not part of the standard library.
+    cache: Arc<RwLock<LruCache<i32, (u32, Arc<ComponentsMap>)>>>,
 }
 
 impl Default for ModelCache
 {
     fn default() -> Self {
         Self { 
-            cache: Default::default(), 
-            user_cache: Arc::new(
+            cache: Arc::new(
                 RwLock::new(
-                    LruCache::<u32, u32>::new(
+                    LruCache::<i32, (u32, Arc<ComponentsMap>)>::new(
                         NonZeroUsize::new(100).unwrap()))) 
         }
     }
 }
 
 impl ModelCache {
+
+
     /// A Method that returns the model from the cache.
     ///
     /// # Arguments
     ///
     /// * `components_hash` - A hash of the components
-    pub fn get_model(&self, user_id: u32, components_hash: u32) -> Option<ComponentContainer> {
-        self.cache
+    pub fn get_model(&self, user_id: i32, components_hash: u32) -> Option<ComponentContainer> {
+        let components = self.cache
             .read()
             .unwrap()
-            .get(&components_hash)
-            .map(|model| ComponentContainer::new(Arc::clone(model)))
-    }
+            .get(&user_id);
 
-    pub fn remove_model(&self){
-        let user_id = self.user_access.last().unwrap();
-        self.cache.write().unwrap().remove(self.user_cache.get(user_id).unwrap());
-        self.user_cache.remove(user_id);
-        self.user_access.remove(self.user_access.len());
+        components.map(|component_pair| {
+            if component_pair.0 == components_hash {
+                ComponentContainer::new(Arc::clone(&component_pair.1))
+            } 
+        })
+
+            //.map(|model| ComponentContainer::new(Arc::clone(&model.1)))
     }
 
     /// A method that inserts a new model into the cache.
@@ -63,19 +63,14 @@ impl ModelCache {
     /// * `container_components` - The `ComponentContainer's` loaded components (aka Model) to be cached.
     pub fn insert_model(
         &mut self,
-        user_id: u32,
+        user_id: i32,
         components_hash: u32,
         container_components: Arc<ComponentsMap>
     ) -> ComponentContainer {
-        if self.user_counter >= 100{
-            self.remove_model();
-            self.user_counter -= 1;
-        }
         self.cache
             .write()
             .unwrap()
-            .insert(components_hash, Arc::clone(&container_components));
-        self.user_counter += 1;
+            .put(user_id, (components_hash, Arc::clone(&container_components)));
 
         ComponentContainer::new(container_components)
     }
