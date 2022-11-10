@@ -330,8 +330,8 @@ impl TransitionSystem for Quotient {
             transitions.push(Transition {
                 id: TransitionID::Quotient(
                     6,
-                    vec![TransitionID::Simple(format!("{}", loc_t.id))],
-                    vec![TransitionID::Simple(format!("{}", loc_s.id))],
+                    vec![TransitionID::Simple(loc_t.id.to_string())],
+                    vec![TransitionID::Simple(loc_s.id.to_string())],
                 ),
                 guard_zone,
                 target_locations: inconsistent_location,
