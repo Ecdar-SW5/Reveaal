@@ -19,6 +19,13 @@ mod reachability_search_algorithm_test {
     #[test_case(PATH, "reachability: Machine || Researcher -> [L5, L6](); [L4, L9]()", true; "Composition between Machine & Researcher, with existing locations and not clocks")]
     #[test_case(PATH, "reachability: Machine || Researcher -> [L5, U0](); [L5, L7]()", false; "No valid path from the two states")]
     #[test_case(PATH, "reachability: Researcher -> [U0](); [L7]()", false; "No possible path between to locations, locations exists in Researcher")]
+    #[test_case(PATH, "reachability: Machine || Researcher -> [L5, L6](); [L4, _]()", true; "Machine || Researcher with Partial end state")]
+    #[test_case(PATH, "reachability: Machine || Researcher -> [L5, L6](); [_, L9]()", true; "Machine || Researcher with Partial end state 2")]
+    #[test_case(PATH, "reachability: Machine || Researcher -> [L5, U0](); [L5, _]()", true; "Machine || Researcher reachable with partial end state")]
+    #[test_case(PATH, "reachability: Machine || Researcher -> [L5, U0](); [L4, _]()", true; "Machine || Researcher reachable with partial end state 2")]
+    #[test_case(PATH, "reachability: Machine || Researcher -> [L5, U0](); [_, L7]()", false; "Machine || Researcher not reachable with partial end state")]
+    #[test_case(PATH, "reachability: Researcher && Researcher -> [L7, _]()", true; "Machine || Researcher with partial state reachable from intial")]
+
     fn search_algorithm_returns_result_university(path: &str, query: &str, expected: bool) {
         match json_run_query(path, query) {
             QueryResult::Reachability(b, _) => assert_eq!(b, expected),

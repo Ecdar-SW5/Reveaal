@@ -3,6 +3,7 @@ use edbm::zones::OwnedFederation;
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
+use std::process::id;
 
 pub struct Path {
     //start_state: State,
@@ -18,10 +19,12 @@ fn validate_input(
     if !locations.contains(start_state.get_location()) {
         return Err("The transition system does not contain the start location".into());
     }
-    if !locations.contains(end_state.get_location()) {
+    if !locations.iter().any(|loc| {
+        loc.id
+            .compare_partial_locations(&end_state.get_location().id)
+    }) {
         return Err("The transition system does not contain the end location".into());
     }
-
     Ok(())
 }
 
@@ -141,7 +144,10 @@ fn search_algorithm(
 }
 
 fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
-    cur_state.get_location().id == end_state.get_location().id
+    cur_state
+        .get_location()
+        .id
+        .compare_partial_locations(&end_state.get_location().id)
         && cur_state.zone_ref().has_intersection(end_state.zone_ref())
 }
 
