@@ -15,7 +15,7 @@ mod reachability_transition_id_test {
     use test_case::test_case;
     const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
 
-    #[test_case(FOLDER_PATH, 
+    #[test_case(FOLDER_PATH,
         QueryExpression::VarName("Machine".to_string()), 
     vec![
         TransitionID::Simple("E25".to_string()), 
@@ -77,10 +77,10 @@ mod reachability_transition_id_test {
                 Box::new(TransitionID::Simple("E35".to_string()))
             )
             ]; "Conjunction HalfAdm1 and HalfAdm2")]
-            #[test_case(FOLDER_PATH, QueryExpression::Quotient(
+    #[test_case(FOLDER_PATH, QueryExpression::Quotient(
                 Box::new(QueryExpression::VarName("HalfAdm1".to_string())),
                 Box::new(QueryExpression::VarName("HalfAdm2".to_string()))
-            ), 
+            ),
             vec![
               TransitionID::Simple("E25".to_string()), 
               TransitionID::Simple("E26".to_string()), 

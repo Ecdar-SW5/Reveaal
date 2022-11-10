@@ -69,17 +69,16 @@ mod reachability_search_algorithm_test {
                     if expected_path.len() != path.len() {
                         assert!(false);
                     }
-                for i in 0..path.len() {
-                    if expected_path[i] != path[i].id.to_string() {
+                    for i in 0..path.len() {
+                        if expected_path[i] != path[i].id.to_string() {
                             assert!(false);
                         }
                     }
                     assert!(true);
-                }
-                else {
+                } else {
                     assert!(true);
                 }
-            },
+            }
             _ => panic!("Inconsistent query result, expected Reachability"),
         }
     }

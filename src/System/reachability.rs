@@ -11,25 +11,40 @@ pub struct Path {
 
 #[derive(Clone)]
 struct SubPath {
-    source_state: State,
+    previous_link: Box<Option<&SubPath>>,
+    destination_state: State,
     transition: Option<Transition>,
 }
 
-fn validate_input(
-    start_state: &State,
-    end_state: &State,
-    system: &dyn TransitionSystem,
-) -> Result<	(), Box<dyn std::error::Error>> {
-    let locations = system.get_all_locations();
-    if !locations.contains(start_state.get_location()) {
-        return Err("The transition system does not contain the start location".into());
+impl SubPath {
+    fn new(
+        previous_link: Box<Option<&SubPath>>,
+        destination_state: State,
+        transition: Option<Transition>,
+    ) -> self {
+        SubPath {
+            previous_link,
+            destination_state,
+            transition,
+        }
     }
-    if !locations.contains(end_state.get_location()) {
-        return Err("The transition system does not contain the end location".into());
-    }
-
-    Ok(())
 }
+
+// fn validate_input(
+//     start_state: &State,
+//     end_state: &State,
+//     system: &dyn TransitionSystem,
+// ) -> Result<(), Box<dyn std::error::Error>> {
+//     let locations = system.get_all_locations();
+//     if !locations.contains(start_state.get_location()) {
+//         return Err("The transition system does not contain the start location".into());
+//     }
+//     if !locations.contains(end_state.get_location()) {
+//         return Err("The transition system does not contain the end location".into());
+//     }
+
+//     Ok(())
+// }
 
 fn is_trivially_uncreachable(
     _start_state: &State,
@@ -75,22 +90,13 @@ fn is_trivially_uncreachable(
 /// };
 /// ```
 pub fn find_path(
-    begin_state: Option<State>,
+    start_state: State,
     end_state: State,
     system: &dyn TransitionSystem,
 ) -> Result<Path, String> {
-    let start_state: State;
-    if let Some(s) = begin_state {
-        start_state = s;
-    } else if let Some(s) = system.get_initial_state() {
-        start_state = s;
-    } else {
-        return Err("No start state in either parameter or transition system".to_string());
-    }
-
-    if let Err(err) = validate_input(&start_state, &end_state, system) {
-        return Err(err.to_string());
-    }
+    // if let Err(err) = validate_input(&start_state, &end_state, system) {
+    //     return Err(err.to_string());
+    // }
 
     if is_trivially_uncreachable(&start_state, &end_state, system) {
         return Ok(Path {
@@ -115,62 +121,48 @@ fn search_algorithm(
 
     // hashmap linking every location to all its current zones
     let mut visited_states: HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
-    let mut made_transitions: Vec<SubPath> = Vec::new();
+    //let mut made_transitions: Vec<SubPath> = Vec::new();
 
     // List of states that are to be visited
-    let mut frontier_states: Vec<State> = Vec::new();
+    let mut frontier_states: Vec<SubPath> = Vec::new();
 
     let mut actions: Vec<String> = system.get_actions().into_iter().collect();
     actions.sort();
 
-    let mut found_path = false;
-    
+    visited_states.insert(
+        start_clone.get_location().id.clone(),
+        vec![start_clone.zone_ref().clone()],
+    );
 
-    visited_states.insert(start_clone.get_location().id.clone(), vec![start_clone.zone_ref().clone()]);
-    frontier_states.push(start_clone);
+    frontier_states.push(Box::new(SubPath::new(Box::new(None), start_clone, None)));
+
     loop {
-        let next_state = frontier_states.pop();
-        // All has been explored if no next state exist
-        if next_state.is_none() {
-            break;
+        let sub_path = match frontier_states.pop() {
+            Some(s) => s,
+            None => break,
+        };
+
+        if reached_end_state(&sub_path.destination_state, end_state) {
+            return make_path(sub_path);
         }
-        let next_state = next_state.unwrap();
-        if reached_end_state(&next_state, end_state) {
-            found_path = true;
-            made_transitions.push(SubPath {
-                source_state: next_state.clone(),
-                transition: None,
-            });
-            break;
-            /* TODO: Return the actual path */
-        }
+
         for action in &actions {
-            for transition in &system.next_transitions(&next_state.decorated_locations, action) {
-                if take_transition(
-                    &next_state,
+            for transition in &system.next_transitions(&sub_path.destination_state.decorated_locations, action) {
+                take_transition(
+                    &sub_path,
                     transition,
                     &mut frontier_states,
                     &mut visited_states,
                     system,
-                ) {
-                    made_transitions.push(SubPath {
-                        source_state: next_state.clone(),
-                        transition: Some(transition.clone()),
-                    })
-                }
+                );
             }
         }
     }
-
-    if found_path {
-        make_path(made_transitions, start_state)
-    } else {
-        // If nothing has been found, it is not reachable
-        Ok(Path {
-            path: None,
-            was_reachable: found_path,
-        })
-    }
+    // If nothing has been found, it is not reachable
+    Ok(Path {
+        path: None,
+        was_reachable: false,
+    })
 }
 
 fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
@@ -179,13 +171,13 @@ fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
 }
 
 fn take_transition(
-    next_state: &State,
+    sub_path: &SubPath,
     transition: &Transition,
     frontier_states: &mut Vec<State>,
     visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>,
     system: &dyn TransitionSystem,
-) -> bool {
-    let mut new_state = next_state.clone();
+){
+    let mut new_state = sub_path.destination_state;
     if transition.use_transition(&mut new_state) {
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
         let existing_zones = visited_states
@@ -197,11 +189,13 @@ fn take_transition(
                 .get_mut(&new_state.get_location().id)
                 .unwrap()
                 .push(new_state.zone_ref().clone());
-            frontier_states.push(new_state);
-            return true
+            frontier_states.push(Box::new(SubPath::new(
+                sub_path,
+                new_state,
+                Some(transition.clone()),
+            )));
         }
     }
-    false
 }
 
 /// Checks if this zone is redundant by being a subset of any other zone
@@ -217,27 +211,15 @@ fn zone_subset_of_existing_zones(
     false
 }
 
-fn make_path(mut made_transitions: Vec<SubPath>, start_state: &State) -> Result<Path, String> {
+fn make_path(sub_path: SubPath) -> Result<Path, String> {
     let mut path: Vec<Transition> = Vec::new();
 
-    if made_transitions.len() > 1 {
-        made_transitions.reverse();
-        let mut prev_state: State = made_transitions[0].source_state.clone();
-
-        for sub_path in &made_transitions[1..] {
-            if prev_state.get_location().id != sub_path.source_state.get_location().id || !prev_state.zone_ref().equals(sub_path.source_state.zone_ref()) {
-                if sub_path.source_state.get_location().id == start_state.get_location().id {
-                    //Cannot unwrap None since made_transistion from > 0 will provide a SubPath with a transition.
-                    path.push(sub_path.transition.clone().unwrap());
-                    break;
-                }
-                path.push(sub_path.transition.clone().unwrap());
-                prev_state = sub_path.source_state.clone();
-            }
-        }
-
-        path.reverse();
+    while sub_path.previous_link.is_some() {
+        path.push(sub_path.transition);
+        sub_path = sub_path.previous_link;
     }
+
+    path.reverse();
 
     for e in &path {
         println!("Id: {}", e.id);
@@ -247,6 +229,28 @@ fn make_path(mut made_transitions: Vec<SubPath>, start_state: &State) -> Result<
         path: Some(path),
         was_reachable: true,
     })
+    // if made_transitions.len() > 1 {
+    //     made_transitions.reverse();
+    //     let mut prev_state: State = made_transitions[0].source_state.clone();
+
+    //     for sub_path in &made_transitions[1..] {
+    //         if prev_state.get_location().id != sub_path.source_state.get_location().id
+    //             || !prev_state
+    //                 .zone_ref()
+    //                 .equals(sub_path.source_state.zone_ref())
+    //         {
+    //             if sub_path.source_state.get_location().id == start_state.get_location().id {
+    //                 //Cannot unwrap None since made_transistion from > 0 will provide a SubPath with a transition.
+    //                 path.push(sub_path.transition.clone().unwrap());
+    //                 break;
+    //             }
+    //             path.push(sub_path.transition.clone().unwrap());
+    //             prev_state = sub_path.source_state.clone();
+    //         }
+    //     }
+
+    //     path.reverse();
+    // }
 }
 
 /// Removes everything in existing_zones that is a subset of zone
