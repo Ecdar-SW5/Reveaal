@@ -49,7 +49,7 @@ mod reachability_search_algorithm_test {
     #[test_case(PATH2, "reachability: Component7 -> [L16](); [L19](y<2)", false; "Unreachable due to second clock")]
     #[test_case(PATH2, "reachability: Component3 && Component3 -> [L6, L6](); [L7, L7]()", true; "Simple conjunction")]
     fn search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
-        TEMPORARY_MISSING_DECLERATIONS_HACK(path);
+        //TEMPORARY_MISSING_DECLERATIONS_HACK(path);
 
         match json_run_query(path, query) {
             QueryResult::Reachability(path) => assert_eq!(path.was_reachable, expected),
@@ -61,12 +61,14 @@ mod reachability_search_algorithm_test {
     #[test_case(PATH2, "reachability: Component3 -> [L6](); [L7]()", Vec::from(["E5"]); "Path in Component3 from L6 to L7")]
     #[test_case(PATH2, "reachability: Component3 -> [L7](); [L8]()", Vec::from(["E6"]); "Path in Component3 from L7 to L8")]
     #[test_case(PATH2, "reachability: Component5 -> [L11](); [L12]()", Vec::from(["E8"]); "Path in Component5 from L11 to L12")]
-    #[test_case(PATH2, "reachability: Component6 -> [L13](); [L15]()", Vec::from(["E12", "", "", "", "E13"]); "Path in Component6 from L3 to L15")] // This fails due to missing nessesary self loop
+    #[test_case(PATH2, "reachability: Component6 -> [L13](); [L15]()", Vec::from(["E12", "E11", "E9", "E10", "E13"]); "Path in Component6 from L13 to L15")]
     #[test_case(PATH2, "reachability: Component7 -> [L16](); [L19]()", Vec::from(["E11", "E12", "E10"]); "Path in Component7 from L16 to L19")]
-    #[test_case(PATH2, "reachability: Component8 -> [L20](); [L22]()", Vec::from(["E13", "E15", "E14"]); "Path in Component8 from L20 to L22")] // This fails due to missing nessesary self loop
+    #[test_case(PATH2, "reachability: Component8 -> [L20](); [L22]()", Vec::from(["E13", "E15", "E14"]); "Path in Component8 from L20 to L22")]
+    #[test_case(PATH2, "reachability: Component9 -> [L23](x>5); [L26]()", Vec::from(["E17", "E18"]); "Path in Component9 from L23 x gt 5 to L26")]
+    #[test_case(PATH2, "reachability: Component9 -> [L23](x<5); [L26]()", Vec::from(["E16", "E19"]); "Path in Component9 from L23 x lt 5 to L26")]
     #[test_case(PATH2, "reachability: Component3 && Component3 -> [L6, L6](); [L7, L7]()", Vec::from(["E5&&E5"]); "Path in Component3 && Component3 from L6 && L6 to L7 && L7")]
     fn path_gen_test_correct_path(folder_path: &str, query: &str, expected_path: Vec<&str>) {
-        TEMPORARY_MISSING_DECLERATIONS_HACK(folder_path);
+        //TEMPORARY_MISSING_DECLERATIONS_HACK(folder_path);
 
         match json_run_query(folder_path, query) {
             QueryResult::Reachability(actual_path) => {

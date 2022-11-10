@@ -168,7 +168,7 @@ fn take_transition(
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
             remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
             visited_states
-                .get_mut(&new_location_id)
+                .get_mut(new_location_id)
                 .unwrap()
                 .push(new_state.zone_ref().clone());
             frontier_states.push(Rc::new(SubPath::new(
@@ -212,9 +212,9 @@ fn make_path(sub_path: Rc<SubPath>) -> Result<Path, String> {
 
     path.reverse();
 
-    // for e in &path {
-    //     println!("Id: {}", e.id);
-    // }
+    for e in &path {
+        println!("Id: {}", e.id);
+    }
 
     Ok(Path {
         path: Some(path),

@@ -29,7 +29,7 @@ impl TransitionID {
                 l.get_leaves_helper(current_leaves);
                 r.get_leaves_helper(current_leaves);
             }
-            TransitionID::Quotient(_, l, r) => {
+            TransitionID::Quotient(_, _l, _r) => {
                 current_leaves.push(self.clone());
             }
             TransitionID::Simple(_) => {
@@ -57,7 +57,7 @@ impl TransitionID {
         match transition_id {
             TransitionID::Conjunction(l, r) => Self::count_leaves(*l) + Self::count_leaves(*r),
             TransitionID::Composition(l, r) => Self::count_leaves(*l) + Self::count_leaves(*r),
-            TransitionID::Quotient(_, l, r) => 1,
+            TransitionID::Quotient(_, _l, _r) => 1,
             TransitionID::Simple(_) => 1,
             TransitionID::None => 1,
         }
