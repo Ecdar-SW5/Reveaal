@@ -2,9 +2,7 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: "**"
 
 env:
   CARGO_TERM_COLOR: always
@@ -89,4 +87,4 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          #args: --no-deps -- -D warnings
+          args: --all-targets --all-features --

@@ -4,6 +4,7 @@ use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::process::id;
 
 pub struct Path {
     pub path: Option<Vec<Transition>>,
@@ -15,6 +16,24 @@ struct SubPath {
     previous_link: Option<Rc<SubPath>>,
     destination_state: State,
     transition: Option<Transition>,
+}
+
+fn validate_input(
+    start_state: &State,
+    end_state: &State,
+    system: &dyn TransitionSystem,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let locations = system.get_all_locations();
+    if !locations.contains(start_state.get_location()) {
+        return Err("The transition system does not contain the start location".into());
+    }
+    if !locations.iter().any(|loc| {
+        loc.id
+            .compare_partial_locations(&end_state.get_location().id)
+    }) {
+        return Err("The transition system does not contain the end location".into());
+    }
+    Ok(())
 }
 
 impl SubPath {
@@ -162,7 +181,10 @@ fn search_algorithm(
 }
 
 fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
-    cur_state.get_location().id == end_state.get_location().id
+    cur_state
+        .get_location()
+        .id
+        .compare_partial_locations(&end_state.get_location().id)
         && cur_state.zone_ref().has_intersection(end_state.zone_ref())
 }
 

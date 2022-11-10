@@ -21,7 +21,7 @@ pub fn prune_system(ts: TransitionSystemPtr, dim: ClockIndex) -> TransitionSyste
     let outputs = ts.get_output_actions();
     let comp = combine_components(&ts, PruningStrategy::NoPruning);
 
-    if let PrecheckResult::NotDeterministic(_) | PrecheckResult::NotConsistent(_) =
+    if let PrecheckResult::NotDeterministic(_, _) | PrecheckResult::NotConsistent(_) =
         ts.precheck_sys_rep()
     {
         panic!("Trying to prune transitions system which is not least consistent")
