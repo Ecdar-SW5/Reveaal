@@ -1,10 +1,21 @@
-use super::{CompositionType, LocationTuple};
-use crate::ModelObjects::component::{Declarations, State, Transition};
+use super::{CompositionType, LocationID, LocationTuple};
+use crate::{
+    ModelObjects::component::{Declarations, State, Transition},
+    System::local_consistency::DeterminismResult,
+    System::local_consistency::{ConsistencyFailure, ConsistencyResult},
+};
 use dyn_clone::{clone_trait_object, DynClone};
 use edbm::util::{bounds::Bounds, constraints::ClockIndex};
 use std::collections::hash_set::HashSet;
 
 pub type TransitionSystemPtr = Box<dyn TransitionSystem>;
+
+/// Precheck can fail because of either consistency or determinism.
+pub enum PrecheckResult {
+    Success,
+    NotDeterministic(LocationID, String),
+    NotConsistent(ConsistencyFailure),
+}
 
 pub trait TransitionSystem: DynClone {
     fn get_local_max_bounds(&self, loc: &LocationTuple) -> Bounds;
@@ -59,11 +70,11 @@ pub trait TransitionSystem: DynClone {
 
     fn get_decls(&self) -> Vec<&Declarations>;
 
-    fn precheck_sys_rep(&self) -> bool;
+    fn precheck_sys_rep(&self) -> PrecheckResult;
 
-    fn is_deterministic(&self) -> bool;
+    fn is_deterministic(&self) -> DeterminismResult;
 
-    fn is_locally_consistent(&self) -> bool;
+    fn is_locally_consistent(&self) -> ConsistencyResult;
 
     fn get_initial_state(&self) -> Option<State>;
 

@@ -7,14 +7,20 @@ use edbm::{
 };
 use log::warn;
 
-use crate::ModelObjects::component::{Declarations, State, Transition};
+use crate::{
+    ModelObjects::component::{Declarations, State, Transition},
+    System::local_consistency::{ConsistencyResult, DeterminismResult},
+};
 
-use super::{CompositionType, LocationTuple, TransitionSystem, TransitionSystemPtr};
+use super::{
+    transition_system::PrecheckResult, CompositionType, LocationTuple, TransitionSystem,
+    TransitionSystemPtr,
+};
 
 pub trait ComposedTransitionSystem: DynClone {
     fn next_transitions(&self, location: &LocationTuple, action: &str) -> Vec<Transition>;
 
-    fn is_locally_consistent(&self) -> bool;
+    fn is_locally_consistent(&self) -> ConsistencyResult;
 
     fn get_children(&self) -> (&TransitionSystemPtr, &TransitionSystemPtr);
 
@@ -77,22 +83,30 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
         comps
     }
 
-    fn precheck_sys_rep(&self) -> bool {
-        if !self.is_deterministic() {
+    fn precheck_sys_rep(&self) -> PrecheckResult {
+        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
             warn!("Not deterministic");
-            return false;
+            return PrecheckResult::NotDeterministic(location, action);
         }
 
-        if !self.is_locally_consistent() {
+        if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {
             warn!("Not consistent");
-            return false;
+            return PrecheckResult::NotConsistent(failure);
         }
-        true
+        PrecheckResult::Success
     }
 
-    fn is_deterministic(&self) -> bool {
+    fn is_deterministic(&self) -> DeterminismResult {
         let (left, right) = self.get_children();
-        left.is_deterministic() && right.is_deterministic()
+        if let DeterminismResult::Success = left.is_deterministic() {
+            if let DeterminismResult::Success = right.is_deterministic() {
+                DeterminismResult::Success
+            } else {
+                right.is_deterministic()
+            }
+        } else {
+            left.is_deterministic()
+        }
     }
 
     fn get_initial_state(&self) -> Option<State> {
@@ -128,7 +142,7 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
         location_tuples
     }
 
-    fn is_locally_consistent(&self) -> bool {
+    fn is_locally_consistent(&self) -> ConsistencyResult {
         self.is_locally_consistent()
     }
 

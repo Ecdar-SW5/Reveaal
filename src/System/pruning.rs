@@ -8,6 +8,7 @@ use crate::ModelObjects::component::{
 };
 use crate::ModelObjects::representations::BoolExpression;
 use crate::System::save_component::combine_components;
+use crate::TransitionSystems::transition_system::PrecheckResult;
 use crate::TransitionSystems::TransitionSystemPtr;
 use crate::TransitionSystems::{CompiledComponent, LocationTuple};
 
@@ -20,8 +21,10 @@ pub fn prune_system(ts: TransitionSystemPtr, dim: ClockIndex) -> TransitionSyste
     let outputs = ts.get_output_actions();
     let comp = combine_components(&ts, PruningStrategy::NoPruning);
 
-    if !ts.precheck_sys_rep() {
-        panic!("Trying to prune transitions system which is not least consistent");
+    if let PrecheckResult::NotDeterministic(_, _) | PrecheckResult::NotConsistent(_) =
+        ts.precheck_sys_rep()
+    {
+        panic!("Trying to prune transitions system which is not least consistent")
     }
 
     let mut input_map: HashMap<String, Vec<String>> = HashMap::new();

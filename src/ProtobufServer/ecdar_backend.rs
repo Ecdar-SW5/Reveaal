@@ -1,5 +1,6 @@
 use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
 
+use crate::DataReader::component_loader::ModelCache;
 use crate::ProtobufServer::services::{
     QueryRequest, QueryResponse, SimulationStartRequest, SimulationStepRequest,
     SimulationStepResponse, UserTokenResponse,
@@ -13,6 +14,7 @@ use super::threadpool::ThreadPool;
 #[derive(Debug, Default)]
 pub struct ConcreteEcdarBackend {
     thread_pool: ThreadPool,
+    model_cache: ModelCache,
 }
 
 async fn catch_unwind<T, O>(future: T) -> Result<O, Status>
@@ -51,7 +53,12 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<QueryResponse>, Status> {
-        let res = catch_unwind(self.thread_pool.enqueue(request.into_inner())).await;
+        let cache = self.model_cache.clone();
+        let res =
+            catch_unwind(self.thread_pool.enqueue(move || {
+                ConcreteEcdarBackend::handle_send_query(request.into_inner(), cache)
+            }))
+            .await;
         res.map(Response::new)
     }
 

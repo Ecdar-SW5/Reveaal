@@ -5,13 +5,12 @@ use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 use log::warn;
 
-use crate::System::local_consistency;
-use crate::TransitionSystems::{
-    LocationTuple, TransitionID, TransitionSystem, TransitionSystemPtr,
-};
+use crate::System::local_consistency::{self, ConsistencyResult, DeterminismResult};
+use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr, TransitionID};
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
 
+use super::transition_system::PrecheckResult;
 use super::{CompositionType, LocationID};
 
 type Action = String;
@@ -179,24 +178,24 @@ impl TransitionSystem for CompiledComponent {
         unimplemented!()
     }
 
-    fn precheck_sys_rep(&self) -> bool {
-        if !self.is_deterministic() {
+    fn precheck_sys_rep(&self) -> PrecheckResult {
+        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
             warn!("Not deterministic");
-            return false;
+            return PrecheckResult::NotDeterministic(location, action);
         }
 
-        if !self.is_locally_consistent() {
+        if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {
             warn!("Not consistent");
-            return false;
+            return PrecheckResult::NotConsistent(failure);
         }
-        true
+        PrecheckResult::Success
     }
 
-    fn is_deterministic(&self) -> bool {
+    fn is_deterministic(&self) -> DeterminismResult {
         local_consistency::is_deterministic(self)
     }
 
-    fn is_locally_consistent(&self) -> bool {
+    fn is_locally_consistent(&self) -> ConsistencyResult {
         local_consistency::is_least_consistent(self)
     }
 
