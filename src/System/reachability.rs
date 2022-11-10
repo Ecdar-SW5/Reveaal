@@ -3,7 +3,6 @@ use edbm::zones::OwnedFederation;
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
-use std::process::id;
 use std::rc::Rc;
 
 pub struct Path {
@@ -16,6 +15,20 @@ struct SubPath {
     previous_link: Option<Rc<SubPath>>,
     destination_state: State,
     transition: Option<Transition>,
+}
+
+impl SubPath {
+    fn new(
+        previous_link: Option<Rc<SubPath>>,
+        destination_state: State,
+        transition: Option<Transition>,
+    ) -> Self {
+        SubPath {
+            previous_link,
+            destination_state,
+            transition,
+        }
+    }
 }
 
 fn validate_input(
@@ -35,36 +48,6 @@ fn validate_input(
     }
     Ok(())
 }
-
-impl SubPath {
-    fn new(
-        previous_link: Option<Rc<SubPath>>,
-        destination_state: State,
-        transition: Option<Transition>,
-    ) -> Self {
-        SubPath {
-            previous_link,
-            destination_state,
-            transition,
-        }
-    }
-}
-
-// fn validate_input(
-//     start_state: &State,
-//     end_state: &State,
-//     system: &dyn TransitionSystem,
-// ) -> Result<(), Box<dyn std::error::Error>> {
-//     let locations = system.get_all_locations();
-//     if !locations.contains(start_state.get_location()) {
-//         return Err("The transition system does not contain the start location".into());
-//     }
-//     if !locations.contains(end_state.get_location()) {
-//         return Err("The transition system does not contain the end location".into());
-//     }
-
-//     Ok(())
-// }
 
 fn is_trivially_uncreachable(
     _start_state: &State,
@@ -114,10 +97,6 @@ pub fn find_path(
     end_state: State,
     system: &dyn TransitionSystem,
 ) -> Result<Path, String> {
-    // if let Err(err) = validate_input(&start_state, &end_state, system) {
-    //     return Err(err.to_string());
-    // }
-
     if is_trivially_uncreachable(&start_state, &end_state, system) {
         return Ok(Path {
             path: None,
@@ -231,6 +210,14 @@ fn zone_subset_of_existing_zones(
     false
 }
 
+// Removes everything in existing_zones that is a subset of zone
+fn remove_existing_subsets_of_zone(
+    new_zone: &OwnedFederation,
+    existing_zones: &mut Vec<OwnedFederation>,
+) {
+    existing_zones.retain(|existing_zone| !existing_zone.subset_eq(new_zone));
+}
+
 fn make_path(sub_path: Rc<SubPath>) -> Result<Path, String> {
     let mut path: Vec<Transition> = Vec::new();
 
@@ -250,34 +237,4 @@ fn make_path(sub_path: Rc<SubPath>) -> Result<Path, String> {
         path: Some(path),
         was_reachable: true,
     })
-    // if made_transitions.len() > 1 {
-    //     made_transitions.reverse();
-    //     let mut prev_state: State = made_transitions[0].source_state.clone();
-
-    //     for sub_path in &made_transitions[1..] {
-    //         if prev_state.get_location().id != sub_path.source_state.get_location().id
-    //             || !prev_state
-    //                 .zone_ref()
-    //                 .equals(sub_path.source_state.zone_ref())
-    //         {
-    //             if sub_path.source_state.get_location().id == start_state.get_location().id {
-    //                 //Cannot unwrap None since made_transistion from > 0 will provide a SubPath with a transition.
-    //                 path.push(sub_path.transition.clone().unwrap());
-    //                 break;
-    //             }
-    //             path.push(sub_path.transition.clone().unwrap());
-    //             prev_state = sub_path.source_state.clone();
-    //         }
-    //     }
-
-    //     path.reverse();
-    // }
-}
-
-/// Removes everything in existing_zones that is a subset of zone
-fn remove_existing_subsets_of_zone(
-    new_zone: &OwnedFederation,
-    existing_zones: &mut Vec<OwnedFederation>,
-) {
-    existing_zones.retain(|existing_zone| !existing_zone.subset_eq(new_zone));
 }

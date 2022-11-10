@@ -155,7 +155,6 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     reason: "".to_string(),
                     relation: vec![],
                     state: None,
-                    action: "".to_string(), // Empty string is used, when no failing action is available.
                 }))
             }
             refine::RefinementResult::Failure(failure) => convert_refinement_failure(failure),
@@ -204,7 +203,6 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     success: true,
                     reason: "".to_string(),
                     state: None,
-                    action: "".to_string(),
                 }))
             }
             ConsistencyResult::Failure(failure) => match failure {
@@ -213,7 +211,6 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         success: false,
                         reason: failure.to_string(),
                         state: None,
-                        action: "".to_string(),
                     }))
                 }
                 ConsistencyFailure::NotConsistentFrom(location_id, action)
@@ -230,7 +227,6 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                             }),
                             federation: None,
                         }),
-                        action: action.to_string(),
                     }))
                 }
             },
@@ -241,7 +237,6 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     success: true,
                     reason: "".to_string(),
                     state: None,
-                    action: "".to_string(),
                 }))
             }
             DeterminismResult::Failure(location_id, action) => {
@@ -257,7 +252,6 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         }),
                         federation: None,
                     }),
-                    action: action.to_string(),
                 }))
             }
         },
@@ -277,7 +271,6 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                 relation: vec![],
                 state: None,
                 reason: failure.to_string(),
-                action: "".to_string(),
             }))
         }
         RefinementFailure::CutsDelaySolutions(state_pair)
@@ -297,7 +290,6 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                     }),
                 }),
                 reason: failure.to_string(),
-                action: "".to_string(),
             }))
         }
         RefinementFailure::ConsistencyFailure(location_id, action)
@@ -314,7 +306,6 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                     }),
                     federation: None,
                 }),
-                action: value_in_action(action),
                 relation: vec![],
             }))
         }
