@@ -12,15 +12,15 @@ mod reachability_transition_id_test {
     const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
 
     #[test_case(FOLDER_PATH, QueryExpression::VarName("Machine".to_string()), vec![
-        TransitionID::Simple("E25".to_string()), 
-        TransitionID::Simple("E26".to_string()), 
-        TransitionID::Simple("E27".to_string()), 
-        TransitionID::Simple("E28".to_string()), 
+        TransitionID::Simple("E25".to_string()),
+        TransitionID::Simple("E26".to_string()),
+        TransitionID::Simple("E27".to_string()),
+        TransitionID::Simple("E28".to_string()),
         TransitionID::Simple("E29".to_string())]; "Simple transition id test")]
     #[test_case(FOLDER_PATH,
         QueryExpression::Conjunction(
             Box::new(QueryExpression::VarName("HalfAdm1".to_string())),
-            Box::new(QueryExpression::VarName("HalfAdm2".to_string()))), 
+            Box::new(QueryExpression::VarName("HalfAdm2".to_string()))),
         vec![
             TransitionID::Conjunction(
                 Box::new(TransitionID::Simple("E43".to_string())),
@@ -90,7 +90,7 @@ mod reachability_transition_id_test {
         let (_, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(*mock_model, path);
         for loc in system.get_all_locations() {
-            print!("Location: {}\n", loc.id);
+            println!("Location: {}", loc.id);
             for ac in system.get_actions() {
                 println!("   Action:{}", ac);
                 for tran in system.next_transitions(&loc, &ac) {
