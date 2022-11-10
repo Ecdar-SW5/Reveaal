@@ -1,6 +1,6 @@
 pub mod ClockReduction;
-pub mod edge_ids;
 pub mod ModelObjects;
+pub mod edge_ids;
 pub mod grpc;
 pub mod reachability;
 pub mod refinement;
