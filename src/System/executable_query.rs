@@ -99,7 +99,11 @@ pub struct ReachabilityExecutor {
 }
 impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
-        match reachability::find_path(self.start_state, self.end_state, self.transition_system.as_ref()){
+        match reachability::find_path(
+            self.start_state,
+            self.end_state,
+            self.transition_system.as_ref(),
+        ) {
             Ok(res) => QueryResult::Reachability(res),
             Err(err_msg) => QueryResult::Error(err_msg),
         }
