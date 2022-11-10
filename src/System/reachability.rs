@@ -225,7 +225,7 @@ fn make_path(mut made_transitions: Vec<SubPath>, start_state: &State) -> Result<
         let mut prev_state: State = made_transitions[0].source_state.clone();
 
         for sub_path in &made_transitions[1..] {
-            if prev_state.get_location().id != sub_path.source_state.get_location().id {
+            if prev_state.get_location().id != sub_path.source_state.get_location().id || !prev_state.zone_ref().equals(sub_path.source_state.zone_ref()) {
                 if sub_path.source_state.get_location().id == start_state.get_location().id {
                     //Cannot unwrap None since made_transistion from > 0 will provide a SubPath with a transition.
                     path.push(sub_path.transition.clone().unwrap());
