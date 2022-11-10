@@ -14,11 +14,24 @@ use std::sync::{Arc, RwLock};
 type ComponentsMap = HashMap<String, Component>;
 
 /// A struct used for caching the models.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct ModelCache {
     // TODO: A concurrent hashmap may be faster to use and cause less prone to locking, but is not part of the standard library.
     cache: Arc<RwLock<HashMap<u32, Arc<ComponentsMap>>>>,
-    user_cache: LruCache<u32, u32>
+    user_cache: Arc<RwLock<LruCache<u32, u32>>>,
+}
+
+impl Default for ModelCache
+{
+    fn default() -> Self {
+        Self { 
+            cache: Default::default(), 
+            user_cache: Arc::new(
+                RwLock::new(
+                    LruCache::<u32, u32>::new(
+                        NonZeroUsize::new(100).unwrap()))) 
+        }
+    }
 }
 
 impl ModelCache {

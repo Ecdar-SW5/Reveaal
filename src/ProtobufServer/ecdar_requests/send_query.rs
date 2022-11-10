@@ -41,8 +41,9 @@ impl ConcreteEcdarBackend {
         let components_info = query_request.components_info.as_ref().unwrap();
         let proto_components = &components_info.components;
         let query = parse_query(&query_request)?;
+        let user_id = query_request.user_id;
 
-        let mut component_container = match model_cache.get_model(components_info.components_hash) {
+        let mut component_container = match model_cache.get_model(user_id, components_info.components_hash) {
             Some(model) => model,
             None => {
                 let mut parsed_components = vec![];
@@ -55,7 +56,7 @@ impl ConcreteEcdarBackend {
                 }
 
                 let components = create_components(parsed_components);
-                model_cache.insert_model(components_info.components_hash, Arc::new(components))
+                model_cache.insert_model(user_id, components_info.components_hash, Arc::new(components))
             }
         };
 
