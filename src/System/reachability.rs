@@ -5,6 +5,7 @@ use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
 use std::rc::Rc;
 
+/// This hold the result of a reachability query
 pub struct Path {
     pub path: Option<Vec<Transition>>,
     pub was_reachable: bool,
@@ -211,10 +212,6 @@ fn make_path(sub_path: Rc<SubPath>) -> Result<Path, String> {
     }
 
     path.reverse();
-
-    for e in &path {
-        println!("Id: {}", e.id);
-    }
 
     Ok(Path {
         path: Some(path),
