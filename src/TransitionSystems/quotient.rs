@@ -383,9 +383,9 @@ impl TransitionSystem for Quotient {
     }
 
     fn precheck_sys_rep(&self) -> PrecheckResult {
-        if let DeterminismResult::Failure(location) = self.is_deterministic() {
+        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
             warn!("Not deterministic");
-            return PrecheckResult::NotDeterministic(location);
+            return PrecheckResult::NotDeterministic(location, action);
         }
 
         if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {

@@ -38,7 +38,7 @@ impl QueryResult {
             QueryResult::Consistency(ConsistencyResult::Failure(_)) => not_satisfied(query_str),
 
             QueryResult::Determinism(DeterminismResult::Success) => satisfied(query_str),
-            QueryResult::Determinism(DeterminismResult::Failure(_)) => not_satisfied(query_str),
+            QueryResult::Determinism(DeterminismResult::Failure(_, _)) => not_satisfied(query_str),
 
             QueryResult::GetComponent(_) => {
                 println!("{} -- Component succesfully created", query_str)
@@ -125,9 +125,11 @@ impl ExecutableQuery for ConsistencyExecutor {
         let res = match self.recipe.compile(self.dim) {
             Ok(system) => match system.precheck_sys_rep() {
                 PrecheckResult::Success => QueryResult::Consistency(ConsistencyResult::Success),
-                PrecheckResult::NotDeterministic(location) => QueryResult::Consistency(
-                    ConsistencyResult::Failure(ConsistencyFailure::NotDeterministicFrom(location)),
-                ),
+                PrecheckResult::NotDeterministic(location, action) => {
+                    QueryResult::Consistency(ConsistencyResult::Failure(
+                        ConsistencyFailure::NotDeterministicFrom(location, action),
+                    ))
+                }
                 PrecheckResult::NotConsistent(failure) => {
                     QueryResult::Consistency(ConsistencyResult::Failure(failure))
                 }
