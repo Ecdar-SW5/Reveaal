@@ -13,19 +13,19 @@ pub struct Path {
 
 #[derive(Clone)]
 struct SubPath {
-    previous_link: Option<Rc<SubPath>>,
+    previous_sub_path: Option<Rc<SubPath>>,
     destination_state: State,
     transition: Option<Transition>,
 }
 
 impl SubPath {
     fn new(
-        previous_link: Option<Rc<SubPath>>,
+        previous_sub_path: Option<Rc<SubPath>>,
         destination_state: State,
         transition: Option<Transition>,
     ) -> Self {
         SubPath {
-            previous_link,
+            previous_sub_path,
             destination_state,
             transition,
         }
@@ -206,12 +206,16 @@ fn make_path(sub_path: Rc<SubPath>) -> Result<Path, String> {
     let mut path: Vec<Transition> = Vec::new();
 
     let mut sub_path = sub_path;
-    while sub_path.previous_link.is_some() {
+    while sub_path.previous_sub_path.is_some() {
         path.push(sub_path.transition.clone().unwrap());
-        sub_path = Rc::clone(sub_path.previous_link.as_ref().unwrap());
+        sub_path = Rc::clone(sub_path.previous_sub_path.as_ref().unwrap());
     }
 
     path.reverse();
+
+    for t in path.clone() {
+        println!("{}",t.id);
+    }
 
     Ok(Path {
         path: Some(path),
