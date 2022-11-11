@@ -1,0 +1,218 @@
+{
+  "name": "Component2",
+  "declarations": "clock k, j ,v;",
+  "locations": [
+    {
+      "id": "L1",
+      "nickname": "",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 55.0,
+      "y": 70.00000000000001,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L7",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 359.8461738461539,
+      "y": 164.15384615384616,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L8",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 306.3077123076923,
+      "y": 265.53846153846155,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L9",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 352.7692507692308,
+      "y": 493.3846153846154,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L10",
+      "nickname": "",
+      "invariant": "k \u003e 10",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 92.76925076923078,
+      "y": 516.9230769230769,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": -50.0,
+      "invariantY": 30.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "E5",
+      "group": "",
+      "sourceLocation": "L1",
+      "targetLocation": "L7",
+      "status": "INPUT",
+      "select": "",
+      "guard": "j \u003e 4",
+      "update": "",
+      "sync": "input1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 180.0,
+          "y": 100.0,
+          "propertyType": "GUARD",
+          "propertyX": -14.5,
+          "propertyY": -50.0
+        },
+        {
+          "x": 225.23076923076923,
+          "y": 116.0,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E6",
+      "group": "",
+      "sourceLocation": "L7",
+      "targetLocation": "L8",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "k \u003e 5",
+      "update": "",
+      "sync": "output1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 250.0,
+          "y": 180.0,
+          "propertyType": "GUARD",
+          "propertyX": 20.0,
+          "propertyY": 0.0
+        },
+        {
+          "x": 196.30769230769232,
+          "y": 205.23076923076923,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E7",
+      "group": "",
+      "sourceLocation": "L8",
+      "targetLocation": "L9",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "k \u003d 0, j \u003d 0",
+      "sync": "output2",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 224.1538461538462,
+          "y": 332.3076923076923,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": -64.65384615384619,
+          "propertyY": -8.30769230769232
+        },
+        {
+          "x": 230.0,
+          "y": 400.0,
+          "propertyType": "UPDATE",
+          "propertyX": -80.0,
+          "propertyY": -10.0
+        }
+      ]
+    },
+    {
+      "id": "E8",
+      "group": "",
+      "sourceLocation": "L9",
+      "targetLocation": "L10",
+      "status": "INPUT",
+      "select": "",
+      "guard": "v \u003e 8",
+      "update": "",
+      "sync": "input2",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 270.0,
+          "y": 500.0,
+          "propertyType": "GUARD",
+          "propertyX": -50.0,
+          "propertyY": -50.0
+        },
+        {
+          "x": 192.0,
+          "y": 507.2307692307692,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": -20.0,
+          "propertyY": -40.0
+        }
+      ]
+    },
+    {
+      "id": "E9",
+      "group": "",
+      "sourceLocation": "L10",
+      "targetLocation": "L1",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "output3",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 61.38461538461539,
+          "y": 145.53846153846155,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "x": 189.0,
+  "y": 106.0,
+  "width": 490.0,
+  "height": 600.0,
+  "color": "4",
+  "includeInPeriodicCheck": true
+}

@@ -1,0 +1,203 @@
+{
+  "name": "CombinedComponent",
+  "declarations": "clock v, k, z, y, j, x;",
+  "locations": [
+    {
+      "id": "L0&&L1",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "nickname": "",
+      "x": 312.9284,
+      "y": 454.7128,
+      "color": 7,
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L2&&L7",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "nickname": "",
+      "x": 404.69983,
+      "y": 312.53076,
+      "color": 7,
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L3&&L8",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "nickname": "",
+      "x": 318.6874,
+      "y": 167.71924,
+      "color": 7,
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L4&&L9",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "nickname": "",
+      "x": 171.80243,
+      "y": 213.51219,
+      "color": 7,
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L5&&L10",
+      "invariant": "k>10 && y<10",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "nickname": "",
+      "x": 180.50186,
+      "y": 378.65436,
+      "color": 7,
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "sourceLocation": "L0&&L1",
+      "targetLocation": "L2&&L7",
+      "status": "INPUT",
+      "guard": "x>4 && j>4",
+      "update": "",
+      "sync": "input1",
+      "select": "",
+      "nails": [
+        {
+          "x": 423.20325,
+          "y": 506.50812,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 480.4269,
+          "y": 416.60843,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    },
+    {
+      "sourceLocation": "L2&&L7",
+      "targetLocation": "L3&&L8",
+      "status": "OUTPUT",
+      "guard": "y>5 && k>5",
+      "update": "",
+      "sync": "output1",
+      "select": "",
+      "nails": [
+        {
+          "x": 488.1083,
+          "y": 212.54698,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 436.01126,
+          "y": 121.36262,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    },
+    {
+      "sourceLocation": "L3&&L8",
+      "targetLocation": "L4&&L9",
+      "status": "OUTPUT",
+      "guard": "",
+      "update": "y=0, x=0, j=0, k=0",
+      "sync": "output2",
+      "select": "",
+      "nails": [
+        {
+          "x": 256.46295,
+          "y": 50.0,
+          "propertyType": "UPDATE",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 158.63965,
+          "y": 80.87627,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    },
+    {
+      "sourceLocation": "L4&&L9",
+      "targetLocation": "L5&&L10",
+      "status": "INPUT",
+      "guard": "z>8 && v>8",
+      "update": "",
+      "sync": "input2",
+      "select": "",
+      "nails": [
+        {
+          "x": 50.0,
+          "y": 246.53036,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 56.57172,
+          "y": 352.3601,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    },
+    {
+      "sourceLocation": "L5&&L10",
+      "targetLocation": "L0&&L1",
+      "status": "OUTPUT",
+      "guard": "",
+      "update": "",
+      "sync": "output3",
+      "select": "",
+      "nails": [
+        {
+          "x": 211.13007,
+          "y": 487.86133,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "includeInPeriodicCheck": false,
+  "color": "7",
+  "x": -269.05414,
+  "y": -278.25406,
+  "width": 538.1083,
+  "height": 556.5081
+}

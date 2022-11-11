@@ -1,0 +1,4 @@
+{
+  "name": "Global Declarations",
+  "declarations": "broadcast chan output1, output2, output3, input1, input2;"
+}
