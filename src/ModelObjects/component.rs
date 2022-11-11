@@ -265,11 +265,11 @@ impl Component {
             match &clock.reason {
                 ClockReductionReason::Duplicate(global) => {
                     self.replace_clock(&clock, global);
-                    info!(target: "clock-reduction", "Replaced Clock {} with {global}", clock.clock);
+                    info!("Replaced Clock {} with {global}", clock.clock); // Should be changed in the future to be the information logger
                 }
                 ClockReductionReason::Unused => {
                     self.remove_clock(&clock.updates);
-                    info!(target: "clock-reduction", "Removed Clock {}", clock.clock);
+                    info!("Removed Clock {}", clock.clock);
                 }
             }
 
