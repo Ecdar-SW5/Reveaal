@@ -14,7 +14,7 @@ mod test {
         let actual = json_run_query(PATH, "determinism: NonDeterminismCom");
         assert!(matches!(
             actual,
-            QueryResult::Determinism(DeterminismResult::Failure(_))
+            QueryResult::Determinism(DeterminismResult::Failure(..))
         ));
     }
 
@@ -24,7 +24,7 @@ mod test {
         assert!(matches!(
             actual,
             QueryResult::Refinement(RefinementResult::Failure(
-                RefinementFailure::DeterminismFailure(_)
+                RefinementFailure::DeterminismFailure(..)
             ))
         ));
     }

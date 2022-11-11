@@ -7,34 +7,13 @@ pub enum LocationID {
     Conjunction(Box<LocationID>, Box<LocationID>),
     Composition(Box<LocationID>, Box<LocationID>),
     Quotient(Box<LocationID>, Box<LocationID>),
-    Simple(SimpleID),
+    /// Represents the potentially complete identifier of a location
+    Simple {
+        location_id: String,
+        component_id: Option<String>,
+    },
     /// Used for representing a partial state and it is generated when a location's name is set as `_`
     AnyLocation(),
-}
-
-/// Represents the potentially complete identifier of a location
-#[derive(Debug, Clone, Eq, Hash, PartialEq)]
-pub struct SimpleID {
-    location_id: String,
-    component_id: Option<String>,
-}
-
-impl SimpleID {
-    pub fn new(location_id: String, component_id: Option<String>) -> Self {
-        Self {
-            location_id,
-            component_id,
-        }
-    }
-
-    #[allow(dead_code)] // TODO for further use in Simulation
-    pub fn component_id(&self) -> Option<&String> {
-        self.component_id.as_ref()
-    }
-
-    pub fn location_id(&self) -> &str {
-        self.location_id.as_ref()
-    }
 }
 
 impl LocationID {
@@ -61,13 +40,12 @@ impl LocationID {
     /// [`LocationID::AnyLocation`] should always be true when compared to [`LocationID::Simple`]
     /// ```
     /// use reveaal::TransitionSystems::LocationID;
-    /// use reveaal::TransitionSystems::location_id::SimpleID;
     /// // Make two locations where `a` has LocationID::AnyLocation
-    /// let a = LocationID::Quotient(Box::new(LocationID::Simple(SimpleID::new("L5".to_string(), None))),
+    /// let a = LocationID::Quotient(Box::new(LocationID::Simple { location_id: "L5".to_string(),  component_id: None } ),
     ///                              Box::new(LocationID::AnyLocation()));
     ///
-    /// let b = LocationID::Quotient(Box::new(LocationID::Simple(SimpleID::new("L5".to_string(), None))),
-    ///                              Box::new(LocationID::Simple(SimpleID::new("L1".to_string(), None))));
+    /// let b = LocationID::Quotient(Box::new(LocationID::Simple { location_id: "L5".to_string(),  component_id: None } ),
+    ///                              Box::new(LocationID::Simple { location_id: "L1".to_string(),  component_id: None } ));
     ///
     /// assert!(a.compare_partial_locations(&b));
     /// ```
@@ -88,10 +66,31 @@ impl LocationID {
                 self_left.compare_partial_locations(other_left)
                     && self_right.compare_partial_locations(other_right)
             }
-            (LocationID::AnyLocation(), LocationID::Simple(_))
-            | (LocationID::Simple(_), LocationID::AnyLocation())
-            | (LocationID::AnyLocation(), LocationID::AnyLocation()) => true,
-            (LocationID::Simple(loc1), LocationID::Simple(loc2)) => loc1 == loc2,
+            (
+                LocationID::AnyLocation(),
+                LocationID::Simple {
+                    location_id: _,
+                    component_id: _,
+                },
+            )
+            | (
+                LocationID::Simple {
+                    location_id: _,
+                    component_id: _,
+                },
+                LocationID::AnyLocation(),
+            ) => true,
+            (LocationID::AnyLocation(), LocationID::AnyLocation()) => true,
+            (
+                LocationID::Simple {
+                    location_id: location_id_1,
+                    component_id: component_id_1,
+                },
+                LocationID::Simple {
+                    location_id: location_id_2,
+                    component_id: component_id_2,
+                },
+            ) => location_id_1 == location_id_2 && component_id_1 == component_id_2,
             (_, _) => false,
         }
     }
@@ -104,7 +103,10 @@ impl LocationID {
             | LocationID::Quotient(left, right) => {
                 left.is_partial_location() || right.is_partial_location()
             }
-            LocationID::Simple(_) => false,
+            LocationID::Simple {
+                location_id: _,
+                component_id: _,
+            } => false,
             LocationID::AnyLocation() => true,
         }
     }
@@ -123,7 +125,10 @@ impl From<QueryExpression> for LocationID {
                 LocationID::Quotient(Box::new((*left).into()), Box::new((*right).into()))
             }
             QueryExpression::Parentheses(inner) => (*inner).into(),
-            QueryExpression::VarName(name) => LocationID::Simple(SimpleID::new(name, None)),
+            QueryExpression::VarName(name) => LocationID::Simple {
+                location_id: name,
+                component_id: None,
+            },
             _ => panic!(
                 "Cannot convert queryexpression with {:?} to LocationID",
                 item
@@ -136,43 +141,64 @@ impl Display for LocationID {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             LocationID::Conjunction(left, right) => {
-                match *(*left) {
+                match **left {
                     LocationID::Conjunction(_, _) => write!(f, "{}", (*left))?,
-                    LocationID::Simple(_) => write!(f, "{}", (*left))?,
+                    LocationID::Simple {
+                        location_id: _,
+                        component_id: _,
+                    } => write!(f, "{}", (*left))?,
                     _ => write!(f, "({})", (*left))?,
                 };
                 write!(f, "&&")?;
-                match *(*right) {
+                match **right {
                     LocationID::Conjunction(_, _) => write!(f, "{}", (*right))?,
-                    LocationID::Simple(_) => write!(f, "{}", (*right))?,
+                    LocationID::Simple {
+                        location_id: _,
+                        component_id: _,
+                    } => write!(f, "{}", (*right))?,
                     _ => write!(f, "({})", (*right))?,
                 };
             }
             LocationID::Composition(left, right) => {
-                match *(*left) {
+                match **left {
                     LocationID::Composition(_, _) => write!(f, "{}", (*left))?,
-                    LocationID::Simple(_) => write!(f, "{}", (*left))?,
+                    LocationID::Simple {
+                        location_id: _,
+                        component_id: _,
+                    } => write!(f, "{}", (*left))?,
                     _ => write!(f, "({})", (*left))?,
                 };
                 write!(f, "||")?;
-                match *(*right) {
+                match **right {
                     LocationID::Composition(_, _) => write!(f, "{}", (*right))?,
-                    LocationID::Simple(_) => write!(f, "{}", (*right))?,
+                    LocationID::Simple {
+                        location_id: _,
+                        component_id: _,
+                    } => write!(f, "{}", (*right))?,
                     _ => write!(f, "({})", (*right))?,
                 };
             }
             LocationID::Quotient(left, right) => {
-                match *(*left) {
-                    LocationID::Simple(_) => write!(f, "{}", (*left))?,
+                match **left {
+                    LocationID::Simple {
+                        location_id: _,
+                        component_id: _,
+                    } => write!(f, "{}", (*left))?,
                     _ => write!(f, "({})", (*left))?,
                 };
                 write!(f, "\\\\")?;
-                match *(*right) {
-                    LocationID::Simple(_) => write!(f, "{}", (*right))?,
+                match **right {
+                    LocationID::Simple {
+                        location_id: _,
+                        component_id: _,
+                    } => write!(f, "{}", (*right))?,
                     _ => write!(f, "({})", (*right))?,
                 };
             }
-            LocationID::Simple(id) => write!(f, "{}", id.location_id())?,
+            LocationID::Simple {
+                location_id,
+                component_id: _,
+            } => write!(f, "{}", location_id)?,
             LocationID::AnyLocation() => write!(f, "_")?,
         }
         Ok(())

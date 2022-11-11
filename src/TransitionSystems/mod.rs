@@ -3,7 +3,7 @@ mod common;
 mod compiled_component;
 mod composition;
 mod conjunction;
-pub mod location_id;
+mod location_id;
 mod location_tuple;
 mod quotient;
 pub mod transition_system;

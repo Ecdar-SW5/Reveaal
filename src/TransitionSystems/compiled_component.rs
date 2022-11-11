@@ -11,7 +11,6 @@ use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystem
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
 
-use super::location_id::SimpleID;
 use super::transition_system::PrecheckResult;
 use super::{CompositionType, LocationID};
 
@@ -72,10 +71,10 @@ impl CompiledComponent {
             locations.keys().map(|k| (k.clone(), vec![])).collect();
 
         for edge in component.get_edges() {
-            let id = LocationID::Simple(SimpleID::new(
-                edge.source_location.clone(),
-                Some(component.get_name().to_owned()),
-            ));
+            let id = LocationID::Simple {
+                location_id: edge.source_location.clone(),
+                component_id: Some(component.get_name().to_owned()),
+            };
             let transition = Transition::from(&component, edge, dim);
             location_edges
                 .get_mut(&id)
@@ -209,9 +208,9 @@ impl TransitionSystem for CompiledComponent {
     }
 
     fn precheck_sys_rep(&self) -> PrecheckResult {
-        if let DeterminismResult::Failure(location) = self.is_deterministic() {
+        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
             warn!("Not deterministic");
-            return PrecheckResult::NotDeterministic(location);
+            return PrecheckResult::NotDeterministic(location, action);
         }
 
         if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {

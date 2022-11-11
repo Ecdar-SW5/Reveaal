@@ -5,7 +5,7 @@ use crate::{
     ModelObjects::component::{Declarations, Location, LocationType},
 };
 
-use super::{location_id::SimpleID, LocationID};
+use super::LocationID;
 
 #[derive(Debug, Clone, std::cmp::PartialEq, Eq, Hash, Copy)]
 pub enum CompositionType {
@@ -44,7 +44,10 @@ impl LocationTuple {
             None
         };
         LocationTuple {
-            id: LocationID::Simple(SimpleID::new(location.get_id().clone(), component_id)),
+            id: LocationID::Simple {
+                location_id: location.get_id().clone(),
+                component_id,
+            },
             invariant,
             loc_type: location.get_location_type().clone(),
             left: None,
