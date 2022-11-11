@@ -159,6 +159,7 @@ fn collect_edges(xml_edges: FindChildren) -> Vec<Edge> {
             guard,
             update: updates,
             sync: sync.replace('!', "").replace('?', ""),
+            component_name: None,
         };
         edges.push(edge);
     }

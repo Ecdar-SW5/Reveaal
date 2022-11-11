@@ -79,6 +79,7 @@ pub fn make_input_enabled(component: &mut component::Component, inputs: &[String
                 ),
                 update: None,
                 sync: input.to_string(),
+                component_name: Some(component.get_name().to_string()),
             });
             //}
         }

@@ -851,6 +851,8 @@ pub struct Edge {
     pub update: Option<Vec<parse_edge::Update>>,
     #[serde(deserialize_with = "decode_sync")]
     pub sync: String,
+    #[serde(skip)] // TODO: DO NOT SKIP
+    pub component_name: Option<String>,
 }
 
 const TRUE: BoolExpression = BoolExpression::Bool(true);
