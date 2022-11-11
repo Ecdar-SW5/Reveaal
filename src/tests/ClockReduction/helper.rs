@@ -3,6 +3,11 @@ pub mod test {
     use crate::component::{ClockReductionReason, Component, RedundantClock};
     use std::collections::{HashMap, HashSet};
     use std::iter::FromIterator;
+    use pprof::flamegraph::color::MultiPalette::Js;
+    use crate::DataReader::json_reader::read_json_component;
+    use crate::extract_system_rep::SystemRecipe;
+    use crate::JsonProjectLoader;
+    use crate::TransitionSystems::{LocationID, TransitionSystemPtr};
 
     /// Asserts that component contains given locations and edges.
     pub fn assert_locations_and_edges_in_component(
@@ -200,5 +205,40 @@ pub mod test {
                 found_edge_names,
             );
         }
+    }
+
+    pub fn get_combined_component(path: &str, comp1: &str, comp2: &str) -> TransitionSystemPtr {
+        let mut loader = JsonProjectLoader::new(path.to_string());
+        let mut loader2 = JsonProjectLoader::new(path.to_string());
+        let mut component1 = loader.get_component(comp1);
+        let mut component2 = loader2.get_component(comp2);
+
+        let sr_component1 = Box::new(SystemRecipe::Component(Box::new(component1.clone())));
+        let sr_component2 = Box::new(SystemRecipe::Component(Box::new(component2.clone())));
+        let conjunction = SystemRecipe::Conjunction(sr_component1, sr_component2);
+        conjunction.compile(4).expect("https://www.youtube.com/watch?v=6AyLEBaxrFY")
+    }
+
+    pub fn assert_correct_transitionSystem_clocks(
+        clockLocations: HashMap<String, Vec<(LocationID, usize)>>,
+        expected: HashSet<String>
+    ) {
+        //"Clock:(Simple:Index;...)"
+        let mut locStrings: HashSet<String> = HashSet::new();
+        // for every location, clock is used
+        for (clock, locations) in clockLocations.iter(){
+            let mut locString = format!("{}:(", clock);
+            for loc in locations.iter(){
+                locString.push_str(&*format!("{}:{};", loc.0, loc.1));
+            }
+            locString.push_str(")");
+            locStrings.insert(locString);
+        }
+
+        assert_eq!(locStrings, expected, "Ivi printer")
+    }
+    pub fn get_transitionSystem(component: &Component) -> TransitionSystemPtr {
+        Box::new(SystemRecipe::Component(Box::new(component.clone())))
+            .compile(*&component.declarations.clocks.len()).expect("Nej")
     }
 }

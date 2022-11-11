@@ -1,42 +1,48 @@
 #[cfg(test)]
 pub mod test{
-    use crate::tests::ClockReduction::helper::test::{
-        assert_clock_reason, assert_correct_edges_and_locations,
-    };
+    use crate::tests::ClockReduction::helper::test::{assert_clock_reason, assert_correct_edges_and_locations, assert_correct_transitionSystem_clocks, get_combined_component, get_transitionSystem};
     use crate::DataReader::json_reader::read_json_component;
     use std::collections::{HashMap, HashSet};
+    use std::fmt::Display;
+    use edbm::util::constraints::ClockIndex;
     use crate::component::Component;
     use crate::extract_system_rep::SystemRecipe;
+    use crate::JsonProjectLoader;
     use crate::System::save_component::{combine_components, PruningStrategy};
-    use crate::TransitionSystems::{CompiledComponent, TransitionSystemPtr};
+    use crate::TransitionSystems::{CompiledComponent, LocationID, TransitionSystem, TransitionSystemPtr};
 
-    fn get_combined_component(path: &str, comp1: &str, comp2: &str) -> TransitionSystemPtr {
-        let mut component1 = read_json_component(path, comp1);
-        let component2 = read_json_component(path, comp2);
-
-        let sr_component1 = Box::new(SystemRecipe::Component(Box::new(component1.clone())));
-        let sr_component2 = Box::new(SystemRecipe::Component(Box::new(component2.clone())));
-
-        let conjunction = SystemRecipe::Conjunction(sr_component1, sr_component2);
-        conjunction.compile(4).expect("https://www.youtube.com/watch?v=6AyLEBaxrFY")
+    // Prototype function
+    fn prot_get_clocks_in_transitions(transitionSystem: &TransitionSystemPtr) ->HashMap<String, Vec<(LocationID, usize)>>{
+        let mut r: HashMap<String, Vec<(LocationID, usize)>> = HashMap::new();
+        r.insert("x".to_string(), vec![(LocationID::Simple("L0".to_string()), 0)]);
+        r
     }
 
-    fn test_advanced_clock_detection() {
+    #[test]
+    fn test_get_clocks_in_transitions(){
+        let mut loader = JsonProjectLoader::new("samples/json/ClockReductionTest/AdvancedClockReduction/Composition/SimpleComposition".to_string());
+        let mut component = loader.get_component("Component1");
+        let transitionSystem = get_transitionSystem(component);
 
-        let mut transitionSystem = get_combined_component("samples/json/ClockReduction/AdvancedClockReduction", "Component1", "Component2");
+        let clocks = prot_get_clocks_in_transitions(&transitionSystem);
 
-        let redundantClocks = combinedComponent.find_redundant_clocks();
 
-        assert_clock_reason(&redundantClocks, 3, HashSet::from(["x","y"]) , true);
+        let mut expected: HashSet<String> = HashSet::new();
+        expected.insert("x:(L0:0;)".to_string());
+
+        assert_correct_transitionSystem_clocks(clocks, expected)
     }
 
-    fn test_advanced_clock_removal(){
-        let mut combinedComponent = get_combined_component("samples/json/ClockReduction/AdvancedClockReduction", "Component1", "Component2");
+    #[test]
+    fn test_redundant_clock_in_conjunction(){
+        let mut combined_component_transition_system = get_combined_component(
+            "samples/json/ClockReductionTest/AdvancedClockReduction/Conjunction/Example1",
+            "Component1", "Component2");
+        let mut expected_clocks: HashMap<String, Vec<(LocationID, usize)>> = HashMap::new();
+        expected_clocks.insert("x".to_string(), vec![(LocationID::Simple("L0".to_string()), 0)]);
 
-        let redundantClocks = combinedComponent.find_redundant_clocks();
+        //let actual_clocks = prot_get_clocks_in_transitions(combined_component_transition_system);
 
-        combinedComponent.reduce_clocks(&redundantClocks);
-
-        assert_correct_edges_and_locations(combinedComponent, );
+        //assert_correct_transitionSystem_clocks(actual_clocks, expected_clocks);
     }
 }
