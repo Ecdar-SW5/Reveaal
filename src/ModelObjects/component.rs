@@ -858,6 +858,8 @@ pub struct Edge {
     pub sync: String,
     #[serde(skip)] // TODO don't skip
     pub id: String,
+    #[serde(skip)] // TODO: DO NOT SKIP
+    pub component_name: Option<String>,
 }
 
 const TRUE: BoolExpression = BoolExpression::Bool(true);
