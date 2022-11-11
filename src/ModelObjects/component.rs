@@ -657,7 +657,12 @@ impl Transition {
 
         let target_loc_name = &edge.target_location;
         let target_loc = comp.get_location_by_name(target_loc_name);
-        let target_locations = LocationTuple::simple(target_loc, comp.get_declarations(), dim);
+        let target_locations = LocationTuple::simple(
+            target_loc,
+            Some(comp.get_name().to_owned()),
+            comp.get_declarations(),
+            dim,
+        );
 
         let mut compiled_updates = vec![];
         if let Some(updates) = edge.get_update() {
