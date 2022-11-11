@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "logging")]
     let yaml = load_yaml!("cli.yml");
     let matches = App::from(yaml).get_matches();
-    setup_logger(matches.value_of("endpoint").is_some()).unwrap();
+    setup_logger().unwrap();
 
     if let Some(ip_endpoint) = matches.value_of("endpoint") {
         start_grpc_server_with_tokio(ip_endpoint)?;

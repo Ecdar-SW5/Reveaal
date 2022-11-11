@@ -8,7 +8,7 @@ use crate::System::refine::RefinementResult;
 
 fn try_setup_logging() {
     #[cfg(feature = "logging")]
-    let _ = setup_logger(false);
+    let _ = setup_logger();
 }
 
 pub fn xml_refinement_check(PATH: &str, QUERY: &str) -> bool {

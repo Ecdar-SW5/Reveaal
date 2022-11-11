@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::component::Component;
-use crate::logging::get_messages;
 use crate::xml_parser::parse_xml_from_str;
 use crate::DataReader::component_loader::ModelCache;
 use crate::DataReader::json_reader::json_to_component;
@@ -95,7 +94,7 @@ impl ConcreteEcdarBackend {
         let reply = QueryResponse {
             response: Some(QueryOkOrErrorResponse::QueryOk(QueryOk {
                 query_id: query_request.query_id,
-                info: get_messages(),
+                info: vec![], // TODO: Should be logs
                 result: convert_ecdar_result(&result),
             })),
         };
