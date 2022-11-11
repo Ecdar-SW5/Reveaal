@@ -14,6 +14,7 @@ use crate::ModelObjects::representations::BoolExpression;
 use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
 use edbm::zones::OwnedFederation;
+use log::info;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -259,11 +260,17 @@ impl Component {
     /// Function for reducing the clocks found on the component.
     /// Unused clocks and "duplicate" clocks (clocks that are never reset)
     /// and then remove them.
-    pub fn reduce_clocks(&mut self, redundant_clocks: &Vec<RedundantClock>) {
+    pub fn reduce_clocks(&mut self, redundant_clocks: Vec<RedundantClock>) {
         for clock in redundant_clocks {
             match &clock.reason {
-                ClockReductionReason::Duplicate(global) => self.replace_clock(clock, global),
-                ClockReductionReason::Unused => self.remove_clock(&clock.updates),
+                ClockReductionReason::Duplicate(global) => {
+                    self.replace_clock(&clock, global);
+                    info!("Replaced Clock {} with {global}", clock.clock); // Should be changed in the future to be the information logger
+                }
+                ClockReductionReason::Unused => {
+                    self.remove_clock(&clock.updates);
+                    info!("Removed Clock {}", clock.clock);
+                }
             }
 
             let clock_val = *self
@@ -404,10 +411,8 @@ impl Component {
     }
 
     /// Replaces duplicate clock with a new
-
     /// # Arguments
     /// `clock`: [`RedundantClock`] representing the clock to be replaced
-
     /// `other_clock`: The name of the clock to replace `clock`
     pub(crate) fn replace_clock(&mut self, clock: &RedundantClock, other_clock: &String) {
         for e in &clock.edge_indices {
