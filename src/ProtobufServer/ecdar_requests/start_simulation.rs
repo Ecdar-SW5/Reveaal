@@ -11,8 +11,7 @@ use crate::ProtobufServer::services::{
 };
 use crate::Simulation::decision_point::DecisionPoint;
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
-use crate::TransitionSystems::location_id::LocationID;
-use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
+use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr, LocationID};
 use edbm::util::constraints::{ClockIndex, Conjunction, Constraint, Disjunction};
 use edbm::zones::OwnedFederation;
 use log::trace;
@@ -87,10 +86,10 @@ impl ProtoState {
 
 fn location_id_to_proto_location_vec(is: &LocationID) -> Vec<ProtoLocation> {
     match is {
-        LocationID::Simple(s) => vec![ProtoLocation {
-            id: s.location_id().to_string(),
+        LocationID::Simple { location_id, component_id} => vec![ProtoLocation {
+            id: location_id.to_string(),
             specific_component: Some(SpecificComponent { 
-                component_name: s.component_id().unwrap().to_string(), 
+                component_name: component_id.as_ref().unwrap().to_string(), //TODO unwrap bad! 
                 component_index: 0 
             }
             ),

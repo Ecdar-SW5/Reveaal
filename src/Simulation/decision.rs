@@ -9,7 +9,7 @@ use crate::ProtobufServer::services::{
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
     LocationTuple as ProtoLocationTuple, State as ProtoState,
 };
-use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
+use crate::TransitionSystems::{LocationID, TransitionSystemPtr};
 
 #[derive(Debug)]
 pub struct Decision {
