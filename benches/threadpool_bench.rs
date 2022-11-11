@@ -56,6 +56,7 @@ fn create_query_request(json: &[String], query: &str, hash: u32) -> Request<Quer
             components_hash: hash,
         }),
         ignored_input_outputs: None,
+        settings: None
     })
 }
 
