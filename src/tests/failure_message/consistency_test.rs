@@ -12,7 +12,7 @@ mod test {
         assert!(matches!(
             actual,
             QueryResult::Consistency(ConsistencyResult::Failure(
-                ConsistencyFailure::NotConsistentFrom(_)
+                ConsistencyFailure::NotConsistentFrom(..)
             ))
         ));
     }

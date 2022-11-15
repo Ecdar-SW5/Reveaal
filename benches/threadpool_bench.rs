@@ -23,8 +23,8 @@ const NUM_OF_REQUESTS: u32 = 512;
 fn send_query_with_components(
     id: String,
     c: &mut Criterion,
-    components: &Vec<String>,
-    query: &String,
+    components: &[String],
+    query: &str,
     active_cache: bool,
 ) {
     c.bench_function(&id, |b| {
@@ -33,8 +33,8 @@ fn send_query_with_components(
             let responses = (0..NUM_OF_REQUESTS)
                 .map(|hash| {
                     let request = create_query_request(
-                        &components,
-                        &query,
+                        components,
+                        query,
                         if active_cache { 0 } else { hash },
                     );
                     backend.send_query(request)
@@ -46,7 +46,7 @@ fn send_query_with_components(
     });
 }
 
-fn create_query_request(json: &Vec<String>, query: &str, hash: u32) -> Request<QueryRequest> {
+fn create_query_request(json: &[String], query: &str, hash: u32) -> Request<QueryRequest> {
     Request::new(QueryRequest {
         user_id: 0,
         query_id: 0,
@@ -56,11 +56,12 @@ fn create_query_request(json: &Vec<String>, query: &str, hash: u32) -> Request<Q
             components_hash: hash,
         }),
         ignored_input_outputs: None,
+        settings: None,
     })
 }
 
-fn create_components(json: &Vec<String>) -> Vec<Component> {
-    json.into_iter()
+fn create_components(json: &[String]) -> Vec<Component> {
+    json.iter()
         .map(|json| Component {
             rep: Some(Rep::Json(json.clone())),
         })

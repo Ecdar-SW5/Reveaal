@@ -37,22 +37,22 @@ pub mod test {
 
         let expected_locations: HashSet<String> = HashSet::from([
             "L2-i".to_string(),
-            format!("L1-{}", global_clock[0].to_string()),
-            format!("L4-{}", global_clock[0].to_string()),
+            format!("L1-{}", global_clock[0]),
+            format!("L4-{}", global_clock[0]),
             "L3-".to_string(),
             "L0-".to_string(),
         ]);
 
         let expected_edges: HashSet<String> = HashSet::from([
             "L1-i->L0".to_string(),
-            format!("L2-{}->L1", global_clock[0].to_string()),
-            format!("L0-i{}->L2", global_clock[0].to_string()),
-            format!("L0-{}->L4", global_clock[0].to_string()),
-            format!("L4-{}->L2", global_clock[0].to_string()),
+            format!("L2-{}->L1", global_clock[0]),
+            format!("L0-i{}->L2", global_clock[0]),
+            format!("L0-{}->L4", global_clock[0]),
+            format!("L4-{}->L2", global_clock[0]),
             "L2-->L3".to_string(),
         ]);
 
-        component.reduce_clocks(&redundant_clocks);
+        component.reduce_clocks(redundant_clocks);
 
         assert_locations_and_edges_in_component(&component, &expected_locations, &expected_edges);
     }

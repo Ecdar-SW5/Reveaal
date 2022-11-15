@@ -9,6 +9,7 @@ use crate::DataReader::json_writer::component_to_json;
 use crate::DataReader::parse_queries;
 use crate::ModelObjects::queries::Query;
 use crate::ProtobufServer::services::component::Rep;
+use crate::ProtobufServer::services::query_request::Settings;
 use crate::ProtobufServer::services::query_response::query_ok::Result as ProtobufResult;
 use crate::ProtobufServer::services::query_response::query_ok::{
     ComponentResult, ConsistencyResult as ProtobufConsistencyResult,
@@ -32,6 +33,10 @@ use edbm::util::constraints::Disjunction;
 use log::trace;
 use tonic::Status;
 
+const DEFAULT_SETTINGS: Settings = Settings {
+    reduce_clocks: true,
+};
+
 impl ConcreteEcdarBackend {
     pub fn handle_send_query(
         query_request: QueryRequest,
@@ -47,21 +52,19 @@ impl ConcreteEcdarBackend {
             match model_cache.get_model(user_id, components_info.components_hash) {
                 Some(model) => model,
                 None => {
-                    let mut parsed_components = vec![];
-
-                    for proto_component in proto_components {
-                        let components = parse_components_if_some(proto_component)?;
-                        for component in components {
-                            parsed_components.push(component);
-                        }
-                    }
-
-                    let components = create_components(parsed_components);
+                    let parsed_components: Vec<Component> = proto_components
+                        .iter()
+                        .flat_map(parse_components_if_some)
+                        .flatten()
+                        .collect::<Vec<Component>>();
+                    let components = create_components(
+                        parsed_components,
+                        query_request.settings.unwrap_or(DEFAULT_SETTINGS),
+                    );
                     model_cache.insert_model(
                         user_id,
                         components_info.components_hash,
-                        Arc::new(components),
-                    )
+                        Arc::new(components))
                 }
             };
 
@@ -86,6 +89,7 @@ impl ConcreteEcdarBackend {
         let reply = QueryResponse {
             response: Some(QueryOkOrErrorResponse::QueryOk(QueryOk {
                 query_id: query_request.query_id,
+                info: vec![], // TODO: Should be logs
                 result: convert_ecdar_result(&result),
             })),
         };
@@ -133,10 +137,13 @@ fn parse_xml_components(xml: &str) -> Vec<Component> {
     comps
 }
 
-fn create_components(components: Vec<Component>) -> HashMap<String, Component> {
+fn create_components(components: Vec<Component>, settings: Settings) -> HashMap<String, Component> {
     let mut comp_hashmap = HashMap::<String, Component>::new();
     for mut component in components {
         trace!("Adding comp {} to container", component.get_name());
+        if settings.reduce_clocks {
+            component.reduce_clocks(component.find_redundant_clocks())
+        }
 
         component.create_edge_io_split();
         let inputs: Vec<_> = component
@@ -159,6 +166,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     reason: "".to_string(),
                     relation: vec![],
                     state: None,
+                    action: "".to_string(), // Empty string is used, when no failing action is available.
                 }))
             }
             refine::RefinementResult::Failure(failure) => convert_refinement_failure(failure),
@@ -179,6 +187,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     success: true,
                     reason: "".to_string(),
                     state: None,
+                    action: "".to_string(),
                 }))
             }
             ConsistencyResult::Failure(failure) => match failure {
@@ -187,10 +196,11 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         success: false,
                         reason: failure.to_string(),
                         state: None,
+                        action: "".to_string(),
                     }))
                 }
-                ConsistencyFailure::NotConsistentFrom(location_id)
-                | ConsistencyFailure::NotDeterministicFrom(location_id) => {
+                ConsistencyFailure::NotConsistentFrom(location_id, action)
+                | ConsistencyFailure::NotDeterministicFrom(location_id, action) => {
                     Some(ProtobufResult::Consistency(ProtobufConsistencyResult {
                         success: false,
                         reason: failure.to_string(),
@@ -203,6 +213,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                             }),
                             federation: None,
                         }),
+                        action: action.to_string(),
                     }))
                 }
             },
@@ -213,9 +224,10 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     success: true,
                     reason: "".to_string(),
                     state: None,
+                    action: "".to_string(),
                 }))
             }
-            DeterminismResult::Failure(location_id) => {
+            DeterminismResult::Failure(location_id, action) => {
                 Some(ProtobufResult::Determinism(ProtobufDeterminismResult {
                     success: false,
                     reason: "Not deterministic From Location".to_string(),
@@ -228,6 +240,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         }),
                         federation: None,
                     }),
+                    action: action.to_string(),
                 }))
             }
         },
@@ -247,6 +260,7 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                 relation: vec![],
                 state: None,
                 reason: failure.to_string(),
+                action: "".to_string(),
             }))
         }
         RefinementFailure::CutsDelaySolutions(state_pair)
@@ -266,10 +280,11 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                     }),
                 }),
                 reason: failure.to_string(),
+                action: "".to_string(),
             }))
         }
-        RefinementFailure::ConsistencyFailure(location_id)
-        | RefinementFailure::DeterminismFailure(location_id) => {
+        RefinementFailure::ConsistencyFailure(location_id, action)
+        | RefinementFailure::DeterminismFailure(location_id, action) => {
             Some(ProtobufResult::Refinement(RefinementResult {
                 success: false,
                 reason: failure.to_string(),
@@ -282,6 +297,7 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                     }),
                     federation: None,
                 }),
+                action: value_in_action(action),
                 relation: vec![],
             }))
         }
@@ -335,6 +351,13 @@ fn make_proto_zone(disjunction: Disjunction) -> Option<Federation> {
 fn value_in_location(maybe_location: &Option<LocationID>) -> String {
     match maybe_location {
         Some(location_id) => location_id.to_string(),
+        None => "".to_string(),
+    }
+}
+
+fn value_in_action(maybe_action: &Option<String>) -> String {
+    match maybe_action {
+        Some(action) => action.to_string(),
         None => "".to_string(),
     }
 }

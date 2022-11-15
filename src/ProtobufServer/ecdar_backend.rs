@@ -59,10 +59,11 @@ impl EcdarBackend for ConcreteEcdarBackend {
         request: Request<QueryRequest>,
     ) -> Result<Response<QueryResponse>, Status> {
         let cache = self.model_cache.clone();
-        let res = catch_unwind(self.thread_pool.enqueue(Box::new(move || {
-            ConcreteEcdarBackend::handle_send_query(request.into_inner(), cache)
-        })))
-        .await;
+        let res =
+            catch_unwind(self.thread_pool.enqueue(move || {
+                ConcreteEcdarBackend::handle_send_query(request.into_inner(), cache)
+            }))
+            .await;
         res.map(Response::new)
     }
 

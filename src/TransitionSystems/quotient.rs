@@ -192,9 +192,9 @@ impl TransitionSystem for Quotient {
         let s = self.S.next_transitions_if_available(loc_s, action);
 
         let inconsistent_location =
-            LocationTuple::simple(&self.inconsistent_location, &self.decls, self.dim);
+            LocationTuple::simple(&self.inconsistent_location, None, &self.decls, self.dim);
         let universal_location =
-            LocationTuple::simple(&self.universal_location, &self.decls, self.dim);
+            LocationTuple::simple(&self.universal_location, None, &self.decls, self.dim);
 
         //Rule 1
         if self.S.actions_contain(action) && self.T.actions_contain(action) {
@@ -350,8 +350,9 @@ impl TransitionSystem for Quotient {
         }
 
         let inconsistent =
-            LocationTuple::simple(&self.inconsistent_location, &self.decls, self.dim);
-        let universal = LocationTuple::simple(&self.universal_location, &self.decls, self.dim);
+            LocationTuple::simple(&self.inconsistent_location, None, &self.decls, self.dim);
+        let universal =
+            LocationTuple::simple(&self.universal_location, None, &self.decls, self.dim);
 
         location_tuples.push(inconsistent);
         location_tuples.push(universal);
@@ -383,9 +384,9 @@ impl TransitionSystem for Quotient {
     }
 
     fn precheck_sys_rep(&self) -> PrecheckResult {
-        if let DeterminismResult::Failure(location) = self.is_deterministic() {
+        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
             warn!("Not deterministic");
-            return PrecheckResult::NotDeterministic(location);
+            return PrecheckResult::NotDeterministic(location, action);
         }
 
         if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {

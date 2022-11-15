@@ -13,7 +13,7 @@ pub mod util {
     use edbm::util::constraints::ClockIndex;
 
     pub fn json_reconstructed_component_refines_base_self(input_path: &str, system: &str) {
-        let project_loader = JsonProjectLoader::new(String::from(input_path));
+        let project_loader = JsonProjectLoader::new(String::from(input_path), false);
 
         //This query is not executed but simply used to extract an UncachedSystem so the tests can just give system expressions
         let str_query = format!("get-component: {} save-as test", system);
@@ -60,20 +60,14 @@ pub mod util {
 
         //Only do refinement check if both pass precheck
         if helper(&base_precheck) && helper(&new_precheck) {
-            assert!(if let RefinementResult::Success =
-                refine::check_refinement(new_comp.clone(), base_system.clone())
-            {
-                true
-            } else {
-                false
-            });
-            assert!(if let RefinementResult::Success =
-                refine::check_refinement(base_system.clone(), new_comp.clone())
-            {
-                true
-            } else {
-                false
-            });
+            assert!(matches!(
+                refine::check_refinement(new_comp.clone(), base_system.clone()),
+                RefinementResult::Success
+            ));
+            assert!(matches!(
+                refine::check_refinement(base_system.clone(), new_comp.clone()),
+                RefinementResult::Success
+            ));
         }
     }
 
