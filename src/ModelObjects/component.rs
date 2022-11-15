@@ -7,6 +7,7 @@ use crate::DataReader::serialization::{
 
 use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
 use crate::EdgeEval::updater::CompiledUpdate;
+use crate::System::save_component::{combine_components, PruningStrategy};
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 
@@ -18,6 +19,9 @@ use log::info;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+
+use crate::ProtobufServer::services::{Location as ProtoLocation, SpecificComponent};
+use crate::TransitionSystems::TransitionSystemPtr;
 
 /// The basic struct used to represent components read from either Json or xml
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -627,6 +631,29 @@ impl Location {
     }
     pub fn get_urgency(&self) -> &String {
         &self.urgency
+    }
+
+    pub fn from_proto_location(location: &ProtoLocation, system: &TransitionSystemPtr) -> Self {
+        let specific_component: SpecificComponent = match location.specific_component {
+            None => panic!("Location {} has no specific component", location.id),
+            Some(ref specific_component) => specific_component.clone(),
+        };
+
+        let component = combine_components(system, PruningStrategy::NoPruning);
+        let location_id = location.id.to_string();
+
+        if (component.get_name().to_string() == specific_component.component_name.to_string()) {
+            let locations = component.get_locations();
+
+            locations.iter().filter(|l| l.id == location.id).collect();
+        }
+
+        Location {
+            id: location_id,
+            invariant,
+            location_type,
+            urgency,
+        }
     }
 }
 

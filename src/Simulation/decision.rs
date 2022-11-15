@@ -3,11 +3,11 @@ use edbm::util::constraints::{
 };
 use edbm::zones::OwnedFederation;
 
-use crate::component::{Declarations, Edge, State};
+use crate::component::{Declarations, Edge, Location, State};
 use crate::ProtobufServer::services::{
     Conjunction as ProtoConjunction, Constraint as ProtoConstraint, Decision as ProtoDecision,
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
-    LocationTuple as ProtoLocationTuple, State as ProtoState,
+    Location as ProtoLocation, LocationTuple as ProtoLocationTuple, State as ProtoState,
 };
 use crate::TransitionSystems::{LocationID, TransitionSystemPtr};
 
@@ -42,7 +42,22 @@ impl Decision {
         };
 
         let _zone: OwnedFederation = proto_federation_to_owned_federation(proto_federation, system);
-        // let location_tuple = LocationTuple::simple(location, system.get_decls(), system.get_dim());
+
+        // Generate the location tuple
+        // 1. Generate simple location tuples from the proto locations
+        // 2. Compose each simple location tuple to a single location tuple using the composition type
+        // 3. Return the location tuple
+
+        let proto_locations: Vec<ProtoLocation> = proto_location_tuple
+            .locations
+            .iter()
+            .map(|loc| loc.clone())
+            .collect();
+
+        let locations: Vec<Location> = proto_locations
+            .iter()
+            .map(|loc| Location::from_proto_location(loc, system))
+            .collect();
         // let state = State::create(location_tuple, zone);
 
         // Convert ProtoEdge to Edge
