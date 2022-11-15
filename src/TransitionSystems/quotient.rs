@@ -173,11 +173,7 @@ impl TransitionSystem for Quotient {
         if location.is_inconsistent() {
             //Rule 10
             if is_input {
-                let mut transition = Transition::new(
-                    TransitionID::Simple(format!("I|Inconsistent:{}", location.id)),
-                    location,
-                    self.dim,
-                );
+                let mut transition = Transition::new(location, self.dim);
                 transition.guard_zone = transition
                     .guard_zone
                     .constrain_eq(self.quotient_clock_index, 0);
@@ -186,11 +182,7 @@ impl TransitionSystem for Quotient {
             return transitions;
         } else if location.is_universal() {
             // Rule 9
-            let transition = Transition::new(
-                TransitionID::Simple(format!("U|Universal:{}", location.id)),
-                location,
-                self.dim,
-            );
+            let transition = Transition::new(location, self.dim);
             transitions.push(transition);
             return transitions;
         }

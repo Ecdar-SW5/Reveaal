@@ -652,13 +652,10 @@ pub struct Transition {
     pub updates: Vec<CompiledUpdate>,
 }
 impl Transition {
-    pub fn new(
-        transition_id: TransitionID,
-        target_locations: &LocationTuple,
-        dim: ClockIndex,
-    ) -> Transition {
+    /// Create a new transition not based on an edge with no identifier
+    pub fn new(target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
         Transition {
-            id: transition_id,
+            id: TransitionID::None,
             guard_zone: OwnedFederation::universe(dim),
             target_locations: target_locations.clone(),
             updates: vec![],
