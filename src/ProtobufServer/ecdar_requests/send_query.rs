@@ -64,7 +64,8 @@ impl ConcreteEcdarBackend {
                     model_cache.insert_model(
                         user_id,
                         components_info.components_hash,
-                        Arc::new(components))
+                        Arc::new(components),
+                    )
                 }
             };
 

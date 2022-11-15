@@ -6,7 +6,6 @@ use crate::ProtobufServer::services::{
     SimulationStepResponse, UserTokenResponse,
 };
 use futures::FutureExt;
-use std::collections::HashMap;
 use std::panic::UnwindSafe;
 use std::sync::atomic::{AtomicI32, Ordering};
 use tonic::{Request, Response, Status};
