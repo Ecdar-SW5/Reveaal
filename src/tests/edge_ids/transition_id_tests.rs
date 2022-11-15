@@ -71,15 +71,6 @@ mod reachability_transition_id_test {
                 Box::new(TransitionID::Simple("E35".to_string()))
             )
             ]; "Conjunction HalfAdm1 and HalfAdm2")]
-    /*#[test_case(FOLDER_PATH, QueryExpression::Quotient(
-        Box::new(QueryExpression::VarName("Spec".to_string())),
-        Box::new(QueryExpression::VarName("Machine".to_string()))
-    ), vec![
-      TransitionID::Simple("E25".to_string()),
-      TransitionID::Simple("E26".to_string()),
-      TransitionID::Simple("E27".to_string()),
-      TransitionID::Simple("E28".to_string()),
-      TransitionID::Simple("E29".to_string())]; "Quotient Spec and Machine")]*/
     fn transition_id_checker(
         path: &str,
         machineExpression: QueryExpression,
@@ -89,16 +80,6 @@ mod reachability_transition_id_test {
         let mut expected_ids: HashSet<&TransitionID> = HashSet::from_iter(transition_ids.iter());
         let (_, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(*mock_model, path);
-        for loc in system.get_all_locations() {
-            println!("Location: {}", loc.id);
-            for ac in system.get_actions() {
-                println!("   Action:{}", ac);
-                for tran in system.next_transitions(&loc, &ac) {
-                    println!("      {}", &tran.id);
-                }
-            }
-        }
-
         for loc in system.get_all_locations() {
             for ac in system.get_actions() {
                 for tran in system.next_transitions(&loc, &ac) {

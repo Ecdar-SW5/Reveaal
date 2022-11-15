@@ -218,7 +218,6 @@ impl TransitionSystem for Quotient {
 
                     transitions.push(Transition {
                         id: TransitionID::Quotient(
-                            1,
                             vec![t_transition.id.clone()],
                             vec![s_transition.id.clone()],
                         ),
@@ -239,7 +238,7 @@ impl TransitionSystem for Quotient {
                 let target_locations = merge(loc_t, &s_transition.target_locations);
                 let updates = s_transition.updates.clone();
                 transitions.push(Transition {
-                    id: TransitionID::Quotient(2, Vec::new(), vec![s_transition.id.clone()]),
+                    id: TransitionID::Quotient(Vec::new(), vec![s_transition.id.clone()]),
                     guard_zone,
                     target_locations,
                     updates,
@@ -260,7 +259,7 @@ impl TransitionSystem for Quotient {
             let inv_l_s = loc_s.apply_invariants(OwnedFederation::universe(self.dim));
 
             transitions.push(Transition {
-                id: TransitionID::Quotient(3, Vec::new(), s.iter().map(|t| t.id.clone()).collect()),
+                id: TransitionID::Quotient(Vec::new(), s.iter().map(|t| t.id.clone()).collect()),
                 guard_zone: (!inv_l_s) + (!g_s),
                 target_locations: universal_location,
                 updates: vec![],
@@ -300,7 +299,6 @@ impl TransitionSystem for Quotient {
 
                 transitions.push(Transition {
                     id: TransitionID::Quotient(
-                        5,
                         t.iter().map(|t| t.id.clone()).collect(),
                         vec![s_transition.id.clone()],
                     ),
@@ -323,11 +321,7 @@ impl TransitionSystem for Quotient {
             }];
 
             transitions.push(Transition {
-                id: TransitionID::Quotient(
-                    6,
-                    vec![TransitionID::None],
-                    vec![TransitionID::None], // check if this is correct later
-                ),
+                id: TransitionID::None,
                 guard_zone,
                 target_locations: inconsistent_location,
                 updates,
@@ -344,7 +338,7 @@ impl TransitionSystem for Quotient {
                 let updates = t_transition.updates.clone();
 
                 transitions.push(Transition {
-                    id: TransitionID::Quotient(7, vec![t_transition.id.clone()], Vec::new()),
+                    id: TransitionID::Quotient(vec![t_transition.id.clone()], Vec::new()),
                     guard_zone,
                     target_locations,
                     updates,
