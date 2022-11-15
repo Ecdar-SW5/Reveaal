@@ -3,6 +3,8 @@ use std::{
     vec,
 };
 
+use prost::encoding::int32;
+
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum TransitionID {
     Conjunction(Box<TransitionID>, Box<TransitionID>),
@@ -13,32 +15,44 @@ pub enum TransitionID {
 }
 
 impl TransitionID {
-    pub fn get_leaves(&self) -> Vec<TransitionID> {
+    pub fn get_leaves(&self) -> Vec<Vec<TransitionID>> {
         let mut result = Vec::new();
-        self.get_leaves_helper(&mut result);
+        self.get_leaves_helper(&mut result, 0);
         result
     }
 
-    fn get_leaves_helper(&self, current_leaves: &mut Vec<TransitionID>) {
+    fn get_leaves_helper(&self, current_leaves: &mut Vec<Vec<TransitionID>>, index: usize) -> (&TransitionID, usize) {
         match self {
             TransitionID::Conjunction(l, r) => {
-                l.get_leaves_helper(current_leaves);
-                r.get_leaves_helper(current_leaves);
+                let a = l.get_leaves_helper(current_leaves, index);
+                let b = r.get_leaves_helper(current_leaves, a.1 + 1);
+                (self, b.1 + 1)
             }
             TransitionID::Composition(l, r) => {
-                l.get_leaves_helper(current_leaves);
-                r.get_leaves_helper(current_leaves);
+                let a = l.get_leaves_helper(current_leaves, index);
+                let b = r.get_leaves_helper(current_leaves, a.1 + 1);
+                (self, b.1 + 1)
             }
             TransitionID::Quotient(_, _l, _r) => {
-                current_leaves.push(self.clone());
+                let mut curIndex = index;
+                for t in _l {
+                    (_, curIndex) = t.get_leaves_helper(current_leaves, index);
+                }
+                let mut lastIndex = curIndex;
+                for s in _r {
+                    (_, lastIndex) = s.get_leaves_helper(current_leaves, curIndex + 1);
+                }
+                (self, lastIndex + 1)
             }
             TransitionID::Simple(_) => {
-                current_leaves.push(self.clone());
+                current_leaves[index].push(self.clone());
+                (self, index)
             }
             TransitionID::None => {
-                current_leaves.push(self.clone());
+                current_leaves[index].push(self.clone());
+                (self, index)
             }
-        };
+        }
     }
 
     pub fn split_into_component_lists(path: &Vec<TransitionID>) -> Vec<Vec<TransitionID>> {
@@ -48,7 +62,7 @@ impl TransitionID {
 
         for id in path {
             for (i, subId) in id.get_leaves().iter().enumerate() {
-                paths[i].push(subId.clone());
+                //paths[i].push(subId.clone());
             }
         }
         paths
