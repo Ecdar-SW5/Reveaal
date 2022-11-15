@@ -17,20 +17,6 @@ struct SubPath {
     transition: Option<Transition>,
 }
 
-impl SubPath {
-    fn new(
-        previous_sub_path: Option<Rc<SubPath>>,
-        destination_state: State,
-        transition: Option<Transition>,
-    ) -> Self {
-        SubPath {
-            previous_sub_path,
-            destination_state,
-            transition,
-        }
-    }
-}
-
 fn is_trivially_uncreachable(
     _start_state: &State,
     end_state: &State,
@@ -115,7 +101,11 @@ fn search_algorithm(
         vec![start_clone.zone_ref().clone()],
     );
 
-    frontier_states.push(Rc::new(SubPath::new(None, start_clone, None)));
+    frontier_states.push(Rc::new(SubPath {
+        previous_sub_path: None,
+        destination_state: start_clone,
+        transition: None,
+    }));
 
     while let Some(sub_path) = frontier_states.pop() {
         if reached_end_state(&sub_path.destination_state, end_state) {
@@ -171,11 +161,11 @@ fn take_transition(
                 .get_mut(new_location_id)
                 .unwrap()
                 .push(new_state.zone_ref().clone());
-            frontier_states.push(Rc::new(SubPath::new(
-                Some(Rc::clone(sub_path)),
-                new_state,
-                Some(transition.clone()),
-            )));
+            frontier_states.push(Rc::new(SubPath {
+                previous_sub_path: Some(Rc::clone(sub_path)),
+                destination_state: new_state,
+                transition: Some(transition.clone()),
+            }));
         }
     }
 }
