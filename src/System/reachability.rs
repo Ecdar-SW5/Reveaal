@@ -11,7 +11,6 @@ pub struct Path {
     pub was_reachable: bool,
 }
 
-#[derive(Clone)]
 struct SubPath {
     previous_sub_path: Option<Rc<SubPath>>,
     destination_state: State,
@@ -212,10 +211,6 @@ fn make_path(sub_path: Rc<SubPath>) -> Result<Path, String> {
     }
 
     path.reverse();
-
-    for t in path.clone() {
-        println!("{}",t.id);
-    }
 
     Ok(Path {
         path: Some(path),
