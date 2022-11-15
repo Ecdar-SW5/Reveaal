@@ -106,10 +106,13 @@ fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> Locati
             Box::new(get_location_id(locations, left)),
             Box::new(get_location_id(locations, right)),
         ),
-        SystemRecipe::Component(..) => match locations.next().unwrap().trim() {
+        SystemRecipe::Component(component) => match locations.next().unwrap().trim() {
             // It is ensured .next() will not give a None, since the number of location is same as number of component. This is also being checked in validate_reachability_input function, that is called before get_state
             "_" => LocationID::AnyLocation(),
-            str => LocationID::Simple(str.to_string()),
+            str => LocationID::Simple {
+                location_id: str.to_string(),
+                component_id: Some(component.get_name().to_owned()),
+            },
         },
     }
 }
