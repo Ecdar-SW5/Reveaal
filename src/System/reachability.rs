@@ -72,14 +72,10 @@ pub fn find_path(
         });
     }
 
-    search_algorithm(&start_state, &end_state, system)
+    Ok(search_algorithm(&start_state, &end_state, system))
 }
 
-fn search_algorithm(
-    start_state: &State,
-    end_state: &State,
-    system: &dyn TransitionSystem,
-) -> Result<Path, String> {
+fn search_algorithm(start_state: &State, end_state: &State, system: &dyn TransitionSystem) -> Path {
     // Apply the invariant of the start state to the start state
     let mut start_clone = start_state.clone();
     let start_zone = start_clone.take_zone();
@@ -127,10 +123,10 @@ fn search_algorithm(
         }
     }
     // If nothing has been found, it is not reachable
-    Ok(Path {
+    Path {
         path: None,
         was_reachable: false,
-    })
+    }
 }
 
 fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
@@ -191,7 +187,7 @@ fn remove_existing_subsets_of_zone(
     existing_zones.retain(|existing_zone| !existing_zone.subset_eq(new_zone));
 }
 
-fn make_path(sub_path: Rc<SubPath>) -> Result<Path, String> {
+fn make_path(sub_path: Rc<SubPath>) -> Path {
     let mut path: Vec<Transition> = Vec::new();
 
     let mut sub_path = sub_path;
@@ -202,8 +198,8 @@ fn make_path(sub_path: Rc<SubPath>) -> Result<Path, String> {
 
     path.reverse();
 
-    Ok(Path {
+    Path {
         path: Some(path),
         was_reachable: true,
-    })
+    }
 }
