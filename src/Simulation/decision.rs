@@ -30,12 +30,6 @@ impl Decision {
             Some(loc_tuple) => loc_tuple,
         };
 
-        let _proto_location_ids: Vec<LocationID> = proto_location_tuple
-            .locations
-            .iter()
-            .map(|loc| LocationID::from_string(loc.id.as_str()))
-            .collect();
-
         let proto_federation: ProtoFederation = match proto_state.federation {
             None => panic!("No federation found"),
             Some(federation) => federation,
