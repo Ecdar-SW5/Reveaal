@@ -107,7 +107,7 @@ impl<'a> ExecutableQuery for GetComponentExecutor<'a> {
         let mut comp = combine_components(&self.system, PruningStrategy::Reachable);
         comp.name = self.comp_name;
 
-        comp.create_edge_io_split();
+        comp.remake_edge_ids();
 
         self.component_loader.save_component(comp.clone());
 

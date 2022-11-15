@@ -256,6 +256,18 @@ impl Component {
         self.input_edges = Some(i_edges);
     }
 
+    /// Redoes the components Edge IDs by giving them new unique IDs based on their index.
+    pub fn remake_edge_ids(&mut self) {
+        // Give all edges a name
+        self.edges[0].id = "a".to_string();
+        for (index, edge) in self.get_mut_edges().iter_mut().enumerate() {
+            edge.id = format!("E{}", index);
+        }
+
+        // Remake the input and output edges
+        self.create_edge_io_split();
+    }
+
     /// Function for reducing the clocks found on the component.
     /// Unused clocks and "duplicate" clocks (clocks that are never reset)
     /// and then remove them.
