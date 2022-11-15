@@ -14,6 +14,7 @@ use crate::ModelObjects::representations::BoolExpression;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
 use crate::TransitionSystems::{LocationTuple, TransitionID};
 use edbm::zones::OwnedFederation;
+use log::info;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -271,11 +272,17 @@ impl Component {
     /// Function for reducing the clocks found on the component.
     /// Unused clocks and "duplicate" clocks (clocks that are never reset)
     /// and then remove them.
-    pub fn reduce_clocks(&mut self, redundant_clocks: &Vec<RedundantClock>) {
+    pub fn reduce_clocks(&mut self, redundant_clocks: Vec<RedundantClock>) {
         for clock in redundant_clocks {
             match &clock.reason {
-                ClockReductionReason::Duplicate(global) => self.replace_clock(clock, global),
-                ClockReductionReason::Unused => self.remove_clock(&clock.updates),
+                ClockReductionReason::Duplicate(global) => {
+                    self.replace_clock(&clock, global);
+                    info!("Replaced Clock {} with {global}", clock.clock); // Should be changed in the future to be the information logger
+                }
+                ClockReductionReason::Unused => {
+                    self.remove_clock(&clock.updates);
+                    info!("Removed Clock {}", clock.clock);
+                }
             }
 
             let clock_val = *self
@@ -416,10 +423,8 @@ impl Component {
     }
 
     /// Replaces duplicate clock with a new
-
     /// # Arguments
     /// `clock`: [`RedundantClock`] representing the clock to be replaced
-
     /// `other_clock`: The name of the clock to replace `clock`
     pub(crate) fn replace_clock(&mut self, clock: &RedundantClock, other_clock: &String) {
         for e in &clock.edge_indices {
@@ -667,7 +672,12 @@ impl Transition {
 
         let target_loc_name = &edge.target_location;
         let target_loc = comp.get_location_by_name(target_loc_name);
-        let target_locations = LocationTuple::simple(target_loc, comp.get_declarations(), dim);
+        let target_locations = LocationTuple::simple(
+            target_loc,
+            Some(comp.get_name().to_owned()),
+            comp.get_declarations(),
+            dim,
+        );
 
         let mut compiled_updates = vec![];
         if let Some(updates) = edge.get_update() {
