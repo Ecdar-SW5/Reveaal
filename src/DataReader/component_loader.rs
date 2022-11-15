@@ -89,6 +89,7 @@ impl ComponentContainer {
         }
     }
 
+    /// Sets the settings
     pub(crate) fn set_settings(&mut self, settings: Settings) {
         self.settings = Some(settings);
     }
