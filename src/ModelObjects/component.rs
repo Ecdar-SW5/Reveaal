@@ -260,7 +260,6 @@ impl Component {
     /// Redoes the components Edge IDs by giving them new unique IDs based on their index.
     pub fn remake_edge_ids(&mut self) {
         // Give all edges a name
-        self.edges[0].id = "a".to_string();
         for (index, edge) in self.get_mut_edges().iter_mut().enumerate() {
             edge.id = format!("E{}", index);
         }
