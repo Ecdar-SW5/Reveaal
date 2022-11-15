@@ -52,7 +52,7 @@ mod saving_transitionid_test {
             if expected_ids.contains(&edge.id) {
                 expected_ids.remove(&edge.id);
             } else {
-                panic!("Found unexpected ID in transition system: {}", &edge.id)
+                panic!("Found unexpected ID in component: {}", &edge.id)
             }
         }
         assert_eq!(expected_ids.len(), 0);
