@@ -72,16 +72,6 @@ mod reachability_transition_id_test {
                 Box::new(TransitionID::Simple("E35".to_string()))
             )
             ]; "Conjunction HalfAdm1 and HalfAdm2")]
-    #[test_case(FOLDER_PATH, QueryExpression::Quotient(
-                Box::new(QueryExpression::VarName("HalfAdm1".to_string())),
-                Box::new(QueryExpression::VarName("HalfAdm2".to_string()))
-            ),
-            vec![
-              TransitionID::Simple("E25".to_string()),
-              TransitionID::Simple("E26".to_string()),
-              TransitionID::Simple("E27".to_string()),
-              TransitionID::Simple("E28".to_string()),
-              TransitionID::Simple("E29".to_string())]; "Quotient HalfAdm1 and HalfAdm2")]
     fn transition_id_test(
         path: &str,
         machineExpression: QueryExpression,
