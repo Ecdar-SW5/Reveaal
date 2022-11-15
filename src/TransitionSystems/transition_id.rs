@@ -1,5 +1,8 @@
 use std::fmt::{Display, Formatter};
 
+/// TransitionID is used to represent which edges a given transition consists of.
+/// Works similarly to LocationID.
+/// Note that Transitions may have a None id, if it is not created from an edge.
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum TransitionID {
     Conjunction(Box<TransitionID>, Box<TransitionID>),
