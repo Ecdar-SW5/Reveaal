@@ -13,17 +13,22 @@ use std::sync::{Arc, Mutex};
 
 type ComponentsMap = HashMap<String, Component>;
 
+struct ComponentTuple {
+    components_hash: u32,
+    components_map: Arc<ComponentsMap>,
+}
+
 /// A struct used for caching the models.
 #[derive(Debug, Clone)]
 pub struct ModelCache {
     // TODO: A concurrent lru may be faster to use and cause less prone to lock contention.
-    cache: Arc<Mutex<LruCache<i32, (u32, Arc<ComponentsMap>)>>>,
+    cache: Arc<Mutex<LruCache<i32, ComponentTuple>>>,
 }
 
 impl Default for ModelCache {
     fn default() -> Self {
         Self {
-            cache: Arc::new(Mutex::new(LruCache::<i32, (u32, Arc<ComponentsMap>)>::new(
+            cache: Arc::new(Mutex::new(LruCache::<i32, ComponentTuple>::new(
                 NonZeroUsize::new(100).unwrap(),
             ))),
         }
@@ -42,8 +47,10 @@ impl ModelCache {
         let components = cache.get(&user_id);
 
         components.and_then(|component_pair| {
-            if component_pair.0 == components_hash {
-                Some(ComponentContainer::new(Arc::clone(&component_pair.1)))
+            if component_pair.components_hash == components_hash {
+                Some(ComponentContainer::new(Arc::clone(
+                    &component_pair.components_map,
+                )))
             } else {
                 None
             }
@@ -64,7 +71,10 @@ impl ModelCache {
     ) -> ComponentContainer {
         self.cache.lock().unwrap().put(
             user_id,
-            (components_hash, Arc::clone(&container_components)),
+            ComponentTuple {
+                components_hash,
+                components_map: Arc::clone(&container_components),
+            },
         );
 
         ComponentContainer::new(container_components)
