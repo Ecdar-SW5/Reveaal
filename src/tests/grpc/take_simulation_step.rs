@@ -11,6 +11,7 @@ mod test {
     use test_case::test_case;
     use tonic::{self, Request, Response, Status};
 
+    #[ignore]
     #[test_case(
         create_good_request(),
         create_expected_response_to_good_request();

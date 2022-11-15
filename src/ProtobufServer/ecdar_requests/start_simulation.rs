@@ -21,7 +21,7 @@ use tonic::{Request, Response, Status};
 use crate::ProtobufServer::ConcreteEcdarBackend;
 
 impl ConcreteEcdarBackend {
-    pub async fn handle_start_simulation(
+    pub fn handle_start_simulation(
         request: AssertUnwindSafe<Request<SimulationStartRequest>>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
         trace!("Received query: {:?}", request);

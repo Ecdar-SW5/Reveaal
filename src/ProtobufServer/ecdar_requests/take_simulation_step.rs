@@ -13,7 +13,7 @@ use crate::{
     Simulation::{decision::Decision, transition_decision::TransitionDecision},
 };
 impl ConcreteEcdarBackend {
-    pub async fn handle_take_simulation_step(
+    pub fn handle_take_simulation_step(
         request: AssertUnwindSafe<Request<SimulationStepRequest>>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
         let request_message = request.0.into_inner();
