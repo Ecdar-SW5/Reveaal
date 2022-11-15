@@ -9,6 +9,7 @@ use crate::System::refine;
 use crate::System::save_component::combine_components;
 use crate::TransitionSystems::transition_system::PrecheckResult;
 use crate::TransitionSystems::TransitionSystemPtr;
+use crate::component::Transition;
 
 use super::extract_system_rep::SystemRecipe;
 use super::local_consistency::{ConsistencyFailure, ConsistencyResult, DeterminismResult};
@@ -35,7 +36,8 @@ impl QueryResult {
 
             QueryResult::Reachability(path) => {
                 if path.was_reachable {
-                    satisfied(query_str)
+                    satisfied(query_str);
+                    print_path(path.path.clone().unwrap());
                 } else {
                     not_satisfied(query_str)
                 }
@@ -62,6 +64,13 @@ fn satisfied(query_str: &str) {
 
 fn not_satisfied(query_str: &str) {
     println!("{} -- Property is NOT satisfied", query_str);
+}
+
+fn print_path(path : Vec<Transition>){
+    println!("Edges that have been taken:");
+    for transition in path{
+        println!("{}", transition.id);
+    }
 }
 
 pub trait ExecutableQuery {
