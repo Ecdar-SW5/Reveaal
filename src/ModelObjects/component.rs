@@ -11,8 +11,8 @@ use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 
 use crate::ModelObjects::representations::BoolExpression;
-use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
+use crate::TransitionSystems::{LocationTuple, TransitionID};
 use edbm::zones::OwnedFederation;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -634,13 +634,19 @@ pub enum SyncType {
 //Represents a single transition from taking edges in multiple components
 #[derive(Debug, Clone)]
 pub struct Transition {
+    pub id: TransitionID,
     pub guard_zone: OwnedFederation,
     pub target_locations: LocationTuple,
     pub updates: Vec<CompiledUpdate>,
 }
 impl Transition {
-    pub fn new(target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
+    pub fn new(
+        transition_id: TransitionID,
+        target_locations: &LocationTuple,
+        dim: ClockIndex,
+    ) -> Transition {
         Transition {
+            id: transition_id,
             guard_zone: OwnedFederation::universe(dim),
             target_locations: target_locations.clone(),
             updates: vec![],
@@ -664,6 +670,7 @@ impl Transition {
         }
 
         Transition {
+            id: TransitionID::Simple(edge.id.clone()),
             guard_zone: Transition::combine_edge_guards(&vec![(comp, edge)], dim),
             target_locations,
             updates: compiled_updates,
@@ -703,6 +710,17 @@ impl Transition {
                 updates.append(&mut r.updates.clone());
 
                 out.push(Transition {
+                    id: match comp {
+                        CompositionType::Conjunction => TransitionID::Conjunction(
+                            Box::new(l.id.clone()),
+                            Box::new(r.id.clone()),
+                        ),
+                        CompositionType::Composition => TransitionID::Composition(
+                            Box::new(l.id.clone()),
+                            Box::new(r.id.clone()),
+                        ),
+                        _ => panic!("Invalid composition type {:?}", comp),
+                    },
                     guard_zone,
                     target_locations,
                     updates,
@@ -829,6 +847,7 @@ impl fmt::Display for Transition {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(into = "DummyEdge")]
 pub struct Edge {
+    pub id: String,
     #[serde(rename = "sourceLocation")]
     pub source_location: String,
     #[serde(rename = "targetLocation")]

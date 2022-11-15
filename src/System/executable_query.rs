@@ -1,9 +1,11 @@
 use edbm::util::constraints::ClockIndex;
 
+use crate::component::Transition;
 use crate::DataReader::component_loader::ComponentLoader;
 use crate::ModelObjects::component::Component;
 use crate::ModelObjects::component::State;
 use crate::System::reachability;
+use crate::System::reachability::Path;
 use crate::System::refine;
 use crate::System::save_component::combine_components;
 use crate::TransitionSystems::transition_system::PrecheckResult;
@@ -15,7 +17,7 @@ use super::refine::RefinementResult;
 use super::save_component::PruningStrategy;
 
 pub enum QueryResult {
-    Reachability(bool, Vec<String>), // This represents a path from start state to end state
+    Reachability(Path), // This represents a path from start state to end state
     Refinement(RefinementResult),
     GetComponent(Component),
     Consistency(ConsistencyResult),
@@ -32,8 +34,14 @@ impl QueryResult {
                 println!("\nGot failure: {}", failure);
             }
 
-            QueryResult::Reachability(true, _) => satisfied(query_str),
-            QueryResult::Reachability(false, _) => not_satisfied(query_str),
+            QueryResult::Reachability(path) => {
+                if path.was_reachable {
+                    satisfied(query_str);
+                    print_path(path.path.clone().unwrap());
+                } else {
+                    not_satisfied(query_str)
+                }
+            }
 
             QueryResult::Consistency(ConsistencyResult::Success) => satisfied(query_str),
             QueryResult::Consistency(ConsistencyResult::Failure(_)) => not_satisfied(query_str),
@@ -56,6 +64,13 @@ fn satisfied(query_str: &str) {
 
 fn not_satisfied(query_str: &str) {
     println!("{} -- Property is NOT satisfied", query_str);
+}
+
+fn print_path(path: Vec<Transition>) {
+    println!("Edges that have been taken:");
+    for transition in path {
+        println!("{}", transition.id);
+    }
 }
 
 pub trait ExecutableQuery {
@@ -93,21 +108,12 @@ pub struct ReachabilityExecutor {
 }
 impl ExecutableQuery for ReachabilityExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
-        let (sys, s_state, e_state) = (self.transition_system, self.start_state, self.end_state);
-
-        match reachability::find_path(Some(s_state), e_state, &*sys) {
-            Ok(res) => {
-                match res {
-                    Some(path_res) => QueryResult::Reachability(
-                        true,
-                        Vec::new(), /* Replace with actual path */
-                    ),
-                    None => QueryResult::Reachability(
-                        false,
-                        Vec::new(), /* Replace with actual path */
-                    ),
-                }
-            }
+        match reachability::find_path(
+            self.start_state,
+            self.end_state,
+            self.transition_system.as_ref(),
+        ) {
+            Ok(res) => QueryResult::Reachability(res),
             Err(err_msg) => QueryResult::Error(err_msg),
         }
     }

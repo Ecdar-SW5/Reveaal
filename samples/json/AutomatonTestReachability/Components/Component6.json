@@ -53,7 +53,7 @@
       "targetLocation": "L14",
       "status": "INPUT",
       "select": "",
-      "guard": "x\u003c5",
+      "guard": "x\u003c5\u0026\u0026y\u003e10\u0026\u0026z\u003e10",
       "update": "y\u003d0",
       "sync": "",
       "isLocked": false,
@@ -69,8 +69,8 @@
           "x": 130.00000000000006,
           "y": 250.0,
           "propertyType": "GUARD",
-          "propertyX": -10.0,
-          "propertyY": -30.000000000000004
+          "propertyX": -80.0,
+          "propertyY": -40.0
         },
         {
           "x": 160.00000000000006,
@@ -95,7 +95,7 @@
       "targetLocation": "L14",
       "status": "INPUT",
       "select": "",
-      "guard": "x\u003c5\u0026\u0026y\u003c5",
+      "guard": "x\u003c5\u0026\u0026y\u003c5\u0026\u0026z\u003e10",
       "update": "z\u003d0",
       "sync": "",
       "isLocked": false,
@@ -137,27 +137,34 @@
       "targetLocation": "L14",
       "status": "INPUT",
       "select": "",
-      "guard": "",
+      "guard": "x\u003e10\u0026\u0026y\u003e10\u0026\u0026z\u003e10",
       "update": "x\u003d0",
       "sync": "",
       "isLocked": false,
       "nails": [
         {
-          "x": 190.00000999999995,
-          "y": 368.4,
+          "x": 200.0,
+          "y": 360.0,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": 10.0
+        },
+        {
+          "x": 180.00000999999995,
+          "y": 388.4,
           "propertyType": "SYNCHRONIZATION",
           "propertyX": 10.0,
           "propertyY": 0.0
         },
         {
-          "x": 170.00000000000006,
-          "y": 380.0,
+          "x": 150.00000000000006,
+          "y": 390.0,
           "propertyType": "UPDATE",
           "propertyX": -20.000000000000004,
           "propertyY": 20.0
         },
         {
-          "x": 150.00000999999995,
+          "x": 130.00000999999995,
           "y": 368.4,
           "propertyType": "NONE",
           "propertyX": 0.0,
@@ -223,8 +230,8 @@
     }
   ],
   "description": "",
-  "x": 449.0,
-  "y": 132.0,
+  "x": 65.0,
+  "y": 14.5,
   "width": 450.0,
   "height": 600.0,
   "color": "8",

@@ -3,29 +3,18 @@ use edbm::zones::OwnedFederation;
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
-use std::process::id;
+use std::rc::Rc;
 
+/// This hold the result of a reachability query
 pub struct Path {
-    //start_state: State,
-    //transition: Transition,
+    pub path: Option<Vec<Transition>>,
+    pub was_reachable: bool,
 }
 
-fn validate_input(
-    start_state: &State,
-    end_state: &State,
-    system: &dyn TransitionSystem,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let locations = system.get_all_locations();
-    if !locations.contains(start_state.get_location()) {
-        return Err("The transition system does not contain the start location".into());
-    }
-    if !locations.iter().any(|loc| {
-        loc.id
-            .compare_partial_locations(&end_state.get_location().id)
-    }) {
-        return Err("The transition system does not contain the end location".into());
-    }
-    Ok(())
+struct SubPath {
+    previous_sub_path: Option<Rc<SubPath>>,
+    destination_state: State,
+    transition: Option<Transition>,
 }
 
 fn is_trivially_uncreachable(
@@ -72,25 +61,15 @@ fn is_trivially_uncreachable(
 /// };
 /// ```
 pub fn find_path(
-    begin_state: Option<State>,
+    start_state: State,
     end_state: State,
     system: &dyn TransitionSystem,
-) -> Result<Option<Path>, String> {
-    let start_state: State;
-    if let Some(s) = begin_state {
-        start_state = s;
-    } else if let Some(s) = system.get_initial_state() {
-        start_state = s;
-    } else {
-        return Err("No start state in either parameter or transition system".to_string());
-    }
-
-    if let Err(err) = validate_input(&start_state, &end_state, system) {
-        return Err(err.to_string());
-    }
-
+) -> Result<Path, String> {
     if is_trivially_uncreachable(&start_state, &end_state, system) {
-        return Ok(None);
+        return Ok(Path {
+            path: None,
+            was_reachable: false,
+        });
     }
 
     search_algorithm(&start_state, &end_state, system)
@@ -100,7 +79,7 @@ fn search_algorithm(
     start_state: &State,
     end_state: &State,
     system: &dyn TransitionSystem,
-) -> Result<Option<Path>, String> {
+) -> Result<Path, String> {
     // Apply the invariant of the start state to the start state
     let mut start_clone = start_state.clone();
     let start_zone = start_clone.take_zone();
@@ -109,27 +88,36 @@ fn search_algorithm(
 
     // hashmap linking every location to all its current zones
     let mut visited_states: HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
+    //let mut made_transitions: Vec<SubPath> = Vec::new();
 
     // List of states that are to be visited
-    let mut frontier_states: Vec<State> = Vec::new();
+    let mut frontier_states: Vec<Rc<SubPath>> = Vec::new();
 
-    let actions = system.get_actions();
+    let mut actions: Vec<String> = system.get_actions().into_iter().collect();
+    actions.sort();
 
-    frontier_states.push(start_clone);
-    loop {
-        let next_state = frontier_states.pop();
-        // All has been explored if no next state exist
-        if next_state.is_none() {
-            break;
+    visited_states.insert(
+        start_clone.get_location().id.clone(),
+        vec![start_clone.zone_ref().clone()],
+    );
+
+    frontier_states.push(Rc::new(SubPath {
+        previous_sub_path: None,
+        destination_state: start_clone,
+        transition: None,
+    }));
+
+    while let Some(sub_path) = frontier_states.pop() {
+        if reached_end_state(&sub_path.destination_state, end_state) {
+            return make_path(sub_path);
         }
-        let next_state = next_state.unwrap();
-        if reached_end_state(&next_state, end_state) {
-            return Ok(Some(Path {})); /* TODO: Return the actual path */
-        }
+
         for action in &actions {
-            for transition in &system.next_transitions(&next_state.decorated_locations, action) {
+            for transition in
+                &system.next_transitions(&sub_path.destination_state.decorated_locations, action)
+            {
                 take_transition(
-                    &next_state,
+                    &sub_path,
                     transition,
                     &mut frontier_states,
                     &mut visited_states,
@@ -138,9 +126,11 @@ fn search_algorithm(
             }
         }
     }
-
     // If nothing has been found, it is not reachable
-    Ok(None)
+    Ok(Path {
+        path: None,
+        was_reachable: false,
+    })
 }
 
 fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
@@ -152,25 +142,30 @@ fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
 }
 
 fn take_transition(
-    next_state: &State,
+    sub_path: &Rc<SubPath>,
     transition: &Transition,
-    frontier_states: &mut Vec<State>,
+    frontier_states: &mut Vec<Rc<SubPath>>,
     visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>,
     system: &dyn TransitionSystem,
 ) {
-    let mut new_state = next_state.clone();
+    let mut new_state = sub_path.destination_state.clone();
     if transition.use_transition(&mut new_state) {
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
+        let new_location_id = &new_state.get_location().id;
         let existing_zones = visited_states
-            .entry(new_state.get_location().id.clone())
+            .entry(new_location_id.clone())
             .or_insert(Vec::new());
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
             remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
             visited_states
-                .get_mut(&new_state.get_location().id)
+                .get_mut(new_location_id)
                 .unwrap()
                 .push(new_state.zone_ref().clone());
-            frontier_states.push(new_state);
+            frontier_states.push(Rc::new(SubPath {
+                previous_sub_path: Some(Rc::clone(sub_path)),
+                destination_state: new_state,
+                transition: Some(transition.clone()),
+            }));
         }
     }
 }
@@ -188,10 +183,27 @@ fn zone_subset_of_existing_zones(
     false
 }
 
-/// Removes everything in existing_zones that is a subset of zone
+// Removes everything in existing_zones that is a subset of zone
 fn remove_existing_subsets_of_zone(
     new_zone: &OwnedFederation,
     existing_zones: &mut Vec<OwnedFederation>,
 ) {
     existing_zones.retain(|existing_zone| !existing_zone.subset_eq(new_zone));
+}
+
+fn make_path(sub_path: Rc<SubPath>) -> Result<Path, String> {
+    let mut path: Vec<Transition> = Vec::new();
+
+    let mut sub_path = sub_path;
+    while sub_path.previous_sub_path.is_some() {
+        path.push(sub_path.transition.clone().unwrap());
+        sub_path = Rc::clone(sub_path.previous_sub_path.as_ref().unwrap());
+    }
+
+    path.reverse();
+
+    Ok(Path {
+        path: Some(path),
+        was_reachable: true,
+    })
 }
