@@ -270,11 +270,7 @@ impl TransitionSystem for Quotient {
             let inv_l_s = loc_s.apply_invariants(OwnedFederation::universe(self.dim));
 
             transitions.push(Transition {
-                id: TransitionID::Quotient(
-                    4,
-                    vec![TransitionID::Simple(format!("QRule5:{}", loc_s.id))],
-                    Vec::new(),
-                ),
+                id: TransitionID::None, // TODO: Check this later if its correct
                 guard_zone: !inv_l_s,
                 target_locations: universal_location,
                 updates: vec![],
@@ -329,8 +325,8 @@ impl TransitionSystem for Quotient {
             transitions.push(Transition {
                 id: TransitionID::Quotient(
                     6,
-                    vec![TransitionID::Simple(loc_t.id.to_string())],
-                    vec![TransitionID::Simple(loc_s.id.to_string())],
+                    vec![TransitionID::None],
+                    vec![TransitionID::None], // check if this is correct later
                 ),
                 guard_zone,
                 target_locations: inconsistent_location,
