@@ -50,7 +50,7 @@ impl EcdarBackend for ConcreteEcdarBackend {
         _request: Request<()>,
     ) -> Result<Response<UserTokenResponse>, Status> {
         let id = self.num.fetch_add(1, Ordering::SeqCst);
-        let token_response = UserTokenResponse{ user_id: id };
+        let token_response = UserTokenResponse { user_id: id };
         Result::Ok(Response::new(token_response))
     }
 

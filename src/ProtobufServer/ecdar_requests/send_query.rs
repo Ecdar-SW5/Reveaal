@@ -43,22 +43,27 @@ impl ConcreteEcdarBackend {
         let query = parse_query(&query_request)?;
         let user_id = query_request.user_id;
 
-        let mut component_container = match model_cache.get_model(user_id, components_info.components_hash) {
-            Some(model) => model,
-            None => {
-                let mut parsed_components = vec![];
+        let mut component_container =
+            match model_cache.get_model(user_id, components_info.components_hash) {
+                Some(model) => model,
+                None => {
+                    let mut parsed_components = vec![];
 
-                for proto_component in proto_components {
-                    let components = parse_components_if_some(proto_component)?;
-                    for component in components {
-                        parsed_components.push(component);
+                    for proto_component in proto_components {
+                        let components = parse_components_if_some(proto_component)?;
+                        for component in components {
+                            parsed_components.push(component);
+                        }
                     }
-                }
 
-                let components = create_components(parsed_components);
-                model_cache.insert_model(user_id, components_info.components_hash, Arc::new(components))
-            }
-        };
+                    let components = create_components(parsed_components);
+                    model_cache.insert_model(
+                        user_id,
+                        components_info.components_hash,
+                        Arc::new(components),
+                    )
+                }
+            };
 
         if query_request.ignored_input_outputs.is_some() {
             return Err(Status::unimplemented(
