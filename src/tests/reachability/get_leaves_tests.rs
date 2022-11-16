@@ -15,9 +15,10 @@ mod reachability_search_algorithm_test {
     #[test_case(TransitionID::Conjunction(
       TransitionID::Simple("a".to_string),
       TransitionID::Simple("b".to_string)
-    );
+    ),
+    vec![TransitionID::Simple("a".to_string), TransitionID::Simple("b".to_string)];
     "State gets parsed as not partial")]
-    fn search_algorithm_returns_result_university(id: TransitionID, expected: Vec<Vec<TransitionID>>) {
+    fn get_leaves_returns_correct_vector(id: TransitionID, expected: Vec<Vec<TransitionID>>) {
       assert_eq(id.get_leaves(), expected);
       /*
       
