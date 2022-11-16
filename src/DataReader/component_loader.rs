@@ -7,7 +7,6 @@ use crate::DataReader::xml_parser::parse_xml_from_file;
 use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
 use crate::ProtobufServer::services;
-use crate::ProtobufServer::services::query_request::Settings;
 use crate::System::input_enabler;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
