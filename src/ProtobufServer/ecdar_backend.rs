@@ -82,11 +82,11 @@ impl EcdarBackend for ConcreteEcdarBackend {
         request: Request<SimulationStartRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
         let request = std::panic::AssertUnwindSafe(request);
-        let res =
-            catch_unwind(self.thread_pool.enqueue(move || {
-                Self::handle_start_simulation(request)
-            }))
-            .await;
+        let res = catch_unwind(
+            self.thread_pool
+                .enqueue(move || Self::handle_start_simulation(request)),
+        )
+        .await;
         res
     }
 
@@ -95,11 +95,11 @@ impl EcdarBackend for ConcreteEcdarBackend {
         request: Request<SimulationStepRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
         let request = std::panic::AssertUnwindSafe(request);
-        let res =
-            catch_unwind(self.thread_pool.enqueue(move || {
-                Self::handle_take_simulation_step(request)
-            }))
-            .await;
+        let res = catch_unwind(
+            self.thread_pool
+                .enqueue(move || Self::handle_take_simulation_step(request)),
+        )
+        .await;
         res
     }
 }

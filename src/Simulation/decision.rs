@@ -9,7 +9,7 @@ use crate::ProtobufServer::services::{
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
     LocationTuple as ProtoLocationTuple, State as ProtoState,
 };
-use crate::TransitionSystems::{LocationID, TransitionSystemPtr};
+use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
 
 #[derive(Debug)]
 pub struct Decision {
@@ -30,20 +30,20 @@ impl Decision {
             Some(loc_tuple) => loc_tuple,
         };
 
-        let _proto_location_ids: Vec<LocationID> = proto_location_tuple
-            .locations
-            .iter()
-            .map(|loc| LocationID::from_string(loc.id.as_str()))
-            .collect();
-
         let proto_federation: ProtoFederation = match proto_state.federation {
             None => panic!("No federation found"),
             Some(federation) => federation,
         };
 
-        let _zone: OwnedFederation = proto_federation_to_owned_federation(proto_federation, system);
-        // let location_tuple = LocationTuple::simple(location, system.get_decls(), system.get_dim());
-        // let state = State::create(location_tuple, zone);
+        let zone: OwnedFederation = proto_federation_to_owned_federation(proto_federation, system);
+
+        let location_tuple =
+            match LocationTuple::from_proto_location_tuple(&proto_location_tuple, system) {
+                None => panic!("No location tuple found"),
+                Some(loc_tuple) => loc_tuple,
+            };
+
+        let _state = State::create(location_tuple, zone);
 
         // Convert ProtoEdge to Edge
         let _proto_edge: ProtoEdge = match proto_decision.edge {
@@ -51,11 +51,11 @@ impl Decision {
             Some(edge) => edge,
         };
 
-        todo!();
-        // return Decision {
-        //     source: todo!(),
+        todo!()
+        // Decision {
+        //     source: state,
         //     decided: todo!(),
-        // };
+        // }
     }
 }
 

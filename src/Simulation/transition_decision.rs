@@ -1,8 +1,7 @@
-
 use crate::{
     component::{State, Transition},
-    TransitionSystems::TransitionSystemPtr,
     EdgeEval::constraint_applyer::apply_constraints_to_state,
+    TransitionSystems::TransitionSystemPtr,
 };
 
 use super::{decision::Decision, transition_decision_point::TransitionDecisionPoint};
@@ -15,8 +14,8 @@ pub struct TransitionDecision {
 }
 
 impl TransitionDecision {
-    /// Returns a `TransitionDecision` equivalent to the given `&Decision` in relation to the given `&TransitionSystemPtr` 
-    // TODO this less is horrible... 
+    /// Returns a `TransitionDecision` equivalent to the given `&Decision` in relation to the given `&TransitionSystemPtr`
+    // TODO this less is horrible...
     // TODO an explanation would be in order
     pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Self {
         let action = decision.decided.get_sync();
@@ -26,13 +25,15 @@ impl TransitionDecision {
         let decided = match transitions.len() {
             0 => panic!("No transitions for {}", action),
             1 => transitions.first().unwrap().to_owned(), // If transitions.len() == 1 then transitions.first() == Some(...) always
-            _ => { 
+            _ => {
                 let mut mut_source = decision.source.to_owned();
-                let guard = decision.decided
-                    .get_guard()
-                    .as_ref()
-                    .unwrap();
-                let zone = apply_constraints_to_state(&guard, &system.get_decls()[0], mut_source.take_zone()).expect("idk");
+                let guard = decision.decided.get_guard().as_ref().unwrap();
+                let zone = apply_constraints_to_state(
+                    &guard,
+                    &system.get_decls()[0],
+                    mut_source.take_zone(),
+                )
+                .expect("idk");
                 mut_source.set_zone(zone);
 
                 transitions

@@ -8,11 +8,11 @@ use crate::ProtobufServer::services::{
     ComponentClock, Conjunction as ProtoConjunction, Constraint as ProtoConstraint,
     DecisionPoint as ProtoDecisionPoint, Disjunction as ProtoDisjunction, Edge as ProtoEdge,
     Federation as ProtoFederation, Location as ProtoLocation, LocationTuple as ProtoLocationTuple,
-    SimulationStartRequest, SimulationStepResponse, State as ProtoState, SpecificComponent,
+    SimulationStartRequest, SimulationStepResponse, SpecificComponent, State as ProtoState,
 };
 use crate::Simulation::decision_point::DecisionPoint;
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
-use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr, LocationID};
+use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use edbm::util::constraints::{ClockIndex, Conjunction, Constraint, Disjunction};
 use edbm::zones::OwnedFederation;
 use log::trace;
@@ -63,7 +63,7 @@ impl ProtoDecisionPoint {
         let edges = decision_point
             .possible_decisions
             .iter()
-            .map(|e| ProtoEdge::from(e,decision_point.source.clone()))
+            .map(|e| ProtoEdge::from(e, decision_point.source.clone()))
             .collect();
 
         ProtoDecisionPoint {
@@ -87,14 +87,16 @@ impl ProtoState {
 
 fn location_id_to_proto_location_vec(is: &LocationID) -> Vec<ProtoLocation> {
     match is {
-        LocationID::Simple { location_id, component_id} => vec![ProtoLocation {
+        LocationID::Simple {
+            location_id,
+            component_id,
+        } => vec![ProtoLocation {
             id: location_id.to_string(),
-            specific_component: Some(SpecificComponent { 
-                component_name: component_id.as_ref().unwrap().to_string(), //TODO unwrap bad! 
-                component_index: 0 
-            }
-            ),
-        }], 
+            specific_component: Some(SpecificComponent {
+                component_name: component_id.as_ref().unwrap().to_string(), //TODO unwrap bad!
+                component_index: 0,
+            }),
+        }],
         LocationID::Conjunction(l, r)
         | LocationID::Composition(l, r)
         | LocationID::Quotient(l, r) => location_id_to_proto_location_vec(l)
@@ -191,10 +193,21 @@ impl ProtoConstraint {
 impl ProtoEdge {
     fn from(e: &Edge, s: State) -> Self {
         let protolocations = location_id_to_proto_location_vec(&s.decorated_locations.id);
-        let components: Vec<_> = protolocations.iter().filter(|pl| pl.id == e.source_location).cloned().collect();
+        let components: Vec<_> = protolocations
+            .iter()
+            .filter(|pl| pl.id == e.source_location)
+            .cloned()
+            .collect();
         ProtoEdge {
             id: e.id.clone(),
-            specific_component: Some(SpecificComponent { component_name: components[0].specific_component.clone().unwrap().component_name, component_index: 0 }) // TODO: Find a way to pick correct index for component if combined.
+            specific_component: Some(SpecificComponent {
+                component_name: components[0]
+                    .specific_component
+                    .clone()
+                    .unwrap()
+                    .component_name,
+                component_index: 0,
+            }), // TODO: Find a way to pick correct index for component if combined.
         }
     }
 }
