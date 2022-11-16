@@ -173,7 +173,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
             )
             .iter()
             .map(|component_path| services::Path {
-                edge_ids: component_path.iter().map(|id| id.to_string()).collect(),
+                edge_ids: component_path.concat().iter().map(|id| id.to_string()).collect(),
             })
             .collect();
             if path.was_reachable {

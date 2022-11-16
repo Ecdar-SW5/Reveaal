@@ -69,19 +69,10 @@ impl TransitionID {
 
         for transitionID in path {
             for (componentIndex, transition) in transitionID.get_leaves().iter().enumerate() {
-                paths[componentIndex].push(*transition);
+                paths[componentIndex].push(transition.to_vec());
             }
         }
         paths
-    }
-    fn count_leaves(transition_id: TransitionID) -> usize {
-        match transition_id {
-            TransitionID::Conjunction(l, r) => Self::count_leaves(*l) + Self::count_leaves(*r),
-            TransitionID::Composition(l, r) => Self::count_leaves(*l) + Self::count_leaves(*r),
-            TransitionID::Quotient(_, _l, _r) => 1,
-            TransitionID::Simple(_) => 1,
-            TransitionID::None => 1,
-        }
     }
 }
 
