@@ -29,14 +29,7 @@ fn is_trivially_unreachable(
         }
     }
 
-    if match _start_state.decorated_locations.loc_type {
-        LocationType::Universal | LocationType::Inconsistent => true,
-        _ => false,
-    } {
-        return true;
-    }
-
-    false
+    matches!(_start_state.decorated_locations.loc_type, LocationType::Universal | LocationType::Inconsistent)
 }
 
 fn is_trivially_reachable(

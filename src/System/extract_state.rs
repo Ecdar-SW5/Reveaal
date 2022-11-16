@@ -82,20 +82,14 @@ fn build_location_tuple(
     if out.0 {
         locations
             .iter()
-            .find(|loc| match loc.loc_type {
-                LocationType::Universal => true,
-                _ => false,
-            })
+            .find(|loc| matches!(loc.loc_type, LocationType::Universal))
             .map(|loc| loc.to_owned())
             .ok_or("Could not find universal location in the transition system".to_string())
     // If the location is inconsistent
     } else if out.1 {
         locations
             .iter()
-            .find(|loc| match loc.loc_type {
-                LocationType::Inconsistent => true,
-                _ => false,
-            })
+            .find(|loc| matches!(loc.loc_type, LocationType::Inconsistent))
             .map(|loc| loc.to_owned())
             .ok_or("Could not find inconsistent location in the transition system".to_string())
     // If the location is normal
