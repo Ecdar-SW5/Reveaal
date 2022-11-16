@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::panic::AssertUnwindSafe;
 
-use crate::component::{Edge, State};
+use crate::System::save_component::{get_locations_from_tuples, get_clock_map};
+use crate::component::{Edge, State, Component};
 use crate::ProtobufServer::ecdar_requests::helpers;
 use crate::ProtobufServer::services::{
     ComponentClock, Conjunction as ProtoConjunction, Constraint as ProtoConstraint,
@@ -157,6 +158,20 @@ impl ProtoConstraint {
             .clocks
             .iter()
             .map(|x| naming.insert(*x.1, x.0));
+
+            let mut system_locations = system.get_all_locations();
+            let mut system_clock = get_clock_map(system);
+
+        let locations = get_locations_from_tuples(&system_locations, &system_clock);
+
+        // let component = Component {
+        //     name: "".to_string(),
+        //     declarations: system.get_decls(),
+        //     locations,
+        //     edges,
+        //     input_edges,
+        //     output_edges,
+        // };
 
         ProtoConstraint {
             x: Some(ComponentClock {
