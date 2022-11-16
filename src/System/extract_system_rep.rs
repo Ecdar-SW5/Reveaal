@@ -151,11 +151,14 @@ impl SystemRecipe {
     }
 
     /// Takes in an output [Vec]<[Component]> and pushes only the components to the vector
-    pub fn get_components(&self, out:  &mut Vec<Component>) {
+    pub fn get_components(&self, out: &mut Vec<Component>) {
         match self {
-            SystemRecipe::Composition(left, right) |
-            SystemRecipe::Conjunction(left, right) |
-            SystemRecipe::Quotient(left, right, _) => {left.get_components(out); right.get_components(out)},
+            SystemRecipe::Composition(left, right)
+            | SystemRecipe::Conjunction(left, right)
+            | SystemRecipe::Quotient(left, right, _) => {
+                left.get_components(out);
+                right.get_components(out)
+            }
             SystemRecipe::Component(comp) => out.push(*comp.to_owned()),
         }
     }

@@ -1,8 +1,8 @@
 use edbm::zones::OwnedFederation;
 
+use crate::component::LocationType;
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
-use crate::component::LocationType;
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -33,7 +33,7 @@ fn is_trivially_unreachable(
         LocationType::Universal | LocationType::Inconsistent => true,
         _ => false,
     } {
-        return true
+        return true;
     }
 
     false
@@ -44,7 +44,11 @@ fn is_trivially_reachable(
     end_state: &State,
     _system: &dyn TransitionSystem,
 ) -> bool {
-    if (_start_state.decorated_locations.is_inconsistent() && end_state.decorated_locations.is_inconsistent()) || (_start_state.decorated_locations.is_universal() && end_state.decorated_locations.is_universal()) {
+    if (_start_state.decorated_locations.is_inconsistent()
+        && end_state.decorated_locations.is_inconsistent())
+        || (_start_state.decorated_locations.is_universal()
+            && end_state.decorated_locations.is_universal())
+    {
         todo!("Fixing next commit, commit to save data")
     }
     false
@@ -89,7 +93,7 @@ pub fn find_path(
         return Ok(Path {
             path: None,
             was_reachable: true,
-        })
+        });
     }
 
     if is_trivially_unreachable(&start_state, &end_state, system) {
