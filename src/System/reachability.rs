@@ -28,24 +28,10 @@ fn is_trivially_unreachable(
             return true;
         }
     }
-
+    // Check if start zone intersects with end zone
     matches!(_start_state.decorated_locations.loc_type, LocationType::Universal | LocationType::Inconsistent)
 }
 
-fn is_trivially_reachable(
-    _start_state: &State,
-    end_state: &State,
-    _system: &dyn TransitionSystem,
-) -> bool {
-    if (_start_state.decorated_locations.is_inconsistent()
-        && end_state.decorated_locations.is_inconsistent())
-        || (_start_state.decorated_locations.is_universal()
-            && end_state.decorated_locations.is_universal())
-    {
-        todo!("Fixing next commit, commit to save data")
-    }
-    false
-}
 ///# Find path
 ///
 /// Returns a path from a start state to an end state in a transition system.
@@ -82,13 +68,6 @@ pub fn find_path(
     end_state: State,
     system: &dyn TransitionSystem,
 ) -> Result<Path, String> {
-    if is_trivially_reachable(&start_state, &end_state, system) {
-        return Ok(Path {
-            path: None,
-            was_reachable: true,
-        });
-    }
-
     if is_trivially_unreachable(&start_state, &end_state, system) {
         return Ok(Path {
             path: None,
