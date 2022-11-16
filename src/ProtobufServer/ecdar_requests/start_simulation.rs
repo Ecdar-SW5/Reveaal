@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use std::panic::AssertUnwindSafe;
 
 use crate::component::{Edge, State};
+use crate::DataReader::component_loader::ModelCache;
 use crate::ProtobufServer::ecdar_requests::helpers;
 use crate::ProtobufServer::services::{
     ComponentClock, Conjunction as ProtoConjunction, Constraint as ProtoConstraint,
@@ -16,31 +16,26 @@ use edbm::util::constraints::{ClockIndex, Conjunction, Constraint, Disjunction};
 use edbm::zones::OwnedFederation;
 use log::trace;
 
-use tonic::{Request, Response, Status};
+use tonic::Status;
 
 use crate::ProtobufServer::ConcreteEcdarBackend;
 
 impl ConcreteEcdarBackend {
     pub fn handle_start_simulation(
-        request: AssertUnwindSafe<Request<SimulationStartRequest>>,
-    ) -> Result<Response<SimulationStepResponse>, Status> {
+        request: SimulationStartRequest,
+        _cache: ModelCache, // TODO should be used...
+    ) -> Result<SimulationStepResponse, Status> {
         trace!("Received query: {:?}", request);
 
-        let request_message = request.0.into_inner();
-        let simulation_info = request_message.simulation_info.unwrap();
+        let simulation_info = request.simulation_info.unwrap();
         let transition_system = helpers::simulation_info_to_transition_system(simulation_info);
 
-        // Find Initial TransitionDecisionPoint in transition system
-        let initial = TransitionDecisionPoint::initial(transition_system.clone()).unwrap(); // TODO remove clone
+        let initial = TransitionDecisionPoint::initial(&transition_system)
+            .map(|i| ProtoDecisionPoint::from_transition_decision_point(&i, &transition_system));
 
-        let initial =
-            ProtoDecisionPoint::from_transition_decision_point(&initial, &transition_system);
-
-        // Respond with initial
-        let simulation_step_response = SimulationStepResponse {
-            new_decision_point: Some(initial),
-        };
-        Ok(Response::new(simulation_step_response))
+        Ok(SimulationStepResponse {
+            new_decision_point: initial,
+        })
     }
 }
 

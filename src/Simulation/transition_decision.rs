@@ -52,7 +52,7 @@ impl TransitionDecision {
     /// Resolves a `TransitionDecision`: use the `decided: Transition` and return the `TransitionDecisionPoint` of the destination `State`  
     pub fn resolve(mut self, system: TransitionSystemPtr) -> TransitionDecisionPoint {
         self.decided.use_transition(&mut self.source);
-        TransitionDecisionPoint::from(system, self.source)
+        TransitionDecisionPoint::from(&system, &self.source)
     }
 }
 
@@ -102,7 +102,7 @@ mod tests {
 
         let mut source = initial.clone();
         transition.use_transition(&mut source);
-        let expected = TransitionDecisionPoint::from(system, source);
+        let expected = TransitionDecisionPoint::from(&system, &source);
         let expected_source = format!("{:?}", expected.source);
         let expected_possible_decisions = expected
             .possible_decisions
