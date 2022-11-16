@@ -21,11 +21,6 @@ pub use ModelObjects::queries;
 pub use ProtobufServer::start_grpc_server_with_tokio;
 pub use System::executable_query::QueryResult;
 
-pub const DEFAULT_SETTINGS: ProtobufServer::services::query_request::Settings =
-    ProtobufServer::services::query_request::Settings {
-        reduce_clocks_level: Some(-1),
-    };
-
 #[macro_use]
 extern crate pest_derive;
 extern crate colored;

@@ -2,13 +2,11 @@
 use clap::{load_yaml, App};
 use reveaal::logging::setup_logger;
 
-use reveaal::ProtobufServer::services::query_request::Settings;
 use reveaal::{
     extract_system_rep, parse_queries, start_grpc_server_with_tokio, xml_parser, ComponentLoader,
     JsonProjectLoader, ProjectLoader, Query, QueryResult, XmlProjectLoader,
 };
 use std::env;
-use std::str::FromStr;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "logging")]
@@ -52,13 +50,9 @@ fn start_using_cli(matches: &clap::ArgMatches) {
 fn parse_args(matches: &clap::ArgMatches) -> (Box<dyn ComponentLoader>, Vec<Query>) {
     let folder_path = matches.value_of("folder").unwrap_or("");
     let query = matches.value_of("query").unwrap_or("");
-    let settings = Settings {
-        reduce_clocks_level: matches.value_of("").map(|v| {
-            i32::from_str(v).unwrap_or_else(|e| panic!("Argument {} could not be parsed", e))
-        }),
-    };
+    let should_reduce = !matches.is_present("omit-clock-reduction");
 
-    let project_loader = get_project_loader(folder_path.to_string(), settings);
+    let project_loader = get_project_loader(folder_path.to_string(), should_reduce);
 
     let queries = if query.is_empty() {
         project_loader.get_queries().clone()
@@ -69,11 +63,11 @@ fn parse_args(matches: &clap::ArgMatches) -> (Box<dyn ComponentLoader>, Vec<Quer
     (project_loader.to_comp_loader(), queries)
 }
 
-fn get_project_loader(project_path: String, settings: Settings) -> Box<dyn ProjectLoader> {
+fn get_project_loader(project_path: String, should_clock_reduce: bool) -> Box<dyn ProjectLoader> {
     if xml_parser::is_xml_project(&project_path) {
-        XmlProjectLoader::new(project_path, settings)
+        XmlProjectLoader::new(project_path, should_clock_reduce)
     } else {
-        JsonProjectLoader::new(project_path, settings)
+        JsonProjectLoader::new(project_path, should_clock_reduce)
     }
 }
 
