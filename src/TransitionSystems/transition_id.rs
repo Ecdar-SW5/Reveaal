@@ -26,12 +26,12 @@ impl TransitionID {
             TransitionID::Conjunction(l, r) => {
                 let a = l.get_leaves_helper(current_leaves, index);
                 let b = r.get_leaves_helper(current_leaves, a.1 + 1);
-                (self, b.1 + 1)
+                (self, b.1)
             }
             TransitionID::Composition(l, r) => {
                 let a = l.get_leaves_helper(current_leaves, index);
                 let b = r.get_leaves_helper(current_leaves, a.1 + 1);
-                (self, b.1 + 1)
+                (self, b.1)
             }
             TransitionID::Quotient(_, _l, _r) => {
                 let mut curIndex = index;
@@ -42,27 +42,34 @@ impl TransitionID {
                 for s in _r {
                     (_, lastIndex) = s.get_leaves_helper(current_leaves, curIndex + 1);
                 }
-                (self, lastIndex + 1)
+                (self, lastIndex)
             }
             TransitionID::Simple(_) => {
+                if current_leaves.len() <= index {
+                    current_leaves.push(Vec::new());
+                }
                 current_leaves[index].push(self.clone());
                 (self, index)
             }
             TransitionID::None => {
+                if current_leaves.len() <= index {
+                    current_leaves.push(Vec::new());
+                }
                 current_leaves[index].push(self.clone());
                 (self, index)
             }
         }
     }
 
-    pub fn split_into_component_lists(path: &Vec<TransitionID>) -> Vec<Vec<TransitionID>> {
-        let count: usize = Self::count_leaves(path[0].clone());
+    pub fn split_into_component_lists(path: &Vec<TransitionID>) -> Vec<Vec<Vec<TransitionID>>> {
 
-        let mut paths: Vec<Vec<TransitionID>> = vec![Vec::new(); count];
+        let leaves = path[0].get_leaves();
 
-        for id in path {
-            for (i, subId) in id.get_leaves().iter().enumerate() {
-                //paths[i].push(subId.clone());
+        let mut paths: Vec<Vec<Vec<TransitionID>>> = vec![Vec::new(); leaves.len()];
+
+        for transitionID in path {
+            for (componentIndex, transition) in transitionID.get_leaves().iter().enumerate() {
+                paths[componentIndex].push(*transition);
             }
         }
         paths
