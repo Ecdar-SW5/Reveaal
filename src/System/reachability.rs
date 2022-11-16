@@ -2,6 +2,7 @@ use edbm::zones::OwnedFederation;
 
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
+use crate::component::LocationType;
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -17,7 +18,7 @@ struct SubPath {
     transition: Option<Transition>,
 }
 
-fn is_trivially_uncreachable(
+fn is_trivially_unreachable(
     _start_state: &State,
     end_state: &State,
     _system: &dyn TransitionSystem,
@@ -26,6 +27,25 @@ fn is_trivially_uncreachable(
         if !&end_state.zone_ref().has_intersection(invariants) {
             return true;
         }
+    }
+
+    if match _start_state.decorated_locations.loc_type {
+        LocationType::Universal | LocationType::Inconsistent => true,
+        _ => false,
+    } {
+        return true
+    }
+
+    false
+}
+
+fn is_trivially_reachable(
+    _start_state: &State,
+    end_state: &State,
+    _system: &dyn TransitionSystem,
+) -> bool {
+    if (_start_state.decorated_locations.is_inconsistent() && end_state.decorated_locations.is_inconsistent()) || (_start_state.decorated_locations.is_universal() && end_state.decorated_locations.is_universal()) {
+        todo!("Fixing next commit, commit to save data")
     }
     false
 }
@@ -65,7 +85,14 @@ pub fn find_path(
     end_state: State,
     system: &dyn TransitionSystem,
 ) -> Result<Path, String> {
-    if is_trivially_uncreachable(&start_state, &end_state, system) {
+    if is_trivially_reachable(&start_state, &end_state, system) {
+        return Ok(Path {
+            path: None,
+            was_reachable: true,
+        })
+    }
+
+    if is_trivially_unreachable(&start_state, &end_state, system) {
         return Ok(Path {
             path: None,
             was_reachable: false,

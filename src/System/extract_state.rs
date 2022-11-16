@@ -2,10 +2,10 @@ use std::collections::HashMap;
 
 use edbm::zones::OwnedFederation;
 
-use crate::component::Declarations;
+use crate::component::{Declarations, LocationType};
 use crate::extract_system_rep::SystemRecipe;
 use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
-use crate::ModelObjects::component::State;
+use crate::ModelObjects::component::{Component, State};
 use crate::ModelObjects::representations::QueryExpression;
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use std::slice::Iter;
@@ -73,25 +73,93 @@ fn build_location_tuple(
     machine: &SystemRecipe,
     system: &TransitionSystemPtr,
 ) -> Result<LocationTuple, String> {
-    let location_id = get_location_id(&mut locations.iter(), machine);
+    let out = is_universal_or_inconsistent_input(locations, machine);
 
-    system
-        .get_all_locations()
+    let location_id = get_location_id(&mut locations.iter(), machine);
+    let locations = system.get_all_locations();
+
+    //If the location is universal
+    if out.0 {
+        locations
+            .iter()
+            .find(|loc| match loc.loc_type {
+                LocationType::Universal => true,
+                _ => false,
+            })
+            .map(|loc| loc.to_owned())
+            .ok_or("Could not find universal location in the transition system".to_string())
+    // If the location is inconsistent
+    } else if out.1 {
+        locations
+            .iter()
+            .find(|loc| match loc.loc_type {
+                LocationType::Inconsistent => true,
+                _ => false,
+            })
+            .map(|loc| loc.to_owned())
+            .ok_or("Could not find inconsistent location in the transition system".to_string())
+    // If the location is normal
+    } else {
+        locations
+            .iter()
+            .find(|loc| loc.id.compare_partial_locations(&location_id))
+            .ok_or_else(|| {
+                format!(
+                    "{} is not a location in the transition system ",
+                    location_id
+                )
+            })
+            .map(|location_tuple| {
+                if !location_id.is_partial_location() {
+                    location_tuple.clone()
+                } else {
+                    LocationTuple::create_partial_location(location_id)
+                }
+            })
+    }
+}
+
+/// Checks if the input [LocationTuple] is of type `LocationType::Universal` or `LocationType::Inconsistent`.
+/// Returns (`bool 0: is_universal`, `bool 1: is_inconsistent`)
+fn is_universal_or_inconsistent_input(locations: &[&str], machine: &SystemRecipe) -> (bool, bool) {
+    let mut components: Vec<Component> = Vec::new();
+    machine.get_components(&mut components);
+
+    let mut is_inconsistent = true;
+    let mut is_universal = true;
+
+    components
         .iter()
-        .find(|loc| loc.id.compare_partial_locations(&location_id))
-        .ok_or_else(|| {
-            format!(
-                "{} is not a location in the transition system ",
-                location_id
-            )
-        })
-        .map(|location_tuple| {
-            if !location_id.is_partial_location() {
-                location_tuple.clone()
-            } else {
-                LocationTuple::create_partial_location(location_id)
+        .enumerate()
+        .map(|(i, comp)| {
+            let loc = comp
+                .get_locations()
+                .iter()
+                .find(|loc| match loc.get_location_type() {
+                    LocationType::Universal => {
+                        is_inconsistent = false;
+                        true
+                    }
+                    LocationType::Inconsistent => {
+                        is_universal = false;
+                        true
+                    }
+                    _ => false,
+                });
+            match loc {
+                Some(l) => {
+                    is_universal = is_universal && (l.id == locations[i]);
+                    is_inconsistent = is_inconsistent && (l.id == locations[i]);
+                }
+                None => {
+                    is_universal = false;
+                    is_inconsistent = false
+                }
             }
         })
+        .for_each(drop);
+
+    (is_universal, is_inconsistent)
 }
 
 fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
