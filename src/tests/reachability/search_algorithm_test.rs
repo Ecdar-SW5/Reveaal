@@ -72,19 +72,11 @@ mod reachability_search_algorithm_test {
 
         match json_run_query(folder_path, query) {
             QueryResult::Reachability(actual_path) => {
-                if actual_path.was_reachable {
-                    let path: Vec<Transition> = actual_path.path.unwrap().clone();
-                    if expected_path.len() != path.len() {
-                        assert!(false);
-                    }
-                    for i in 0..path.len() {
-                        if expected_path[i] != path[i].id.to_string() {
-                            assert!(false);
-                        }
-                    }
-                    assert!(true);
-                } else {
-                    assert!(true);
+                assert!(actual_path.was_reachable);
+                let path: Vec<Transition> = actual_path.path.unwrap().clone();
+                assert!(expected_path.len() == path.len());
+                for i in 0..path.len() {
+                    assert!(expected_path[i] == path[i].id.to_string());
                 }
             }
             _ => panic!("Inconsistent query result, expected Reachability"),
