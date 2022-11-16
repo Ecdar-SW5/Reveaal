@@ -40,6 +40,26 @@ where
     }
 }
 
+impl ConcreteEcdarBackend {
+    async fn handleRequest<RequestT, ResponseT>(
+        &self,
+        request: Request<RequestT>,
+        handler: impl Fn(RequestT, ModelCache) -> Result<ResponseT, Status> + Send + 'static,
+    ) -> Result<Response<ResponseT>, Status>
+    where
+        ResponseT: Send + 'static,
+        RequestT: Send + 'static,
+    {
+        let cache = self.model_cache.clone();
+        let res = catch_unwind(
+            self.thread_pool
+                .enqueue(move || handler(request.into_inner(), cache)),
+        )
+        .await;
+        res.map(Response::new)
+    }
+}
+
 #[tonic::async_trait]
 impl EcdarBackend for ConcreteEcdarBackend {
     async fn get_user_token(
@@ -53,13 +73,8 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<QueryResponse>, Status> {
-        let cache = self.model_cache.clone();
-        let res =
-            catch_unwind(self.thread_pool.enqueue(move || {
-                ConcreteEcdarBackend::handle_send_query(request.into_inner(), cache)
-            }))
-            .await;
-        res.map(Response::new)
+        self.handleRequest(request, ConcreteEcdarBackend::handle_send_query)
+            .await
     }
 
     async fn start_simulation(
