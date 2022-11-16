@@ -269,7 +269,7 @@ impl TransitionSystem for Quotient {
             let inv_l_s = loc_s.apply_invariants(OwnedFederation::universe(self.dim));
 
             transitions.push(Transition {
-                id: TransitionID::None, // TODO: Check this later if its correct
+                id: TransitionID::None,
                 guard_zone: !inv_l_s,
                 target_locations: universal_location,
                 updates: vec![],
