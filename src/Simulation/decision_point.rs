@@ -1,5 +1,3 @@
-use core::panic;
-
 use super::transition_decision_point::TransitionDecisionPoint;
 use crate::component::{Edge, State, Transition};
 

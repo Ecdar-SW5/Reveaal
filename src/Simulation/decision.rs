@@ -3,13 +3,13 @@ use edbm::util::constraints::{
 };
 use edbm::zones::OwnedFederation;
 
-use crate::component::{Declarations, Edge, Location, State};
+use crate::component::{Declarations, Edge, State};
 use crate::ProtobufServer::services::{
     Conjunction as ProtoConjunction, Constraint as ProtoConstraint, Decision as ProtoDecision,
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
-    Location as ProtoLocation, LocationTuple as ProtoLocationTuple, State as ProtoState,
+    LocationTuple as ProtoLocationTuple, State as ProtoState,
 };
-use crate::TransitionSystems::{LocationID, TransitionSystemPtr};
+use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
 
 #[derive(Debug)]
 pub struct Decision {
@@ -35,24 +35,15 @@ impl Decision {
             Some(federation) => federation,
         };
 
-        let _zone: OwnedFederation = proto_federation_to_owned_federation(proto_federation, system);
+        let zone: OwnedFederation = proto_federation_to_owned_federation(proto_federation, system);
 
-        // Generate the location tuple
-        // 1. Generate simple location tuples from the proto locations
-        // 2. Compose each simple location tuple to a single location tuple using the composition type
-        // 3. Return the location tuple
+        let location_tuple =
+            match LocationTuple::from_proto_location_tuple(&proto_location_tuple, system) {
+                None => panic!("No location tuple found"),
+                Some(loc_tuple) => loc_tuple,
+            };
 
-        let proto_locations: Vec<ProtoLocation> = proto_location_tuple
-            .locations
-            .iter()
-            .map(|loc| loc.clone())
-            .collect();
-
-        let locations: Vec<Location> = proto_locations
-            .iter()
-            .map(|loc| Location::from_proto_location(loc, system))
-            .collect();
-        // let state = State::create(location_tuple, zone);
+        let _state = State::create(location_tuple, zone);
 
         // Convert ProtoEdge to Edge
         let _proto_edge: ProtoEdge = match proto_decision.edge {
@@ -60,11 +51,11 @@ impl Decision {
             Some(edge) => edge,
         };
 
-        todo!();
-        // return Decision {
-        //     source: todo!(),
+        todo!()
+        // Decision {
+        //     source: state,
         //     decided: todo!(),
-        // };
+        // }
     }
 }
 
