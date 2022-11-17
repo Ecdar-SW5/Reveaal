@@ -13,54 +13,70 @@ pub enum TransitionID {
 }
 
 impl TransitionID {
-    pub fn get_leaves(&self) -> Vec<TransitionID> {
+    pub fn get_leaves(&self) -> Vec<Vec<TransitionID>> {
         let mut result = Vec::new();
-        self.get_leaves_helper(&mut result);
+        self.get_leaves_helper(&mut result, 0);
         result
     }
 
-    fn get_leaves_helper(&self, current_leaves: &mut Vec<TransitionID>) {
+    fn get_leaves_helper(
+        &self,
+        current_leaves: &mut Vec<Vec<TransitionID>>,
+        index: usize,
+    ) -> (&TransitionID, usize) {
         match self {
-            TransitionID::Conjunction(l, r) => {
-                l.get_leaves_helper(current_leaves);
-                r.get_leaves_helper(current_leaves);
-            }
-            TransitionID::Composition(l, r) => {
-                l.get_leaves_helper(current_leaves);
-                r.get_leaves_helper(current_leaves);
+            TransitionID::Conjunction(l, r) | TransitionID::Composition(l, r) => {
+                let a = l.get_leaves_helper(current_leaves, index);
+                let b = r.get_leaves_helper(current_leaves, a.1 + 1);
+                (self, b.1)
             }
             TransitionID::Quotient(_, _l, _r) => {
-                current_leaves.push(self.clone());
+                let mut curIndex = index;
+                for t in _l {
+                    (_, curIndex) = t.get_leaves_helper(current_leaves, index);
+                }
+                let mut lastIndex = curIndex;
+                for s in _r {
+                    (_, lastIndex) = s.get_leaves_helper(current_leaves, curIndex + 1);
+                }
+                (self, lastIndex)
             }
-            TransitionID::Simple(_) => {
-                current_leaves.push(self.clone());
-            }
-            TransitionID::None => {
-                current_leaves.push(self.clone());
-            }
-        };
-    }
-
-    pub fn split_into_component_lists(path: &Vec<TransitionID>) -> Vec<Vec<TransitionID>> {
-        let count: usize = Self::count_leaves(path[0].clone());
-
-        let mut paths: Vec<Vec<TransitionID>> = vec![Vec::new(); count];
-
-        for id in path {
-            for (i, subId) in id.get_leaves().iter().enumerate() {
-                paths[i].push(subId.clone());
+            TransitionID::Simple(_) | TransitionID::None => {
+                if current_leaves.len() <= index {
+                    current_leaves.push(Vec::new());
+                }
+                current_leaves[index].push(self.clone());
+                (self, index)
             }
         }
-        paths
     }
-    fn count_leaves(transition_id: TransitionID) -> usize {
-        match transition_id {
-            TransitionID::Conjunction(l, r) => Self::count_leaves(*l) + Self::count_leaves(*r),
-            TransitionID::Composition(l, r) => Self::count_leaves(*l) + Self::count_leaves(*r),
-            TransitionID::Quotient(_, _l, _r) => 1,
-            TransitionID::Simple(_) => 1,
-            TransitionID::None => 1,
+
+    pub fn split_into_component_lists(
+        path: &Vec<TransitionID>,
+    ) -> Result<Vec<Vec<Vec<TransitionID>>>, String> {
+        if path.is_empty() {
+            return Ok(Vec::new());
         }
+        let leaves = path[0].get_leaves();
+        let amount = leaves.len();
+        let mut paths: Vec<Vec<Vec<TransitionID>>> = vec![Vec::new(); leaves.len()];
+
+        for transitionID in path {
+            let leaves = transitionID.get_leaves();
+            for (componentIndex, transition) in leaves.iter().enumerate() {
+                if leaves.len() != amount {
+                    return Err(format!("Could not split into components because first transition has {} components but {:?} has {} components", amount, leaves, leaves.len()));
+                }
+                paths[componentIndex].push(
+                    transition
+                        .iter()
+                        .cloned()
+                        .filter(|id| !matches!(id, TransitionID::None))
+                        .collect(),
+                );
+            }
+        }
+        Ok(paths)
     }
 }
 
