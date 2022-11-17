@@ -179,6 +179,7 @@ fn collect_specific_edges_from_location(
             }
 
             let edge = Edge {
+                id: transition.id.to_string(),
                 source_location: location.id.to_string(),
                 target_location: target_location.id.to_string(),
                 sync_type: if input {
