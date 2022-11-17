@@ -74,44 +74,41 @@ fn build_location_tuple(
     system: &TransitionSystemPtr,
 ) -> Result<LocationTuple, String> {
     let out = is_universal_or_inconsistent_input(locations, machine);
-
-    let location_id = get_location_id(&mut locations.iter(), machine);
-    let locations = system.get_all_locations();
+    let system_locations = system.get_all_locations();
 
     //If the location is universal
     if out.0 {
-        locations
-            .iter()
-            .find(|loc| matches!(loc.loc_type, LocationType::Universal))
-            .map(|loc| loc.to_owned())
-            .ok_or_else(|| "Could not find universal location in the transition system".to_string())
+        loc_find_and_then(
+            system_locations,
+            &|loc: &&LocationTuple| matches!(loc.loc_type, LocationType::Universal),
+            &|loc: &LocationTuple| Some(loc.to_owned()),
+            "Could not find universal location in the transition system",
+        )
     // If the location is inconsistent
     } else if out.1 {
-        locations
-            .iter()
-            .find(|loc| matches!(loc.loc_type, LocationType::Inconsistent))
-            .map(|loc| loc.to_owned())
-            .ok_or_else(|| {
-                "Could not find inconsistent location in the transition system".to_string()
-            })
+        loc_find_and_then(
+            system_locations,
+            &|loc| matches!(loc.loc_type, LocationType::Inconsistent),
+            &|loc| Some(loc.to_owned()),
+            "Could not find inconsistent location in the transition system",
+        )
     // If the location is normal
     } else {
-        locations
-            .iter()
-            .find(|loc| loc.id.compare_partial_locations(&location_id))
-            .ok_or_else(|| {
-                format!(
-                    "{} is not a location in the transition system ",
-                    location_id
-                )
-            })
-            .map(|location_tuple| {
-                if !location_id.is_partial_location() {
+        let location_id = get_location_id(&mut locations.iter(), machine);
+        let s = format!("{} is not a location in the transition system", location_id);
+
+        loc_find_and_then(
+            system_locations,
+            &|loc| loc.id.compare_partial_locations(&location_id),
+            &|location_tuple| {
+                Some(if !location_id.is_partial_location() {
                     location_tuple.clone()
                 } else {
-                    LocationTuple::create_partial_location(location_id)
-                }
-            })
+                    LocationTuple::create_partial_location(location_id.clone())
+                })
+            },
+            s.as_str(),
+        )
     }
 }
 
@@ -156,6 +153,19 @@ fn is_universal_or_inconsistent_input(locations: &[&str], machine: &SystemRecipe
         .for_each(drop);
 
     (is_universal, is_inconsistent)
+}
+
+fn loc_find_and_then(
+    locations: Vec<LocationTuple>,
+    predicate: &dyn Fn(&&LocationTuple) -> bool,
+    op: &dyn Fn(&LocationTuple) -> Option<LocationTuple>,
+    err: &str,
+) -> Result<LocationTuple, String> {
+    locations
+        .iter()
+        .find(predicate)
+        .and_then(op)
+        .ok_or(err.to_string())
 }
 
 fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {

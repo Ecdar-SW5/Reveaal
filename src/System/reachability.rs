@@ -28,10 +28,13 @@ fn is_trivially_unreachable(
             return true;
         }
     }
-    
-    if matches!(start_state.decorated_locations.loc_type, LocationType::Universal | LocationType::Inconsistent) {
+
+    if matches!(
+        start_state.decorated_locations.loc_type,
+        LocationType::Universal | LocationType::Inconsistent
+    ) {
         if start_state.decorated_locations != end_state.decorated_locations {
-            return true
+            return true;
         }
     }
 
