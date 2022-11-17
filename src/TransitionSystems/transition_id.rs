@@ -66,7 +66,7 @@ impl TransitionID {
     /// For example
     /// ```
     /// use crate::reveaal::TransitionSystems::TransitionID;
-    /// let path = 
+    /// let path =
     ///    vec![
     ///          TransitionID::Conjunction(
     ///              Box::new(TransitionID::Simple("a".to_string())),
@@ -79,10 +79,10 @@ impl TransitionID {
     ///  assert_eq!(component_paths, Ok(
     ///     vec![
     ///         vec![
-    ///             vec![TransitionID::Simple("a".to_string())], 
-    ///             vec![TransitionID::Simple("c".to_string())]], 
+    ///             vec![TransitionID::Simple("a".to_string())],
+    ///             vec![TransitionID::Simple("c".to_string())]],
     ///         vec![
-    ///             vec![TransitionID::Simple("b".to_string())], 
+    ///             vec![TransitionID::Simple("b".to_string())],
     ///             vec![TransitionID::Simple("d".to_string())]]]));
     /// ```
     /// component_paths will be {{a, c}, {b, d}}, representing the paths for the two components
