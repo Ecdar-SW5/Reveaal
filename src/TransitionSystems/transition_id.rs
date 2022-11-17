@@ -13,6 +13,17 @@ pub enum TransitionID {
 }
 
 impl TransitionID {
+    /// Returns a vector of transitionIDs for all components involved in the transition
+    /// For example
+    /// ```
+    /// use crate::reveaal::TransitionSystems::TransitionID;
+    /// let id = TransitionID::Conjunction(
+    ///     Box::new(TransitionID::Simple("a".to_string())),
+    ///     Box::new(TransitionID::Simple("b".to_string())));
+    /// let leaves = id.get_leaves();
+    /// assert_eq!(leaves, vec![vec![TransitionID::Simple("a".to_string())], vec![TransitionID::Simple("b".to_string())]])
+    /// ```
+    /// Leaves will be {{a}, {b}}, as a is from the first component and b is from the second component
     pub fn get_leaves(&self) -> Vec<Vec<TransitionID>> {
         let mut result = Vec::new();
         self.get_leaves_helper(&mut result, 0);
@@ -51,6 +62,30 @@ impl TransitionID {
         }
     }
 
+    /// Takes a path of TransitionIDs, and splits them into seperate paths for each component
+    /// For example
+    /// ```
+    /// use crate::reveaal::TransitionSystems::TransitionID;
+    /// let path = 
+    ///    vec![
+    ///          TransitionID::Conjunction(
+    ///              Box::new(TransitionID::Simple("a".to_string())),
+    ///              Box::new(TransitionID::Simple("b".to_string()))),
+    ///         TransitionID::Conjunction(
+    ///             Box::new(TransitionID::Simple("c".to_string())),
+    ///             Box::new(TransitionID::Simple("d".to_string())))
+    ///     ];
+    ///  let component_paths = TransitionID::split_into_component_lists(&path);
+    ///  assert_eq!(component_paths, Ok(
+    ///     vec![
+    ///         vec![
+    ///             vec![TransitionID::Simple("a".to_string())], 
+    ///             vec![TransitionID::Simple("c".to_string())]], 
+    ///         vec![
+    ///             vec![TransitionID::Simple("b".to_string())], 
+    ///             vec![TransitionID::Simple("d".to_string())]]]));
+    /// ```
+    /// component_paths will be {{a, c}, {b, d}}, representing the paths for the two components
     pub fn split_into_component_lists(
         path: &Vec<TransitionID>,
     ) -> Result<Vec<Vec<Vec<TransitionID>>>, String> {
