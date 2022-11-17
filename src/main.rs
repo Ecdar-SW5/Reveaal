@@ -57,12 +57,12 @@ fn parse_args(matches: &clap::ArgMatches) -> (Box<dyn ComponentLoader>, Vec<Quer
         reduce_clocks_level: matches
             .value_of("clock-reduction-level")
             .map(|v| {
-                let depth = i32::from_str(v)
+                let lvl = i32::from_str(v)
                     .unwrap_or_else(|e| panic!("Argument {} could not be parsed", e));
-                if depth < 0 {
+                if lvl < 0 {
                     ReduceClocksLevel::All(false)
                 } else {
-                    ReduceClocksLevel::Depth(depth)
+                    ReduceClocksLevel::Level(lvl)
                 }
             })
             .or(DEFAULT_SETTINGS.reduce_clocks_level),
