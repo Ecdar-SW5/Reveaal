@@ -41,7 +41,6 @@ mod reachability_search_algorithm_test {
         ]
         ;
     "Has none")]
-
     #[test_case(
         vec![
             TransitionID::Conjunction(
@@ -95,7 +94,10 @@ mod reachability_search_algorithm_test {
         ;
     "Path")]
     fn split_component_test(path: Vec<TransitionID>, expected: Vec<Vec<Vec<TransitionID>>>) {
-        assert_eq!(TransitionID::split_into_component_lists(&path), Ok(expected));
+        assert_eq!(
+            TransitionID::split_into_component_lists(&path),
+            Ok(expected)
+        );
         //assert_eq!(id.get_leaves(), expected);
     }
 
@@ -122,5 +124,4 @@ mod reachability_search_algorithm_test {
             panic!("Expected error")
         }
     }
-
 }

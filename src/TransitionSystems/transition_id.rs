@@ -51,7 +51,9 @@ impl TransitionID {
         }
     }
 
-    pub fn split_into_component_lists(path: &Vec<TransitionID>) -> Result<Vec<Vec<Vec<TransitionID>>>, String> {
+    pub fn split_into_component_lists(
+        path: &Vec<TransitionID>,
+    ) -> Result<Vec<Vec<Vec<TransitionID>>>, String> {
         if path.is_empty() {
             return Ok(Vec::new());
         }
@@ -65,7 +67,13 @@ impl TransitionID {
                 if leaves.len() != amount {
                     return Err(format!("Could not split into components because first transition has {} components but {:?} has {} components", amount, leaves, leaves.len()));
                 }
-                paths[componentIndex].push(transition.iter().cloned().filter(|id| !matches!(id, TransitionID::None)).collect());
+                paths[componentIndex].push(
+                    transition
+                        .iter()
+                        .cloned()
+                        .filter(|id| !matches!(id, TransitionID::None))
+                        .collect(),
+                );
             }
         }
         Ok(paths)
