@@ -72,11 +72,19 @@ mod reachability_search_algorithm_test {
 
         match json_run_query(folder_path, query) {
             QueryResult::Reachability(actual_path) => {
-                assert!(actual_path.was_reachable, "Query: {}\nEnd state is not reachable from start state \n", query);
+                assert!(
+                    actual_path.was_reachable,
+                    "Query: {}\nEnd state is not reachable from start state \n",
+                    query
+                );
                 let path: Vec<Transition> = actual_path.path.unwrap().clone();
                 assert!(expected_path.len() == path.len(), "Query: {}\nThe length of the actual and expected are not the same.\nexpected_path.len = {}\nactual_path.len = {} \n", query, expected_path.len(),path.len());
                 for i in 0..path.len() {
-                    assert!(expected_path[i] == path[i].id.to_string(), "Query: {}\nThe actual and expected is not the same \n", query);
+                    assert!(
+                        expected_path[i] == path[i].id.to_string(),
+                        "Query: {}\nThe actual and expected is not the same \n",
+                        query
+                    );
                 }
             }
             _ => panic!("Inconsistent query result, expected Reachability"),
