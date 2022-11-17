@@ -29,7 +29,10 @@ fn is_trivially_unreachable(
         }
     }
     // Check if start zone intersects with end zone
-    matches!(_start_state.decorated_locations.loc_type, LocationType::Universal | LocationType::Inconsistent)
+    matches!(
+        _start_state.decorated_locations.loc_type,
+        LocationType::Universal | LocationType::Inconsistent
+    )
 }
 
 ///# Find path
