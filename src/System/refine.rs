@@ -7,7 +7,7 @@ use crate::ModelObjects::component::Transition;
 use crate::ModelObjects::statepair::StatePair;
 use crate::System::local_consistency::ConsistencyFailure;
 use crate::TransitionSystems::transition_system::PrecheckResult;
-use crate::TransitionSystems::{LocationID, LocationTuple, TransitionID, TransitionSystemPtr};
+use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use std::collections::HashSet;
 use std::fmt;
 

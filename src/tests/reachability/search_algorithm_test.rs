@@ -3,9 +3,6 @@ mod reachability_search_algorithm_test {
     use crate::component::Transition;
     use crate::tests::refinement::Helper::json_run_query;
     use crate::QueryResult;
-    use std::fs::{self, File, OpenOptions};
-    use std::io::prelude::*;
-    use std::path::Path as PPath;
     use test_case::test_case;
 
     const PATH: &str = "samples/json/EcdarUniversity";
@@ -77,7 +74,7 @@ mod reachability_search_algorithm_test {
                     "Query: {}\nEnd state is not reachable from start state \n",
                     query
                 );
-                let path: Vec<Transition> = actual_path.path.unwrap().clone();
+                let path: Vec<Transition> = actual_path.path.unwrap();
                 assert!(expected_path.len() == path.len(), "Query: {}\nThe length of the actual and expected are not the same.\nexpected_path.len = {}\nactual_path.len = {} \n", query, expected_path.len(),path.len());
                 for i in 0..path.len() {
                     assert!(
@@ -88,52 +85,6 @@ mod reachability_search_algorithm_test {
                 }
             }
             _ => panic!("Inconsistent query result, expected Reachability"),
-        }
-    }
-
-    fn TEMPORARY_MISSING_DECLERATIONS_HACK(path: &str) {
-        if !PPath::new(&(path.to_owned() + "/SystemDeclarations.json")).exists() {
-            // Add system declarations
-            let mut declarations = String::new();
-            let componentNames = fs::read_dir(path.to_string() + "/Components").unwrap();
-            declarations += "{\n\"name\": \"System Declarations\",\n\"declarations\": \"system ";
-            let mut first = true;
-            for filename in componentNames {
-                if !first {
-                    declarations += ", ";
-                }
-                first = false;
-                declarations = declarations
-                    + &filename
-                        .unwrap()
-                        .file_name()
-                        .into_string()
-                        .unwrap()
-                        .replace(".json", "");
-            }
-            declarations += "\"\n}";
-
-            let mut file = File::create(path.to_owned() + "/SystemDeclarations.json").unwrap();
-            file.write_all(declarations.as_bytes()).unwrap();
-
-            // Set declarations in file
-            let componentNames = fs::read_dir(path.to_string() + "/Components").unwrap();
-            for filename in componentNames {
-                let filenamestring = &filename.unwrap().file_name().into_string().unwrap();
-                let contents =
-                    fs::read_to_string(path.to_string() + "/Components/" + filenamestring).unwrap();
-                let new = contents.replace(
-                    "declarations\": \"\",",
-                    "declarations\": \"clock x, y, z;\",",
-                );
-
-                let mut file = OpenOptions::new()
-                    .write(true)
-                    .truncate(true)
-                    .open(path.to_string() + "/Components/" + filenamestring)
-                    .unwrap();
-                file.write(new.as_bytes());
-            }
         }
     }
 }

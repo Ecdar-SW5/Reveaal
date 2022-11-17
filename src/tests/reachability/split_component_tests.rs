@@ -2,7 +2,6 @@
 mod reachability_search_algorithm_test {
     use crate::TransitionSystems::TransitionID;
 
-    use edbm::expensive_assert;
     use test_case::test_case;
     #[test_case(
         vec![
