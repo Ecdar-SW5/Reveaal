@@ -107,14 +107,20 @@ mod reachability_search_algorithm_test {
                 Box::new(TransitionID::Simple("c".to_string()))
             )
         ];
-    "Empty path")]
+    "Different structures")]
+    #[test_case(
+        vec![
+            TransitionID::Conjunction(
+                Box::new(TransitionID::Simple("b".to_string())),
+                Box::new(TransitionID::Simple("c".to_string()))
+            ),
+            TransitionID::Simple("a".to_string())
+        ];
+    "Different structures 2")]
     fn split_component_invalid_input(path: Vec<TransitionID>) {
-        match TransitionID::split_into_component_lists(&path) {
-            Ok(_) => panic!(),
-            Err(_) => (),        
+        if TransitionID::split_into_component_lists(&path).is_ok() {
+            panic!("Expected error")
         }
-        //assert_eq!(TransitionID::split_into_component_lists(&path));
-        //assert_eq!(id.get_leaves(), expected);
     }
 
 }

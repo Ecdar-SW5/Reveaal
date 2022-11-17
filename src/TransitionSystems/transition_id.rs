@@ -56,11 +56,15 @@ impl TransitionID {
             return Ok(Vec::new());
         }
         let leaves = path[0].get_leaves();
-
+        let amount = leaves.len();
         let mut paths: Vec<Vec<Vec<TransitionID>>> = vec![Vec::new(); leaves.len()];
 
         for transitionID in path {
-            for (componentIndex, transition) in transitionID.get_leaves().iter().enumerate() {
+            let leaves = transitionID.get_leaves();
+            for (componentIndex, transition) in leaves.iter().enumerate() {
+                if leaves.len() != amount {
+                    return Err(format!("Could not split into components because first transition has {} components but {:?} has {} components", amount, leaves, leaves.len()));
+                }
                 paths[componentIndex].push(transition.iter().cloned().filter(|id| !matches!(id, TransitionID::None)).collect());
             }
         }
