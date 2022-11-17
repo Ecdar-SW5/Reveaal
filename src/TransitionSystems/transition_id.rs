@@ -52,7 +52,7 @@ impl TransitionID {
     }
 
     pub fn split_into_component_lists(path: &Vec<TransitionID>) -> Result<Vec<Vec<Vec<TransitionID>>>, String> {
-        if path.len() == 0 {
+        if path.is_empty() {
             return Ok(Vec::new());
         }
         let leaves = path[0].get_leaves();
