@@ -148,9 +148,7 @@ fn take_transition(
     if transition.use_transition(&mut new_state) {
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
         let new_location_id = &new_state.get_location().id;
-        let existing_zones = visited_states
-            .entry(new_location_id.clone())
-            .or_default();
+        let existing_zones = visited_states.entry(new_location_id.clone()).or_default();
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
             remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
             visited_states

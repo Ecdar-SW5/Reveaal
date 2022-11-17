@@ -11,53 +11,53 @@ mod reachability_search_algorithm_test {
     vec![vec!(TransitionID::Simple("a".to_string())), vec!(TransitionID::Simple("b".to_string()))];
     "Simple conjunction")]
     #[test_case(TransitionID::Composition(
-      Box::new(TransitionID::Simple("a".to_string())),
-      Box::new(TransitionID::Simple("b".to_string()))
+        Box::new(TransitionID::Simple("a".to_string())),
+        Box::new(TransitionID::Simple("b".to_string()))
     ),
     vec![vec!(TransitionID::Simple("a".to_string())), vec!(TransitionID::Simple("b".to_string()))];
     "Simple composition")]
     #[test_case(TransitionID::Conjunction(
-      Box::new(TransitionID::Conjunction(
-        Box::new(TransitionID::Simple("a".to_string())),
-        Box::new(TransitionID::Simple("b".to_string()))
-      )),
-      Box::new(TransitionID::Simple("c".to_string()))
+        Box::new(TransitionID::Conjunction(
+            Box::new(TransitionID::Simple("a".to_string())),
+            Box::new(TransitionID::Simple("b".to_string()))
+        )),
+        Box::new(TransitionID::Simple("c".to_string()))
     ),
     vec![vec!(TransitionID::Simple("a".to_string())), vec!(TransitionID::Simple("b".to_string())), vec!(TransitionID::Simple("c".to_string()))];
     "Simple nesting")]
     #[test_case(TransitionID::Composition(
-      Box::new(TransitionID::Conjunction(
-        Box::new(TransitionID::Simple("a".to_string())),
+        Box::new(TransitionID::Conjunction(
+            Box::new(TransitionID::Simple("a".to_string())),
+            Box::new(TransitionID::Composition(
+                Box::new(TransitionID::Simple("b".to_string())),
+                Box::new(TransitionID::Simple("c".to_string()))
+            ))
+        )),
         Box::new(TransitionID::Composition(
-          Box::new(TransitionID::Simple("b".to_string())),
-          Box::new(TransitionID::Simple("c".to_string()))
+            Box::new(TransitionID::Simple("d".to_string())),
+            Box::new(TransitionID::Simple("e".to_string()))
         ))
-      )),
-      Box::new(TransitionID::Composition(
-        Box::new(TransitionID::Simple("d".to_string())),
-        Box::new(TransitionID::Simple("e".to_string()))
-      ))
     ),
     vec![
-      vec!(TransitionID::Simple("a".to_string())), 
-      vec!(TransitionID::Simple("b".to_string())), 
-      vec!(TransitionID::Simple("c".to_string())), 
-      vec!(TransitionID::Simple("d".to_string())), 
-      vec!(TransitionID::Simple("e".to_string()))];
+        vec!(TransitionID::Simple("a".to_string())), 
+        vec!(TransitionID::Simple("b".to_string())), 
+        vec!(TransitionID::Simple("c".to_string())), 
+        vec!(TransitionID::Simple("d".to_string())), 
+        vec!(TransitionID::Simple("e".to_string()))];
     "Multiple conjunction and composition")]
     #[test_case(TransitionID::Quotient(
-      vec!(TransitionID::Simple("a".to_string())),
-      vec!(TransitionID::Simple("b".to_string()))
+        vec!(TransitionID::Simple("a".to_string())),
+        vec!(TransitionID::Simple("b".to_string()))
     ),
     vec![vec!(TransitionID::Simple("a".to_string())), vec!(TransitionID::Simple("b".to_string()))];
     "simple quotient")]
     #[test_case(TransitionID::Quotient(
-      vec!(TransitionID::Simple("a".to_string()), TransitionID::Simple("b".to_string())),
-      vec!(TransitionID::Simple("c".to_string()), TransitionID::Simple("d".to_string()), TransitionID::Simple("e".to_string()))
+        vec!(TransitionID::Simple("a".to_string()), TransitionID::Simple("b".to_string())),
+        vec!(TransitionID::Simple("c".to_string()), TransitionID::Simple("d".to_string()), TransitionID::Simple("e".to_string()))
     ),
     vec![
-      vec!(TransitionID::Simple("a".to_string()), TransitionID::Simple("b".to_string())), 
-      vec!(TransitionID::Simple("c".to_string()), TransitionID::Simple("d".to_string()), TransitionID::Simple("e".to_string()))];
+        vec!(TransitionID::Simple("a".to_string()), TransitionID::Simple("b".to_string())), 
+        vec!(TransitionID::Simple("c".to_string()), TransitionID::Simple("d".to_string()), TransitionID::Simple("e".to_string()))];
     "quotient with vec")]
     #[test_case(
         TransitionID::Conjunction(
