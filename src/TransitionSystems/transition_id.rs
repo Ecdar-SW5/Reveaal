@@ -3,8 +3,6 @@ use std::{
     vec,
 };
 
-use prost::encoding::int32;
-
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum TransitionID {
     Conjunction(Box<TransitionID>, Box<TransitionID>),
@@ -27,12 +25,7 @@ impl TransitionID {
         index: usize,
     ) -> (&TransitionID, usize) {
         match self {
-            TransitionID::Conjunction(l, r) => {
-                let a = l.get_leaves_helper(current_leaves, index);
-                let b = r.get_leaves_helper(current_leaves, a.1 + 1);
-                (self, b.1)
-            }
-            TransitionID::Composition(l, r) => {
+            TransitionID::Conjunction(l, r) | TransitionID::Composition(l, r) => {
                 let a = l.get_leaves_helper(current_leaves, index);
                 let b = r.get_leaves_helper(current_leaves, a.1 + 1);
                 (self, b.1)
@@ -48,14 +41,7 @@ impl TransitionID {
                 }
                 (self, lastIndex)
             }
-            TransitionID::Simple(_) => {
-                if current_leaves.len() <= index {
-                    current_leaves.push(Vec::new());
-                }
-                current_leaves[index].push(self.clone());
-                (self, index)
-            }
-            TransitionID::None => {
+            TransitionID::Simple(_) | TransitionID::None => {
                 if current_leaves.len() <= index {
                     current_leaves.push(Vec::new());
                 }
