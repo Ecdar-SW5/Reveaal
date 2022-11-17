@@ -21,7 +21,11 @@ impl TransitionID {
         result
     }
 
-    fn get_leaves_helper(&self, current_leaves: &mut Vec<Vec<TransitionID>>, index: usize) -> (&TransitionID, usize) {
+    fn get_leaves_helper(
+        &self,
+        current_leaves: &mut Vec<Vec<TransitionID>>,
+        index: usize,
+    ) -> (&TransitionID, usize) {
         match self {
             TransitionID::Conjunction(l, r) => {
                 let a = l.get_leaves_helper(current_leaves, index);
@@ -62,7 +66,6 @@ impl TransitionID {
     }
 
     pub fn split_into_component_lists(path: &Vec<TransitionID>) -> Vec<Vec<Vec<TransitionID>>> {
-
         let leaves = path[0].get_leaves();
 
         let mut paths: Vec<Vec<Vec<TransitionID>>> = vec![Vec::new(); leaves.len()];
