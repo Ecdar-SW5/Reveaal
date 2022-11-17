@@ -25,7 +25,9 @@ mod reachability_search_algorithm_test {
     #[test_case(PATH, "reachability: Machine || Researcher -> [L5, U0](); [L4, _]()", true; "Machine || Researcher reachable with partial end state 2")]
     #[test_case(PATH, "reachability: Machine || Researcher -> [L5, U0](); [_, L7]()", false; "Machine || Researcher not reachable with partial end state")]
     #[test_case(PATH, "reachability: Researcher && Researcher -> [L7, _]()", true; "Machine || Researcher with partial state reachable from intial")]
-
+    #[test_case(PATH, "reachability: Researcher && Researcher -> [U0, U0](); [U0, U0]()", true; "Trivially reachable")]
+    #[test_case(PATH, "reachability: Researcher && Researcher -> [U0, U0](); [U0, U0](x>5)", true; "Trivially reachable but with clocks")]
+    #[test_case(PATH, "reachability: Researcher && Researcher -> [U0, U0](); [L6, U0]()", false; "Trivially unreachable")]
     fn search_algorithm_returns_result_university(path: &str, query: &str, expected: bool) {
         match json_run_query(path, query) {
             QueryResult::Reachability(path) => assert_eq!(path.was_reachable, expected),

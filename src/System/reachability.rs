@@ -19,7 +19,7 @@ struct SubPath {
 }
 
 fn is_trivially_unreachable(
-    _start_state: &State,
+    start_state: &State,
     end_state: &State,
     _system: &dyn TransitionSystem,
 ) -> bool {
@@ -28,11 +28,14 @@ fn is_trivially_unreachable(
             return true;
         }
     }
-    // Check if start zone intersects with end zone
-    matches!(
-        _start_state.decorated_locations.loc_type,
-        LocationType::Universal | LocationType::Inconsistent
-    )
+    
+    if matches!(start_state.decorated_locations.loc_type, LocationType::Universal | LocationType::Inconsistent) {
+        if start_state.decorated_locations != end_state.decorated_locations {
+            return true
+        }
+    }
+
+    false
 }
 
 ///# Find path
