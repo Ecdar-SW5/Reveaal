@@ -3,31 +3,35 @@ version: "1.0"
 about: Rust engine for ecdar
 args:
     - endpoint:
-        short: p
-        long: proto
-        required: false
-        takes_value: true
+          short: p
+          long: proto
+          required: false
+          takes_value: true
     - folder:
-        short: i
-        long: input-folder
-        #help: input folder with components as json and a Queries.json file
-        required: false
-        takes_value: true
-        default_value: "." 
-        #index: 1
+          short: i
+          long: input-folder
+          #help: input folder with components as json and a Queries.json file
+          required: false
+          takes_value: true
+          default_value: "."
+          #index: 1
     - query:
-        #short: q
-        #long: query
-        #help: query in a format of function:component<=component, if -query is present, the queries file will be ignored
-        required: false
-        takes_value: true
-        index: 1
+          #short: q
+          #long: query
+          #help: query in a format of function:component<=component, if -query is present, the queries file will be ignored
+          required: false
+          takes_value: true
+          index: 1
     - save-relation:
-        short: s
-        long: save-relation
-        required: false
-        takes_value: false
-#    - checkInputOutput:
+          short: s
+          long: save-relation
+          required: false
+          takes_value: false
+    - omit-clock-reduction:
+          long: clock-reduction-level
+          required: false
+          takes_value: true
+          #    - checkInputOutput:
 #        short: c
 #        long: checkInputOutput
 #        help: returns extra ouputs which are present on the left side and vise versa inputs
