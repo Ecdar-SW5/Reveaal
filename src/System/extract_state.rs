@@ -171,16 +171,16 @@ fn loc_find_and_then(
 fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
     match machine {
         SystemRecipe::Composition(left, right) => LocationID::Composition(
-            box_location_id(locations, left),
-            box_location_id(locations, right),
+            box_loc_id(locations, left),
+            box_loc_id(locations, right),
         ),
         SystemRecipe::Conjunction(left, right) => LocationID::Conjunction(
-            box_location_id(locations, left),
-            box_location_id(locations, right),
+            box_loc_id(locations, left),
+            box_loc_id(locations, right),
         ),
         SystemRecipe::Quotient(left, right, ..) => LocationID::Quotient(
-            box_location_id(locations, left),
-            box_location_id(locations, right),
+            box_loc_id(locations, left),
+            box_loc_id(locations, right),
         ),
         SystemRecipe::Component(..) => match locations.next().unwrap().trim() {
             // It is ensured .next() will not give a None, since the number of location is same as number of component. This is also being checked in validate_reachability_input function, that is called before get_state
@@ -190,6 +190,6 @@ fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> Locati
     }
 }
 
-fn box_location_id(left: &mut Iter<&str>, right: &SystemRecipe) -> Box<LocationID> {
+fn box_loc_id(left: &mut Iter<&str>, right: &SystemRecipe) -> Box<LocationID> {
     Box::new(get_location_id(left, right))
 }
