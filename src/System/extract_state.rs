@@ -73,47 +73,53 @@ fn build_location_tuple(
     machine: &SystemRecipe,
     system: &TransitionSystemPtr,
 ) -> Result<LocationTuple, String> {
-    let out = is_universal_or_inconsistent_input(locations, machine);
+    let location_id = get_location_id(&mut locations.iter(), machine);
+    let partial = location_id.is_partial_location();
     let system_locations = system.get_all_locations();
 
-    //If the location is universal
-    if out.0 {
-        loc_find_and_then(
+    let out = if partial {
+        EtEllerAndet::Normal
+    } else {
+        is_universal_or_inconsistent_input(locations, machine)
+    };
+
+    match out {
+        EtEllerAndet::Universal => loc_find_and_then(
             system_locations,
             &|loc: &&LocationTuple| matches!(loc.loc_type, LocationType::Universal),
             &|loc: &LocationTuple| Some(loc.to_owned()),
             "Could not find universal location in the transition system",
-        )
-    // If the location is inconsistent
-    } else if out.1 {
-        loc_find_and_then(
+        ),
+        EtEllerAndet::Inconsistent => loc_find_and_then(
             system_locations,
             &|loc| matches!(loc.loc_type, LocationType::Inconsistent),
             &|loc| Some(loc.to_owned()),
             "Could not find inconsistent location in the transition system",
-        )
-    // If the location is normal
-    } else {
-        let location_id = get_location_id(&mut locations.iter(), machine);
-
-        loc_find_and_then(
+        ),
+        EtEllerAndet::Normal => loc_find_and_then(
             system_locations,
             &|loc| loc.id.compare_partial_locations(&location_id),
             &|location_tuple| {
-                Some(if !location_id.is_partial_location() {
+                Some(if !partial {
                     location_tuple.clone()
                 } else {
                     LocationTuple::create_partial_location(location_id.clone())
                 })
             },
             format!("{} is not a location in the transition system", location_id).as_str(),
-        )
+        ),
     }
+}
+
+enum EtEllerAndet {
+    Inconsistent,
+    Universal,
+    Normal,
 }
 
 /// Checks if the input [LocationTuple] is of type `LocationType::Universal` or `LocationType::Inconsistent`.
 /// Returns (`bool 0: is_universal`, `bool 1: is_inconsistent`)
-fn is_universal_or_inconsistent_input(locations: &[&str], machine: &SystemRecipe) -> (bool, bool) {
+fn is_universal_or_inconsistent_input(locations: &[&str], machine: &SystemRecipe) -> EtEllerAndet {
     let mut components: Vec<Component> = Vec::new();
     machine.get_components(&mut components);
 
@@ -123,35 +129,25 @@ fn is_universal_or_inconsistent_input(locations: &[&str], machine: &SystemRecipe
     components
         .iter()
         .enumerate()
-        .map(|(i, comp)| {
-            let loc = comp
-                .get_locations()
-                .iter()
-                .find(|loc| match loc.get_location_type() {
-                    LocationType::Universal => {
-                        is_inconsistent = false;
-                        true
-                    }
-                    LocationType::Inconsistent => {
-                        is_universal = false;
-                        true
-                    }
-                    _ => false,
-                });
-            match loc {
-                Some(l) => {
-                    is_universal = is_universal && (l.id == locations[i]);
-                    is_inconsistent = is_inconsistent && (l.id == locations[i]);
-                }
-                None => {
+        .map(
+            |(i, comp)| match comp.get_location_by_name(locations[i]).location_type {
+                LocationType::Universal => is_inconsistent = false,
+                LocationType::Inconsistent => is_universal = false,
+                _ => {
                     is_universal = false;
-                    is_inconsistent = false
+                    is_inconsistent = false;
                 }
-            }
-        })
+            },
+        )
         .for_each(drop);
 
-    (is_universal, is_inconsistent)
+    if is_universal {
+        EtEllerAndet::Universal
+    } else if is_inconsistent {
+        EtEllerAndet::Inconsistent
+    } else {
+        EtEllerAndet::Normal
+    }
 }
 
 fn loc_find_and_then(
@@ -169,18 +165,15 @@ fn loc_find_and_then(
 
 fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
     match machine {
-        SystemRecipe::Composition(left, right) => LocationID::Composition(
-            box_loc_id(locations, left),
-            box_loc_id(locations, right),
-        ),
-        SystemRecipe::Conjunction(left, right) => LocationID::Conjunction(
-            box_loc_id(locations, left),
-            box_loc_id(locations, right),
-        ),
-        SystemRecipe::Quotient(left, right, ..) => LocationID::Quotient(
-            box_loc_id(locations, left),
-            box_loc_id(locations, right),
-        ),
+        SystemRecipe::Composition(left, right) => {
+            LocationID::Composition(box_loc_id(locations, left), box_loc_id(locations, right))
+        }
+        SystemRecipe::Conjunction(left, right) => {
+            LocationID::Conjunction(box_loc_id(locations, left), box_loc_id(locations, right))
+        }
+        SystemRecipe::Quotient(left, right, ..) => {
+            LocationID::Quotient(box_loc_id(locations, left), box_loc_id(locations, right))
+        }
         SystemRecipe::Component(..) => match locations.next().unwrap().trim() {
             // It is ensured .next() will not give a None, since the number of location is same as number of component. This is also being checked in validate_reachability_input function, that is called before get_state
             "_" => LocationID::AnyLocation(),
