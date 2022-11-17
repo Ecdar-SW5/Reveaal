@@ -13,7 +13,8 @@ pub mod util {
     use edbm::util::constraints::ClockIndex;
 
     pub fn json_reconstructed_component_refines_base_self(input_path: &str, system: &str) {
-        let project_loader = JsonProjectLoader::new(String::from(input_path), false);
+        let project_loader =
+            JsonProjectLoader::new(String::from(input_path), crate::DEFAULT_SETTINGS);
 
         //This query is not executed but simply used to extract an UncachedSystem so the tests can just give system expressions
         let str_query = format!("get-component: {} save-as test", system);

@@ -6,6 +6,7 @@ use crate::DataReader::json_writer::component_to_json_file;
 use crate::DataReader::xml_parser::parse_xml_from_file;
 use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
+use crate::ProtobufServer::services::query_request::Settings;
 use crate::System::input_enabler;
 use std::collections::HashMap;
 use std::num::NonZeroUsize;
@@ -84,11 +85,13 @@ impl ModelCache {
 pub trait ComponentLoader {
     fn get_component(&mut self, component_name: &str) -> &Component;
     fn save_component(&mut self, component: Component);
+    fn get_settings(&self) -> &Settings;
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct ComponentContainer {
     pub loaded_components: Arc<ComponentsMap>,
+    settings: Option<Settings>,
 }
 
 impl ComponentLoader for ComponentContainer {
@@ -102,13 +105,23 @@ impl ComponentLoader for ComponentContainer {
     fn save_component(&mut self, _component: Component) {
         //Intentionally left blank (no-op func)
     }
+
+    fn get_settings(&self) -> &Settings {
+        self.settings.as_ref().unwrap()
+    }
 }
 
 impl ComponentContainer {
     pub fn new(map: Arc<ComponentsMap>) -> Self {
         ComponentContainer {
             loaded_components: map,
+            settings: None,
         }
+    }
+
+    /// Sets the settings
+    pub(crate) fn set_settings(&mut self, settings: Settings) {
+        self.settings = Some(settings);
     }
 }
 
@@ -124,7 +137,7 @@ pub struct JsonProjectLoader {
     loaded_components: ComponentsMap,
     system_declarations: SystemDeclarations,
     queries: Vec<Query>,
-    should_reduce_clocks: bool,
+    settings: Settings,
 }
 
 impl ComponentLoader for JsonProjectLoader {
@@ -144,6 +157,10 @@ impl ComponentLoader for JsonProjectLoader {
         component_to_json_file(&self.project_path, &component);
         self.loaded_components
             .insert(component.get_name().clone(), component);
+    }
+
+    fn get_settings(&self) -> &Settings {
+        &self.settings
     }
 }
 
@@ -167,7 +184,7 @@ impl ProjectLoader for JsonProjectLoader {
 
 impl JsonProjectLoader {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new(project_path: String, should_reduce_clocks: bool) -> Box<dyn ProjectLoader> {
+    pub fn new(project_path: String, settings: Settings) -> Box<dyn ProjectLoader> {
         let system_declarations = json_reader::read_system_declarations(&project_path).unwrap();
         let queries = json_reader::read_queries(&project_path).unwrap();
 
@@ -176,15 +193,12 @@ impl JsonProjectLoader {
             loaded_components: HashMap::new(),
             system_declarations,
             queries,
-            should_reduce_clocks,
+            settings,
         })
     }
 
     fn load_component(&mut self, component_name: &str) {
         let mut component = json_reader::read_json_component(&self.project_path, component_name);
-        if self.should_reduce_clocks {
-            component.reduce_clocks(component.find_redundant_clocks());
-        }
 
         component.create_edge_io_split();
 
@@ -209,6 +223,7 @@ pub struct XmlProjectLoader {
     loaded_components: ComponentsMap,
     system_declarations: SystemDeclarations,
     queries: Vec<Query>,
+    settings: Settings,
 }
 
 impl ComponentLoader for XmlProjectLoader {
@@ -222,6 +237,10 @@ impl ComponentLoader for XmlProjectLoader {
 
     fn save_component(&mut self, _: Component) {
         panic!("Saving components is not supported for XML projects")
+    }
+
+    fn get_settings(&self) -> &Settings {
+        &self.settings
     }
 }
 
@@ -245,14 +264,11 @@ impl ProjectLoader for XmlProjectLoader {
 
 impl XmlProjectLoader {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new(project_path: String, should_reduce_clocks: bool) -> Box<dyn ProjectLoader> {
+    pub fn new(project_path: String, settings: Settings) -> Box<dyn ProjectLoader> {
         let (comps, system_declarations, queries) = parse_xml_from_file(&project_path);
 
         let mut map = HashMap::<String, Component>::new();
         for mut component in comps {
-            if should_reduce_clocks {
-                component.reduce_clocks(component.find_redundant_clocks());
-            }
             component.create_edge_io_split();
 
             let opt_inputs = system_declarations.get_component_inputs(component.get_name());
@@ -269,6 +285,7 @@ impl XmlProjectLoader {
             loaded_components: map,
             system_declarations,
             queries,
+            settings,
         })
     }
 }

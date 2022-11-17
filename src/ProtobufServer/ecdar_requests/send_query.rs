@@ -9,7 +9,6 @@ use crate::DataReader::json_writer::component_to_json;
 use crate::DataReader::parse_queries;
 use crate::ModelObjects::queries::Query;
 use crate::ProtobufServer::services::component::Rep;
-use crate::ProtobufServer::services::query_request::Settings;
 use crate::ProtobufServer::services::query_response::query_ok::Result as ProtobufResult;
 use crate::ProtobufServer::services::query_response::query_ok::{
     ComponentResult, ConsistencyResult as ProtobufConsistencyResult,
@@ -32,10 +31,6 @@ use crate::TransitionSystems::{self, LocationID};
 use edbm::util::constraints::Disjunction;
 use log::trace;
 use tonic::Status;
-
-const DEFAULT_SETTINGS: Settings = Settings {
-    reduce_clocks: true,
-};
 
 impl ConcreteEcdarBackend {
     pub fn handle_send_query(
@@ -68,6 +63,7 @@ impl ConcreteEcdarBackend {
                     )
                 }
             };
+        component_container.set_settings(query_request.settings.unwrap_or(crate::DEFAULT_SETTINGS));
 
         if query_request.ignored_input_outputs.is_some() {
             return Err(Status::unimplemented(
@@ -138,13 +134,10 @@ fn parse_xml_components(xml: &str) -> Vec<Component> {
     comps
 }
 
-fn create_components(components: Vec<Component>, settings: Settings) -> HashMap<String, Component> {
+fn create_components(components: Vec<Component>) -> HashMap<String, Component> {
     let mut comp_hashmap = HashMap::<String, Component>::new();
     for mut component in components {
         trace!("Adding comp {} to container", component.get_name());
-        if settings.reduce_clocks {
-            component.reduce_clocks(component.find_redundant_clocks())
-        }
 
         component.create_edge_io_split();
         let inputs: Vec<_> = component
