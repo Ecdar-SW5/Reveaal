@@ -95,7 +95,6 @@ fn build_location_tuple(
     // If the location is normal
     } else {
         let location_id = get_location_id(&mut locations.iter(), machine);
-        let s = format!("{} is not a location in the transition system", location_id);
 
         loc_find_and_then(
             system_locations,
@@ -107,7 +106,7 @@ fn build_location_tuple(
                     LocationTuple::create_partial_location(location_id.clone())
                 })
             },
-            s.as_str(),
+            format!("{} is not a location in the transition system", location_id).as_str(),
         )
     }
 }
@@ -165,7 +164,7 @@ fn loc_find_and_then(
         .iter()
         .find(predicate)
         .and_then(op)
-        .ok_or(err.to_string())
+        .ok_or_else(|| err.to_string())
 }
 
 fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
