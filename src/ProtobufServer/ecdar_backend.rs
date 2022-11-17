@@ -7,6 +7,7 @@ use crate::ProtobufServer::services::{
 };
 use futures::FutureExt;
 use std::panic::UnwindSafe;
+use std::sync::atomic::{AtomicI32, Ordering};
 use tonic::{Request, Response, Status};
 
 use super::threadpool::ThreadPool;
@@ -15,6 +16,7 @@ use super::threadpool::ThreadPool;
 pub struct ConcreteEcdarBackend {
     thread_pool: ThreadPool,
     model_cache: ModelCache,
+    num: AtomicI32,
 }
 
 async fn catch_unwind<T, O>(future: T) -> Result<O, Status>
@@ -46,7 +48,9 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         _request: Request<()>,
     ) -> Result<Response<UserTokenResponse>, Status> {
-        unimplemented!();
+        let id = self.num.fetch_add(1, Ordering::SeqCst);
+        let token_response = UserTokenResponse { user_id: id };
+        Result::Ok(Response::new(token_response))
     }
 
     async fn send_query(

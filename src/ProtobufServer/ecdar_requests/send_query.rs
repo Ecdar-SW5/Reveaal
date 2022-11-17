@@ -43,19 +43,25 @@ impl ConcreteEcdarBackend {
         let components_info = query_request.components_info.as_ref().unwrap();
         let proto_components = &components_info.components;
         let query = parse_query(&query_request)?;
+        let user_id = query_request.user_id;
 
-        let mut component_container = match model_cache.get_model(components_info.components_hash) {
-            Some(model) => model,
-            None => {
-                let parsed_components: Vec<Component> = proto_components
-                    .iter()
-                    .flat_map(parse_components_if_some)
-                    .flatten()
-                    .collect::<Vec<Component>>();
-                let components = create_components(parsed_components);
-                model_cache.insert_model(components_info.components_hash, Arc::new(components))
-            }
-        };
+        let mut component_container =
+            match model_cache.get_model(user_id, components_info.components_hash) {
+                Some(model) => model,
+                None => {
+                    let parsed_components: Vec<Component> = proto_components
+                        .iter()
+                        .flat_map(parse_components_if_some)
+                        .flatten()
+                        .collect::<Vec<Component>>();
+                    let components = create_components(parsed_components);
+                    model_cache.insert_model(
+                        user_id,
+                        components_info.components_hash,
+                        Arc::new(components),
+                    )
+                }
+            };
         component_container.set_settings(query_request.settings.unwrap_or(crate::DEFAULT_SETTINGS));
 
         if query_request.ignored_input_outputs.is_some() {

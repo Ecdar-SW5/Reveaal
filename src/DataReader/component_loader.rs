@@ -1,3 +1,5 @@
+use lru::LruCache;
+
 use crate::component::Component;
 use crate::DataReader::json_reader;
 use crate::DataReader::json_writer::component_to_json_file;
@@ -7,15 +9,31 @@ use crate::ModelObjects::system_declarations::SystemDeclarations;
 use crate::ProtobufServer::services::query_request::Settings;
 use crate::System::input_enabler;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::num::NonZeroUsize;
+use std::sync::{Arc, Mutex};
 
 type ComponentsMap = HashMap<String, Component>;
 
+struct ComponentTuple {
+    components_hash: u32,
+    components_map: Arc<ComponentsMap>,
+}
+
 /// A struct used for caching the models.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct ModelCache {
-    // TODO: A concurrent hashmap may be faster to use and cause less prone to locking, but is not part of the standard library.
-    cache: Arc<RwLock<HashMap<u32, Arc<ComponentsMap>>>>,
+    // TODO: A concurrent lru may be faster to use and cause less prone to lock contention.
+    cache: Arc<Mutex<LruCache<i32, ComponentTuple>>>,
+}
+
+impl Default for ModelCache {
+    fn default() -> Self {
+        Self {
+            cache: Arc::new(Mutex::new(LruCache::<i32, ComponentTuple>::new(
+                NonZeroUsize::new(100).unwrap(),
+            ))),
+        }
+    }
 }
 
 impl ModelCache {
@@ -24,12 +42,20 @@ impl ModelCache {
     /// # Arguments
     ///
     /// * `components_hash` - A hash of the components
-    pub fn get_model(&self, components_hash: u32) -> Option<ComponentContainer> {
-        self.cache
-            .read()
-            .unwrap()
-            .get(&components_hash)
-            .map(|model| ComponentContainer::new(Arc::clone(model)))
+    pub fn get_model(&self, user_id: i32, components_hash: u32) -> Option<ComponentContainer> {
+        let mut cache = self.cache.lock().unwrap();
+
+        let components = cache.get(&user_id);
+
+        components.and_then(|component_pair| {
+            if component_pair.components_hash == components_hash {
+                Some(ComponentContainer::new(Arc::clone(
+                    &component_pair.components_map,
+                )))
+            } else {
+                None
+            }
+        })
     }
 
     /// A method that inserts a new model into the cache.
@@ -40,13 +66,17 @@ impl ModelCache {
     /// * `container_components` - The `ComponentContainer's` loaded components (aka Model) to be cached.
     pub fn insert_model(
         &mut self,
+        user_id: i32,
         components_hash: u32,
         container_components: Arc<ComponentsMap>,
     ) -> ComponentContainer {
-        self.cache
-            .write()
-            .unwrap()
-            .insert(components_hash, Arc::clone(&container_components));
+        self.cache.lock().unwrap().put(
+            user_id,
+            ComponentTuple {
+                components_hash,
+                components_map: Arc::clone(&container_components),
+            },
+        );
 
         ComponentContainer::new(container_components)
     }
