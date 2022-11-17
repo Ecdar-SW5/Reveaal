@@ -52,10 +52,7 @@ impl ConcreteEcdarBackend {
                         .flat_map(parse_components_if_some)
                         .flatten()
                         .collect::<Vec<Component>>();
-                    let components = create_components(
-                        parsed_components,
-                        query_request.settings.unwrap_or(DEFAULT_SETTINGS),
-                    );
+                    let components = create_components(parsed_components);
                     model_cache.insert_model(
                         user_id,
                         components_info.components_hash,
