@@ -171,18 +171,19 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     .map(|p| p.id.clone())
                     .collect(),
             );
-            
+
             match protoPath {
                 Ok(p) => {
-                    let component_paths = p.iter()
-                    .map(|component_path| services::Path {
-                        edge_ids: component_path
-                            .concat()
-                            .iter()
-                            .map(|id| id.to_string())
-                            .collect(),
-                    })
-                    .collect();
+                    let component_paths = p
+                        .iter()
+                        .map(|component_path| services::Path {
+                            edge_ids: component_path
+                                .concat()
+                                .iter()
+                                .map(|id| id.to_string())
+                                .collect(),
+                        })
+                        .collect();
                     if path.was_reachable {
                         Some(ProtobufResult::Reachability(ReachabilityResult {
                             success: true,
@@ -198,17 +199,14 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                             component_paths: vec![],
                         }))
                     }
-                },
-                Err(e) => 
-                    Some(ProtobufResult::Reachability(ReachabilityResult {
-                        success: false,
-                        reason: format!("Internal error occurred during reachability check: {}", e),
-                        state: None,
-                        component_paths: vec![],
-                    })),
+                }
+                Err(e) => Some(ProtobufResult::Reachability(ReachabilityResult {
+                    success: false,
+                    reason: format!("Internal error occurred during reachability check: {}", e),
+                    state: None,
+                    component_paths: vec![],
+                })),
             }
-            
-
         }
 
         QueryResult::GetComponent(comp) => Some(ProtobufResult::Component(ComponentResult {
