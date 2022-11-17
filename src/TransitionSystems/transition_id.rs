@@ -61,7 +61,7 @@ impl TransitionID {
 
         for transitionID in path {
             for (componentIndex, transition) in transitionID.get_leaves().iter().enumerate() {
-                paths[componentIndex].push(transition.to_vec());
+                paths[componentIndex].push(transition.iter().cloned().filter(|id| !matches!(id, TransitionID::None)).collect());
             }
         }
         paths
