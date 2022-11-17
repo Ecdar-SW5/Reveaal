@@ -30,7 +30,7 @@ impl TransitionID {
                 let b = r.get_leaves_helper(current_leaves, a.1 + 1);
                 (self, b.1)
             }
-            TransitionID::Quotient(_, _l, _r) => {
+            TransitionID::Quotient(_l, _r) => {
                 let mut curIndex = index;
                 for t in _l {
                     (_, curIndex) = t.get_leaves_helper(current_leaves, index);

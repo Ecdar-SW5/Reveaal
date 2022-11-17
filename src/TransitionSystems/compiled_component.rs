@@ -151,7 +151,6 @@ impl TransitionSystem for CompiledComponent {
 
         if locations.is_universal() {
             return vec![Transition::new(
-                TransitionID::Simple(format!("Universal:{}", locations.id)),
                 locations,
                 self.dim,
             )];
@@ -159,7 +158,6 @@ impl TransitionSystem for CompiledComponent {
 
         if locations.is_inconsistent() && is_input {
             return vec![Transition::new(
-                TransitionID::Simple(format!("Inconsistent:{}", locations.id)),
                 locations,
                 self.dim,
             )];

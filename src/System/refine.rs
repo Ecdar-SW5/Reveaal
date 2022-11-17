@@ -201,7 +201,6 @@ pub fn check_refinement(sys1: TransitionSystemPtr, sys2: TransitionSystemPtr) ->
             let output_transition1 = sys1.next_outputs(curr_pair.get_locations1(), output);
             let output_transition2 = if extra {
                 vec![Transition::new(
-                    TransitionID::None,
                     curr_pair.get_locations2(),
                     dimensions,
                 )]
@@ -262,7 +261,6 @@ pub fn check_refinement(sys1: TransitionSystemPtr, sys2: TransitionSystemPtr) ->
 
             let input_transitions1 = if extra {
                 vec![Transition::new(
-                    TransitionID::None,
                     curr_pair.get_locations1(),
                     dimensions,
                 )]

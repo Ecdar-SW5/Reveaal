@@ -5,8 +5,8 @@ mod reachability_search_algorithm_test {
     use test_case::test_case;
 
     #[test_case(TransitionID::Conjunction(
-      Box::new(TransitionID::Simple("a".to_string())),
-      Box::new(TransitionID::Simple("b".to_string()))
+        Box::new(TransitionID::Simple("a".to_string())),
+        Box::new(TransitionID::Simple("b".to_string()))
     ),
     vec![vec!(TransitionID::Simple("a".to_string())), vec!(TransitionID::Simple("b".to_string()))];
     "Simple conjunction")]
@@ -46,14 +46,12 @@ mod reachability_search_algorithm_test {
       vec!(TransitionID::Simple("e".to_string()))];
     "Multiple conjunction and composition")]
     #[test_case(TransitionID::Quotient(
-      1,
       vec!(TransitionID::Simple("a".to_string())),
       vec!(TransitionID::Simple("b".to_string()))
     ),
     vec![vec!(TransitionID::Simple("a".to_string())), vec!(TransitionID::Simple("b".to_string()))];
     "simple quotient")]
     #[test_case(TransitionID::Quotient(
-      1,
       vec!(TransitionID::Simple("a".to_string()), TransitionID::Simple("b".to_string())),
       vec!(TransitionID::Simple("c".to_string()), TransitionID::Simple("d".to_string()), TransitionID::Simple("e".to_string()))
     ),
@@ -65,7 +63,6 @@ mod reachability_search_algorithm_test {
         TransitionID::Conjunction(
             Box::new(
                 TransitionID::Quotient(
-                    1,
                     vec![
                         TransitionID::Conjunction(
                             Box::new(TransitionID::Simple("a".to_string())),
