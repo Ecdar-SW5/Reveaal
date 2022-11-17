@@ -47,6 +47,8 @@
   ],
   "edges": [
     {
+      "id": "E0",
+      "group": "",
       "sourceLocation": "L28",
       "targetLocation": "L29",
       "status": "OUTPUT",
@@ -66,6 +68,8 @@
       ]
     },
     {
+      "id": "E0",
+      "group": "",
       "sourceLocation": "L29",
       "targetLocation": "L31",
       "status": "INPUT",
@@ -93,8 +97,8 @@
     }
   ],
   "description": "",
-  "x": 5.0,
-  "y": 5.0,
+  "x": 257.0,
+  "y": 40.0,
   "width": 450.0,
   "height": 600.0,
   "color": "5",
