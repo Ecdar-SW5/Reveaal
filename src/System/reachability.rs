@@ -150,7 +150,7 @@ fn take_transition(
         let new_location_id = &new_state.get_location().id;
         let existing_zones = visited_states
             .entry(new_location_id.clone())
-            .or_insert(Vec::new());
+            .or_default();
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
             remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
             visited_states
