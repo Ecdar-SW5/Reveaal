@@ -170,7 +170,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     .iter()
                     .map(|p| p.id.clone())
                     .collect(),
-            )
+            ).expect("Path has TransitionIDs with different structures")
             .iter()
             .map(|component_path| services::Path {
                 edge_ids: component_path

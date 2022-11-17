@@ -51,9 +51,9 @@ impl TransitionID {
         }
     }
 
-    pub fn split_into_component_lists(path: &Vec<TransitionID>) -> Vec<Vec<Vec<TransitionID>>> {
+    pub fn split_into_component_lists(path: &Vec<TransitionID>) -> Result<Vec<Vec<Vec<TransitionID>>>, String> {
         if path.len() == 0 {
-            return Vec::new();
+            return Ok(Vec::new());
         }
         let leaves = path[0].get_leaves();
 
@@ -64,7 +64,7 @@ impl TransitionID {
                 paths[componentIndex].push(transition.iter().cloned().filter(|id| !matches!(id, TransitionID::None)).collect());
             }
         }
-        paths
+        Ok(paths)
     }
 }
 

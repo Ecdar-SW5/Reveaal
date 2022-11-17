@@ -2,6 +2,7 @@
 mod reachability_search_algorithm_test {
     use crate::TransitionSystems::TransitionID;
 
+    use edbm::expensive_assert;
     use test_case::test_case;
     #[test_case(
         vec![
@@ -94,17 +95,24 @@ mod reachability_search_algorithm_test {
         ;
     "Path")]
     fn split_component_test(path: Vec<TransitionID>, expected: Vec<Vec<Vec<TransitionID>>>) {
-        assert_eq!(TransitionID::split_into_component_lists(&path), expected);
+        assert_eq!(TransitionID::split_into_component_lists(&path), Ok(expected));
         //assert_eq!(id.get_leaves(), expected);
     }
 
     #[test_case(
         vec![
-            TransitionID::Simple("a".to_string())
+            TransitionID::Simple("a".to_string()),
+            TransitionID::Conjunction(
+                Box::new(TransitionID::Simple("b".to_string())),
+                Box::new(TransitionID::Simple("c".to_string()))
+            )
         ];
     "Empty path")]
-
     fn split_component_invalid_input(path: Vec<TransitionID>) {
+        match TransitionID::split_into_component_lists(&path) {
+            Ok(_) => panic!(),
+            Err(_) => (),        
+        }
         //assert_eq!(TransitionID::split_into_component_lists(&path));
         //assert_eq!(id.get_leaves(), expected);
     }
