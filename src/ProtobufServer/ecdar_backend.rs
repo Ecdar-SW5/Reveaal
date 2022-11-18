@@ -95,7 +95,7 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         request: Request<SimulationStartRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        self.handleRequest(request, Self::handle_start_simulation)
+        self.handle_request(request, Self::handle_start_simulation)
             .await
     }
 
@@ -103,7 +103,7 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         request: Request<SimulationStepRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        self.handleRequest(request, Self::handle_take_simulation_step)
+        self.handle_request(request, Self::handle_take_simulation_step)
             .await
     }
 }
