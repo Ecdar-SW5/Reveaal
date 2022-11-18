@@ -1,7 +1,6 @@
 use super::transition_decision_point::TransitionDecisionPoint;
 use crate::component::{Edge, State, Transition};
 
-#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub struct DecisionPoint {
     source: State,
