@@ -14,7 +14,7 @@ pub mod util {
 
     pub fn json_reconstructed_component_refines_base_self(input_path: &str, system: &str) {
         let project_loader =
-            JsonProjectLoader::new(String::from(input_path), crate::DEFAULT_SETTINGS);
+            JsonProjectLoader::new(String::from(input_path), crate::tests::TEST_SETTINGS);
 
         //This query is not executed but simply used to extract an UncachedSystem so the tests can just give system expressions
         let str_query = format!("get-component: {} save-as test", system);

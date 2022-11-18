@@ -15,6 +15,7 @@ pub use crate::DataReader::component_loader::{
 };
 pub use crate::DataReader::{parse_queries, xml_parser};
 pub use crate::ModelObjects::queries::Query;
+use crate::ProtobufServer::services::query_request::settings::ReduceClocksLevel::All;
 pub use crate::System::extract_system_rep;
 pub use ModelObjects::component;
 pub use ModelObjects::queries;
@@ -23,7 +24,7 @@ pub use System::executable_query::QueryResult;
 
 pub const DEFAULT_SETTINGS: ProtobufServer::services::query_request::Settings =
     ProtobufServer::services::query_request::Settings {
-        reduce_clocks_level: Some(-1),
+        reduce_clocks_level: Some(All(true)),
     };
 
 #[macro_use]

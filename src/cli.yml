@@ -31,9 +31,20 @@ args:
           long: clock-reduction-level
           required: false
           takes_value: true
-          #    - checkInputOutput:
-#        short: c
-#        long: checkInputOutput
-#        help: returns extra ouputs which are present on the left side and vise versa inputs
-#        required: false
-#        takes_value: false
+    - cache-size:
+          short: cs
+          long: cache-size
+          required: false
+          takes_value: true
+          default_value: 100
+    - thread-number:
+          short: tn
+          long: thread-number
+          required: false
+          takes_value: true
+#    - checkInputOutput:
+#          short: c
+#          long: checkInputOutput
+#          help: returns extra ouputs which are present on the left side and vise versa inputs
+#          required: false
+#          takes_value: false

@@ -19,6 +19,16 @@ pub struct ConcreteEcdarBackend {
     num: AtomicI32,
 }
 
+impl ConcreteEcdarBackend {
+    pub fn new(thread_count: usize, cache_size: usize) -> Self {
+        ConcreteEcdarBackend {
+            thread_pool: ThreadPool::new(thread_count),
+            model_cache: ModelCache::new(cache_size),
+            num: AtomicI32::new(1),
+        }
+    }
+}
+
 async fn catch_unwind<T, O>(future: T) -> Result<O, Status>
 where
     T: UnwindSafe + futures::Future<Output = Result<O, Status>>,
@@ -42,6 +52,26 @@ where
     }
 }
 
+impl ConcreteEcdarBackend {
+    async fn handle_request<RequestT, ResponseT>(
+        &self,
+        request: Request<RequestT>,
+        handler: impl Fn(RequestT, ModelCache) -> Result<ResponseT, Status> + Send + 'static,
+    ) -> Result<Response<ResponseT>, Status>
+    where
+        ResponseT: Send + 'static,
+        RequestT: Send + 'static,
+    {
+        let cache = self.model_cache.clone();
+        let res = catch_unwind(
+            self.thread_pool
+                .enqueue(move || handler(request.into_inner(), cache)),
+        )
+        .await;
+        res.map(Response::new)
+    }
+}
+
 #[tonic::async_trait]
 impl EcdarBackend for ConcreteEcdarBackend {
     async fn get_user_token(
@@ -57,13 +87,8 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<QueryResponse>, Status> {
-        let cache = self.model_cache.clone();
-        let res =
-            catch_unwind(self.thread_pool.enqueue(move || {
-                ConcreteEcdarBackend::handle_send_query(request.into_inner(), cache)
-            }))
-            .await;
-        res.map(Response::new)
+        self.handle_request(request, ConcreteEcdarBackend::handle_send_query)
+            .await
     }
 
     async fn start_simulation(
