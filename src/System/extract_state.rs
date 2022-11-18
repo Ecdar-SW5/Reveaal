@@ -139,14 +139,14 @@ fn find_location_and_then(
     locations: Vec<LocationTuple>,
     predicate: &dyn Fn(&&LocationTuple) -> bool,
     op: &dyn Fn(&LocationTuple) -> Option<LocationTuple>,
-    err: Option<&str>,
+    err_msg: Option<&str>,
 ) -> Result<LocationTuple, String> {
     locations
         .iter()
         .find(predicate)
         .and_then(op)
         .ok_or_else(|| {
-            if let Some(msg) = err {
+            if let Some(msg) = err_msg {
                 msg.to_string()
             } else {
                 "Unexpected error happened".to_string()
