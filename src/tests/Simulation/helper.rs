@@ -17,18 +17,20 @@ use crate::ProtobufServer::services::SpecificComponent as ProtoSpecificComponent
 use crate::ProtobufServer::services::State as ProtoState;
 
 pub fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
-    let component = read_json_component("samples/json/EcdarUniversity", "Machine");
-    CompiledComponent::from(vec![component], "Machine")
+    create_system_from_path("samples/json/EcdarUniversity", "Machine")
+}
+
+pub fn create_system_from_path(path: &str, name: &str) -> TransitionSystemPtr {
+    let component = read_json_component(path, name);
+    CompiledComponent::from(vec![component], name)
 }
 
 pub fn create_Simulation_Machine_system() -> TransitionSystemPtr {
-    let component = read_json_component("samples/json/Simulation", "SimMachine");
-    CompiledComponent::from(vec![component], "SimMachine")
+    create_system_from_path("samples/json/Simulation", "SimMachine")
 }
 
 pub fn create_EcdarUniversity_Machine4_system() -> TransitionSystemPtr {
-    let component = read_json_component("samples/json/EcdarUniversity", "Machine4");
-    CompiledComponent::from(vec![component], "Machine4")
+    create_system_from_path("samples/json/EcdarUniversity", "Machine4")
 }
 
 pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {

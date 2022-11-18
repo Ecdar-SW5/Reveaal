@@ -24,7 +24,10 @@ impl ConcreteEcdarBackend {
         let chosen_decision = request_message.chosen_decision.unwrap();
         let chosen_decision: Decision = Decision::from(chosen_decision, &transition_system);
         let chosen_decision: TransitionDecision =
-            TransitionDecision::from(&chosen_decision, &transition_system);
+            match TransitionDecision::from(&chosen_decision, &transition_system) {
+                Ok(v) => v,
+                Err(e) => return Err(Status::internal(e)),
+            };
 
         let decision_point = chosen_decision.resolve(transition_system.clone()); // TODO remove clone
 

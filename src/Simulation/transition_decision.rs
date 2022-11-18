@@ -1,7 +1,6 @@
 use crate::{
     component::{State, Transition},
-    EdgeEval::constraint_applyer::apply_constraints_to_state,
-    TransitionSystems::TransitionSystemPtr,
+    TransitionSystems::{TransitionID, TransitionSystemPtr},
 };
 
 use super::{decision::Decision, transition_decision_point::TransitionDecisionPoint};
@@ -9,44 +8,50 @@ use super::{decision::Decision, transition_decision_point::TransitionDecisionPoi
 /// Represent a decision in a transition system, that has been taken: In the current `source` state I have `decided` to use this `Transition`.
 #[derive(Debug)]
 pub struct TransitionDecision {
-    pub source: State,
-    pub decided: Transition,
+    source: State,
+    decided: Transition,
 }
 
 impl TransitionDecision {
     /// Returns a `TransitionDecision` equivalent to the given `&Decision` in relation to the given `&TransitionSystemPtr`
-    // TODO this less is horrible...
-    // TODO an explanation would be in order
-    pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Self {
-        let action = decision.decided.get_sync();
+    pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Result<Self, String> {
+        fn contains(transition: &Transition, edge_id: &String) -> bool {
+            transition
+                .id
+                .get_leaves()
+                .concat()
+                .iter()
+                .map(|x| match x {
+                    TransitionID::Simple(x) => &x,
+                    _ => "",
+                })
+                .any(|x| x == edge_id)
+        }
         let source = decision.source.to_owned();
-        let transitions = system.next_transitions_if_available(source.get_location(), action);
+        let action = decision.decided.get_sync();
+        let edge_id = &decision.decided.id;
+
+        // Choose transitions that correspond to a given edge.
+        let transitions = system
+            .next_transitions_if_available(source.get_location(), action)
+            .into_iter()
+            .filter(|t| contains(t, edge_id))
+            .collect::<Vec<_>>()
+            .to_owned();
 
         let decided = match transitions.len() {
-            0 => panic!("No transitions for {}", action),
+            // If no transitions are left we have nothing to step along... Something has gone wrong
+            0 => return Err("No valid transitions for {action}".to_string()),
+            // If 1 transitions is left we choose that transition as our decided
             1 => transitions.first().unwrap().to_owned(), // If transitions.len() == 1 then transitions.first() == Some(...) always
+            // Otherwise the result is non-deterministic, this is currently not supported by the simulation API
+            // This might never happen, but i'm unsure
             _ => {
-                let mut mut_source = decision.source.to_owned();
-                let guard = decision.decided.get_guard().as_ref().unwrap();
-                let zone = apply_constraints_to_state(
-                    &guard,
-                    &system.get_decls()[0],
-                    mut_source.take_zone(),
-                )
-                .expect("idk");
-                mut_source.set_zone(zone);
-
-                transitions
-                    .into_iter()
-                    .filter(|t| t.use_transition(&mut mut_source.clone()))
-                    .collect::<Vec<_>>()
-                    .first()
-                    .unwrap()
-                    .to_owned()
+                return Err("Non determinism not currently supported by Simulation API".to_string())
             }
         };
 
-        TransitionDecision { source, decided }
+        Ok(TransitionDecision { source, decided })
     }
 
     /// Resolves a `TransitionDecision`: use the `decided: Transition` and return the `TransitionDecisionPoint` of the destination `State`  
@@ -61,13 +66,47 @@ mod tests {
     use crate::{
         tests::Simulation::helper::{
             create_EcdarUniversity_Machine_system, create_Simulation_Machine_system,
+            create_system_from_path,
         },
         DataReader::json_reader::read_json_component,
         Simulation::{
             decision::Decision, transition_decision::TransitionDecision,
             transition_decision_point::TransitionDecisionPoint,
         },
+        TransitionSystems::TransitionSystemPtr,
     };
+
+    fn assert__from__good_Decision__returns_correct_TransitionDecision(
+        system: TransitionSystemPtr,
+        decision: Decision,
+        expected: TransitionDecision,
+    ) {
+        // Act
+        let actual = TransitionDecision::from(&decision, &system).unwrap();
+
+        // Assert
+        assert_eq!(format!("{:?}", actual), format!("{:?}", expected))
+    }
+
+    #[test]
+    fn from__Determinism_NonDeterminismCom__returns_ok() {
+        // Arrange
+        let path = "samples/json/Determinism";
+        let component = "NonDeterminismCom";
+        let system = create_system_from_path(path, component);
+        let component = read_json_component(path, component);
+
+        let decision = Decision {
+            source: system.get_initial_state().unwrap(),
+            decided: component.get_edges().first().unwrap().to_owned(),
+        };
+
+        // Act
+        let actual = TransitionDecision::from(&decision, &system);
+
+        // Assert
+        assert!(actual.is_ok());
+    }
 
     // Yes this test is stupid, no you will not remove it >:(
     #[allow(unused_must_use)]
@@ -140,14 +179,7 @@ mod tests {
                 .to_owned(),
         };
 
-        // Act
-        let actual = TransitionDecision::from(&decision, &system);
-
-        // Assert
-        let actual = format!("{:?}", actual);
-        let expected = format!("{:?}", expected);
-
-        assert_eq!(actual, expected);
+        assert__from__good_Decision__returns_correct_TransitionDecision(system, decision, expected);
     }
 
     #[test]
@@ -171,13 +203,6 @@ mod tests {
             decided: system.next_transitions(initial.get_location(), &edge_action)[0].clone(),
         };
 
-        // Act
-        let actual = TransitionDecision::from(&decision, &system);
-
-        // Assert
-        let actual = format!("{:?}", actual);
-        let expected = format!("{:?}", expected);
-
-        assert_eq!(actual, expected);
+        assert__from__good_Decision__returns_correct_TransitionDecision(system, decision, expected);
     }
 }
