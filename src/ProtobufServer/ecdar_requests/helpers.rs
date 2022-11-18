@@ -1,6 +1,5 @@
 use crate::ProtobufServer::services::{
-    self, Component, ComponentsInfo, DecisionPoint, Edge, Location, LocationTuple, SimulationInfo,
-    SpecificComponent, State,
+    self, DecisionPoint, Edge, Location, LocationTuple, SpecificComponent, State,
 };
 
 pub fn create_1tuple_state_with_single_constraint(

@@ -3,7 +3,7 @@ use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
 
 use crate::DataReader::component_loader::ModelCache;
 use crate::ProtobufServer::services::{
-    Decision, Edge, QueryRequest, QueryResponse, SimulationStartRequest, SimulationStepRequest,
+    QueryRequest, QueryResponse, SimulationStartRequest, SimulationStepRequest,
     SimulationStepResponse, UserTokenResponse,
 };
 
@@ -67,10 +67,11 @@ impl EcdarBackend for ConcreteEcdarBackend {
             .await;
         res.map(Response::new)
     }
+
     //Function currently returns dummy data
     async fn start_simulation(
         &self,
-        request: Request<SimulationStartRequest>,
+        _request: Request<SimulationStartRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
         //Return Decision point
         Ok(Response::new(SimulationStepResponse {
