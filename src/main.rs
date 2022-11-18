@@ -73,7 +73,7 @@ fn parse_args(matches: &clap::ArgMatches) -> (Box<dyn ComponentLoader>, Vec<Quer
     let queries = if query.is_empty() {
         project_loader.get_queries().clone()
     } else {
-        parse_queries::parse_to_query(query)
+            parse_queries::parse_to_query(query)
     };
 
     (project_loader.to_comp_loader(), queries)
