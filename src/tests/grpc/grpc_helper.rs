@@ -13,17 +13,11 @@ pub fn create_edges_from_L5() -> Vec<Edge> {
     vec![
         Edge {
             id: "E3".to_string(),
-            specific_component: Some(SpecificComponent {
-                component_name: String::from("Machine"),
-                component_index: 0,
-            }),
+            specific_component: None,
         },
         Edge {
             id: "E5".to_string(),
-            specific_component: Some(SpecificComponent {
-                component_name: String::from("Machine"),
-                component_index: 0,
-            }),
+            specific_component: None,
         },
     ]
 }
@@ -81,7 +75,7 @@ pub fn create_1tuple_state_with_single_constraint(
 //
 //           -----coin? E3----->
 //          /
-// (L5,y>=0)-------tea! E5----->
+// (L5, universe)-------tea! E5----->
 //
 pub fn create_initial_decision_point() -> DecisionPoint {
     DecisionPoint {

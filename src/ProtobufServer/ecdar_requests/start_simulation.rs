@@ -58,7 +58,7 @@ impl ProtoDecisionPoint {
         let edges = decision_point
             .possible_decisions
             .iter()
-            .map(|e| ProtoEdge::from(e, decision_point.source.clone()))
+            .map(|e| ProtoEdge::from(e))
             .collect();
 
         ProtoDecisionPoint {
@@ -179,23 +179,10 @@ impl ProtoConstraint {
 }
 
 impl ProtoEdge {
-    fn from(e: &Edge, s: State) -> Self {
-        let protolocations = location_id_to_proto_location_vec(&s.decorated_locations.id);
-        let components: Vec<_> = protolocations
-            .iter()
-            .filter(|pl| pl.id == e.source_location)
-            .cloned()
-            .collect();
+    fn from(e: &Edge) -> Self {
         ProtoEdge {
             id: e.id.clone(),
-            specific_component: Some(SpecificComponent {
-                component_name: components[0]
-                    .specific_component
-                    .clone()
-                    .unwrap()
-                    .component_name,
-                component_index: 0,
-            }), // TODO: Find a way to pick correct index for component if combined.
+            specific_component: None, // Edge id's are unique thus this is not needed
         }
     }
 }
