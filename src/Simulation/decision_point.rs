@@ -7,6 +7,23 @@ pub struct DecisionPoint {
     possible_decisions: Vec<Edge>,
 }
 
+impl DecisionPoint {
+    pub fn new(source: State, possible_decisions: Vec<Edge>) -> Self {
+        Self {
+            source,
+            possible_decisions,
+        }
+    }
+
+    pub fn source(&self) -> &State {
+        &self.source
+    }
+
+    pub fn possible_decisions(&self) -> &[Edge] {
+        self.possible_decisions.as_ref()
+    }
+}
+
 impl From<&TransitionDecisionPoint> for DecisionPoint {
     fn from(transition_decision_point: &TransitionDecisionPoint) -> Self {
         let possible_decisions = transition_decision_point

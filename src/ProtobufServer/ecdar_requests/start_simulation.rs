@@ -53,10 +53,10 @@ impl ProtoDecisionPoint {
 
 impl ProtoDecisionPoint {
     fn from(decision_point: &DecisionPoint, system: &TransitionSystemPtr) -> Self {
-        let source = ProtoState::from(&decision_point.source, system);
+        let source = ProtoState::from(decision_point.source(), system);
 
         let edges = decision_point
-            .possible_decisions
+            .possible_decisions()
             .iter()
             .map(|e| ProtoEdge::from(e))
             .collect();
@@ -219,10 +219,8 @@ mod tests {
 
         let system = create_EcdarUniversity_Machine_system();
 
-        let decisionPoint = DecisionPoint {
-            source: transitionDecisionPoint.source,
-            possible_decisions: start_edges,
-        };
+        let decisionPoint =
+            DecisionPoint::new(transitionDecisionPoint.source().to_owned(), start_edges);
 
         // Act
         let actual = ProtoDecisionPoint::from(&decisionPoint, &system);
@@ -255,10 +253,7 @@ mod tests {
         let tea_transition = binding.first().unwrap();
         tea_transition.use_transition(&mut after_tea);
 
-        let decisionPoint = DecisionPoint {
-            source: after_tea,
-            possible_decisions: start_edges,
-        };
+        let decisionPoint = DecisionPoint::new(after_tea, start_edges);
 
         // Act
         let actual = ProtoDecisionPoint::from(&decisionPoint, &system);
