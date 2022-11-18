@@ -61,7 +61,7 @@ name = "bench"
 harness = false
 
 [[bench]]
-name = "reachability-bench"
+name = "reachability_bench"
 harness = false
 
 [[bench]]

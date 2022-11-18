@@ -95,7 +95,6 @@ fn search_algorithm(start_state: &State, end_state: &State, system: &dyn Transit
 
     // hashmap linking every location to all its current zones
     let mut visited_states: HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
-    //let mut made_transitions: Vec<SubPath> = Vec::new();
 
     // List of states that are to be visited
     let mut frontier_states: Vec<Rc<SubPath>> = Vec::new();
@@ -159,9 +158,7 @@ fn take_transition(
     if transition.use_transition(&mut new_state) {
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
         let new_location_id = &new_state.get_location().id;
-        let existing_zones = visited_states
-            .entry(new_location_id.clone())
-            .or_insert(Vec::new());
+        let existing_zones = visited_states.entry(new_location_id.clone()).or_default();
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
             remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
             visited_states
@@ -190,14 +187,14 @@ fn zone_subset_of_existing_zones(
     false
 }
 
-// Removes everything in existing_zones that is a subset of zone
+/// Removes everything in existing_zones that is a subset of zone
 fn remove_existing_subsets_of_zone(
     new_zone: &OwnedFederation,
     existing_zones: &mut Vec<OwnedFederation>,
 ) {
     existing_zones.retain(|existing_zone| !existing_zone.subset_eq(new_zone));
 }
-
+/// Makes the path from the last subpath
 fn make_path(sub_path: Rc<SubPath>) -> Path {
     let mut path: Vec<Transition> = Vec::new();
 

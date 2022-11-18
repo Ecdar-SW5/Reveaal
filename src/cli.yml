@@ -23,10 +23,25 @@ args:
         takes_value: true
         index: 1
     - save-relation:
-        short: s
-        long: save-relation
-        required: false
-        takes_value: false
+          short: s
+          long: save-relation
+          required: false
+          takes_value: false
+    - omit-clock-reduction:
+          long: clock-reduction-level
+          required: false
+          takes_value: true
+    - cache-size:
+          short: cs
+          long: cache-size
+          required: false
+          takes_value: true
+          default_value: "100"
+    - thread-number:
+          short: tn
+          long: thread-number
+          required: false
+          takes_value: true
 #    - checkInputOutput:
 #        short: c
 #        long: checkInputOutput
