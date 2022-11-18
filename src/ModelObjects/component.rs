@@ -14,6 +14,7 @@ use crate::ModelObjects::representations::BoolExpression;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
 use crate::TransitionSystems::{LocationTuple, TransitionID};
 use edbm::zones::OwnedFederation;
+use log::info;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -262,14 +263,31 @@ impl Component {
         self.input_edges = Some(i_edges);
     }
 
+    /// Redoes the components Edge IDs by giving them new unique IDs based on their index.
+    pub fn remake_edge_ids(&mut self) {
+        // Give all edges a name
+        for (index, edge) in self.get_mut_edges().iter_mut().enumerate() {
+            edge.id = format!("E{}", index);
+        }
+
+        // Remake the input and output edges
+        self.create_edge_io_split();
+    }
+
     /// Function for reducing the clocks found on the component.
     /// Unused clocks and "duplicate" clocks (clocks that are never reset)
     /// and then remove them.
-    pub fn reduce_clocks(&mut self, redundant_clocks: &Vec<RedundantClock>) {
+    pub fn reduce_clocks(&mut self, redundant_clocks: Vec<RedundantClock>) {
         for clock in redundant_clocks {
             match &clock.reason {
-                ClockReductionReason::Duplicate(global) => self.replace_clock(clock, global),
-                ClockReductionReason::Unused => self.remove_clock(&clock.updates),
+                ClockReductionReason::Duplicate(global) => {
+                    self.replace_clock(&clock, global);
+                    info!("Replaced Clock {} with {global}", clock.clock); // Should be changed in the future to be the information logger
+                }
+                ClockReductionReason::Unused => {
+                    self.remove_clock(&clock.updates);
+                    info!("Removed Clock {}", clock.clock);
+                }
             }
 
             let clock_val = *self
@@ -410,10 +428,8 @@ impl Component {
     }
 
     /// Replaces duplicate clock with a new
-
     /// # Arguments
     /// `clock`: [`RedundantClock`] representing the clock to be replaced
-
     /// `other_clock`: The name of the clock to replace `clock`
     pub(crate) fn replace_clock(&mut self, clock: &RedundantClock, other_clock: &String) {
         for e in &clock.edge_indices {
@@ -637,22 +653,20 @@ pub enum SyncType {
     Output,
 }
 
-//Represents a single transition from taking edges in multiple components
+/// Represents a single transition from taking edges in multiple components
 #[derive(Debug, Clone)]
 pub struct Transition {
+    /// The ID of the transition, based on the edges it is created from.
     pub id: TransitionID,
     pub guard_zone: OwnedFederation,
     pub target_locations: LocationTuple,
     pub updates: Vec<CompiledUpdate>,
 }
 impl Transition {
-    pub fn new(
-        transition_id: TransitionID,
-        target_locations: &LocationTuple,
-        dim: ClockIndex,
-    ) -> Transition {
+    /// Create a new transition not based on an edge with no identifier
+    pub fn new(target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
         Transition {
-            id: transition_id,
+            id: TransitionID::None,
             guard_zone: OwnedFederation::universe(dim),
             target_locations: target_locations.clone(),
             updates: vec![],
@@ -664,7 +678,12 @@ impl Transition {
 
         let target_loc_name = &edge.target_location;
         let target_loc = comp.get_location_by_name(target_loc_name);
-        let target_locations = LocationTuple::simple(target_loc, comp.get_declarations(), dim);
+        let target_locations = LocationTuple::simple(
+            target_loc,
+            Some(comp.get_name().to_owned()),
+            comp.get_declarations(),
+            dim,
+        );
 
         let mut compiled_updates = vec![];
         if let Some(updates) = edge.get_update() {
@@ -725,7 +744,7 @@ impl Transition {
                             Box::new(l.id.clone()),
                             Box::new(r.id.clone()),
                         ),
-                        _ => panic!("Invalid composition type {:?}", comp),
+                        _ => unreachable!("Invalid composition type {:?}", comp),
                     },
                     guard_zone,
                     target_locations,
@@ -853,6 +872,7 @@ impl fmt::Display for Transition {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(into = "DummyEdge")]
 pub struct Edge {
+    /// Uniquely identifies the edge within its component
     pub id: String,
     #[serde(rename = "sourceLocation")]
     pub source_location: String,
