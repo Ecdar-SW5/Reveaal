@@ -116,7 +116,7 @@ fn build_location_tuple(
             &|loc| loc.id.compare_partial_locations(&location_id),
             &|location_tuple| {
                 Some(if !partial {
-                    location_tuple.clone()
+                    location_tuple.to_owned()
                 } else {
                     LocationTuple::create_partial_location(location_id.clone())
                 })
