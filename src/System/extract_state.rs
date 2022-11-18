@@ -101,8 +101,8 @@ fn build_location_tuple(
     match out {
         LocationType::Universal => find_location_and_then(
             system_locations,
-            &|loc: &&LocationTuple| matches!(loc.loc_type, LocationType::Universal),
-            &|loc: &LocationTuple| Some(loc.to_owned()),
+            &|loc| matches!(loc.loc_type, LocationType::Universal),
+            &|loc| Some(loc.to_owned()),
             None,
         ),
         LocationType::Inconsistent => find_location_and_then(
