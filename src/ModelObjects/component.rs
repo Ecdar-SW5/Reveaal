@@ -77,10 +77,7 @@ impl Component {
 
     /// Checks if the str, which should be an id, is a part of the component
     pub fn location_exists(self, loc: &str) -> bool {
-        self.get_locations()
-            .iter()
-            .find(|x| x.id.as_str() == loc)
-            .is_some()
+        self.get_locations().iter().any(|x| x.id.as_str() == loc)
     }
 
     pub fn get_edges(&self) -> &Vec<Edge> {
