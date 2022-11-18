@@ -56,14 +56,14 @@ pub fn create_1tuple_state_with_single_constraint(
 pub fn create_edges_from_L5() -> Vec<Edge> {
     vec![
         Edge {
-            id: "E3".to_string(),
+            id: "E27".to_string(),
             specific_component: Some(SpecificComponent {
                 component_name: String::from("Machine"),
                 component_index: 0,
             }),
         },
         Edge {
-            id: "E5".to_string(),
+            id: "E29".to_string(),
             specific_component: Some(SpecificComponent {
                 component_name: String::from("Machine"),
                 component_index: 0,
