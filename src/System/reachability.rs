@@ -17,8 +17,7 @@ struct SubPath {
     transition: Option<Transition>,
 }
 
-fn is_trivially_uncreachable(
-    _start_state: &State,
+fn is_trivially_unreachable(
     end_state: &State,
     _system: &dyn TransitionSystem,
 ) -> bool {
@@ -65,7 +64,7 @@ pub fn find_path(
     end_state: State,
     system: &dyn TransitionSystem,
 ) -> Result<Path, String> {
-    if is_trivially_uncreachable(&start_state, &end_state, system) {
+    if is_trivially_unreachable(&end_state, system) {
         return Ok(Path {
             path: None,
             was_reachable: false,
