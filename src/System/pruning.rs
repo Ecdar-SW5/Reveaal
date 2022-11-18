@@ -499,12 +499,7 @@ fn is_immediately_inconsistent(
     comp: &Component,
     dimensions: ClockIndex,
 ) -> bool {
-    let loc = LocationTuple::simple(
-        location,
-        Some(comp.get_name().to_owned()),
-        &comp.declarations,
-        dimensions,
-    );
+    let loc = LocationTuple::simple(location, &comp.declarations, dimensions);
 
     loc.is_inconsistent()
 

@@ -201,9 +201,9 @@ impl TransitionSystem for Quotient {
         let s = self.S.next_transitions_if_available(loc_s, action);
 
         let inconsistent_location =
-            LocationTuple::simple(&self.inconsistent_location, None, &self.decls, self.dim);
+            LocationTuple::simple(&self.inconsistent_location, &self.decls, self.dim);
         let universal_location =
-            LocationTuple::simple(&self.universal_location, None, &self.decls, self.dim);
+            LocationTuple::simple(&self.universal_location, &self.decls, self.dim);
 
         //Rule 1
         if self.S.actions_contain(action) && self.T.actions_contain(action) {
@@ -225,6 +225,7 @@ impl TransitionSystem for Quotient {
 
                     transitions.push(Transition {
                         id: TransitionID::Quotient(
+                            1,
                             vec![t_transition.id.clone()],
                             vec![s_transition.id.clone()],
                         ),
@@ -245,7 +246,7 @@ impl TransitionSystem for Quotient {
                 let target_locations = merge(loc_t, &s_transition.target_locations);
                 let updates = s_transition.updates.clone();
                 transitions.push(Transition {
-                    id: TransitionID::Quotient(Vec::new(), vec![s_transition.id.clone()]),
+                    id: TransitionID::Quotient(2, Vec::new(), vec![s_transition.id.clone()]),
                     guard_zone,
                     target_locations,
                     updates,
@@ -266,7 +267,7 @@ impl TransitionSystem for Quotient {
             let inv_l_s = loc_s.apply_invariants(OwnedFederation::universe(self.dim));
 
             transitions.push(Transition {
-                id: TransitionID::Quotient(Vec::new(), s.iter().map(|t| t.id.clone()).collect()),
+                id: TransitionID::Quotient(3, Vec::new(), s.iter().map(|t| t.id.clone()).collect()),
                 guard_zone: (!inv_l_s) + (!g_s),
                 target_locations: universal_location,
                 updates: vec![],
@@ -276,7 +277,11 @@ impl TransitionSystem for Quotient {
             let inv_l_s = loc_s.apply_invariants(OwnedFederation::universe(self.dim));
 
             transitions.push(Transition {
-                id: TransitionID::None,
+                id: TransitionID::Quotient(
+                    4,
+                    vec![TransitionID::Simple(format!("QRule5:{}", loc_s.id))],
+                    Vec::new(),
+                ),
                 guard_zone: !inv_l_s,
                 target_locations: universal_location,
                 updates: vec![],
@@ -306,6 +311,7 @@ impl TransitionSystem for Quotient {
 
                 transitions.push(Transition {
                     id: TransitionID::Quotient(
+                        5,
                         t.iter().map(|t| t.id.clone()).collect(),
                         vec![s_transition.id.clone()],
                     ),
@@ -328,7 +334,11 @@ impl TransitionSystem for Quotient {
             }];
 
             transitions.push(Transition {
-                id: TransitionID::None,
+                id: TransitionID::Quotient(
+                    6,
+                    vec![TransitionID::Simple(format!("{}", loc_t.id))],
+                    vec![TransitionID::Simple(format!("{}", loc_s.id))],
+                ),
                 guard_zone,
                 target_locations: inconsistent_location,
                 updates,
@@ -345,7 +355,7 @@ impl TransitionSystem for Quotient {
                 let updates = t_transition.updates.clone();
 
                 transitions.push(Transition {
-                    id: TransitionID::Quotient(vec![t_transition.id.clone()], Vec::new()),
+                    id: TransitionID::Quotient(7, vec![t_transition.id.clone()], Vec::new()),
                     guard_zone,
                     target_locations,
                     updates,
@@ -372,9 +382,8 @@ impl TransitionSystem for Quotient {
         }
 
         let inconsistent =
-            LocationTuple::simple(&self.inconsistent_location, None, &self.decls, self.dim);
-        let universal =
-            LocationTuple::simple(&self.universal_location, None, &self.decls, self.dim);
+            LocationTuple::simple(&self.inconsistent_location, &self.decls, self.dim);
+        let universal = LocationTuple::simple(&self.universal_location, &self.decls, self.dim);
 
         location_tuples.push(inconsistent);
         location_tuples.push(universal);

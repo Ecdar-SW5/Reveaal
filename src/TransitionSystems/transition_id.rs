@@ -1,13 +1,13 @@
-use std::fmt::{Display, Formatter};
+use std::{
+    fmt::{Display, Formatter},
+    vec,
+};
 
-/// TransitionID is used to represent which edges a given transition consists of.
-/// Works similarly to LocationID.
-/// Note that Transitions may have a None id, if it is not created from an edge.
 #[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum TransitionID {
     Conjunction(Box<TransitionID>, Box<TransitionID>),
     Composition(Box<TransitionID>, Box<TransitionID>),
-    Quotient(Vec<TransitionID>, Vec<TransitionID>),
+    Quotient(i32, Vec<TransitionID>, Vec<TransitionID>),
     Simple(String),
     None,
 }
@@ -93,7 +93,8 @@ impl Display for TransitionID {
                     _ => write!(f, "({})", (*right))?,
                 };
             }
-            TransitionID::Quotient(left, right) => {
+            TransitionID::Quotient(ruleNr, left, right) => {
+                write!(f, "{}|", ruleNr)?;
                 for l in left {
                     match *(l) {
                         TransitionID::Simple(_) => write!(f, "{}", (l))?,

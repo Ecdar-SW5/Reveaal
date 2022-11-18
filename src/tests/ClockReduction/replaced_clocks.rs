@@ -52,7 +52,7 @@ pub mod test {
             "L2-->L3".to_string(),
         ]);
 
-        component.reduce_clocks(redundant_clocks);
+        component.reduce_clocks(&redundant_clocks);
 
         assert_locations_and_edges_in_component(&component, &expected_locations, &expected_edges);
     }

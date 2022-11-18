@@ -1,11 +1,9 @@
-use crate::ProtobufServer::services::query_response::query_ok::Information;
 use chrono::Local;
 use colored::{ColoredString, Colorize};
 use log::SetLoggerError;
 use std::io::Write;
 
 #[cfg(feature = "logging")]
-/// Sets up the logging
 pub fn setup_logger() -> Result<(), SetLoggerError> {
     fn colored_level(level: log::Level) -> ColoredString {
         match level {
@@ -30,10 +28,4 @@ pub fn setup_logger() -> Result<(), SetLoggerError> {
             )
         })
         .try_init()
-}
-
-// TODO: Implement a logging for informations to both the CLI and gRPC
-/// Gets messages saved for other clients (through gRPC)
-pub fn get_messages() -> Vec<Information> {
-    unimplemented!()
 }

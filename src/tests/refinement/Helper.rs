@@ -34,7 +34,7 @@ pub fn json_refinement_check(PATH: &str, QUERY: &str) -> bool {
 
 pub fn xml_run_query(PATH: &str, QUERY: &str) -> QueryResult {
     let project_path = String::from(PATH);
-    let project_loader = XmlProjectLoader::new(project_path, crate::tests::TEST_SETTINGS);
+    let project_loader = XmlProjectLoader::new(project_path);
     let query = parse_queries::parse_to_expression_tree(QUERY)
         .unwrap()
         .remove(0);
@@ -50,7 +50,7 @@ pub fn xml_run_query(PATH: &str, QUERY: &str) -> QueryResult {
 }
 
 pub fn json_run_query(PATH: &str, QUERY: &str) -> QueryResult {
-    let project_loader = JsonProjectLoader::new(String::from(PATH), crate::tests::TEST_SETTINGS);
+    let project_loader = JsonProjectLoader::new(String::from(PATH));
     let query = parse_queries::parse_to_expression_tree(QUERY)
         .unwrap()
         .remove(0);

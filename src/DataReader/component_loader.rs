@@ -1,74 +1,34 @@
-use lru::LruCache;
-
 use crate::component::Component;
 use crate::DataReader::json_reader;
 use crate::DataReader::json_writer::component_to_json_file;
 use crate::DataReader::xml_parser::parse_xml_from_file;
 use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
-use crate::ProtobufServer::services::query_request::Settings;
 use crate::System::input_enabler;
 use std::collections::HashMap;
-use std::num::NonZeroUsize;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 type ComponentsMap = HashMap<String, Component>;
 
-struct ComponentTuple {
-    components_hash: u32,
-    components_map: Arc<ComponentsMap>,
-}
-
 /// A struct used for caching the models.
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct ModelCache {
-    // TODO: A concurrent lru may be faster to use and cause less prone to lock contention.
-    cache: Arc<Mutex<LruCache<i32, ComponentTuple>>>,
-}
-
-impl Default for ModelCache {
-    fn default() -> Self {
-        Self {
-            cache: Arc::new(Mutex::new(LruCache::<i32, ComponentTuple>::new(
-                NonZeroUsize::new(100).unwrap(),
-            ))),
-        }
-    }
+    // TODO: A concurrent hashmap may be faster to use and cause less prone to locking, but is not part of the standard library.
+    cache: Arc<RwLock<HashMap<u32, Arc<ComponentsMap>>>>,
 }
 
 impl ModelCache {
-    /// A Method that creates a new cache with a given size limit.
-    ///
-    /// # Arguments
-    ///
-    /// * `cache_size` - A number representing the number of users that can be cached simultaneusly.
-    pub fn new(cache_size: usize) -> Self {
-        Self {
-            cache: Arc::new(Mutex::new(LruCache::<i32, ComponentTuple>::new(
-                NonZeroUsize::new(cache_size).unwrap(),
-            ))),
-        }
-    }
-
     /// A Method that returns the model from the cache.
     ///
     /// # Arguments
     ///
     /// * `components_hash` - A hash of the components
-    pub fn get_model(&self, user_id: i32, components_hash: u32) -> Option<ComponentContainer> {
-        let mut cache = self.cache.lock().unwrap();
-
-        let components = cache.get(&user_id);
-
-        components.and_then(|component_pair| {
-            if component_pair.components_hash == components_hash {
-                Some(ComponentContainer::new(Arc::clone(
-                    &component_pair.components_map,
-                )))
-            } else {
-                None
-            }
-        })
+    pub fn get_model(&self, components_hash: u32) -> Option<ComponentContainer> {
+        self.cache
+            .read()
+            .unwrap()
+            .get(&components_hash)
+            .map(|model| ComponentContainer::new(Arc::clone(model)))
     }
 
     /// A method that inserts a new model into the cache.
@@ -79,17 +39,13 @@ impl ModelCache {
     /// * `container_components` - The `ComponentContainer's` loaded components (aka Model) to be cached.
     pub fn insert_model(
         &mut self,
-        user_id: i32,
         components_hash: u32,
         container_components: Arc<ComponentsMap>,
     ) -> ComponentContainer {
-        self.cache.lock().unwrap().put(
-            user_id,
-            ComponentTuple {
-                components_hash,
-                components_map: Arc::clone(&container_components),
-            },
-        );
+        self.cache
+            .write()
+            .unwrap()
+            .insert(components_hash, Arc::clone(&container_components));
 
         ComponentContainer::new(container_components)
     }
@@ -98,13 +54,11 @@ impl ModelCache {
 pub trait ComponentLoader {
     fn get_component(&mut self, component_name: &str) -> &Component;
     fn save_component(&mut self, component: Component);
-    fn get_settings(&self) -> &Settings;
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct ComponentContainer {
     pub loaded_components: Arc<ComponentsMap>,
-    settings: Option<Settings>,
 }
 
 impl ComponentLoader for ComponentContainer {
@@ -118,23 +72,13 @@ impl ComponentLoader for ComponentContainer {
     fn save_component(&mut self, _component: Component) {
         //Intentionally left blank (no-op func)
     }
-
-    fn get_settings(&self) -> &Settings {
-        self.settings.as_ref().unwrap()
-    }
 }
 
 impl ComponentContainer {
     pub fn new(map: Arc<ComponentsMap>) -> Self {
         ComponentContainer {
             loaded_components: map,
-            settings: None,
         }
-    }
-
-    /// Sets the settings
-    pub(crate) fn set_settings(&mut self, settings: Settings) {
-        self.settings = Some(settings);
     }
 }
 
@@ -150,7 +94,6 @@ pub struct JsonProjectLoader {
     loaded_components: ComponentsMap,
     system_declarations: SystemDeclarations,
     queries: Vec<Query>,
-    settings: Settings,
 }
 
 impl ComponentLoader for JsonProjectLoader {
@@ -170,10 +113,6 @@ impl ComponentLoader for JsonProjectLoader {
         component_to_json_file(&self.project_path, &component);
         self.loaded_components
             .insert(component.get_name().clone(), component);
-    }
-
-    fn get_settings(&self) -> &Settings {
-        &self.settings
     }
 }
 
@@ -197,7 +136,7 @@ impl ProjectLoader for JsonProjectLoader {
 
 impl JsonProjectLoader {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new(project_path: String, settings: Settings) -> Box<dyn ProjectLoader> {
+    pub fn new(project_path: String) -> Box<dyn ProjectLoader> {
         let system_declarations = json_reader::read_system_declarations(&project_path).unwrap();
         let queries = json_reader::read_queries(&project_path).unwrap();
 
@@ -206,7 +145,6 @@ impl JsonProjectLoader {
             loaded_components: HashMap::new(),
             system_declarations,
             queries,
-            settings,
         })
     }
 
@@ -236,7 +174,6 @@ pub struct XmlProjectLoader {
     loaded_components: ComponentsMap,
     system_declarations: SystemDeclarations,
     queries: Vec<Query>,
-    settings: Settings,
 }
 
 impl ComponentLoader for XmlProjectLoader {
@@ -250,10 +187,6 @@ impl ComponentLoader for XmlProjectLoader {
 
     fn save_component(&mut self, _: Component) {
         panic!("Saving components is not supported for XML projects")
-    }
-
-    fn get_settings(&self) -> &Settings {
-        &self.settings
     }
 }
 
@@ -277,7 +210,7 @@ impl ProjectLoader for XmlProjectLoader {
 
 impl XmlProjectLoader {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new(project_path: String, settings: Settings) -> Box<dyn ProjectLoader> {
+    pub fn new(project_path: String) -> Box<dyn ProjectLoader> {
         let (comps, system_declarations, queries) = parse_xml_from_file(&project_path);
 
         let mut map = HashMap::<String, Component>::new();
@@ -298,7 +231,6 @@ impl XmlProjectLoader {
             loaded_components: map,
             system_declarations,
             queries,
-            settings,
         })
     }
 }

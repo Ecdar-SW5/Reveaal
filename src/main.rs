@@ -1,36 +1,23 @@
 #![allow(non_snake_case)]
 use clap::{load_yaml, App};
-use reveaal::logging::setup_logger;
+mod logging;
+use logging::setup_logger;
 
-use reveaal::ProtobufServer::services::query_request::settings::ReduceClocksLevel;
-use reveaal::ProtobufServer::services::query_request::Settings;
 use reveaal::{
-    extract_system_rep, parse_queries, start_grpc_server_with_tokio, xml_parser, ComponentLoader,
-    JsonProjectLoader, ProjectLoader, Query, QueryResult, XmlProjectLoader, DEFAULT_SETTINGS,
+    extract_system_rep, parse_queries, queries, start_grpc_server_with_tokio, xml_parser,
+    ComponentLoader, JsonProjectLoader, ProjectLoader, Query, QueryResult, XmlProjectLoader,
 };
 use std::env;
-use std::str::FromStr;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "logging")]
-    let yaml = load_yaml!("cli.yml");
-    let matches = App::from(yaml).get_matches();
     setup_logger().unwrap();
 
-    if let Some(ip_endpoint) = matches.value_of("endpoint") {
-        let thread_count: usize = match matches.value_of("thread_number") {
-            Some(num_of_threads) => num_of_threads
-                .parse()
-                .expect("Could not parse the input for the number of threads"),
-            None => num_cpus::get(),
-        };
-        let cache_count: usize = matches
-            .value_of("cache_size")
-            .unwrap()
-            .parse()
-            .expect("Could not parse input for the cache_size");
+    let yaml = load_yaml!("cli.yml");
+    let matches = App::from(yaml).get_matches();
 
-        start_grpc_server_with_tokio(ip_endpoint, cache_count, thread_count)?;
+    if let Some(ip_endpoint) = matches.value_of("endpoint") {
+        start_grpc_server_with_tokio(ip_endpoint)?;
     } else {
         start_using_cli(&matches);
     }
@@ -62,40 +49,36 @@ fn start_using_cli(matches: &clap::ArgMatches) {
     }
 }
 
-fn parse_args(matches: &clap::ArgMatches) -> (Box<dyn ComponentLoader>, Vec<Query>) {
-    let folder_path = matches.value_of("folder").unwrap_or("");
-    let query = matches.value_of("query").unwrap_or("");
-    let settings = Settings {
-        reduce_clocks_level: matches
-            .value_of("clock-reduction-level")
-            .map(|v| {
-                let lvl = i32::from_str(v)
-                    .unwrap_or_else(|e| panic!("Argument {} could not be parsed", e));
-                if lvl < 0 {
-                    ReduceClocksLevel::All(false)
-                } else {
-                    ReduceClocksLevel::Level(lvl)
-                }
-            })
-            .or(DEFAULT_SETTINGS.reduce_clocks_level),
-    };
+fn parse_args(matches: &clap::ArgMatches) -> (Box<dyn ComponentLoader>, Vec<queries::Query>) {
+    let mut folder_path: String = "".to_string();
+    let mut query = "".to_string();
 
-    let project_loader = get_project_loader(folder_path.to_string(), settings);
+    if let Some(folder_arg) = matches.value_of("folder") {
+        folder_path = folder_arg.to_string();
+    }
 
-    let queries = if query.is_empty() {
-        project_loader.get_queries().clone()
+    if let Some(query_arg) = matches.value_of("query") {
+        query = query_arg.to_string();
+    }
+
+    let project_loader = get_project_loader(folder_path);
+
+    if query.is_empty() {
+        let queries: Vec<Query> = project_loader.get_queries().clone();
+
+        (project_loader.to_comp_loader(), queries)
     } else {
-        parse_queries::parse_to_query(query)
-    };
+        let queries = parse_queries::parse_to_query(&query);
 
-    (project_loader.to_comp_loader(), queries)
+        (project_loader.to_comp_loader(), queries)
+    }
 }
 
-fn get_project_loader(project_path: String, settings: Settings) -> Box<dyn ProjectLoader> {
+fn get_project_loader(project_path: String) -> Box<dyn ProjectLoader> {
     if xml_parser::is_xml_project(&project_path) {
-        XmlProjectLoader::new(project_path, settings)
+        XmlProjectLoader::new(project_path)
     } else {
-        JsonProjectLoader::new(project_path, settings)
+        JsonProjectLoader::new(project_path)
     }
 }
 

@@ -184,10 +184,7 @@ fn get_location_id(
             "_" => Ok(LocationID::AnyLocation()),
             str => {
                 if comp.clone().location_exists(str) {
-                    Ok(LocationID::Simple {
-                        location_id: str.to_string(),
-                        component_id: Some(comp.get_name().to_owned()),
-                    })
+                    Ok(LocationID::Simple(str.to_string()))
                 } else {
                     Err(format!("Location {} does not exist in the system", str))
                 }
