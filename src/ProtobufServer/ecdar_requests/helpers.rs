@@ -1,6 +1,6 @@
 use crate::ProtobufServer::services::{
     self, Component, ComponentsInfo, DecisionPoint, Edge, Location, LocationTuple, SimulationInfo,
-    SimulationStartRequest, SimulationStepRequest, SpecificComponent, State,
+    SpecificComponent, State,
 };
 
 pub fn create_1tuple_state_with_single_constraint(
@@ -52,7 +52,6 @@ pub fn create_1tuple_state_with_single_constraint(
     }
 }
 
-
 pub fn create_edges_from_L5() -> Vec<Edge> {
     vec![
         Edge {
@@ -70,4 +69,49 @@ pub fn create_edges_from_L5() -> Vec<Edge> {
             }),
         },
     ]
+}
+pub fn create_edges_from_L4() -> Vec<Edge> {
+    vec![
+        Edge {
+            id: "E25".to_string(),
+            specific_component: Some(SpecificComponent {
+                component_name: String::from("Machine"),
+                component_index: 0,
+            }),
+        },
+        Edge {
+            id: "E26".to_string(),
+            specific_component: Some(SpecificComponent {
+                component_name: String::from("Machine"),
+                component_index: 0,
+            }),
+        },
+        Edge {
+            id: "E28".to_string(),
+            specific_component: Some(SpecificComponent {
+                component_name: String::from("Machine"),
+                component_index: 0,
+            }),
+        },
+    ]
+}
+
+pub fn create_decision_point_from_L5() -> DecisionPoint {
+    let source = create_1tuple_state_with_single_constraint("L5", "Machine", 0, "0", "y", 0, false);
+    let edges = create_edges_from_L5();
+    let new_decision_point: DecisionPoint = DecisionPoint {
+        source: Some(source),
+        edges,
+    };
+    new_decision_point
+}
+
+pub fn create_decision_point_from_L4() -> DecisionPoint {
+    let source = create_1tuple_state_with_single_constraint("L4", "Machine", 0, "0", "y", 0, false);
+    let edges = create_edges_from_L4();
+    let new_decision_point: DecisionPoint = DecisionPoint {
+        source: Some(source),
+        edges,
+    };
+    new_decision_point
 }
