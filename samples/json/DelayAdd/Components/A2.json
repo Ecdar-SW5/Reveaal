@@ -47,6 +47,8 @@
   ],
   "edges": [
     {
+      "id": "E10",
+      "group": "",
       "sourceLocation": "L4",
       "targetLocation": "L6",
       "status": "INPUT",
@@ -66,6 +68,8 @@
       ]
     },
     {
+      "id": "E10",
+      "group": "",
       "sourceLocation": "L6",
       "targetLocation": "L7",
       "status": "INPUT",

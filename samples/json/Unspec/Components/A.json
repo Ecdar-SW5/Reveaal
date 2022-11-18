@@ -19,6 +19,8 @@
   ],
   "edges": [
     {
+      "id": "E2",
+      "group": "",
       "sourceLocation": "L0",
       "targetLocation": "L0",
       "status": "OUTPUT",

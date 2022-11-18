@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use crate::System::save_component::{get_locations_from_tuples, get_clock_map};
-use crate::component::{Edge, State, Component};
+use crate::component::{Edge, State};
 use crate::DataReader::component_loader::ModelCache;
 use crate::ProtobufServer::ecdar_requests::helpers;
 use crate::ProtobufServer::services::{
@@ -12,6 +11,7 @@ use crate::ProtobufServer::services::{
 };
 use crate::Simulation::decision_point::DecisionPoint;
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
+use crate::System::save_component::{get_clock_map, get_locations_from_tuples};
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use edbm::util::constraints::{ClockIndex, Conjunction, Constraint, Disjunction};
 use edbm::zones::OwnedFederation;
@@ -156,8 +156,8 @@ impl ProtoConstraint {
             .iter()
             .map(|x| naming.insert(*x.1, x.0));
 
-            let mut system_locations = system.get_all_locations();
-            let mut system_clock = get_clock_map(system);
+        let mut system_locations = system.get_all_locations();
+        let mut system_clock = get_clock_map(system);
 
         let locations = get_locations_from_tuples(&system_locations, &system_clock);
 

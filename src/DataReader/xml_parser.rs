@@ -140,6 +140,7 @@ fn collect_edges(xml_edges: FindChildren) -> Vec<Edge> {
             }
         }
         let edge = component::Edge {
+            id: "NotImplemented".to_string(), // We do not support edge IDs for XML right now.
             source_location: e
                 .find("source")
                 .expect("source edge not found")
@@ -159,7 +160,6 @@ fn collect_edges(xml_edges: FindChildren) -> Vec<Edge> {
             guard,
             update: updates,
             sync: sync.replace('!', "").replace('?', ""),
-            id: "".to_string(),
             component_name: None,
         };
         edges.push(edge);

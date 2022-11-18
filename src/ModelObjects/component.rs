@@ -11,8 +11,8 @@ use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 
 use crate::ModelObjects::representations::BoolExpression;
-use crate::TransitionSystems::LocationTuple;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
+use crate::TransitionSystems::{LocationTuple, TransitionID};
 use edbm::zones::OwnedFederation;
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -254,6 +254,17 @@ impl Component {
 
         self.output_edges = Some(o_edges);
         self.input_edges = Some(i_edges);
+    }
+
+    /// Redoes the components Edge IDs by giving them new unique IDs based on their index.
+    pub fn remake_edge_ids(&mut self) {
+        // Give all edges a name
+        for (index, edge) in self.get_mut_edges().iter_mut().enumerate() {
+            edge.id = format!("E{}", index);
+        }
+
+        // Remake the input and output edges
+        self.create_edge_io_split();
     }
 
     /// Function for reducing the clocks found on the component.
@@ -635,16 +646,20 @@ pub enum SyncType {
     Output,
 }
 
-//Represents a single transition from taking edges in multiple components
+/// Represents a single transition from taking edges in multiple components
 #[derive(Debug, Clone)]
 pub struct Transition {
+    /// The ID of the transition, based on the edges it is created from.
+    pub id: TransitionID,
     pub guard_zone: OwnedFederation,
     pub target_locations: LocationTuple,
     pub updates: Vec<CompiledUpdate>,
 }
 impl Transition {
+    /// Create a new transition not based on an edge with no identifier
     pub fn new(target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
         Transition {
+            id: TransitionID::None,
             guard_zone: OwnedFederation::universe(dim),
             target_locations: target_locations.clone(),
             updates: vec![],
@@ -673,6 +688,7 @@ impl Transition {
         }
 
         Transition {
+            id: TransitionID::Simple(edge.id.clone()),
             guard_zone: Transition::combine_edge_guards(&vec![(comp, edge)], dim),
             target_locations,
             updates: compiled_updates,
@@ -712,6 +728,17 @@ impl Transition {
                 updates.append(&mut r.updates.clone());
 
                 out.push(Transition {
+                    id: match comp {
+                        CompositionType::Conjunction => TransitionID::Conjunction(
+                            Box::new(l.id.clone()),
+                            Box::new(r.id.clone()),
+                        ),
+                        CompositionType::Composition => TransitionID::Composition(
+                            Box::new(l.id.clone()),
+                            Box::new(r.id.clone()),
+                        ),
+                        _ => unreachable!("Invalid composition type {:?}", comp),
+                    },
                     guard_zone,
                     target_locations,
                     updates,
@@ -838,6 +865,8 @@ impl fmt::Display for Transition {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(into = "DummyEdge")]
 pub struct Edge {
+    /// Uniquely identifies the edge within its component
+    pub id: String,
     #[serde(rename = "sourceLocation")]
     pub source_location: String,
     #[serde(rename = "targetLocation")]
@@ -860,8 +889,6 @@ pub struct Edge {
     pub update: Option<Vec<parse_edge::Update>>,
     #[serde(deserialize_with = "decode_sync")]
     pub sync: String,
-    #[serde(skip)] // TODO don't skip
-    pub id: String,
     #[serde(skip)] // TODO: DO NOT SKIP
     pub component_name: Option<String>,
 }
