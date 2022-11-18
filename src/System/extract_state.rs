@@ -118,21 +118,13 @@ fn is_universal_or_inconsistent_input(locations: &[&str], machine: &SystemRecipe
     let mut is_inconsistent = true;
     let mut is_universal = true;
 
-    machine
-        .get_components()
-        .iter()
-        .enumerate()
-        .map(
-            |(i, comp)| match comp.get_location_by_name(locations[i]).location_type {
-                LocationType::Universal => is_inconsistent = false,
-                LocationType::Inconsistent => is_universal = false,
-                _ => {
-                    is_universal = false;
-                    is_inconsistent = false;
-                }
-            },
-        )
-        .for_each(drop);
+    for (i, comp) in machine.get_components().iter().enumerate() {
+        match comp.get_location_by_name(locations[i]).location_type {
+            LocationType::Universal => is_inconsistent = false,
+            LocationType::Inconsistent => is_universal = false,
+            _ => return LocationType::Normal,
+        }
+    }
 
     if is_universal {
         LocationType::Universal
