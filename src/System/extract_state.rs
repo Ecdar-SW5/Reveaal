@@ -73,24 +73,8 @@ fn build_location_tuple(
     machine: &SystemRecipe,
     system: &TransitionSystemPtr,
 ) -> Result<LocationTuple, String> {
-    let location_id = get_location_id(&mut locations.iter(), machine);
+    let location_id = get_location_id(&mut locations.iter(), machine)?;
     let partial = location_id.is_partial_location();
-    let system_locations = system.get_all_locations();
-
-    if machine
-        .get_components()
-        .iter()
-        .enumerate()
-        .map(|(i, comp)| -> bool {
-            comp.clone().location_exists(locations[i]) || locations[i] == "_"
-        })
-        .any(|x| x == false)
-    {
-        return Err(format!(
-            "Location {} does not exist in the system",
-            location_id
-        ));
-    }
 
     let out = if partial {
         LocationType::Normal
@@ -98,6 +82,7 @@ fn build_location_tuple(
         is_universal_or_inconsistent_input(locations, machine)
     };
 
+    let system_locations = system.get_all_locations();
     match out {
         LocationType::Universal => find_location_and_then(
             system_locations,
@@ -177,25 +162,37 @@ fn find_location_and_then(
         })
 }
 
-fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
+fn get_location_id(
+    locations: &mut Iter<&str>,
+    machine: &SystemRecipe,
+) -> Result<LocationID, String> {
     match machine {
-        SystemRecipe::Composition(left, right) => {
-            LocationID::Composition(box_loc_id(locations, left), box_loc_id(locations, right))
-        }
-        SystemRecipe::Conjunction(left, right) => {
-            LocationID::Conjunction(box_loc_id(locations, left), box_loc_id(locations, right))
-        }
-        SystemRecipe::Quotient(left, right, ..) => {
-            LocationID::Quotient(box_loc_id(locations, left), box_loc_id(locations, right))
-        }
-        SystemRecipe::Component(..) => match locations.next().unwrap().trim() {
+        SystemRecipe::Composition(left, right) => Ok(LocationID::Composition(
+            box_loc_id(locations, left)?,
+            box_loc_id(locations, right)?,
+        )),
+        SystemRecipe::Conjunction(left, right) => Ok(LocationID::Conjunction(
+            box_loc_id(locations, left)?,
+            box_loc_id(locations, right)?,
+        )),
+        SystemRecipe::Quotient(left, right, ..) => Ok(LocationID::Quotient(
+            box_loc_id(locations, left)?,
+            box_loc_id(locations, right)?,
+        )),
+        SystemRecipe::Component(comp) => match locations.next().unwrap().trim() {
             // It is ensured .next() will not give a None, since the number of location is same as number of component. This is also being checked in validate_reachability_input function, that is called before get_state
-            "_" => LocationID::AnyLocation(),
-            str => LocationID::Simple(str.to_string()),
+            "_" => Ok(LocationID::AnyLocation()),
+            str => {
+                if comp.clone().location_exists(str) {
+                    Ok(LocationID::Simple(str.to_string()))
+                } else {
+                    Err(format!("Location {} does not exist in the system", str))
+                }
+            }
         },
     }
 }
 
-fn box_loc_id(left: &mut Iter<&str>, right: &SystemRecipe) -> Box<LocationID> {
-    Box::new(get_location_id(left, right))
+fn box_loc_id(left: &mut Iter<&str>, right: &SystemRecipe) -> Result<Box<LocationID>, String> {
+    Ok(Box::new(get_location_id(left, right)?))
 }
