@@ -166,7 +166,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
         },
 
         QueryResult::Reachability(path) => {
-            let protoPath = TransitionID::split_into_component_lists(
+            let proto_path = TransitionID::split_into_component_lists(
                 &path
                     .path
                     .as_ref()
@@ -176,7 +176,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     .collect(),
             );
 
-            match protoPath {
+            match proto_path {
                 Ok(p) => {
                     let component_paths = p
                         .iter()
