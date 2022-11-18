@@ -64,5 +64,9 @@ name = "bench"
 harness = false
 
 [[bench]]
+name = "reachability_bench"
+harness = false
+
+[[bench]]
 name = "threadpool_bench"
 harness = false

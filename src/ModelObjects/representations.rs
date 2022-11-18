@@ -1310,15 +1310,13 @@ impl QueryExpression {
                 right.pretty_string()
             ),
             QueryExpression::Reachability(automata, start, end) => {
-                let start_state = match &**start {
-                    Some(expr) => expr.pretty_string(),
-                    None => "".to_string(),
-                };
-
                 format!(
-                    "reachability: {} -> {} {}",
+                    "reachability: {} -> {}; {}",
                     automata.pretty_string(),
-                    start_state,
+                    match start.as_ref() {
+                        Some(expr) => expr.pretty_string(),
+                        None => "".to_string(),
+                    },
                     end.pretty_string()
                 )
             }
@@ -1344,8 +1342,27 @@ impl QueryExpression {
                 format!("prune: {}", comp.pretty_string())
             }
             QueryExpression::Parentheses(system) => format!("({})", system.pretty_string()),
-            QueryExpression::VarName(name) => name.clone(),
-            _ => panic!("Rule not implemented yet"),
+            QueryExpression::VarName(name) | QueryExpression::LocName(name) => name.clone(),
+            QueryExpression::State(locs, clock) => {
+                format!(
+                    "[{}]({})",
+                    locs.iter()
+                        .enumerate()
+                        .map(|loc| {
+                            if loc.0 == 0 {
+                                loc.1.pretty_string()
+                            } else {
+                                format!(", {}", loc.1.pretty_string())
+                            }
+                        })
+                        .collect::<String>(),
+                    clock
+                        .clone()
+                        .map_or_else(|| "".to_string(), |c| format!("{}", c))
+                        .replace(" && ", ", ")
+                )
+            }
+            _ => panic!("Rule not implemented yet {:?}", self),
         }
     }
 }

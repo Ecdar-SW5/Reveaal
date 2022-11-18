@@ -39,6 +39,19 @@ impl Default for ModelCache {
 }
 
 impl ModelCache {
+    /// A Method that creates a new cache with a given size limit.
+    ///
+    /// # Arguments
+    ///
+    /// * `cache_size` - A number representing the number of users that can be cached simultaneusly.
+    pub fn new(cache_size: usize) -> Self {
+        Self {
+            cache: Arc::new(Mutex::new(LruCache::<i32, ComponentTuple>::new(
+                NonZeroUsize::new(cache_size).unwrap(),
+            ))),
+        }
+    }
+
     /// A Method that returns the model from the cache.
     ///
     /// # Arguments
