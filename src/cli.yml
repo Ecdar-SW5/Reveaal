@@ -36,7 +36,7 @@ args:
           long: cache-size
           required: false
           takes_value: true
-          default_value: 100
+          default_value: "100"
     - thread-number:
           short: tn
           long: thread-number
