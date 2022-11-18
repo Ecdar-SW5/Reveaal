@@ -28,9 +28,9 @@ args:
           required: false
           takes_value: false
     - omit-clock-reduction:
-          long: disable-clock-reduction
+          long: clock-reduction-level
           required: false
-          takes_value: false
+          takes_value: true
           #    - checkInputOutput:
 #        short: c
 #        long: checkInputOutput

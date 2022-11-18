@@ -1,6 +1,6 @@
 use crate::{
     component::{State, Transition},
-    TransitionSystems::{TransitionSystem, TransitionSystemPtr},
+    TransitionSystems::TransitionSystemPtr,
 };
 
 /// Represents a decision in a transition system: In the current `source` state there is a decision of using one of the `possible_decisions`.
@@ -12,27 +12,24 @@ pub struct TransitionDecisionPoint {
 
 impl TransitionDecisionPoint {
     /// Constructs the initial `TransitionDecisionPoint` for a given `TransitionSystemPtr`
-    pub fn initial(system: TransitionSystemPtr) -> Option<Self> {
+    pub fn initial(system: &TransitionSystemPtr) -> Option<Self> {
         system
             .get_initial_state()
-            .map(|source| Self::from(system, source))
+            .map(|source| Self::from(system, &source))
     }
 
     /// Constructs the `TransitionDecisionPoint` from a `source: State` and a given `TransitionSystemPtr`
-    pub fn from(system: TransitionSystemPtr, source: State) -> TransitionDecisionPoint {
-        let transitions = from_action_to_transitions(system, &source);
+    pub fn from(system: &TransitionSystemPtr, source: &State) -> TransitionDecisionPoint {
+        let transitions = from_action_to_transitions(&system, &source);
 
         TransitionDecisionPoint {
-            source,
+            source: source.to_owned(),
             possible_decisions: transitions,
         }
     }
 }
 
-pub fn from_action_to_transitions(
-    system: Box<dyn TransitionSystem>,
-    source: &State,
-) -> Vec<Transition> {
+pub fn from_action_to_transitions(system: &TransitionSystemPtr, source: &State) -> Vec<Transition> {
     let actions = system.get_actions();
     let transitions: Vec<Transition> = actions
         .into_iter()
@@ -59,9 +56,7 @@ pub(crate) mod tests {
         // Act
         let actual = format!(
             "{:?}",
-            TransitionDecisionPoint::initial(system.clone())
-                .unwrap()
-                .source
+            TransitionDecisionPoint::initial(&system).unwrap().source
         );
 
         // Assert
@@ -75,7 +70,7 @@ pub(crate) mod tests {
         let system = create_EcdarUniversity_Machine_system();
 
         // Act
-        let actual: Vec<String> = TransitionDecisionPoint::initial(system.clone())
+        let actual: Vec<String> = TransitionDecisionPoint::initial(&system)
             .unwrap()
             .possible_decisions
             .into_iter()
@@ -106,7 +101,7 @@ pub(crate) mod tests {
         let system = create_EcdarUniversity_Machine4_system();
 
         // Act
-        let actual: Vec<String> = TransitionDecisionPoint::initial(system.clone())
+        let actual: Vec<String> = TransitionDecisionPoint::initial(&system)
             .unwrap()
             .possible_decisions
             .into_iter()

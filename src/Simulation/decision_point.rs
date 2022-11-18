@@ -25,7 +25,7 @@ impl From<&TransitionDecisionPoint> for DecisionPoint {
 
 impl From<&Transition> for Vec<Edge> {
     fn from(_: &Transition) -> Self {
-        todo!()
+        vec![] //TODO finish this
     }
 }
 

@@ -1,8 +1,7 @@
-use std::panic::AssertUnwindSafe;
-
-use tonic::{Request, Response, Status};
+use tonic::Status;
 
 use crate::{
+    DataReader::component_loader::ModelCache,
     ProtobufServer::{
         ecdar_requests::helpers,
         services::{
@@ -14,9 +13,10 @@ use crate::{
 };
 impl ConcreteEcdarBackend {
     pub fn handle_take_simulation_step(
-        request: AssertUnwindSafe<Request<SimulationStepRequest>>,
-    ) -> Result<Response<SimulationStepResponse>, Status> {
-        let request_message = request.0.into_inner();
+        request: SimulationStepRequest,
+        _cache: ModelCache, // TODO should be used...
+    ) -> Result<SimulationStepResponse, Status> {
+        let request_message = request;
         let simulation_info = request_message.simulation_info.unwrap();
 
         let transition_system = helpers::simulation_info_to_transition_system(simulation_info);
@@ -35,6 +35,6 @@ impl ConcreteEcdarBackend {
             new_decision_point: Some(decision_point),
         };
 
-        Ok(Response::new(simulation_step_response))
+        Ok(simulation_step_response)
     }
 }
