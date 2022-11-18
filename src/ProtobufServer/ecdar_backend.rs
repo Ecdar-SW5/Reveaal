@@ -1,4 +1,5 @@
 use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
+use crate::ProtobufServer::ecdar_requests::helpers::*;
 
 use crate::DataReader::component_loader::ModelCache;
 use crate::ProtobufServer::services::{
@@ -9,7 +10,7 @@ use futures::FutureExt;
 use std::panic::UnwindSafe;
 use std::sync::atomic::{AtomicI32, Ordering};
 use tonic::{Request, Response, Status};
-
+use super::services::DecisionPoint;
 use super::threadpool::ThreadPool;
 
 #[derive(Debug, Default)]
@@ -70,7 +71,18 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         _request: Request<SimulationStartRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        unimplemented!();
+        //Create decision point
+        let source = create_1tuple_state_with_single_constraint("L5", "Machine", 0, "0", "y", 0, false);
+        let edges = create_edges_from_L5();
+        let new_decision_point: DecisionPoint = DecisionPoint {
+            source: Some(source),
+            edges,
+        };
+        //Return Decision point
+        Ok(Response::new(SimulationStepResponse {
+            new_decision_point: Some(new_decision_point)
+        }))
+        
     }
 
     async fn take_simulation_step(
