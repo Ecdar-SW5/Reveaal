@@ -95,6 +95,7 @@ pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {
         edge: Some(edge),
     }
 }
+
 pub fn initial_transition_decision_point_EcdarUniversity_Machine() -> TransitionDecisionPoint {
     let system = create_EcdarUniversity_Machine_system();
     TransitionDecisionPoint::initial(&system).unwrap()

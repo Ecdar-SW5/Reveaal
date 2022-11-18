@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::hash::Hash;
 
 use crate::component::{Edge, State};
 use crate::DataReader::component_loader::ModelCache;
@@ -11,7 +12,6 @@ use crate::ProtobufServer::services::{
 };
 use crate::Simulation::decision_point::DecisionPoint;
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
-use crate::System::save_component::{get_clock_map, get_locations_from_tuples};
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use edbm::util::constraints::{ClockIndex, Conjunction, Constraint, Disjunction};
 use edbm::zones::OwnedFederation;
@@ -146,38 +146,31 @@ impl ProtoConjunction {
 #[allow(unused_must_use)]
 impl ProtoConstraint {
     fn from(constraint: &Constraint, system: &TransitionSystemPtr) -> Self {
-        let mut naming: HashMap<ClockIndex, &str> = HashMap::new();
+        fn invert<'a, T1, T2>(hash_map: &'a HashMap<T1, T2>) -> HashMap<&'a T2, &'a T1>
+        where
+            T2: Hash + Eq,
+        {
+            hash_map.iter().map(|x| (x.1, x.0)).collect()
+        }
 
-        system
-            .get_decls()
-            .first()
-            .unwrap()
-            .clocks
-            .iter()
-            .map(|x| naming.insert(*x.1, x.0));
+        fn clock_name(naming: &HashMap<&usize, &String>, clock_index: &ClockIndex) -> String {
+            naming
+                .get(clock_index)
+                .unwrap_or(&&"0".to_string())
+                .to_string()
+        }
 
-        let mut system_locations = system.get_all_locations();
-        let mut system_clock = get_clock_map(system);
-
-        let locations = get_locations_from_tuples(&system_locations, &system_clock);
-
-        // let component = Component {
-        //     name: "".to_string(),
-        //     declarations: system.get_decls(),
-        //     locations,
-        //     edges,
-        //     input_edges,
-        //     output_edges,
-        // };
+        let clocks = system.get_decls().first().unwrap().get_clocks();
+        let naming = invert(clocks);
 
         ProtoConstraint {
             x: Some(ComponentClock {
                 specific_component: None, // TODO how?
-                clock_name: naming.get(&constraint.i).unwrap().to_string(),
+                clock_name: clock_name(&naming, &constraint.i),
             }),
             y: Some(ComponentClock {
                 specific_component: None, // TODO how?
-                clock_name: naming.get(&constraint.j).unwrap().to_string(),
+                clock_name: clock_name(&naming, &constraint.j),
             }),
             strict: constraint.ineq().is_strict(),
             c: constraint.ineq().bound(),
@@ -211,7 +204,9 @@ impl ProtoEdge {
 mod tests {
     use crate::{
         tests::{
-            grpc::grpc_helper::create_initial_decision_point,
+            grpc::grpc_helper::{
+                create_decision_point_after_taking_E5, create_initial_decision_point,
+            },
             Simulation::helper::{
                 create_EcdarUniversity_Machine_system,
                 initial_transition_decision_point_EcdarUniversity_Machine,
@@ -224,7 +219,7 @@ mod tests {
     };
 
     #[test]
-    fn from__good_DecisionPoint__returns_good_ProtoDecisionPoint() {
+    fn from__initial_DecisionPoint_EcdarUniversity_Machine__returns_correct_ProtoDecisionPoint() {
         // Arrange
         let transitionDecisionPoint = initial_transition_decision_point_EcdarUniversity_Machine();
         let component = read_json_component("samples/json/EcdarUniversity", "Machine");
@@ -248,9 +243,45 @@ mod tests {
         // Assert
         let expected = create_initial_decision_point();
 
+        assert_eq!(actual.source, expected.source);
         assert_eq!(actual.edges.len(), 2);
         assert!(actual.edges.contains(&expected.edges[0]));
         assert!(actual.edges.contains(&expected.edges[1]));
+    }
+
+    #[test]
+    fn from__initial_DecisionPoint_EcdarUniversity_Machine_after_tea__returns_correct_ProtoDecisionPoint(
+    ) {
+        // Arrange
+        let component = read_json_component("samples/json/EcdarUniversity", "Machine");
+        let edges: Vec<Edge> = component.get_edges().clone();
+        let start_edges: Vec<Edge> = edges
+            .iter()
+            .filter(|edge| edge.source_location == "L5")
+            .cloned()
+            .collect();
+
+        let system = create_EcdarUniversity_Machine_system();
+        let mut after_tea = system.get_initial_state().unwrap();
+        let action = "tea";
+        let binding = system.next_transitions_if_available(after_tea.get_location(), action);
+        let tea_transition = binding.first().unwrap();
+        tea_transition.use_transition(&mut after_tea);
+
+        let decisionPoint = DecisionPoint {
+            source: after_tea,
+            possible_decisions: start_edges,
+        };
+
+        // Act
+        let actual = ProtoDecisionPoint::from(&decisionPoint, &system);
+
+        // Assert
+        let expected = create_decision_point_after_taking_E5();
+
         assert_eq!(actual.source, expected.source);
+        assert_eq!(actual.edges.len(), 2);
+        assert!(actual.edges.contains(&expected.edges[0]));
+        assert!(actual.edges.contains(&expected.edges[1]));
     }
 }

@@ -1,8 +1,9 @@
 use tonic::Request;
 
 use crate::ProtobufServer::services::{
-    self, Component, ComponentsInfo, DecisionPoint, Edge, Location, LocationTuple, SimulationInfo,
-    SimulationStartRequest, SimulationStepRequest, SpecificComponent, State,
+    self, Component, ComponentsInfo, Conjunction, DecisionPoint, Disjunction, Edge, Federation,
+    Location, LocationTuple, SimulationInfo, SimulationStartRequest, SimulationStepRequest,
+    SpecificComponent, State,
 };
 use std::fs;
 
@@ -84,9 +85,24 @@ pub fn create_1tuple_state_with_single_constraint(
 //
 pub fn create_initial_decision_point() -> DecisionPoint {
     DecisionPoint {
-        source: Some(create_1tuple_state_with_single_constraint(
-            "L5", "Machine", 0, "0", "y", 0, false,
-        )),
+        source: Some(State {
+            location_tuple: Some(LocationTuple {
+                locations: vec![Location {
+                    id: "L5".to_string(),
+                    specific_component: Some(SpecificComponent {
+                        component_name: "Machine".to_string(),
+                        component_index: 0,
+                    }),
+                }],
+            }),
+            federation: Some(Federation {
+                disjunction: Some(Disjunction {
+                    conjunctions: vec![Conjunction {
+                        constraints: vec![],
+                    }],
+                }),
+            }),
+        }),
         edges: create_edges_from_L5(),
     }
 }
