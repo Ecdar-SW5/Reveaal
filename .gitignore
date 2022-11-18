@@ -8,3 +8,4 @@ dbm/buildw/
 *.a
 *.obj
 Cargo.lock
+.DS_Store
