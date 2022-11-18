@@ -37,7 +37,7 @@ impl QueryResult {
             QueryResult::Reachability(path) => {
                 if path.was_reachable {
                     satisfied(query_str);
-                    print_path(&path.path.clone().unwrap());
+                    print_path(path.path.as_ref().unwrap());
                 } else {
                     not_satisfied(query_str)
                 }
