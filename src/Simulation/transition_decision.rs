@@ -45,7 +45,6 @@ impl TransitionDecision {
             // If 1 transitions is left we choose that transition as our decided
             1 => transitions.first().unwrap().to_owned(), // If transitions.len() == 1 then transitions.first() == Some(...) always
             // Otherwise the result is non-deterministic, this is currently not supported by the simulation API
-            // This might never happen, but i'm unsure.
             _ => {
                 return Err("Non determinism not currently supported by Simulation API".to_string())
             }
