@@ -32,7 +32,8 @@ fn is_trivially_unreachable(
     if matches!(
         start_state.decorated_locations.loc_type,
         LocationType::Universal | LocationType::Inconsistent
-    ) && start_state.decorated_locations != end_state.decorated_locations {
+    ) && start_state.decorated_locations != end_state.decorated_locations
+    {
         return true;
     }
 

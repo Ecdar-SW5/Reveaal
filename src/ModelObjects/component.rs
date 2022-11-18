@@ -74,6 +74,15 @@ impl Component {
             panic!("Unable to retrieve location based on id: {}", name)
         }
     }
+
+    /// Checks if the str, which should be an id, is a part of the component
+    pub fn location_exists(self, loc: &str) -> bool {
+        self.get_locations()
+            .iter()
+            .find(|x| x.id.as_str() == loc)
+            .is_some()
+    }
+
     pub fn get_edges(&self) -> &Vec<Edge> {
         &self.edges
     }

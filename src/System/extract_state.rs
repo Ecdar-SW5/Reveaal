@@ -5,7 +5,7 @@ use edbm::zones::OwnedFederation;
 use crate::component::{Declarations, LocationType};
 use crate::extract_system_rep::SystemRecipe;
 use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
-use crate::ModelObjects::component::{Component, State};
+use crate::ModelObjects::component::State;
 use crate::ModelObjects::representations::QueryExpression;
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use std::slice::Iter;
@@ -77,26 +77,41 @@ fn build_location_tuple(
     let partial = location_id.is_partial_location();
     let system_locations = system.get_all_locations();
 
+    if machine
+        .get_components()
+        .iter()
+        .enumerate()
+        .map(|(i, comp)| -> bool {
+            comp.clone().location_exists(locations[i]) || locations[i] == "_"
+        })
+        .any(|x| x == false)
+    {
+        return Err(format!(
+            "Location {} does not exist in the system",
+            location_id
+        ));
+    }
+
     let out = if partial {
-        EtEllerAndet::Normal
+        LocationType::Normal
     } else {
         is_universal_or_inconsistent_input(locations, machine)
     };
 
     match out {
-        EtEllerAndet::Universal => loc_find_and_then(
+        LocationType::Universal => find_location_and_then(
             system_locations,
             &|loc: &&LocationTuple| matches!(loc.loc_type, LocationType::Universal),
             &|loc: &LocationTuple| Some(loc.to_owned()),
-            "Could not find universal location in the transition system",
+            None,
         ),
-        EtEllerAndet::Inconsistent => loc_find_and_then(
+        LocationType::Inconsistent => find_location_and_then(
             system_locations,
             &|loc| matches!(loc.loc_type, LocationType::Inconsistent),
             &|loc| Some(loc.to_owned()),
-            "Could not find inconsistent location in the transition system",
+            None,
         ),
-        EtEllerAndet::Normal => loc_find_and_then(
+        LocationType::Normal => find_location_and_then(
             system_locations,
             &|loc| loc.id.compare_partial_locations(&location_id),
             &|location_tuple| {
@@ -106,27 +121,20 @@ fn build_location_tuple(
                     LocationTuple::create_partial_location(location_id.clone())
                 })
             },
-            format!("{} is not a location in the transition system", location_id).as_str(),
+            None,
         ),
+        LocationType::Initial => unreachable!(),
     }
-}
-
-enum EtEllerAndet {
-    Inconsistent,
-    Universal,
-    Normal,
 }
 
 /// Checks if the input [LocationTuple] is of type `LocationType::Universal` or `LocationType::Inconsistent`.
 /// Returns (`bool 0: is_universal`, `bool 1: is_inconsistent`)
-fn is_universal_or_inconsistent_input(locations: &[&str], machine: &SystemRecipe) -> EtEllerAndet {
-    let mut components: Vec<Component> = Vec::new();
-    machine.get_components(&mut components);
-
+fn is_universal_or_inconsistent_input(locations: &[&str], machine: &SystemRecipe) -> LocationType {
     let mut is_inconsistent = true;
     let mut is_universal = true;
 
-    components
+    machine
+        .get_components()
         .iter()
         .enumerate()
         .map(
@@ -142,25 +150,31 @@ fn is_universal_or_inconsistent_input(locations: &[&str], machine: &SystemRecipe
         .for_each(drop);
 
     if is_universal {
-        EtEllerAndet::Universal
+        LocationType::Universal
     } else if is_inconsistent {
-        EtEllerAndet::Inconsistent
+        LocationType::Inconsistent
     } else {
-        EtEllerAndet::Normal
+        LocationType::Normal
     }
 }
 
-fn loc_find_and_then(
+fn find_location_and_then(
     locations: Vec<LocationTuple>,
     predicate: &dyn Fn(&&LocationTuple) -> bool,
     op: &dyn Fn(&LocationTuple) -> Option<LocationTuple>,
-    err: &str,
+    err: Option<&str>,
 ) -> Result<LocationTuple, String> {
     locations
         .iter()
         .find(predicate)
         .and_then(op)
-        .ok_or_else(|| err.to_string())
+        .ok_or_else(|| {
+            if let Some(msg) = err {
+                msg.to_string()
+            } else {
+                "Unexpected error happened".to_string()
+            }
+        })
 }
 
 fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
