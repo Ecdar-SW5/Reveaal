@@ -37,7 +37,7 @@ impl QueryResult {
             QueryResult::Reachability(path) => {
                 if path.was_reachable {
                     satisfied(query_str);
-                    print_path(path.path.clone().unwrap());
+                    print_path(&path.path.clone().unwrap());
                 } else {
                     not_satisfied(query_str)
                 }
@@ -66,7 +66,7 @@ fn not_satisfied(query_str: &str) {
     println!("{} -- Property is NOT satisfied", query_str);
 }
 
-fn print_path(path: Vec<Transition>) {
+fn print_path(path: &Vec<Transition>) {
     println!("Edges that have been taken:");
     for transition in path {
         println!("{}", transition.id);

@@ -1,5 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use reveaal::tests::refinement::Helper::json_run_query;
+pub mod flamegraph;
+use flamegraph::flamegraph_profiler::FlamegraphProfiler;
 
 static PATH: &str = "samples/json/EcdarUniversity";
 
@@ -32,5 +34,10 @@ fn reachability_benchmarking(c: &mut Criterion) {
     bench_reachability(c, "reachability: Researcher -> [U0](); [L7]()");
 }
 
-criterion_group!(reachability_benches, reachability_benchmarking);
+criterion_group! {
+  name = reachability_benches;
+  config = Criterion::default().with_profiler(FlamegraphProfiler::new(100));
+  targets = reachability_benchmarking
+}
+
 criterion_main!(reachability_benches);

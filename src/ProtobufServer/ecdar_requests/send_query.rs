@@ -159,7 +159,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     reason: "".to_string(),
                     relation: vec![],
                     state: None,
-                    action: "".to_string(),
+                    action: "".to_string(), // Empty string is used, when no failing action is available.
                 }))
             }
             refine::RefinementResult::Failure(failure) => convert_refinement_failure(failure),

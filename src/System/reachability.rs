@@ -19,7 +19,7 @@ struct SubPath {
 
 fn is_trivially_unreachable(end_state: &State, _system: &dyn TransitionSystem) -> bool {
     if let Some(invariants) = end_state.get_location().get_invariants() {
-        if !&end_state.zone_ref().has_intersection(invariants) {
+        if !end_state.zone_ref().has_intersection(invariants) {
             return true;
         }
     }
