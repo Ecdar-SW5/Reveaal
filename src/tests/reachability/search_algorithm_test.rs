@@ -46,8 +46,6 @@ mod reachability_search_algorithm_test {
     #[test_case(PATH2, "reachability: Component7 -> [L16](); [L19](y<2)", false; "Unreachable due to second clock")]
     #[test_case(PATH2, "reachability: Component3 && Component3 -> [L6, L6](); [L7, L7]()", true; "Simple conjunction")]
     fn search_algorithm_returns_result(path: &str, query: &str, expected: bool) {
-        //TEMPORARY_MISSING_DECLERATIONS_HACK(path);
-
         match json_run_query(path, query) {
             QueryResult::Reachability(path) => assert_eq!(path.was_reachable, expected),
             _ => panic!("Inconsistent query result, expected Reachability"),
@@ -65,8 +63,6 @@ mod reachability_search_algorithm_test {
     #[test_case(PATH2, "reachability: Component9 -> [L23](x<5); [L26]()", Vec::from(["E16", "E19"]); "Path in Component9 from L23 x lt 5 to L26")]
     #[test_case(PATH2, "reachability: Component3 && Component3 -> [L6, L6](); [L7, L7]()", Vec::from(["E5&&E5"]); "Path in Component3 && Component3 from L6 && L6 to L7 && L7")]
     fn path_gen_test_correct_path(folder_path: &str, query: &str, expected_path: Vec<&str>) {
-        //TEMPORARY_MISSING_DECLERATIONS_HACK(folder_path);
-
         match json_run_query(folder_path, query) {
             QueryResult::Reachability(actual_path) => {
                 assert!(

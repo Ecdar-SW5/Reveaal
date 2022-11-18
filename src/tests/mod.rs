@@ -2,7 +2,6 @@ use crate::ProtobufServer::services::query_request::settings::ReduceClocksLevel:
 use crate::ProtobufServer::services::query_request::Settings;
 
 pub mod ClockReduction;
-pub mod EdgeID;
 pub mod ModelObjects;
 pub mod edge_ids;
 pub mod failure_message;

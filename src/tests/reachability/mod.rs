@@ -1,5 +1,4 @@
 pub mod clock_variables;
-pub mod edge_tests;
 pub mod get_leaves_tests;
 pub mod grammar;
 pub mod helper_functions;

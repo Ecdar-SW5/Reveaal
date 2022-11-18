@@ -80,7 +80,6 @@ fn search_algorithm(start_state: &State, end_state: &State, system: &dyn Transit
 
     // hashmap linking every location to all its current zones
     let mut visited_states: HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
-    //let mut made_transitions: Vec<SubPath> = Vec::new();
 
     // List of states that are to be visited
     let mut frontier_states: Vec<Rc<SubPath>> = Vec::new();
@@ -173,14 +172,14 @@ fn zone_subset_of_existing_zones(
     false
 }
 
-// Removes everything in existing_zones that is a subset of zone
+/// Removes everything in existing_zones that is a subset of zone
 fn remove_existing_subsets_of_zone(
     new_zone: &OwnedFederation,
     existing_zones: &mut Vec<OwnedFederation>,
 ) {
     existing_zones.retain(|existing_zone| !existing_zone.subset_eq(new_zone));
 }
-
+/// Makes the path from the last subpath
 fn make_path(sub_path: Rc<SubPath>) -> Path {
     let mut path: Vec<Transition> = Vec::new();
 

@@ -41,13 +41,13 @@ impl TransitionID {
                 let b = r.get_leaves_helper(current_leaves, a.1 + 1);
                 (self, b.1)
             }
-            TransitionID::Quotient(_l, _r) => {
+            TransitionID::Quotient(l, r) => {
                 let mut curIndex = index;
-                for t in _l {
+                for t in l {
                     (_, curIndex) = t.get_leaves_helper(current_leaves, index);
                 }
                 let mut lastIndex = curIndex;
-                for s in _r {
+                for s in r {
                     (_, lastIndex) = s.get_leaves_helper(current_leaves, curIndex + 1);
                 }
                 (self, lastIndex)
