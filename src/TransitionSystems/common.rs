@@ -7,12 +7,11 @@ use edbm::{
 };
 use log::warn;
 
+use crate::TransitionSystems::LocationID;
 use crate::{
     ModelObjects::component::{Declarations, State, Transition},
     System::local_consistency::{ConsistencyResult, DeterminismResult},
 };
-use crate::TransitionSystems::LocationID;
-use crate::TransitionSystems::transition_system::EdgeTuple;
 
 use super::{
     transition_system::PrecheckResult, CompositionType, LocationTuple, TransitionSystem,
@@ -169,10 +168,14 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
     fn get_transition(&self, location: LocationID, transition_index: usize) -> Option<&Transition> {
         let children = self.get_children();
 
-        let mut transition = children.0.get_transition(location.clone(), transition_index);
+        let mut transition = children
+            .0
+            .get_transition(location.clone(), transition_index);
 
         transition = match transition {
-            None => {children.1.get_transition(location.clone(), transition_index)}
+            None => children
+                .1
+                .get_transition(location.clone(), transition_index),
             Some(_) => {
                 panic!("A transition was found to belong to two transition systems")
             }
@@ -187,13 +190,5 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
 
     fn get_clocks_in_locations(&self) -> HashMap<String, LocationID> {
         todo!()
-    }
-
-    fn find_transition(&self, transition: &Transition) -> Option<&EdgeTuple> {
-        let children = self.get_children();
-        match children.0.find_transition(transition) {
-            None => children.1.find_transition(transition),
-            Some(edge) => Some(edge)
-        }
     }
 }

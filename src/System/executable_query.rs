@@ -1,4 +1,5 @@
 use edbm::util::constraints::ClockIndex;
+use std::collections::HashMap;
 
 use crate::DataReader::component_loader::ComponentLoader;
 use crate::ModelObjects::component::Component;
@@ -122,7 +123,8 @@ pub struct ConsistencyExecutor {
 
 impl ExecutableQuery for ConsistencyExecutor {
     fn execute(self: Box<Self>) -> QueryResult {
-        let res = match self.recipe.compile(self.dim) {
+        let clock_replacement: Option<HashMap<String, ClockIndex>> = None;
+        let res = match self.recipe.compile(self.dim, &clock_replacement) {
             Ok(system) => match system.precheck_sys_rep() {
                 PrecheckResult::Success => QueryResult::Consistency(ConsistencyResult::Success),
                 PrecheckResult::NotDeterministic(location, action) => {

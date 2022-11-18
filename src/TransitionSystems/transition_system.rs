@@ -6,13 +6,12 @@ use crate::{
 };
 use dyn_clone::{clone_trait_object, DynClone};
 use edbm::util::{bounds::Bounds, constraints::ClockIndex};
+use log::info;
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
-use log::info;
-use crate::component::Edge;
+use std::ops::Deref;
 
 pub type TransitionSystemPtr = Box<dyn TransitionSystem>;
-pub type Heights = (usize, usize);
 pub type Action = String;
 pub type EdgeTuple = (Action, Transition);
 pub type EdgeIndex = (LocationID, usize);
@@ -22,6 +21,29 @@ pub enum PrecheckResult {
     Success,
     NotDeterministic(LocationID, String),
     NotConsistent(ConsistencyFailure),
+}
+
+#[derive(Clone, Copy)]
+/// Struct for determining the level for clock reduction
+pub struct Heights {
+    /// The level in the tree
+    pub(crate) tree: usize,
+    /// The level to reduce
+    pub(crate) target: usize,
+}
+
+impl Heights {
+    pub fn new(tree: usize, target: usize) -> Heights {
+        Heights { tree, target }
+    }
+
+    /// Function to "go down" a level in the tree
+    pub fn level_down(&self) -> Heights {
+        Heights {
+            tree: self.tree,
+            ..*self
+        }
+    }
 }
 
 pub trait TransitionSystem: DynClone {
@@ -96,7 +118,21 @@ pub trait TransitionSystem: DynClone {
 
     fn get_clocks_in_locations(&self) -> HashMap<String, LocationID>;
 
-    fn reduce_clocks(&mut self, clock_indexes_to_replace: Vec<(ClockIndex,Vec<HashSet<ClockIndex>>)>, height: Option<Heights>){
+    fn reduce_clocks(
+        &mut self,
+        clock_indexes_to_replace: Vec<(ClockIndex, Vec<HashSet<ClockIndex>>)>,
+        height: Heights,
+    ) {
+        if height.tree > height.target {
+            let (mut left, right) = self.get_children();
+            left.clone()
+                .reduce_clocks(clock_indexes_to_replace.clone(), height.level_down());
+            right
+                .clone()
+                .reduce_clocks(clock_indexes_to_replace, height.level_down());
+            return;
+        }
+
         for clock in self.find_redundant_clocks() {
             match &clock.reason {
                 ClockReductionReason::Duplicate(global) => {
@@ -112,7 +148,9 @@ pub trait TransitionSystem: DynClone {
             }
 
             let clock_val = *self
-                .get_decls().iter().find_map(|x| x.clocks.get(clock.clock.as_str()))
+                .get_decls()
+                .iter()
+                .find_map(|x| x.clocks.get(clock.clock.as_str()))
                 .unwrap_or_else(|| panic!("Clock {} is not in the declarations", clock.clock));
             /* TODO: replace in decls
             self.declarations
@@ -125,23 +163,17 @@ pub trait TransitionSystem: DynClone {
         }
     }
 
-    fn replace_clock(&mut self, old_clock: &ClockReductionContext, new_clock: &String){
+    fn replace_clock(&mut self, old_clock: &ClockReductionContext, new_clock: &String) {
         // Replace old clock in transitions.
 
         // Replace old clock in invariants.
-
     }
 
-    fn remove_clock(&mut self, clock_updates: HashMap<usize, EdgeIndex>){
+    fn remove_clock(&mut self, clock_updates: HashMap<usize, EdgeIndex>) {}
 
-    }
+    fn get_transition(&self, location: LocationID, transition_index: usize) -> Option<&Transition>;
 
-
-    fn get_transition(&self, location: LocationID, transition_index: usize)->Option<&Transition>;
-
-    fn find_transition(&self, transition: &Transition) -> Option<&EdgeTuple>;
-
-    fn find_redundant_clocks(&self) -> Vec<RedundantClock>{
+    fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
         //TODO do
         vec![]
     }
@@ -162,14 +194,29 @@ pub struct ClockReductionContext {
 
 clone_trait_object!(TransitionSystem);
 
-
 ///Enum to hold the reason for why a clock is declared redundant.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ClockReductionReason {
     ///Which clock is it a duplicate of.
     Duplicate(String),
     ///If a clock is not used by a guard or invariant it is unused.
     Unused,
+}
+
+impl ClockReductionReason {
+    pub(crate) fn is_duplicate(&self) -> bool {
+        match self {
+            ClockReductionReason::Duplicate(_) => true,
+            ClockReductionReason::Unused => false,
+        }
+    }
+
+    pub(crate) fn is_unused(&self) -> bool {
+        match self {
+            ClockReductionReason::Duplicate(_) => false,
+            ClockReductionReason::Unused => true,
+        }
+    }
 }
 
 ///Datastructure to hold the found redundant clocks, where they are used and their reason for being redundant.

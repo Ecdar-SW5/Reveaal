@@ -8,13 +8,16 @@ use crate::System::executable_query::{
 };
 use crate::System::extract_state::get_state;
 use std::cmp::max;
+use std::collections::HashMap;
 
 use crate::TransitionSystems::{
     CompiledComponent, Composition, Conjunction, Quotient, TransitionSystemPtr,
 };
 
 use crate::component::State;
+use crate::ProtobufServer::services::query_request::settings::ReduceClocksLevel;
 use crate::System::pruning;
+use crate::TransitionSystems::transition_system::Heights;
 use edbm::util::constraints::ClockIndex;
 use log::debug;
 use simple_error::bail;
@@ -29,22 +32,31 @@ pub fn create_executable_query<'a>(
     let mut dim: ClockIndex = 0;
 
     if let Some(query) = full_query.get_query() {
+        let mut clock: HashMap<String, ClockIndex> = HashMap::new();
+        //clock.insert("y".to_owned(), 1);
+        let clock_replacement: Option<HashMap<String, ClockIndex>> = Some(clock);
         match query {
             QueryExpression::Refinement(left_side, right_side) => {
                 let mut quotient_index = None;
                 let left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
                 let right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
                 let height = max(left.height(), right.height()) + 1;
-                let mut compiled_left = left.compile(dim)?;
-                let mut compiled_right = right.compile(dim)?;
-                if let Some(x) = component_loader.get_settings().reduce_clocks_level {
-                    let heights = if x < 0 {
-                        Some((x as usize, height))
-                    } else {
-                        None
+                let mut compiled_left = left.compile(dim, &clock_replacement)?;
+                let mut compiled_right = right.compile(dim, &clock_replacement)?;
+                if let Some(x) = &component_loader.get_settings().reduce_clocks_level {
+                    match x {
+                        ReduceClocksLevel::Level(y) if *y >= 0 => {
+                            let heights = Heights::new(height, (*y) as usize);
+                            compiled_left.reduce_clocks(vec![],heights);
+                            compiled_right.reduce_clocks(vec![],heights);
+                        },
+                        ReduceClocksLevel::All(true) =>{
+                            let heights = Heights::new(height, height);
+                            compiled_left.reduce_clocks(vec![],heights);
+                            compiled_right.reduce_clocks(vec![],heights);
+                        },
+                        _ => (),
                     };
-                    compiled_left.reduce_clocks(vec![],heights.clone());
-                    compiled_right.reduce_clocks(vec![],heights);
                 }
                 Ok(Box::new(RefinementExecutor {
                 sys1: compiled_left,
@@ -52,7 +64,7 @@ pub fn create_executable_query<'a>(
             }))},
             QueryExpression::Reachability(automata, start, end) => {
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut None);
-                let transition_system = machine.clone().compile(dim)?;
+                let transition_system = machine.clone().compile(dim, &clock_replacement)?;
 
                 validate_reachability_input(&machine, end)?;
 
@@ -88,19 +100,21 @@ pub fn create_executable_query<'a>(
                 ),
                 dim
             })),
-            QueryExpression::Determinism(query_expression) => Ok(Box::new(DeterminismExecutor {
-                system: get_system_recipe(
-                    query_expression,
-                    component_loader,
-                    &mut dim,
-                    &mut None
-                ).compile(dim)?,
-            })),
+            QueryExpression::Determinism(query_expression) => {
+                Ok(Box::new(DeterminismExecutor {
+                    system: get_system_recipe(
+                        query_expression,
+                        component_loader,
+                        &mut dim,
+                        &mut None,
+                    ).compile(dim, &clock_replacement)?,
+                }))
+            },
             QueryExpression::GetComponent(save_as_expression) => {
                 if let QueryExpression::SaveAs(query_expression, comp_name) = save_as_expression.as_ref() {
                     Ok(Box::new(
                         GetComponentExecutor {
-                            system: get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim)?,
+                            system: get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim, &clock_replacement)?,
                             comp_name: comp_name.clone(),
                             component_loader,
                         }
@@ -114,7 +128,7 @@ pub fn create_executable_query<'a>(
                 if let QueryExpression::SaveAs(query_expression, comp_name) = save_as_expression.as_ref() {
                     Ok(Box::new(
                         GetComponentExecutor {
-                            system: pruning::prune_system(get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim)?, dim),
+                            system: pruning::prune_system(get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim, &clock_replacement)?, dim),
                             comp_name: comp_name.clone(),
                             component_loader
                         }
@@ -141,24 +155,34 @@ pub enum SystemRecipe {
 }
 
 impl SystemRecipe {
-    pub fn compile(self, dim: ClockIndex) -> Result<TransitionSystemPtr, String> {
+    pub fn compile(
+        self,
+        dim: ClockIndex,
+        clock_replacement: &Option<HashMap<String, ClockIndex>>,
+    ) -> Result<TransitionSystemPtr, String> {
         match self {
-            SystemRecipe::Composition(left, right) => {
-                Composition::new(left.compile(dim)?, right.compile(dim)?, dim + 1)
-            }
-            SystemRecipe::Conjunction(left, right) => {
-                Conjunction::new(left.compile(dim)?, right.compile(dim)?, dim + 1)
-            }
+            SystemRecipe::Composition(left, right) => Composition::new(
+                left.compile(dim, clock_replacement)?,
+                right.compile(dim, clock_replacement)?,
+                dim + 1,
+            ),
+            SystemRecipe::Conjunction(left, right) => Conjunction::new(
+                left.compile(dim, clock_replacement)?,
+                right.compile(dim, clock_replacement)?,
+                dim + 1,
+            ),
             SystemRecipe::Quotient(left, right, clock_index) => Quotient::new(
-                left.compile(dim)?,
-                right.compile(dim)?,
+                left.compile(dim, clock_replacement)?,
+                right.compile(dim, clock_replacement)?,
                 clock_index,
                 dim + 1,
             ),
-            SystemRecipe::Component(comp) => match CompiledComponent::compile(*comp, dim + 1) {
-                Ok(comp) => Ok(comp),
-                Err(err) => Err(err),
-            },
+            SystemRecipe::Component(comp) => {
+                match CompiledComponent::compile(*comp, dim + 1, clock_replacement) {
+                    Ok(comp) => Ok(comp),
+                    Err(err) => Err(err),
+                }
+            }
         }
     }
     pub fn height(&self) -> usize {

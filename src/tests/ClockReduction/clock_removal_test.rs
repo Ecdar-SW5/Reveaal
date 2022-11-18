@@ -2,8 +2,10 @@
 pub mod clock_removal_tests {
     use crate::tests::ClockReduction::helper::test::assert_edges_in_component;
     use crate::DataReader::json_reader::read_json_component;
+    use crate::TransitionSystems::CompiledComponent;
     use std::collections::HashSet;
 
+    /* TODO
     // Tests that the clocks that are never used in any guards are removed.
     #[test]
     fn test_removal_unused_clocks() {
@@ -25,4 +27,5 @@ pub mod clock_removal_tests {
             ]),
         )
     }
+     */
 }

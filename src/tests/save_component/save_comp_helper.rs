@@ -11,6 +11,7 @@ pub mod util {
     use crate::System::save_component::PruningStrategy;
     use crate::TransitionSystems::transition_system::PrecheckResult;
     use edbm::util::constraints::ClockIndex;
+    use std::collections::HashMap;
 
     pub fn json_reconstructed_component_refines_base_self(input_path: &str, system: &str) {
         let project_loader =
@@ -43,7 +44,7 @@ pub mod util {
             panic!("Failed to create system")
         };
 
-        let new_comp = new_system.compile(dim);
+        let new_comp = new_system.compile(dim, &None);
 
         if new_comp.is_err() {
             return;
@@ -51,9 +52,9 @@ pub mod util {
         let new_comp = combine_components(&new_comp.unwrap(), PruningStrategy::NoPruning);
 
         let new_comp = SystemRecipe::Component(Box::new(new_comp))
-            .compile(dim)
+            .compile(dim, &None)
             .unwrap();
-        let base_system = base_system.compile(dim).unwrap();
+        let base_system = base_system.compile(dim, &None).unwrap();
 
         let base_precheck = base_system.precheck_sys_rep();
         let new_precheck = new_comp.precheck_sys_rep();

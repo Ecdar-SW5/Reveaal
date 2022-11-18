@@ -1,12 +1,16 @@
 #[cfg(test)]
 pub mod test {
-    use crate::component::{ClockReductionReason, Component, RedundantClock};
+    use crate::component::{Component, Declarations};
+    use crate::TransitionSystems::transition_system::{
+        ClockReductionReason, RedundantClock, TransitionSystemPtr,
+    };
+    use edbm::util::constraints::ClockIndex;
     use std::collections::{HashMap, HashSet};
     use std::iter::FromIterator;
 
     /// Asserts that component contains given locations and edges.
     pub fn assert_locations_and_edges_in_component(
-        component: &Component,
+        component: &TransitionSystemPtr,
         expected_locations: &HashSet<String>,
         expected_edges: &HashSet<String>,
     ) {
@@ -15,71 +19,76 @@ pub mod test {
     }
 
     /// Asserts that component contains given locations.
-    fn assert_locations_in_component(component: &Component, expected_locations: &HashSet<String>) {
+    fn assert_locations_in_component(
+        component: &TransitionSystemPtr,
+        expected_locations: &HashSet<String>,
+    ) {
         let mut actual_locations: HashSet<String> = HashSet::new();
+        /*
+               for location in &component.locations {
+                   let mut clocks_in_invariants = HashSet::new();
+                   if let Some(invariant) = &location.invariant {
+                       invariant.get_varnames().iter().for_each(|clock| {
+                           clocks_in_invariants.insert((*clock).to_string());
+                       });
+                   }
 
-        for location in &component.locations {
-            let mut clocks_in_invariants = HashSet::new();
-            if let Some(invariant) = &location.invariant {
-                invariant.get_varnames().iter().for_each(|clock| {
-                    clocks_in_invariants.insert((*clock).to_string());
-                });
-            }
+                   let clock = sort_clocks_and_join(&clocks_in_invariants);
 
-            let clock = sort_clocks_and_join(&clocks_in_invariants);
-
-            actual_locations.insert(format!("{}-{}", location.id.clone(), clock));
-        }
-        assert!(
-            expected_locations.is_subset(&actual_locations)
-                && expected_locations.len() == actual_locations.len(),
-            "Expected these locations {:?}, but got {:?}",
-            expected_locations,
-            actual_locations
-        );
+                   actual_locations.insert(format!("{}-{}", location.id.clone(), clock));
+               }
+               assert!(
+                   expected_locations.is_subset(&actual_locations)
+                       && expected_locations.len() == actual_locations.len(),
+                   "Expected these locations {:?}, but got {:?}",
+                   expected_locations,
+                   actual_locations
+               );
+        */
     }
 
     /// Asserts that component contains given locations.
     pub(crate) fn assert_edges_in_component(
-        component: &Component,
+        component: &TransitionSystemPtr,
         expected_edges: &HashSet<String>,
     ) {
         let mut actual_edges: HashSet<String> = HashSet::new();
+        /* TODO
+               for edge in &component.edges {
+                   let mut clocks_in_guards_and_updates = HashSet::new();
+                   if let Some(guard) = &edge.guard {
+                       guard.get_varnames().iter().for_each(|clock| {
+                           clocks_in_guards_and_updates.insert((*clock).to_string());
+                       });
+                   }
+                   if let Some(updates) = &edge.update {
+                       for update in updates {
+                           clocks_in_guards_and_updates.insert(update.variable.to_string());
+                       }
+                   }
 
-        for edge in &component.edges {
-            let mut clocks_in_guards_and_updates = HashSet::new();
-            if let Some(guard) = &edge.guard {
-                guard.get_varnames().iter().for_each(|clock| {
-                    clocks_in_guards_and_updates.insert((*clock).to_string());
-                });
-            }
-            if let Some(updates) = &edge.update {
-                for update in updates {
-                    clocks_in_guards_and_updates.insert(update.variable.to_string());
-                }
-            }
+                   let sorted_clocks = sort_clocks_and_join(&clocks_in_guards_and_updates);
 
-            let sorted_clocks = sort_clocks_and_join(&clocks_in_guards_and_updates);
+                   let edge_id = format!(
+                       "{}-{}->{}",
+                       edge.source_location, sorted_clocks, edge.target_location
+                   );
 
-            let edge_id = format!(
-                "{}-{}->{}",
-                edge.source_location, sorted_clocks, edge.target_location
-            );
+                   assert!(
+                       !actual_edges.contains(&edge_id),
+                       "Duplicate edge: {}",
+                       edge_id
+                   );
 
-            assert!(
-                !actual_edges.contains(&edge_id),
-                "Duplicate edge: {}",
-                edge_id
-            );
-
-            actual_edges.insert(edge_id);
-        }
-        assert!(
-            expected_edges.is_subset(&actual_edges) && expected_edges.len() == actual_edges.len(),
-            "Expected these edges {:?} but got {:?}",
-            expected_edges,
-            actual_edges
-        )
+                   actual_edges.insert(edge_id);
+               }
+               assert!(
+                   expected_edges.is_subset(&actual_edges) && expected_edges.len() == actual_edges.len(),
+                   "Expected these edges {:?} but got {:?}",
+                   expected_edges,
+                   actual_edges
+               )
+        */
     }
 
     fn sort_clocks_and_join(dependent_clocks: &HashSet<String>) -> String {
@@ -153,13 +162,46 @@ pub mod test {
     }
 
     /// Asserts that the specific clocks occur in the correct locations and edges
-    pub fn assert_correct_edges_and_locations(
-        component: &Component,
+    pub(crate) fn assert_correct_edges_and_locations(
+        component: &TransitionSystemPtr,
         expected_locations: HashMap<String, HashSet<String>>,
         expected_edges: HashMap<String, HashSet<String>>,
+        expected_redundant_clocks: Vec<String>,
+        global_clock: (String, ClockIndex),
     ) {
         let redundant_clocks = component.find_redundant_clocks();
+        assert_eq!(
+            expected_redundant_clocks,
+            redundant_clocks
+                .iter()
+                .map(|x| x.clock.clone())
+                .collect::<Vec<_>>()
+        );
+        let clocks = component
+            .get_decls()
+            .iter()
+            .fold(HashMap::new(), |mut acc, x| {
+                acc.extend(x.get_clocks().clone());
+                acc
+            });
 
+        for (clock, new_clock) in redundant_clocks.iter().filter_map(|c| match &c.reason {
+            ClockReductionReason::Duplicate(x) => Some((&c.clock, x)),
+            ClockReductionReason::Unused => None,
+        }) {
+            assert_eq!(*new_clock, *global_clock.0);
+            assert_eq!(*clocks.get(clock.as_str()).unwrap(), global_clock.1);
+        }
+
+        for (clock, new_clock) in redundant_clocks.iter().filter_map(|c| match &c.reason {
+            ClockReductionReason::Duplicate(x) => Some((&c.clock, x)),
+            ClockReductionReason::Unused => None,
+        }) {
+            assert_eq!(*new_clock, *global_clock.0);
+            assert_eq!(*clocks.get(clock.as_str()).unwrap(), global_clock.1);
+        }
+
+        /*
         for redundancy in redundant_clocks {
             let mut found_location_names: HashSet<String> = HashSet::new();
             let clock_expected_locations =
@@ -200,5 +242,6 @@ pub mod test {
                 found_edge_names,
             );
         }
+         */
     }
 }
