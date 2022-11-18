@@ -6,8 +6,8 @@ use crate::{
 /// Represents a decision in a transition system: In the current `source` state there is a decision of using one of the `possible_decisions`.
 #[derive(Debug, Clone)]
 pub struct TransitionDecisionPoint {
-    pub source: State,
-    pub possible_decisions: Vec<Transition>,
+    source: State,
+    possible_decisions: Vec<Transition>,
 }
 
 impl TransitionDecisionPoint {
@@ -26,6 +26,14 @@ impl TransitionDecisionPoint {
             source: source.to_owned(),
             possible_decisions: transitions,
         }
+    }
+
+    pub fn source(&self) -> &State {
+        &self.source
+    }
+
+    pub fn possible_decisions(&self) -> &[Transition] {
+        self.possible_decisions.as_ref()
     }
 }
 

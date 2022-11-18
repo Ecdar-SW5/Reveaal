@@ -13,11 +13,23 @@ use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
 
 #[derive(Debug)]
 pub struct Decision {
-    pub source: State,
-    pub decided: Edge,
+    source: State,
+    decided: Edge,
 }
 
 impl Decision {
+    pub fn new(source: State, decided: Edge) -> Self {
+        Self { source, decided }
+    }
+
+    pub fn source(&self) -> &State {
+        &self.source
+    }
+
+    pub fn decided(&self) -> &Edge {
+        &self.decided
+    }
+
     pub fn from(proto_decision: ProtoDecision, system: &TransitionSystemPtr) -> Self {
         // Convert ProtoState to State
         let proto_state: ProtoState = match proto_decision.source {
@@ -157,7 +169,7 @@ mod tests {
 
         let transition_decisions = initial_transition_decision_point_EcdarUniversity_Machine();
         let possible_decisions: Vec<Edge> = transition_decisions
-            .possible_decisions
+            .possible_decisions()
             .iter()
             .flat_map(|t| Vec::<Edge>::from(t))
             .collect();

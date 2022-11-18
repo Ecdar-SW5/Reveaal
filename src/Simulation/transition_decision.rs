@@ -27,9 +27,9 @@ impl TransitionDecision {
                 })
                 .any(|x| x == edge_id)
         }
-        let source = decision.source.to_owned();
-        let action = decision.decided.get_sync();
-        let edge_id = &decision.decided.id;
+        let source = decision.source().to_owned();
+        let action = decision.decided().get_sync();
+        let edge_id = &decision.decided().id;
 
         // Choose transitions that correspond to a given edge.
         let transitions = system
@@ -45,7 +45,7 @@ impl TransitionDecision {
             // If 1 transitions is left we choose that transition as our decided
             1 => transitions.first().unwrap().to_owned(), // If transitions.len() == 1 then transitions.first() == Some(...) always
             // Otherwise the result is non-deterministic, this is currently not supported by the simulation API
-            // This might never happen, but i'm unsure
+            // This might never happen, but i'm unsure.
             _ => {
                 return Err("Non determinism not currently supported by Simulation API".to_string())
             }
@@ -96,10 +96,10 @@ mod tests {
         let system = create_system_from_path(path, component);
         let component = read_json_component(path, component);
 
-        let decision = Decision {
-            source: system.get_initial_state().unwrap(),
-            decided: component.get_edges().first().unwrap().to_owned(),
-        };
+        let decision = Decision::new(
+            system.get_initial_state().unwrap(),
+            component.get_edges().first().unwrap().to_owned(),
+        );
 
         // Act
         let actual = TransitionDecision::from(&decision, &system);
@@ -132,9 +132,9 @@ mod tests {
         let actual = decision.resolve(system.clone());
 
         // Assert
-        let actual_source = format!("{:?}", actual.source);
+        let actual_source = format!("{:?}", actual.source());
         let actual_possible_decisions: Vec<String> = actual
-            .possible_decisions
+            .possible_decisions()
             .into_iter()
             .map(|x| format!("{:?}", x))
             .collect();
@@ -142,9 +142,9 @@ mod tests {
         let mut source = initial.clone();
         transition.use_transition(&mut source);
         let expected = TransitionDecisionPoint::from(&system, &source);
-        let expected_source = format!("{:?}", expected.source);
+        let expected_source = format!("{:?}", expected.source());
         let expected_possible_decisions = expected
-            .possible_decisions
+            .possible_decisions()
             .into_iter()
             .map(|x| format!("{:?}", x));
 
@@ -165,10 +165,7 @@ mod tests {
         let initial = system.get_initial_state().unwrap();
         let edge = component.get_edges()[4].clone();
 
-        let decision = Decision {
-            source: initial.clone(),
-            decided: edge.clone(),
-        };
+        let decision = Decision::new(initial.clone(), edge.clone());
 
         let expected = TransitionDecision {
             source: initial.clone(),
@@ -191,10 +188,7 @@ mod tests {
         let initial = system.get_initial_state().unwrap();
         let edges = component.get_edges().clone();
 
-        let decision = Decision {
-            source: initial.clone(),
-            decided: edges[0].clone(),
-        };
+        let decision = Decision::new(initial.clone(), edges[0].clone());
 
         let edge_action = edges[0].get_sync();
 

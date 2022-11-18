@@ -4,20 +4,20 @@ use crate::component::{Edge, State, Transition};
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub struct DecisionPoint {
-    pub(crate) source: State,
-    pub(crate) possible_decisions: Vec<Edge>,
+    source: State,
+    possible_decisions: Vec<Edge>,
 }
 
 impl From<&TransitionDecisionPoint> for DecisionPoint {
     fn from(transition_decision_point: &TransitionDecisionPoint) -> Self {
         let possible_decisions = transition_decision_point
-            .possible_decisions
+            .possible_decisions()
             .iter()
             .flat_map(Vec::<Edge>::from)
             .collect();
 
         DecisionPoint {
-            source: transition_decision_point.source.clone(),
+            source: transition_decision_point.source().clone(),
             possible_decisions,
         }
     }
