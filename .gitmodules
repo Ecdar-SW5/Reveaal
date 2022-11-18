@@ -1,4 +1,3 @@
 [submodule "Ecdar-ProtoBuf"]
 	path = Ecdar-ProtoBuf
 	url = ../Ecdar-ProtoBuf.git
-	branch = group17_reachability_changes
