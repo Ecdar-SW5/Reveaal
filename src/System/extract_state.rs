@@ -86,8 +86,8 @@ fn build_location_tuple(
     match out {
         LocationType::Universal => find_location_and_then(
             system_locations,
-            &|loc: &&LocationTuple| matches!(loc.loc_type, LocationType::Universal),
-            &|loc: &LocationTuple| Some(loc.to_owned()),
+            &|loc| matches!(loc.loc_type, LocationType::Universal),
+            &|loc| Some(loc.to_owned()),
             None,
         ),
         LocationType::Inconsistent => find_location_and_then(
@@ -101,7 +101,7 @@ fn build_location_tuple(
             &|loc| loc.id.compare_partial_locations(&location_id),
             &|location_tuple| {
                 Some(if !partial {
-                    location_tuple.clone()
+                    location_tuple.to_owned()
                 } else {
                     LocationTuple::create_partial_location(location_id.clone())
                 })
