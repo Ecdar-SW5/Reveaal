@@ -20,7 +20,14 @@ impl TransitionDecisionPoint {
 
     /// Constructs the `TransitionDecisionPoint` from a `source: State` and a given `TransitionSystemPtr`
     pub fn from(system: &TransitionSystemPtr, source: &State) -> TransitionDecisionPoint {
-        let transitions = from_action_to_transitions(&system, &source);
+        let actions = system.get_actions();
+        let transitions: Vec<Transition> = actions
+            .into_iter()
+            // Map actions to transitions. An action can map to multiple actions thus flatten
+            .flat_map(|action| system.next_transitions_if_available(source.get_location(), &action))
+            // Filter transitions that can be used
+            .filter(|transition| transition.use_transition(&mut source.clone()))
+            .collect();
 
         TransitionDecisionPoint {
             source: source.to_owned(),
@@ -35,18 +42,6 @@ impl TransitionDecisionPoint {
     pub fn possible_decisions(&self) -> &[Transition] {
         self.possible_decisions.as_ref()
     }
-}
-
-pub fn from_action_to_transitions(system: &TransitionSystemPtr, source: &State) -> Vec<Transition> {
-    let actions = system.get_actions();
-    let transitions: Vec<Transition> = actions
-        .into_iter()
-        // Map actions to transitions. An action can map to multiple actions thus flatten
-        .flat_map(|action| system.next_transitions_if_available(source.get_location(), &action))
-        // Filter transitions that can be used
-        .filter(|transition| transition.use_transition(&mut source.clone()))
-        .collect();
-    transitions
 }
 
 #[cfg(test)]
