@@ -83,7 +83,6 @@ impl EcdarBackend for ConcreteEcdarBackend {
         &self,
         request: Request<SimulationStepRequest>,
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        todo!();
         let edge_one = String::from("E27");
         let edge_two = String::from("E29");
         let new_decision_point: DecisionPoint;
@@ -93,13 +92,10 @@ impl EcdarBackend for ConcreteEcdarBackend {
             .unwrap()
             .edge
             .unwrap()
-            .id
-            .as_str()
-            .clone();
-
-        if *id == edge_one {
+            .id;
+        if id.to_string() == edge_one {
             new_decision_point = create_decision_point_from_L4();
-        } else if *id == edge_two {
+        } else if id.to_string() == edge_two {
             new_decision_point = create_decision_point_from_L5();
         } else {
             panic!("Given edge is not valid");
