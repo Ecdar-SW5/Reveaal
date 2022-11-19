@@ -41,12 +41,19 @@ impl TransitionDecision {
 
         let decided = match transitions.len() {
             // If no transitions are left we have nothing to step along... Something has gone wrong
-            0 => return Err("No valid transitions for {action}".to_string()),
+            0 => {
+                return Err(
+                    "No corresponding transition for edge: {edge_id} in this state".to_string(),
+                )
+            }
             // If 1 transitions is left we choose that transition as our decided
             1 => transitions.first().unwrap().to_owned(), // If transitions.len() == 1 then transitions.first() == Some(...) always
-            // Otherwise the result is non-deterministic, this is currently not supported by the simulation API
+            // Otherwise the edge corresponds to multiple transitions... Again something has gone wrong
             _ => {
-                return Err("Non determinism not currently supported by Simulation API".to_string())
+                return Err(
+                    "Multiple corresponding transitions for edge: {edge_id} in this state"
+                        .to_string(),
+                )
             }
         };
 
