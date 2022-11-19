@@ -28,7 +28,11 @@ impl ConcreteEcdarBackend {
     ) -> Result<SimulationStepResponse, Status> {
         trace!("Received query: {:?}", request);
 
-        let simulation_info = request.simulation_info.unwrap();
+        let simulation_info = match request.simulation_info {
+            Some(v) => v,
+            None => return Err(Status::invalid_argument("simulation_info was None")),
+        };
+
         let transition_system = helpers::simulation_info_to_transition_system(simulation_info);
 
         let initial = TransitionDecisionPoint::initial(&transition_system)
