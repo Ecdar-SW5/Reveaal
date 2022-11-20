@@ -155,14 +155,14 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     reason: "".to_string(),
                     relation: vec![],
                     state: None,
-                    action: "".to_string(),
+                    action: "".to_string(), // Empty string is used, when no failing action is available.
                 }))
             }
             refine::RefinementResult::Failure(failure) => convert_refinement_failure(failure),
         },
 
         QueryResult::Reachability(path) => {
-            let protoPath = TransitionID::split_into_component_lists(
+            let proto_path = TransitionID::split_into_component_lists(
                 &path
                     .path
                     .as_ref()
@@ -170,26 +170,42 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     .iter()
                     .map(|p| p.id.clone())
                     .collect(),
-            )
-            .iter()
-            .map(|component_path| services::Path {
-                edge_ids: component_path.iter().map(|id| id.to_string()).collect(),
-            })
-            .collect();
-            if path.was_reachable {
-                Some(ProtobufResult::Reachability(ReachabilityResult {
-                    success: true,
-                    reason: "".to_string(),
-                    state: None,
-                    component_paths: protoPath,
-                }))
-            } else {
-                Some(ProtobufResult::Reachability(ReachabilityResult {
+            );
+
+            match proto_path {
+                Ok(p) => {
+                    let component_paths = p
+                        .iter()
+                        .map(|component_path| services::Path {
+                            edge_ids: component_path
+                                .concat()
+                                .iter()
+                                .map(|id| id.to_string())
+                                .collect(),
+                        })
+                        .collect();
+                    if path.was_reachable {
+                        Some(ProtobufResult::Reachability(ReachabilityResult {
+                            success: true,
+                            reason: "".to_string(),
+                            state: None,
+                            component_paths,
+                        }))
+                    } else {
+                        Some(ProtobufResult::Reachability(ReachabilityResult {
+                            success: false,
+                            reason: "Path was not reachable".to_string(),
+                            state: None,
+                            component_paths: vec![],
+                        }))
+                    }
+                }
+                Err(e) => Some(ProtobufResult::Reachability(ReachabilityResult {
                     success: false,
-                    reason: "Path was not reachable".to_string(),
+                    reason: format!("Internal error occurred during reachability check: {}", e),
                     state: None,
                     component_paths: vec![],
-                }))
+                })),
             }
         }
 

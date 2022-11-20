@@ -1,5 +1,4 @@
 pub mod ClockReduction;
-pub mod EdgeID;
 pub mod ModelObjects;
 pub mod failure_message;
 pub mod grpc;

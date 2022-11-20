@@ -2,7 +2,6 @@
 target/
 .idea/*
 .vscode/
-.github
 dbm/build/
 dbm/buildw/
 *.o
