@@ -640,17 +640,19 @@ pub enum SyncType {
 //Represents a single transition from taking edges in multiple components
 #[derive(Debug, Clone)]
 pub struct Transition {
-    /// The ID of the transition, based on the edges it is created from.
     pub id: TransitionID,
     pub guard_zone: OwnedFederation,
     pub target_locations: LocationTuple,
     pub updates: Vec<CompiledUpdate>,
 }
 impl Transition {
-    /// Create a new transition not based on an edge with no identifier
-    pub fn new(target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
+    pub fn new(
+        transition_id: TransitionID,
+        target_locations: &LocationTuple,
+        dim: ClockIndex,
+    ) -> Transition {
         Transition {
-            id: TransitionID::None,
+            id: transition_id,
             guard_zone: OwnedFederation::universe(dim),
             target_locations: target_locations.clone(),
             updates: vec![],
@@ -723,7 +725,7 @@ impl Transition {
                             Box::new(l.id.clone()),
                             Box::new(r.id.clone()),
                         ),
-                        _ => unreachable!("Invalid composition type {:?}", comp),
+                        _ => panic!("Invalid composition type {:?}", comp),
                     },
                     guard_zone,
                     target_locations,
@@ -851,7 +853,6 @@ impl fmt::Display for Transition {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(into = "DummyEdge")]
 pub struct Edge {
-    /// Uniquely identifies the edge within its component
     pub id: String,
     #[serde(rename = "sourceLocation")]
     pub source_location: String,

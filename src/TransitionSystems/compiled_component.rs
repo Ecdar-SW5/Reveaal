@@ -2,7 +2,9 @@ use crate::ModelObjects::component::{
     Component, DeclarationProvider, Declarations, State, Transition,
 };
 use crate::System::local_consistency::{self, ConsistencyResult, DeterminismResult};
-use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
+use crate::TransitionSystems::{
+    LocationTuple, TransitionID, TransitionSystem, TransitionSystemPtr,
+};
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 use log::warn;
@@ -140,11 +142,19 @@ impl TransitionSystem for CompiledComponent {
         let is_input = self.inputs_contain(action);
 
         if locations.is_universal() {
-            return vec![Transition::new(locations, self.dim)];
+            return vec![Transition::new(
+                TransitionID::Simple(format!("Universal:{}", locations.id)),
+                locations,
+                self.dim,
+            )];
         }
 
         if locations.is_inconsistent() && is_input {
-            return vec![Transition::new(locations, self.dim)];
+            return vec![Transition::new(
+                TransitionID::Simple(format!("Inconsistent:{}", locations.id)),
+                locations,
+                self.dim,
+            )];
         }
 
         let mut transitions = vec![];
