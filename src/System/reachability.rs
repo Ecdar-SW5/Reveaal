@@ -1,5 +1,6 @@
 use edbm::zones::OwnedFederation;
 
+use crate::component::LocationType;
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
@@ -17,12 +18,21 @@ struct SubPath {
     transition: Option<Transition>,
 }
 
-fn is_trivially_unreachable(end_state: &State, _system: &dyn TransitionSystem) -> bool {
+fn is_trivially_unreachable(start_state: &State, end_state: &State) -> bool {
     if let Some(invariants) = end_state.get_location().get_invariants() {
         if !end_state.zone_ref().has_intersection(invariants) {
             return true;
         }
     }
+
+    if matches!(
+        start_state.decorated_locations.loc_type,
+        LocationType::Universal | LocationType::Inconsistent
+    ) && start_state.decorated_locations != end_state.decorated_locations
+    {
+        return true;
+    }
+
     false
 }
 ///# Find path
@@ -61,7 +71,7 @@ pub fn find_path(
     end_state: State,
     system: &dyn TransitionSystem,
 ) -> Result<Path, String> {
-    if is_trivially_unreachable(&end_state, system) {
+    if is_trivially_unreachable(&start_state, &end_state) {
         return Ok(Path {
             path: None,
             was_reachable: false,

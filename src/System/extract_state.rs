@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use edbm::zones::OwnedFederation;
 
-use crate::component::Declarations;
+use crate::component::{Declarations, LocationType};
 use crate::extract_system_rep::SystemRecipe;
 use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
 use crate::ModelObjects::component::State;
@@ -73,52 +73,122 @@ fn build_location_tuple(
     machine: &SystemRecipe,
     system: &TransitionSystemPtr,
 ) -> Result<LocationTuple, String> {
-    let location_id = get_location_id(&mut locations.iter(), machine);
+    let location_id = get_location_id(&mut locations.iter(), machine)?;
+    let partial = location_id.is_partial_location();
+    let location_type = if partial {
+        LocationType::Normal
+    } else {
+        is_universal_or_inconsistent_input(locations, machine)
+    };
 
-    system
-        .get_all_locations()
+    let system_locations = system.get_all_locations();
+    match location_type {
+        LocationType::Universal => find_location_and_then(
+            system_locations,
+            &|loc| matches!(loc.loc_type, LocationType::Universal),
+            &|loc_tuple| Some(loc_tuple.to_owned()),
+            None,
+        ),
+        LocationType::Inconsistent => find_location_and_then(
+            system_locations,
+            &|loc| matches!(loc.loc_type, LocationType::Inconsistent),
+            &|loc_tuple| Some(loc_tuple.to_owned()),
+            None,
+        ),
+        LocationType::Normal => find_location_and_then(
+            system_locations,
+            &|loc| loc.id.compare_partial_locations(&location_id),
+            &|loc_tuple| {
+                Some(if !partial {
+                    loc_tuple.to_owned()
+                } else {
+                    LocationTuple::create_partial_location(location_id.clone())
+                })
+            },
+            None,
+        ),
+        LocationType::Initial => unreachable!(),
+    }
+}
+
+/// Checks if the input [LocationTuple] is of type [LocationType::Universal] or [LocationType::Inconsistent] and returns the [LocationType]
+fn is_universal_or_inconsistent_input(locations: &[&str], machine: &SystemRecipe) -> LocationType {
+    let mut is_inconsistent = true;
+    let mut is_universal = true;
+
+    for (i, comp) in machine.get_components().iter().enumerate() {
+        match comp.get_location_by_name(locations[i]).location_type {
+            LocationType::Universal => is_inconsistent = false,
+            LocationType::Inconsistent => is_universal = false,
+            _ => return LocationType::Normal,
+        }
+    }
+
+    if is_universal {
+        LocationType::Universal
+    } else if is_inconsistent {
+        LocationType::Inconsistent
+    } else {
+        LocationType::Normal
+    }
+}
+
+fn find_location_and_then(
+    locations: Vec<LocationTuple>,
+    predicate: &dyn Fn(&&LocationTuple) -> bool,
+    op: &dyn Fn(&LocationTuple) -> Option<LocationTuple>,
+    err_msg: Option<&str>,
+) -> Result<LocationTuple, String> {
+    locations
         .iter()
-        .find(|loc| loc.id.compare_partial_locations(&location_id))
+        .find(predicate)
+        .and_then(op)
         .ok_or_else(|| {
-            format!(
-                "{} is not a location in the transition system ",
-                location_id
-            )
-        })
-        .map(|location_tuple| {
-            if !location_id.is_partial_location() {
-                location_tuple.clone()
+            if let Some(msg) = err_msg {
+                msg.to_string()
             } else {
-                LocationTuple::create_partial_location(location_id)
+                "Unexpected error happened".to_string()
             }
         })
 }
 
-fn get_location_id(locations: &mut Iter<&str>, machine: &SystemRecipe) -> LocationID {
+fn get_location_id(
+    locations: &mut Iter<&str>,
+    machine: &SystemRecipe,
+) -> Result<LocationID, String> {
     match machine {
-        SystemRecipe::Composition(left, right) => LocationID::Composition(
-            box_location_id(locations, left),
-            box_location_id(locations, right),
-        ),
-        SystemRecipe::Conjunction(left, right) => LocationID::Conjunction(
-            box_location_id(locations, left),
-            box_location_id(locations, right),
-        ),
-        SystemRecipe::Quotient(left, right, ..) => LocationID::Quotient(
-            box_location_id(locations, left),
-            box_location_id(locations, right),
-        ),
+        SystemRecipe::Composition(left, right) => Ok(LocationID::Composition(
+            box_loc_id(locations, left)?,
+            box_loc_id(locations, right)?,
+        )),
+        SystemRecipe::Conjunction(left, right) => Ok(LocationID::Conjunction(
+            box_loc_id(locations, left)?,
+            box_loc_id(locations, right)?,
+        )),
+        SystemRecipe::Quotient(left, right, ..) => Ok(LocationID::Quotient(
+            box_loc_id(locations, left)?,
+            box_loc_id(locations, right)?,
+        )),
         SystemRecipe::Component(component) => match locations.next().unwrap().trim() {
             // It is ensured .next() will not give a None, since the number of location is same as number of component. This is also being checked in validate_reachability_input function, that is called before get_state
-            "_" => LocationID::AnyLocation(),
-            str => LocationID::Simple {
-                location_id: str.to_string(),
-                component_id: Some(component.get_name().to_owned()),
-            },
+            "_" => Ok(LocationID::AnyLocation()),
+            str => {
+                if component.clone().location_exists(str) {
+                    Ok(LocationID::Simple {
+                        location_id: str.to_string(),
+                        component_id: Some(component.get_name().to_owned()),
+                    })
+                } else {
+                    Err(format!("Location {} does not exist in the system", str))
+                }
+            }
         },
     }
 }
 
-fn box_location_id(left: &mut Iter<&str>, right: &SystemRecipe) -> Box<LocationID> {
-    Box::new(get_location_id(left, right))
+fn box_loc_id(
+    locations: &mut Iter<&str>,
+    machine: &SystemRecipe,
+) -> Result<Box<LocationID>, String> {
+    Ok(Box::new(get_location_id(locations, machine)?))
 }

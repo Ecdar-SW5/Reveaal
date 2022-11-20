@@ -149,6 +149,21 @@ impl SystemRecipe {
             },
         }
     }
+
+    /// Takes in an output [Vec]<[Component]> and pushes only the components to the vector
+    pub fn get_components(&self) -> Vec<Component> {
+        match self {
+            SystemRecipe::Composition(left, right)
+            | SystemRecipe::Conjunction(left, right)
+            | SystemRecipe::Quotient(left, right, _) => {
+                let mut temp: Vec<Component> = vec![];
+                temp.append(&mut left.get_components());
+                temp.append(&mut right.get_components());
+                temp
+            }
+            SystemRecipe::Component(comp) => vec![comp.as_ref().clone()],
+        }
+    }
 }
 
 pub fn get_system_recipe(
