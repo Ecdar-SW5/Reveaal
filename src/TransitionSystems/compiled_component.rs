@@ -230,4 +230,5 @@ impl TransitionSystem for CompiledComponent {
     fn get_dim(&self) -> ClockIndex {
         self.dim
     }
+
 }

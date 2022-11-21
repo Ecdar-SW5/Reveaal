@@ -656,6 +656,12 @@ pub struct Transition {
     pub updates: Vec<CompiledUpdate>,
 }
 impl Transition {
+
+    pub fn get_edges(&self) -> Vec<Edge> {
+        todo!("get_edges")
+    }
+
+
     /// Create a new transition not based on an edge with no identifier
     pub fn new(target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
         Transition {

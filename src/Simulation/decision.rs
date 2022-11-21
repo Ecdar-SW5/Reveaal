@@ -55,19 +55,34 @@ impl Decision {
                 Some(loc_tuple) => loc_tuple,
             };
 
-        let _state = State::create(location_tuple, zone);
+        let state = State::create(location_tuple, zone);
 
         // Convert ProtoEdge to Edge
-        let _proto_edge: ProtoEdge = match proto_decision.edge {
+        let proto_edge: ProtoEdge = match proto_decision.edge {
             None => panic!("No edge found"),
             Some(edge) => edge,
         };
 
-        todo!()
-        // Decision {
-        //     source: state,
-        //     decided: todo!(),
-        // }
+        let specific_component = match proto_edge.specific_component {
+            None => panic!("No specific component found"),
+            Some(component) => component,
+        };
+
+        let edge = Edge {
+            id: proto_edge.id.to_string(),
+            source_location: todo!(),
+            target_location: todo!(),
+            sync_type: todo!(),
+            guard: todo!(),
+            update: todo!(),
+            sync: todo!(),
+            component_name: Some(specific_component.component_name)
+        };
+
+        Decision {
+            source: state,
+            decided: edge,
+        }
     }
 }
 
