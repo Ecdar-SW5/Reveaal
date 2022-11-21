@@ -152,51 +152,51 @@ fn proto_federation_to_owned_federation(
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        component::Edge,
-        tests::Simulation::helper::{
-            create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_system,
-            initial_transition_decision_point_EcdarUniversity_Machine,
-        },
-        Simulation::decision::Decision,
-    };
+    // use crate::{
+    //     component::Edge,
+    //     tests::Simulation::helper::{
+    //         create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_system,
+    //         initial_transition_decision_point_EcdarUniversity_Machine,
+    //     },
+    //     Simulation::decision::Decision,
+    // };
 
-    // TODO this test is badly formatted
-    #[test]
-    fn Decision_from__ProtoDecision__returns_correct_Decision() {
-        // Arrange
-        let proto_decision = create_EcdarUniversity_Machine_Decision();
+    // // TODO this test is badly formatted
+    // #[test]
+    // fn Decision_from__ProtoDecision__returns_correct_Decision() {
+    //     // Arrange
+    //     let proto_decision = create_EcdarUniversity_Machine_Decision();
 
-        let transition_decisions = initial_transition_decision_point_EcdarUniversity_Machine();
-        let possible_decisions: Vec<Edge> = transition_decisions
-            .possible_decisions()
-            .iter()
-            .flat_map(|t| Vec::<Edge>::from(t))
-            .collect();
+    //     let transition_decisions = initial_transition_decision_point_EcdarUniversity_Machine();
+    //     let possible_decisions: Vec<Edge> = transition_decisions
+    //         .possible_decisions()
+    //         .iter()
+    //         .flat_map(|t| Vec::<Edge>::from(t))
+    //         .collect();
 
-        let expected_decision = match possible_decisions.into_iter().next() {
-            None => panic!("No edges found"),
-            Some(edge) => edge,
-        };
+    //     let expected_decision = match possible_decisions.into_iter().next() {
+    //         None => panic!("No edges found"),
+    //         Some(edge) => edge,
+    //     };
 
-        let system = create_EcdarUniversity_Machine_system();
-        let actual_decision = Decision::from(proto_decision, &system);
+    //     let system = create_EcdarUniversity_Machine_system();
+    //     let actual_decision = Decision::from(proto_decision, &system);
 
-        let expected_source = match system.get_initial_state() {
-            None => panic!("No inital state found"),
-            Some(expected_source) => expected_source,
-        };
+    //     let expected_source = match system.get_initial_state() {
+    //         None => panic!("No inital state found"),
+    //         Some(expected_source) => expected_source,
+    //     };
 
-        let expected_decision = Decision {
-            source: expected_source,
-            decided: expected_decision,
-        };
+    //     let expected_decision = Decision {
+    //         source: expected_source,
+    //         decided: expected_decision,
+    //     };
 
-        // Act
-        let actual_decision = format!("{:?}", actual_decision);
-        let expected_decision = format!("{:?}", expected_decision);
+    //     // Act
+    //     let actual_decision = format!("{:?}", actual_decision);
+    //     let expected_decision = format!("{:?}", expected_decision);
 
-        // Assert
-        assert_eq!(actual_decision, expected_decision);
-    }
+    //     // Assert
+    //     assert_eq!(actual_decision, expected_decision);
+    // }
 }
