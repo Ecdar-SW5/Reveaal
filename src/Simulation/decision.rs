@@ -95,9 +95,7 @@ fn proto_constraint_to_constraint(
     };
 
     let ineq: RawInequality = RawInequality::from_inequality(&inequality);
-    let constraint = Constraint::new(i, j, ineq);
-
-    constraint
+    Constraint::new(i, j, ineq)
 }
 
 fn get_clock_index_from_name(name: &str, decls: &Vec<&Declarations>) -> ClockIndex {
@@ -145,9 +143,7 @@ fn proto_federation_to_owned_federation(
     }
 
     let disjunction: Disjunction = Disjunction::new(conjunctions);
-    let owned_federation = OwnedFederation::from_disjunction(&disjunction, system.get_dim());
-
-    owned_federation
+    OwnedFederation::from_disjunction(&disjunction, system.get_dim())
 }
 
 #[cfg(test)]

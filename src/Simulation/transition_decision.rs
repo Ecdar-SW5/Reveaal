@@ -22,7 +22,7 @@ impl TransitionDecision {
                 .concat()
                 .iter()
                 .map(|x| match x {
-                    TransitionID::Simple(x) => &x,
+                    TransitionID::Simple(x) => x,
                     _ => "",
                 })
                 .any(|x| x == edge_id)
@@ -36,8 +36,7 @@ impl TransitionDecision {
             .next_transitions_if_available(source.get_location(), action)
             .into_iter()
             .filter(|t| contains(t, edge_id))
-            .collect::<Vec<_>>()
-            .to_owned();
+            .collect::<Vec<_>>();
 
         let decided = match transitions.len() {
             // If no transitions are left we have nothing to step along... Something has gone wrong

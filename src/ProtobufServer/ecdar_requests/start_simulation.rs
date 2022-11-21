@@ -62,7 +62,7 @@ impl ProtoDecisionPoint {
         let edges = decision_point
             .possible_decisions()
             .iter()
-            .map(|e| ProtoEdge::from(e))
+            .map(ProtoEdge::from)
             .collect();
 
         ProtoDecisionPoint {
@@ -150,7 +150,7 @@ impl ProtoConjunction {
 #[allow(unused_must_use)]
 impl ProtoConstraint {
     fn from(constraint: &Constraint, system: &TransitionSystemPtr) -> Self {
-        fn invert<'a, T1, T2>(hash_map: &'a HashMap<T1, T2>) -> HashMap<&'a T2, &'a T1>
+        fn invert<T1, T2>(hash_map: &HashMap<T1, T2>) -> HashMap<&T2, &T1>
         where
             T2: Hash + Eq,
         {
