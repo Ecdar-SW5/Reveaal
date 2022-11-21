@@ -1,6 +1,6 @@
 use crate::ProtobufServer::ecdar_requests::helpers::*;
 use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
-
+use crate::tests::grpc::grpc_helper::*;
 use crate::DataReader::component_loader::ModelCache;
 use crate::ProtobufServer::services::{
     QueryRequest, QueryResponse, SimulationStartRequest, SimulationStepRequest,
@@ -100,7 +100,7 @@ impl EcdarBackend for ConcreteEcdarBackend {
     ) -> Result<Response<SimulationStepResponse>, Status> {
         //Return Decision point
         Ok(Response::new(SimulationStepResponse {
-            new_decision_point: Some(create_decision_point_from_L5()),
+            new_decision_point: Some(create_initial_decision_point()),
         }))
     }
 
@@ -122,7 +122,7 @@ impl EcdarBackend for ConcreteEcdarBackend {
         if id.to_string() == edge_one {
             new_decision_point = create_decision_point_from_L4();
         } else if id.to_string() == edge_two {
-            new_decision_point = create_decision_point_from_L5();
+            new_decision_point = create_initial_decision_point();
         } else {
             panic!("Given edge is not valid");
         }

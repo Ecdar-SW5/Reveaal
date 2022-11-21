@@ -100,16 +100,6 @@ pub fn create_edges_from_L4() -> Vec<Edge> {
     ]
 }
 
-pub fn create_decision_point_from_L5() -> DecisionPoint {
-    let source = create_1tuple_state_with_single_constraint("L5", "Machine", 0, "0", "y", 0, false);
-    let edges = create_edges_from_L5();
-    let new_decision_point: DecisionPoint = DecisionPoint {
-        source: Some(source),
-        edges,
-    };
-    new_decision_point
-}
-
 pub fn create_decision_point_from_L4() -> DecisionPoint {
     let source = create_1tuple_state_with_single_constraint("L4", "Machine", 0, "0", "y", 0, false);
     let edges = create_edges_from_L4();
