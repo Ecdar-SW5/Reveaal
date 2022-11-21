@@ -81,6 +81,25 @@ pub trait TransitionSystem: DynClone {
     fn get_children(&self) -> (&TransitionSystemPtr, &TransitionSystemPtr);
 
     fn get_composition_type(&self) -> CompositionType;
+
+    fn component_names(&self) -> Vec<&str> {
+        let children = self.get_children();
+        let left_child = children.0;
+        let right_child = children.1;
+        left_child
+            .component_names()
+            .into_iter()
+            .chain(right_child.component_names().into_iter())
+            .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn component_names__generic__returns_correct() {
+        assert!(false)
+    }
 }
 
 clone_trait_object!(TransitionSystem);

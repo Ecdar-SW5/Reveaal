@@ -16,7 +16,7 @@ type Action = String;
 
 #[derive(Clone)]
 struct ComponentInfo {
-    //name: String,
+    name: String,
     declarations: Declarations,
     max_bounds: Bounds,
 }
@@ -83,7 +83,7 @@ impl CompiledComponent {
             initial_location,
             dim,
             comp_info: ComponentInfo {
-                //name: component.name,
+                name: component.name,
                 declarations: component.declarations,
                 max_bounds,
             },
@@ -200,5 +200,9 @@ impl TransitionSystem for CompiledComponent {
 
     fn get_dim(&self) -> ClockIndex {
         self.dim
+    }
+
+    fn component_names(&self) -> Vec<&str> {
+        vec![&self.comp_info.name]
     }
 }
