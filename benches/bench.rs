@@ -1,5 +1,5 @@
-use std::intrinsics::black_box;
-use criterion::{criterion_group, criterion_main, Criterion};
+
+use criterion::{criterion_group, criterion_main, Criterion, black_box};
 use reveaal::tests::refinement::Helper::json_refinement_check;
 
 pub mod flamegraph;
@@ -60,14 +60,15 @@ fn not_refinement(c: &mut Criterion) {
 }
 
 fn clock_reduction(c: &mut Criterion){
-    c.bench_function("With Clock Reduction", |b| b.iter(|| with_clock_reduction(black_box(4))));
-    c.bench_function("Without Clock Reduction", |b| b.iter(|| without_clock_reduction(black_box(4))));
+    let count = 4;
+    c.bench_function("With Clock Reduction", |b| b.iter(|| with_clock_reduction(black_box(count))));
+    c.bench_function("Without Clock Reduction", |b| b.iter(|| without_clock_reduction(black_box(count))));
 }
 
 criterion_group! {
     name = benches;
     config = Criterion::default().with_profiler(FlamegraphProfiler::new(100));
-    targets = self_refinement, refinement, not_refinement,
+    targets = clock_reduction//self_refinement, refinement, not_refinement,
 }
 
 criterion_main!(benches);

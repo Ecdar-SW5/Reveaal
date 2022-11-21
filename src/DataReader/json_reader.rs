@@ -12,7 +12,6 @@ pub fn read_system_declarations(project_path: &str) -> Option<SystemDeclarations
         project_path,
         std::path::MAIN_SEPARATOR
     );
-
     if !Path::new(&sysdecl_path).exists() {
         return None;
     }
