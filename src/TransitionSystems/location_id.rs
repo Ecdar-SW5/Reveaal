@@ -36,6 +36,28 @@ impl LocationID {
         }
     }
 
+    /// Does an inorder walk of the `LocationID` tree mapping it to a list of `LocationID::Simple`
+    pub fn inorder_vec_tranform(&self) -> Vec<Self> {
+        match self {
+            LocationID::Composition(left, right)
+            | LocationID::Quotient(left, right)
+            | LocationID::Conjunction(left, right) => {
+                let mut left = left.inorder_vec_tranform();
+                let mut right = right.inorder_vec_tranform();
+                left.append(&mut right);
+                left
+            }
+            LocationID::Simple {
+                location_id,
+                component_id,
+            } => vec![LocationID::Simple {
+                location_id: location_id.to_string(),
+                component_id: component_id.as_ref().map(|x| x.to_string()),
+            }],
+            LocationID::AnyLocation() => vec![LocationID::AnyLocation()],
+        }
+    }
+
     /// This function is used when you want to compare a [`LocationID`] containing a partial location [`LocationID::AnyLocation`] with another [`LocationID`].
     /// [`LocationID::AnyLocation`] should always be true when compared to [`LocationID::Simple`]
     /// ```

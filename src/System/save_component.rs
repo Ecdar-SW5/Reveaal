@@ -43,7 +43,7 @@ pub fn combine_components(
     comp
 }
 
-fn get_locations_from_tuples(
+pub fn get_locations_from_tuples(
     location_tuples: &[LocationTuple],
     clock_map: &HashMap<String, ClockIndex>,
 ) -> Vec<Location> {
@@ -65,7 +65,7 @@ fn get_locations_from_tuples(
         .collect()
 }
 
-fn get_clock_map(sysrep: &TransitionSystemPtr) -> HashMap<String, ClockIndex> {
+pub fn get_clock_map(sysrep: &TransitionSystemPtr) -> HashMap<String, ClockIndex> {
     let mut clocks = HashMap::new();
     let decls = sysrep.get_decls();
 
@@ -190,6 +190,7 @@ fn collect_specific_edges_from_location(
                 guard,
                 update: transition.get_renamed_updates(clock_map),
                 sync: sync.clone(),
+                component_name: None,
             };
             edges.push(edge);
         }

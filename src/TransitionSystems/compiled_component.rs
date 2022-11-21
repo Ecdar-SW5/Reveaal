@@ -1,17 +1,25 @@
+use crate::ComponentLoader;
 use crate::ModelObjects::component::{
     Component, DeclarationProvider, Declarations, State, Transition,
 };
+use crate::System::local_consistency::{self, ConsistencyResult, DeterminismResult};
+use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 use log::warn;
-
-use crate::System::local_consistency::{self, ConsistencyResult, DeterminismResult};
-use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
 
 use super::transition_system::PrecheckResult;
 use super::{CompositionType, LocationID};
+
+use crate::DataReader::parse_queries::Rule;
+use crate::{
+    extract_system_rep::get_system_recipe,
+    parse_queries::{build_expression_from_pair, QueryParser},
+    DataReader::component_loader::ComponentContainer,
+};
+use pest::Parser;
 
 type Action = String;
 
@@ -104,6 +112,26 @@ impl CompiledComponent {
             .collect();
 
         Self::compile_with_actions(component, inputs, outputs, dim)
+    }
+
+    pub fn from(components: Vec<Component>, composition: &str) -> TransitionSystemPtr {
+        let mut component_container = ComponentContainer::create_component_container(components);
+        Self::from_component_loader(&mut component_container, composition)
+    }
+
+    pub fn from_component_loader(
+        loader: &mut dyn ComponentLoader,
+        composition: &str,
+    ) -> TransitionSystemPtr {
+        let mut dimension = 0;
+        let composition = QueryParser::parse(Rule::expr, composition)
+            .unwrap()
+            .next()
+            .unwrap();
+        let composition = build_expression_from_pair(composition);
+        get_system_recipe(&composition, loader, &mut dimension, &mut None)
+            .compile(dimension)
+            .unwrap()
     }
 }
 

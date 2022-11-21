@@ -39,6 +39,8 @@ edbm = { git = "https://github.com/Ecdar/EDBM" }
 log = "0.4.17"
 env_logger = { version = "0.9.0", optional = true }
 chrono = { version = "0.4.22", optional = true }
+test-case = "2.2.2"
+mockall = "0.11.3"
 crossbeam-channel = "0.5.6"
 num_cpus = "1.13.1"
 lru = "0.8.1"
@@ -59,6 +61,10 @@ pprof = { version = "0.10.1", features = ["flamegraph"] }
 
 [[bench]]
 name = "bench"
+harness = false
+
+[[bench]]
+name = "reachability_bench"
 harness = false
 
 [[bench]]

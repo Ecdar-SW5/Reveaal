@@ -18,7 +18,6 @@ use log::info;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
-
 /// The basic struct used to represent components read from either Json or xml
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(into = "DummyComponent")]
@@ -890,6 +889,8 @@ pub struct Edge {
     pub update: Option<Vec<parse_edge::Update>>,
     #[serde(deserialize_with = "decode_sync")]
     pub sync: String,
+    #[serde(skip)] // TODO: DO NOT SKIP
+    pub component_name: Option<String>,
 }
 
 const TRUE: BoolExpression = BoolExpression::Bool(true);

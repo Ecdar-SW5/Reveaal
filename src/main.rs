@@ -18,7 +18,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     setup_logger().unwrap();
 
     if let Some(ip_endpoint) = matches.value_of("endpoint") {
-        start_grpc_server_with_tokio(ip_endpoint)?;
+        let thread_count: usize = match matches.value_of("thread_number") {
+            Some(num_of_threads) => num_of_threads
+                .parse()
+                .expect("Could not parse the input for the number of threads"),
+            None => num_cpus::get(),
+        };
+        let cache_count: usize = matches
+            .value_of("cache_size")
+            .unwrap()
+            .parse()
+            .expect("Could not parse input for the cache_size");
+
+        start_grpc_server_with_tokio(ip_endpoint, cache_count, thread_count)?;
     } else {
         start_using_cli(&matches);
     }

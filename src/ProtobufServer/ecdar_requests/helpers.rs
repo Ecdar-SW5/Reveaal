@@ -1,6 +1,11 @@
 use crate::ProtobufServer::services::{
     self, DecisionPoint, Edge, Location, LocationTuple, SpecificComponent, State,
 };
+use crate::{
+    DataReader::component_loader::ComponentContainer,
+    ProtobufServer::services::SimulationInfo,
+    TransitionSystems::{CompiledComponent, TransitionSystem},
+};
 
 pub fn create_1tuple_state_with_single_constraint(
     id: &str,
@@ -113,4 +118,18 @@ pub fn create_decision_point_from_L4() -> DecisionPoint {
         edges,
     };
     new_decision_point
+}
+
+
+pub fn simulation_info_to_transition_system(
+    simulation_info: SimulationInfo,
+) -> Box<dyn TransitionSystem> {
+    let composition = simulation_info.component_composition;
+    let component_info = simulation_info.components_info.unwrap();
+    // Extract components from the request message
+
+    let mut component_container = ComponentContainer::from(&component_info).unwrap();
+
+    // Build transition_system as specified in the composition string
+    CompiledComponent::from_component_loader(&mut component_container, &composition)
 }

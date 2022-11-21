@@ -5,6 +5,9 @@ use crate::{
     ModelObjects::component::{Declarations, Location, LocationType},
 };
 
+use crate::ProtobufServer::services::LocationTuple as ProtoLocationTuple;
+use crate::TransitionSystems::TransitionSystemPtr;
+
 use super::LocationID;
 
 #[derive(Debug, Clone, std::cmp::PartialEq, Eq, Hash, Copy)]
@@ -54,6 +57,34 @@ impl LocationTuple {
             right: None,
         }
     }
+
+    pub fn from_proto_location_tuple(
+        location_tuple: &ProtoLocationTuple,
+        system: &TransitionSystemPtr,
+    ) -> Option<Self> {
+        let id_looking_for: Vec<LocationID> = location_tuple
+            .locations
+            .iter()
+            .map(|l| LocationID::Simple {
+                location_id: l.id.to_string(),
+                component_id: l
+                    .specific_component
+                    .as_ref()
+                    .map(|c| c.component_name.to_string()),
+            })
+            .collect();
+
+        system
+            .get_all_locations()
+            .into_iter()
+            .map(|tuple| (tuple.id.clone(), tuple))
+            .map(|(id, tuple)| (id.inorder_vec_tranform(), tuple))
+            .filter(|(id, _)| id.iter().eq(id_looking_for.iter()))
+            .collect::<Vec<_>>()
+            .first()
+            .map(|(_, tuple)| tuple.to_owned())
+    }
+
     /// This method is used to a create partial [`LocationTuple`].
     /// A partial [`LocationTuple`] means it has a [`LocationID`] that consists of atleast one [`LocationID::AnyLocation`].
     /// A partial [`LocationTuple`] has `None` in these fields: `invariant`, `left` and `right` since a partial [`LocationTuple`]

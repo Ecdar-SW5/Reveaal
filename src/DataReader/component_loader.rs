@@ -1,11 +1,13 @@
 use lru::LruCache;
 
 use crate::component::Component;
+use crate::xml_parser;
 use crate::DataReader::json_reader;
 use crate::DataReader::json_writer::component_to_json_file;
 use crate::DataReader::xml_parser::parse_xml_from_file;
 use crate::ModelObjects::queries::Query;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
+use crate::ProtobufServer::services;
 use crate::ProtobufServer::services::query_request::Settings;
 use crate::System::input_enabler;
 use std::collections::HashMap;
@@ -37,6 +39,19 @@ impl Default for ModelCache {
 }
 
 impl ModelCache {
+    /// A Method that creates a new cache with a given size limit.
+    ///
+    /// # Arguments
+    ///
+    /// * `cache_size` - A number representing the number of users that can be cached simultaneusly.
+    pub fn new(cache_size: usize) -> Self {
+        Self {
+            cache: Arc::new(Mutex::new(LruCache::<i32, ComponentTuple>::new(
+                NonZeroUsize::new(cache_size).unwrap(),
+            ))),
+        }
+    }
+
     /// A Method that returns the model from the cache.
     ///
     /// # Arguments
@@ -119,6 +134,65 @@ impl ComponentContainer {
         }
     }
 
+    pub fn from(
+        components_info: &services::ComponentsInfo,
+    ) -> Result<ComponentContainer, tonic::Status> {
+        let proto_components = &components_info.components;
+
+        let components = proto_components
+            .iter()
+            .flat_map(Self::parse_components_if_some)
+            .flatten()
+            .collect();
+
+        let component_container = Self::create_component_container(components);
+
+        Ok(component_container)
+    }
+
+    fn parse_components_if_some(
+        proto_component: &services::Component,
+    ) -> Result<Vec<Component>, tonic::Status> {
+        if let Some(rep) = &proto_component.rep {
+            match rep {
+                services::component::Rep::Json(json) => Self::parse_json_component(json),
+                services::component::Rep::Xml(xml) => Ok(Self::parse_xml_components(xml)),
+            }
+        } else {
+            Ok(vec![])
+        }
+    }
+
+    fn parse_json_component(json: &str) -> Result<Vec<Component>, tonic::Status> {
+        match json_reader::json_to_component(json) {
+            Ok(comp) => Ok(vec![comp]),
+            Err(_) => Err(tonic::Status::invalid_argument(
+                "Failed to parse json component",
+            )),
+        }
+    }
+
+    fn parse_xml_components(xml: &str) -> Vec<Component> {
+        let (comps, _, _) = xml_parser::parse_xml_from_str(xml);
+        comps
+    }
+
+    pub fn create_component_container(components: Vec<Component>) -> ComponentContainer {
+        let mut comp_hashmap = HashMap::<String, Component>::new();
+        for mut component in components {
+            log::trace!("Adding comp {} to container", component.get_name());
+
+            component.create_edge_io_split();
+            let inputs: Vec<_> = component
+                .get_input_actions()
+                .into_iter()
+                .map(|channel| channel.name)
+                .collect();
+            input_enabler::make_input_enabled(&mut component, &inputs);
+            comp_hashmap.insert(component.get_name().to_string(), component);
+        }
+        ComponentContainer::new(Arc::new(comp_hashmap))
+    }
     /// Sets the settings
     pub(crate) fn set_settings(&mut self, settings: Settings) {
         self.settings = Some(settings);

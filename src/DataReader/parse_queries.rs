@@ -109,7 +109,7 @@ pub fn build_query_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpressi
     }
 }
 
-fn build_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
+pub fn build_expression_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {
     match pair.as_rule() {
         Rule::term => build_term_from_pair(pair),
         Rule::parenthesizedExp => {
