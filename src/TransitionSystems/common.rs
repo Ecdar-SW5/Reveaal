@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use dyn_clone::{clone_trait_object, DynClone};
 use edbm::{
@@ -152,5 +152,17 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
 
     fn get_composition_type(&self) -> CompositionType {
         self.get_composition_type()
+    }
+
+    fn get_combined_decls(&self) -> Declarations {
+        let (left, right) = self.get_children();
+        let mut clocks = HashMap::new();
+        let mut ints = HashMap::new();
+        for decl in [left.get_combined_decls(), right.get_combined_decls()] {
+            clocks.extend(decl.clocks);
+            ints.extend(decl.ints)
+        }
+
+        Declarations { ints, clocks }
     }
 }

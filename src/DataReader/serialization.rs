@@ -354,6 +354,7 @@ where
         LocationType::Initial => serializer.serialize_str("INITIAL"),
         LocationType::Universal => serializer.serialize_str("UNIVERSAL"),
         LocationType::Inconsistent => serializer.serialize_str("INCONSISTENT"),
+        _ => unreachable!(),
     }
 }
 

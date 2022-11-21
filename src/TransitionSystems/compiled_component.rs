@@ -201,4 +201,8 @@ impl TransitionSystem for CompiledComponent {
     fn get_dim(&self) -> ClockIndex {
         self.dim
     }
+
+    fn get_combined_decls(&self) -> Declarations {
+        self.comp_info.declarations.clone()
+    }
 }

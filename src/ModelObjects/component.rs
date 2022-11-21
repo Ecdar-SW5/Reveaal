@@ -611,6 +611,7 @@ pub enum LocationType {
     Initial,
     Universal,
     Inconsistent,
+    Any,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]

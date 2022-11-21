@@ -70,6 +70,8 @@ pub trait TransitionSystem: DynClone {
 
     fn get_decls(&self) -> Vec<&Declarations>;
 
+    fn get_combined_decls(&self) -> Declarations;
+
     fn precheck_sys_rep(&self) -> PrecheckResult;
 
     fn is_deterministic(&self) -> DeterminismResult;

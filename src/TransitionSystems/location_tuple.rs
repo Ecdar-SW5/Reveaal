@@ -62,7 +62,17 @@ impl LocationTuple {
         LocationTuple {
             id,
             invariant: None,
-            loc_type: crate::component::LocationType::Normal,
+            loc_type: LocationType::Normal,
+            left: None,
+            right: None,
+        }
+    }
+
+    pub fn build_any_location_tuple() -> Self {
+        LocationTuple {
+            id: LocationID::AnyLocation(),
+            invariant: None,
+            loc_type: LocationType::Any,
             left: None,
             right: None,
         }
@@ -172,5 +182,63 @@ impl LocationTuple {
 
     pub fn is_inconsistent(&self) -> bool {
         self.loc_type == LocationType::Inconsistent
+    }
+
+    pub fn compare_partial_locations(&self, other: &LocationTuple) -> bool {
+        match (&self.id, &other.id) {
+            (LocationID::Composition(..), LocationID::Composition(..))
+            | (LocationID::Conjunction(..), LocationID::Conjunction(..))
+            | (LocationID::Quotient(..), LocationID::Quotient(..)) => {
+                self.get_left().compare_partial_locations(other.get_left())
+                    && self
+                        .get_right()
+                        .compare_partial_locations(other.get_right())
+            }
+            (LocationID::AnyLocation(), LocationID::Simple { .. })
+            | (LocationID::Simple { .. }, LocationID::AnyLocation())
+            | (LocationID::AnyLocation(), LocationID::AnyLocation()) => true,
+            (
+                LocationID::Simple {
+                    location_id: location_id_1,
+                    component_id: component_id_1,
+                },
+                LocationID::Simple {
+                    location_id: location_id_2,
+                    component_id: component_id_2,
+                },
+            ) => location_id_1 == location_id_2 && component_id_1 == component_id_2,
+            (LocationID::Simple { .. }, LocationID::Composition(..))
+            | (LocationID::Simple { .. }, LocationID::Conjunction(..))
+            | (LocationID::Simple { .. }, LocationID::Quotient(..)) => {
+                LocationTuple::handle_universal_inconsistent_compare(self, other)
+            }
+            (LocationID::Composition(..), LocationID::Simple { .. })
+            | (LocationID::Conjunction(..), LocationID::Simple { .. })
+            | (LocationID::Quotient(..), LocationID::Simple { .. }) => {
+                LocationTuple::handle_universal_inconsistent_compare(other, self)
+            }
+            (_, _) => false,
+        }
+    }
+    fn handle_universal_inconsistent_compare(
+        simple: &LocationTuple,
+        operation: &LocationTuple,
+    ) -> bool {
+        if !(simple.is_universal() || simple.is_inconsistent()) {
+            return false;
+        }
+        operation.valid(&simple.loc_type)
+    }
+
+    fn valid(&self, loc_type: &LocationType) -> bool {
+        match self.id {
+            LocationID::Conjunction(..)
+            | LocationID::Composition(..)
+            | LocationID::Quotient(..) => {
+                self.get_left().valid(loc_type) && self.get_right().valid(loc_type)
+            }
+            LocationID::Simple { .. } => self.loc_type == *loc_type,
+            LocationID::AnyLocation() => true,
+        }
     }
 }

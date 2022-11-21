@@ -28,7 +28,9 @@ fn is_trivially_unreachable(start_state: &State, end_state: &State) -> bool {
     if matches!(
         start_state.decorated_locations.loc_type,
         LocationType::Universal | LocationType::Inconsistent
-    ) && start_state.decorated_locations != end_state.decorated_locations
+    ) && !start_state
+        .decorated_locations
+        .compare_partial_locations(&end_state.decorated_locations)
     {
         return true;
     }
@@ -137,8 +139,7 @@ fn search_algorithm(start_state: &State, end_state: &State, system: &dyn Transit
 fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
     cur_state
         .get_location()
-        .id
-        .compare_partial_locations(&end_state.get_location().id)
+        .compare_partial_locations(end_state.get_location())
         && cur_state.zone_ref().has_intersection(end_state.zone_ref())
 }
 
