@@ -110,7 +110,6 @@ pub fn create_decision_point_from_L4() -> DecisionPoint {
     new_decision_point
 }
 
-
 pub fn simulation_info_to_transition_system(
     simulation_info: SimulationInfo,
 ) -> Box<dyn TransitionSystem> {
