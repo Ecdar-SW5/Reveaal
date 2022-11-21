@@ -12,11 +12,11 @@ static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
 pub fn create_edges_from_L5() -> Vec<Edge> {
     vec![
         Edge {
-            id: "E3".to_string(),
+            id: "E27".to_string(),
             specific_component: None,
         },
         Edge {
-            id: "E5".to_string(),
+            id: "E29".to_string(),
             specific_component: None,
         },
     ]
