@@ -1,0 +1,4 @@
+{
+    "name": "System Declarations",
+    "declarations": "system NonDeterministic1, NonDeterministic2, NonConsistent, CorrectComponent;\n"
+  }
