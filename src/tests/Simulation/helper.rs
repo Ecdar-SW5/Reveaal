@@ -2,14 +2,17 @@ use tonic::{Response, Status};
 
 use crate::{
     DataReader::json_reader::read_json_component,
+    ProtobufServer::services::SimulationStepResponse,
     Simulation::transition_decision_point::TransitionDecisionPoint,
-    TransitionSystems::{CompiledComponent, TransitionSystemPtr}, ProtobufServer::services::SimulationStepResponse,
+    TransitionSystems::{CompiledComponent, TransitionSystemPtr},
 };
 
 use crate::ProtobufServer::services::ComponentClock as ProtoComponentClock;
+use crate::ProtobufServer::services::ComponentClock;
 use crate::ProtobufServer::services::Conjunction as ProtoConjunction;
 use crate::ProtobufServer::services::Constraint as ProtoConstraint;
 use crate::ProtobufServer::services::Decision as ProtoDecision;
+use crate::ProtobufServer::services::DecisionPoint as ProtoDecisionPoint;
 use crate::ProtobufServer::services::Disjunction as ProtoDisjunction;
 use crate::ProtobufServer::services::Edge as ProtoEdge;
 use crate::ProtobufServer::services::Federation as ProtoFederation;
@@ -17,8 +20,6 @@ use crate::ProtobufServer::services::Location as ProtoLocation;
 use crate::ProtobufServer::services::LocationTuple as ProtoLocationTuple;
 use crate::ProtobufServer::services::SpecificComponent as ProtoSpecificComponent;
 use crate::ProtobufServer::services::State as ProtoState;
-use crate::ProtobufServer::services::DecisionPoint as ProtoDecisionPoint;
-use crate::ProtobufServer::services::ComponentClock;
 
 pub fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
     create_system_from_path("samples/json/EcdarUniversity", "Machine")
@@ -76,7 +77,6 @@ pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {
         c: -2,
     };
 
-
     let conjunction_dp = ProtoConjunction {
         constraints: vec![constraint26_dp],
     };
@@ -124,10 +124,8 @@ pub fn initial_transition_decision_point_EcdarUniversity_Machine() -> Transition
     TransitionDecisionPoint::initial(&system).unwrap()
 }
 
-
-pub fn get_composition_response_Administration_Machine_Researcher() ->
-    Result<Response<SimulationStepResponse>, Status>
-    {
+pub fn get_composition_response_Administration_Machine_Researcher(
+) -> Result<Response<SimulationStepResponse>, Status> {
     let proto_decision_point = ProtoDecisionPoint {
         source: Some(ProtoState {
             location_tuple: Some(ProtoLocationTuple {
@@ -220,7 +218,7 @@ pub fn get_composition_response_Administration_Machine_Researcher() ->
         }),
         edges: vec![
             ProtoEdge {
-                id: "E10".to_string(),
+                id: "E29".to_string(),
                 specific_component: None,
             },
             ProtoEdge {
@@ -229,14 +227,6 @@ pub fn get_composition_response_Administration_Machine_Researcher() ->
             },
             ProtoEdge {
                 id: "E16".to_string(),
-                specific_component: None,
-            },
-            ProtoEdge {
-                id: "E27".to_string(),
-                specific_component: None,
-            },
-            ProtoEdge {
-                id: "E29".to_string(),
                 specific_component: None,
             },
             ProtoEdge {
@@ -251,5 +241,4 @@ pub fn get_composition_response_Administration_Machine_Researcher() ->
     };
 
     return Ok(Response::new(response));
-
 }

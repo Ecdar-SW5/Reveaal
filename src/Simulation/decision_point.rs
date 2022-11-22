@@ -1,5 +1,7 @@
+use itertools::Itertools;
+
 use super::transition_decision_point::TransitionDecisionPoint;
-use crate::component::State;
+use crate::{component::State, TransitionSystems::TransitionID};
 
 #[derive(Clone, Debug)]
 pub struct DecisionPoint {
@@ -30,11 +32,12 @@ impl From<&TransitionDecisionPoint> for DecisionPoint {
             .possible_decisions()
             .iter()
             .flat_map(|transition| transition.id.get_leaves().concat())
-            .map(|transition_id| match transition_id {
-                crate::TransitionSystems::TransitionID::Simple(v) => v,
-                crate::TransitionSystems::TransitionID::None => "".to_string(),
+            .filter_map(|transition_id| match transition_id {
+                TransitionID::Simple(v) => Some(v),
+                TransitionID::None => None,
                 _ => panic!("transition_id should not be other than Simple(_) and None"),
             })
+            .unique()
             .collect();
 
         DecisionPoint {

@@ -44,6 +44,7 @@ mockall = "0.11.3"
 crossbeam-channel = "0.5.6"
 num_cpus = "1.13.1"
 lru = "0.8.1"
+itertools = "0.10.5"
 
 # Enable optimizations for EDBM in debug mode, but not for our code:
 [profile.dev.package.edbm]

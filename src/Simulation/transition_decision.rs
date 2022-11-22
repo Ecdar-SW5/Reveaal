@@ -21,9 +21,9 @@ impl TransitionDecision {
                 .get_leaves()
                 .concat()
                 .iter()
-                .map(|x| match x {
-                    TransitionID::Simple(x) => x,
-                    _ => "",
+                .filter_map(|x| match x {
+                    TransitionID::Simple(x) => Some(x),
+                    _ => None,
                 })
                 .any(|x| x == edge_id)
         }
