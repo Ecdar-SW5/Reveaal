@@ -20,6 +20,22 @@ pub fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
     create_system_from_path("samples/json/EcdarUniversity", "Machine")
 }
 
+pub fn create_EcdarUniversity_HalfAdm1_system() -> TransitionSystemPtr {
+    create_system_from_path("samples/json/EcdarUniversity", "HalfAdm1")
+}
+
+pub fn create_EcdarUniversity_HalfAdm2_system() -> TransitionSystemPtr {
+    create_system_from_path("samples/json/EcdarUniversity", "HalfAdm2")
+}
+
+pub fn create_EcdarUniversity_Administration_system() -> TransitionSystemPtr {
+    create_system_from_path("samples/json/EcdarUniversity", "Administration")
+}
+
+pub fn create_EcdarUniversity_Researcher_system() -> TransitionSystemPtr {
+    create_system_from_path("samples/json/EcdarUniversity", "Researcher")
+}
+
 pub fn create_system_from_path(path: &str, name: &str) -> TransitionSystemPtr {
     let component = read_json_component(path, name);
     CompiledComponent::from(vec![component], name)

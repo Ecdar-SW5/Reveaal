@@ -106,6 +106,14 @@ pub fn create_sample_json_component() -> String {
     fs::read_to_string(format!("{}/Components/Machine.json", ECDAR_UNI)).unwrap()
 }
 
+pub fn convert_json_component_to_string(path: String) -> String {
+    let component = fs::read_to_string(path);
+    match component {
+        Ok(component) => component,
+        Err(_) => panic!("Could not read component"),
+    }
+}
+
 // Create the decision point drawn below:
 //
 //           -----coin? E3----->
