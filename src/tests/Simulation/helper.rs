@@ -42,22 +42,23 @@ pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {
 
     let componentclock_dp1 = ProtoComponentClock {
         specific_component: Some(specific_comp_dp.clone()),
-        clock_name: "5".to_string(),
+        clock_name: "0".to_string(),
     };
     let componentclock_dp2 = ProtoComponentClock {
         specific_component: Some(specific_comp_dp.clone()),
-        clock_name: "6".to_string(),
+        clock_name: "y".to_string(),
     };
 
-    let constraint_dp = ProtoConstraint {
+    let constraint26_dp = ProtoConstraint {
         x: Some(componentclock_dp1),
         y: Some(componentclock_dp2),
         strict: false,
-        c: 1,
+        c: -2,
     };
 
+
     let conjunction_dp = ProtoConjunction {
-        constraints: vec![constraint_dp],
+        constraints: vec![constraint26_dp],
     };
 
     let disjunction_dp = ProtoDisjunction {
@@ -87,14 +88,14 @@ pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {
         federation: Some(federation_dp),
     };
 
-    let edge = ProtoEdge {
-        id: "E3".to_string(),
+    let edge29 = ProtoEdge {
+        id: "E29".to_string(),
         specific_component: Some(specific_comp_dp),
     };
 
     ProtoDecision {
         source: Some(source_dp),
-        edge: Some(edge),
+        edge: Some(edge29),
     }
 }
 

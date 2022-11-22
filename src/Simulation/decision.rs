@@ -41,7 +41,8 @@ impl Decision {
         edges
             .iter()
             .filter(|e| e.id == protoedge.id)
-            .collect::<Vec<&Edge>>();
+            .nth(0)
+            .unwrap();
 
         let edge = match edges.first() {
             Some(edge) => edge.to_owned(),
@@ -51,6 +52,7 @@ impl Decision {
         edge
     }
 
+    // TODO: This needs to be rewritten, as it most 
     pub fn from(proto_decision: ProtoDecision, system: &TransitionSystemPtr) -> Self {
         // Convert ProtoState to State
         let proto_state: ProtoState = match proto_decision.source {
@@ -67,6 +69,7 @@ impl Decision {
             None => panic!("No loc tuple"),
             Some(loc_tuple) => loc_tuple,
         };
+
 
         let proto_federation: ProtoFederation = match proto_state.federation {
             None => panic!("No federation found"),
@@ -96,6 +99,8 @@ fn proto_constraint_to_constraint(
     proto_constraint: ProtoConstraint,
     system: &TransitionSystemPtr,
 ) -> Constraint {
+
+
     let decls: Vec<&Declarations> = system.get_decls();
 
     let x_clock_name = match proto_constraint.x {
@@ -115,21 +120,26 @@ fn proto_constraint_to_constraint(
         false => Inequality::LE(proto_constraint.c),
     };
 
+    
+
     let ineq: RawInequality = RawInequality::from_inequality(&inequality);
     Constraint::new(i, j, ineq)
 }
 
 fn get_clock_index_from_name(name: &str, decls: &Vec<&Declarations>) -> ClockIndex {
-    for dec in decls {
-        match dec.get_clock_index_by_name(name) {
-            None => continue,
-            Some(clock) => return *clock,
-        };
+    if name == "0" { return 0 }
+    else {
+        for dec in decls {
+            match dec.get_clock_index_by_name(name) {
+                None => continue,
+                Some(clock) => return *clock,
+            };
+        }
     }
-
     panic!("Clock not found");
 }
-
+// BLOCKED!! :tf:
+// TODO: This needs to be rewritten, as it most likely is not working corectly.
 fn proto_federation_to_owned_federation(
     proto_federation: ProtoFederation,
     system: &TransitionSystemPtr,
@@ -146,7 +156,7 @@ fn proto_federation_to_owned_federation(
         .collect();
 
     let mut constraints: Vec<Vec<Constraint>> = Vec::new();
-
+    // This does not work for some reason lol.
     for vec_proto_constraint in proto_constraints {
         let mut constraint_vec: Vec<Constraint> = Vec::new();
         for proto_constraint in vec_proto_constraint {
@@ -170,30 +180,29 @@ fn proto_federation_to_owned_federation(
 #[cfg(test)]
 mod tests {
     use crate::{
-        component::Edge,
         tests::Simulation::helper::{
             create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_system,
         },
-        Simulation::decision::Decision,
+        Simulation::decision::Decision, DataReader::json_reader::read_json_component,
     };
 
     // TODO this test is badly formatted
-    #[ignore]
     #[test]
     fn Decision_from__ProtoDecision__returns_correct_Decision() {
         // Arrange
+        let project_path = "samples/json/EcdarUniversity";
         let proto_decision = create_EcdarUniversity_Machine_Decision();
-
         let system = create_EcdarUniversity_Machine_system();
+        let component = read_json_component(project_path, "Machine");
 
-        let proto_edge = match proto_decision.clone().edge {
-            None => panic!("No edge found"),
-            Some(edge) => edge,
-        };
 
-        let actual_decision = Decision::from(proto_decision, &system);
-
-        let expected_edge = Decision::convert_protoedge_to_edge(proto_edge, &system);
+        let expected_edge = component
+            .get_edges()
+            .iter()
+            // .filter_map(|e| );
+            .filter(|e| e.id.contains("E29"))
+            .nth(0)
+            .unwrap();
 
         let expected_source = match system.get_initial_state() {
             None => panic!("No inital state found"),
@@ -202,10 +211,12 @@ mod tests {
 
         let expected_decision = Decision {
             source: expected_source,
-            decided: expected_edge,
+            decided: expected_edge.to_owned(),
         };
 
         // Act
+        let actual_decision = Decision::from(proto_decision, &system);
+
         let actual_decision = format!("{:?}", actual_decision);
         let expected_decision = format!("{:?}", expected_decision);
 
