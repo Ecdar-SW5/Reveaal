@@ -240,7 +240,7 @@ mod tests {
         },
         DataReader::json_reader::read_json_component,
         ProtobufServer::services::DecisionPoint as ProtoDecisionPoint,
-        Simulation::decision_point::{self, DecisionPoint},
+        Simulation::decision_point::DecisionPoint,
         TransitionSystems::CompiledComponent,
     };
 
