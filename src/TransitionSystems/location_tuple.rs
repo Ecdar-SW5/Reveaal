@@ -210,32 +210,26 @@ impl LocationTuple {
             (LocationID::Simple { .. }, LocationID::Composition(..))
             | (LocationID::Simple { .. }, LocationID::Conjunction(..))
             | (LocationID::Simple { .. }, LocationID::Quotient(..)) => {
-                LocationTuple::handle_universal_inconsistent_compare(self, other)
+                self.handle_universal_inconsistent_compare(other)
             }
             (LocationID::Composition(..), LocationID::Simple { .. })
             | (LocationID::Conjunction(..), LocationID::Simple { .. })
             | (LocationID::Quotient(..), LocationID::Simple { .. }) => {
-                LocationTuple::handle_universal_inconsistent_compare(other, self)
+                other.handle_universal_inconsistent_compare(self)
             }
             (_, _) => false,
         }
     }
-    fn handle_universal_inconsistent_compare(
-        simple: &LocationTuple,
-        operation: &LocationTuple,
-    ) -> bool {
-        if !(simple.is_universal() || simple.is_inconsistent()) {
-            return false;
-        }
-        operation.valid(&simple.loc_type)
+    fn handle_universal_inconsistent_compare(&self, other: &LocationTuple) -> bool {
+        (self.is_universal() || self.is_inconsistent()) && other.is_universal_or_inconsistent(&self.loc_type)
     }
 
-    fn valid(&self, loc_type: &LocationType) -> bool {
+    fn is_universal_or_inconsistent(&self, loc_type: &LocationType) -> bool {
         match self.id {
             LocationID::Conjunction(..)
             | LocationID::Composition(..)
             | LocationID::Quotient(..) => {
-                self.get_left().valid(loc_type) && self.get_right().valid(loc_type)
+                self.get_left().is_universal_or_inconsistent(loc_type) && self.get_right().is_universal_or_inconsistent(loc_type)
             }
             LocationID::Simple { .. } => self.loc_type == *loc_type,
             LocationID::AnyLocation() => true,

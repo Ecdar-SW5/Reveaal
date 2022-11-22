@@ -39,7 +39,7 @@ pub fn get_state(
             &system.get_dim(),
         )?;
 
-        let zone = placeholder(clock, &declarations, system)?;
+        let zone = create_zone_given_constraints(clock.as_deref(), &declarations, system)?;
 
         Ok(State::create(locationtuple, zone))
     } else {
@@ -47,44 +47,23 @@ pub fn get_state(
     }
 }
 
-fn placeholder(
-    clock: &Option<Box<BoolExpression>>,
-    declarations: &Declarations,
+fn create_zone_given_constraints(
+    constraints: Option<&BoolExpression>,
+    decls: &Declarations,
     system: &TransitionSystemPtr,
 ) -> Result<OwnedFederation, String> {
-    // clock
-    //     .map_or_else(
-    //         || Ok(OwnedFederation::universe(system.get_dim())),
-    //         |clock_constraints| {
-    //             apply_constraints_to_state(
-    //                 &clock_constraints,
-    //                 declarations,
-    //                 OwnedFederation::universe(system.get_dim()),
-    //             )
-    //         },
-    //     ).or_else(|wrong_clock| {
-    //         Err(format!(
-    //             "Clock {} does not exist in the transition system",
-    //             wrong_clock
-    //         ))
-    //     })
-    if let Some(clock_constraints) = clock {
-        match apply_constraints_to_state(
-            clock_constraints,
-            declarations,
-            OwnedFederation::universe(system.get_dim()),
-        ) {
-            Ok(zone) => Ok(zone),
-            Err(wrong_clock) => {
-                return Err(format!(
-                    "Clock {} does not exist in the transition system",
-                    wrong_clock
-                ))
-            }
-        }
-    } else {
-        Ok(OwnedFederation::universe(system.get_dim()))
-    }
+    constraints
+        .map_or_else(
+            || Ok(OwnedFederation::universe(system.get_dim())),
+            |clock| {
+                apply_constraints_to_state(
+                    clock,
+                    decls,
+                    OwnedFederation::universe(system.get_dim()),
+                )
+            },
+        )
+        .map_err(|clock| format!("Clock {} does not exist in the transition system", clock))
 }
 
 fn build_location_tuple(
