@@ -37,6 +37,7 @@ fn is_trivially_unreachable(start_state: &State, end_state: &State) -> bool {
 
     false
 }
+
 ///# Find path
 ///
 /// Returns a path from a start state to an end state in a transition system.

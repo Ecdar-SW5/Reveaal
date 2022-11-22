@@ -184,6 +184,7 @@ impl LocationTuple {
         self.loc_type == LocationType::Inconsistent
     }
 
+    /// This function is used when you want to compare a [`LocationTuple`] containing a partial location with another [`LocationTuple`].
     pub fn compare_partial_locations(&self, other: &LocationTuple) -> bool {
         match (&self.id, &other.id) {
             (LocationID::Composition(..), LocationID::Composition(..))
@@ -199,14 +200,15 @@ impl LocationTuple {
             | (LocationID::AnyLocation(), LocationID::AnyLocation()) => true,
             (
                 LocationID::Simple {
-                    location_id: location_id_1,
-                    component_id: component_id_1,
+                    location_id: loc_id_1,
+                    component_id: comp_id_1,
                 },
                 LocationID::Simple {
-                    location_id: location_id_2,
-                    component_id: component_id_2,
+                    location_id: loc_id_2,
+                    component_id: comp_id_2,
                 },
-            ) => location_id_1 == location_id_2 && component_id_1 == component_id_2,
+            ) => loc_id_1 == loc_id_2 && comp_id_1 == comp_id_2,
+            // These six arms below are for comparing universal or inconsistent location with partial location.
             (LocationID::Simple { .. }, LocationID::Composition(..))
             | (LocationID::Simple { .. }, LocationID::Conjunction(..))
             | (LocationID::Simple { .. }, LocationID::Quotient(..)) => {
@@ -220,8 +222,10 @@ impl LocationTuple {
             (_, _) => false,
         }
     }
+
     fn handle_universal_inconsistent_compare(&self, other: &LocationTuple) -> bool {
-        (self.is_universal() || self.is_inconsistent()) && other.is_universal_or_inconsistent(&self.loc_type)
+        (self.is_universal() || self.is_inconsistent())
+            && other.is_universal_or_inconsistent(&self.loc_type)
     }
 
     fn is_universal_or_inconsistent(&self, loc_type: &LocationType) -> bool {
@@ -229,7 +233,8 @@ impl LocationTuple {
             LocationID::Conjunction(..)
             | LocationID::Composition(..)
             | LocationID::Quotient(..) => {
-                self.get_left().is_universal_or_inconsistent(loc_type) && self.get_right().is_universal_or_inconsistent(loc_type)
+                self.get_left().is_universal_or_inconsistent(loc_type)
+                    && self.get_right().is_universal_or_inconsistent(loc_type)
             }
             LocationID::Simple { .. } => self.loc_type == *loc_type,
             LocationID::AnyLocation() => true,
