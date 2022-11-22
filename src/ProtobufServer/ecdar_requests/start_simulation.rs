@@ -228,6 +228,8 @@ mod tests {
         Location as ProtoLocation, LocationTuple as ProtoLocationTuple, SpecificComponent,
         State as ProtoState,
     };
+    use crate::tests::Simulation::helper::get_composition_response_Administration_Machine_Researcher;
+    use crate::tests::grpc::grpc_helper::create_json_component_as_string;
     use crate::{
         tests::{
             grpc::grpc_helper::{
@@ -275,125 +277,12 @@ mod tests {
 
         // Act
         let actual = ProtoDecisionPoint::from(&decision_point, &system);
+        let actual = Response::new(SimulationStepResponse {
+            new_decision_point: Some(actual),
+        });
 
         // Assert
-        let expected = ProtoDecisionPoint {
-            source: Some(ProtoState {
-                location_tuple: Some(ProtoLocationTuple {
-                    locations: vec![
-                        ProtoLocation {
-                            id: "L0".to_string(),
-                            specific_component: Some(SpecificComponent {
-                                component_name: "Administration".to_string(),
-                                component_index: 0,
-                            }),
-                        },
-                        ProtoLocation {
-                            id: "L5".to_string(),
-                            specific_component: Some(SpecificComponent {
-                                component_name: "Machine".to_string(),
-                                component_index: 0,
-                            }),
-                        },
-                        ProtoLocation {
-                            id: "L6".to_string(),
-                            specific_component: Some(SpecificComponent {
-                                component_name: "Researcher".to_string(),
-                                component_index: 0,
-                            }),
-                        },
-                    ],
-                }),
-                federation: Some(ProtoFederation {
-                    disjunction: Some(ProtoDisjunction {
-                        conjunctions: vec![ProtoConjunction {
-                            constraints: vec![
-                                ProtoConstraint {
-                                    x: Some(ComponentClock {
-                                        specific_component: Some(SpecificComponent {
-                                            component_name: "Administration".to_string(),
-                                            component_index: 0,
-                                        }),
-                                        clock_name: "z".to_string(),
-                                    }),
-                                    y: Some(ComponentClock {
-                                        specific_component: Some(SpecificComponent {
-                                            component_name: "Machine".to_string(),
-                                            component_index: 0,
-                                        }),
-                                        clock_name: "y".to_string(),
-                                    }),
-                                    strict: false,
-                                    c: 0,
-                                },
-                                ProtoConstraint {
-                                    x: Some(ComponentClock {
-                                        specific_component: Some(SpecificComponent {
-                                            component_name: "Machine".to_string(),
-                                            component_index: 0,
-                                        }),
-                                        clock_name: "y".to_string(),
-                                    }),
-                                    y: Some(ComponentClock {
-                                        specific_component: Some(SpecificComponent {
-                                            component_name: "Researcher".to_string(),
-                                            component_index: 0,
-                                        }),
-                                        clock_name: "x".to_string(),
-                                    }),
-                                    strict: false,
-                                    c: 0,
-                                },
-                                ProtoConstraint {
-                                    x: Some(ComponentClock {
-                                        specific_component: Some(SpecificComponent {
-                                            component_name: "Researcher".to_string(),
-                                            component_index: 0,
-                                        }),
-                                        clock_name: "x".to_string(),
-                                    }),
-                                    y: Some(ComponentClock {
-                                        specific_component: Some(SpecificComponent {
-                                            component_name: "Administration".to_string(),
-                                            component_index: 0,
-                                        }),
-                                        clock_name: "z".to_string(),
-                                    }),
-                                    strict: false,
-                                    c: 0,
-                                },
-                            ],
-                        }],
-                    }),
-                }),
-            }),
-            edges: vec![
-                ProtoEdge {
-                    id: "E10".to_string(),
-                    specific_component: None,
-                },
-                ProtoEdge {
-                    id: "E11".to_string(),
-                    specific_component: None,
-                },
-                ProtoEdge {
-                    id: "E16".to_string(),
-                    specific_component: None,
-                },
-                ProtoEdge {
-                    id: "E27".to_string(),
-                    specific_component: None,
-                },
-                ProtoEdge {
-                    id: "E29".to_string(),
-                    specific_component: None,
-                },
-                ProtoEdge {
-                    id: "E44".to_string(),
-                    specific_component: None,
-                },
-            ],
-        };
+        let expected = get_composition_response_Administration_Machine_Researcher().unwrap();
 
         assert_eq!(format!("{:?}", actual), format!("{:?}", expected))
     }
@@ -453,16 +342,16 @@ mod tests {
         create_expected_response_to_composition_request();
         "given a composition request, responds with correct component"
     )]
-    #[test_case(
-        create_conjunction_request(),
-        create_expected_response_to_conjunction_request();
-        "given a good conjunction request, responds with correct component"
-    )]
-    #[test_case(
-        create_quotient_request(),
-        create_expected_response_to_quotient_request();
-        "given a good quotient request, responds with correct component"
-    )]
+    // #[test_case(
+    //     create_conjunction_request(),
+    //     create_expected_response_to_conjunction_request();
+    //     "given a good conjunction request, responds with correct component"
+    // )]
+    // #[test_case(
+    //     create_quotient_request(),
+    //     create_expected_response_to_quotient_request();
+    //     "given a good quotient request, responds with correct component"
+    // )]
     #[tokio::test]
     async fn start_simulation_step__get_composit_component__should_return_component(
         request: Request<SimulationStartRequest>,
@@ -481,13 +370,13 @@ mod tests {
 
     // Helpers
     fn create_composition_request() -> Request<SimulationStartRequest> {
-        let composition = "Administration || Machine || Researcher".to_string();
+        let composition = "(Machine || Researcher)".to_string();
 
-        let administration_component = convert_json_component_to_string("samples/json/EcdarUniversity/Administration".to_string());
-        let machine_component = convert_json_component_to_string("samples/json/EcdarUniversity/Machine".to_string());
-        let researcher_component = convert_json_component_to_string("samples/json/EcdarUniversity/Researcher".to_string());
+        //let administration_component = create_json_component_as_string("samples/json/EcdarUniversity/Components/Administration.json".to_string());
+        let machine_component = create_json_component_as_string("samples/json/EcdarUniversity/Components/Machine.json".to_string());
+        let researcher_component = create_json_component_as_string("samples/json/EcdarUniversity/Components/Researcher.json".to_string());
 
-        let components: Vec<String> = vec![administration_component, machine_component, researcher_component];
+        let components: Vec<String> = vec![machine_component, researcher_component];
         let components = components
             .iter()
             .map(|string| Component {
@@ -498,33 +387,39 @@ mod tests {
             component_composition: composition,
             components_info: Some(ComponentsInfo {
                 components,
-                components_hash: todo!(),
+                components_hash: 0,
             })
         };
-        // create_simulation_start_request(composition, component_json); // A || B || C
 
-        todo!();
+        let simulation_start_request = Request::new(SimulationStartRequest {
+            simulation_info: Some(simulation_info),
+        });
+
+        return simulation_start_request;
+
     }
 
     fn create_expected_response_to_composition_request() -> Result<Response<SimulationStepResponse>, Status> {
-        todo!()
+        let expected = get_composition_response_Administration_Machine_Researcher();
+
+        expected
     }
 
-    fn create_conjunction_request() -> Request<SimulationStartRequest> {
-        todo!()
-    }
+    // fn create_conjunction_request() -> Request<SimulationStartRequest> {
+    //     todo!()
+    // }
 
-    fn create_expected_response_to_conjunction_request() -> Result<Response<SimulationStepResponse>, Status> {
-        todo!()
-    }
+    // fn create_expected_response_to_conjunction_request() -> Result<Response<SimulationStepResponse>, Status> {
+    //     todo!()
+    // }
 
-    fn create_quotient_request() -> Request<SimulationStartRequest> {
-        todo!()
-    }
+    // fn create_quotient_request() -> Request<SimulationStartRequest> {
+    //     todo!()
+    // }
 
-    fn create_expected_response_to_quotient_request() -> Result<Response<SimulationStepResponse>, Status> {
-        todo!()
-    }
+    // fn create_expected_response_to_quotient_request() -> Result<Response<SimulationStepResponse>, Status> {
+    //     todo!()
+    // }
     // fn create_good_request() -> Request<SimulationStartRequest> {
     //     create_simulation_start_request(String::from("Machine"), create_sample_json_component())
     // }

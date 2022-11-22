@@ -1,7 +1,9 @@
+use tonic::{Response, Status};
+
 use crate::{
     DataReader::json_reader::read_json_component,
     Simulation::transition_decision_point::TransitionDecisionPoint,
-    TransitionSystems::{CompiledComponent, TransitionSystemPtr},
+    TransitionSystems::{CompiledComponent, TransitionSystemPtr}, ProtobufServer::services::SimulationStepResponse,
 };
 
 use crate::ProtobufServer::services::ComponentClock as ProtoComponentClock;
@@ -15,6 +17,8 @@ use crate::ProtobufServer::services::Location as ProtoLocation;
 use crate::ProtobufServer::services::LocationTuple as ProtoLocationTuple;
 use crate::ProtobufServer::services::SpecificComponent as ProtoSpecificComponent;
 use crate::ProtobufServer::services::State as ProtoState;
+use crate::ProtobufServer::services::DecisionPoint as ProtoDecisionPoint;
+use crate::ProtobufServer::services::ComponentClock;
 
 pub fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
     create_system_from_path("samples/json/EcdarUniversity", "Machine")
@@ -118,4 +122,134 @@ pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {
 pub fn initial_transition_decision_point_EcdarUniversity_Machine() -> TransitionDecisionPoint {
     let system = create_EcdarUniversity_Machine_system();
     TransitionDecisionPoint::initial(&system).unwrap()
+}
+
+
+pub fn get_composition_response_Administration_Machine_Researcher() ->
+    Result<Response<SimulationStepResponse>, Status>
+    {
+    let proto_decision_point = ProtoDecisionPoint {
+        source: Some(ProtoState {
+            location_tuple: Some(ProtoLocationTuple {
+                locations: vec![
+                    ProtoLocation {
+                        id: "L0".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "Administration".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                    ProtoLocation {
+                        id: "L5".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "Machine".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                    ProtoLocation {
+                        id: "L6".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "Researcher".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                ],
+            }),
+            federation: Some(ProtoFederation {
+                disjunction: Some(ProtoDisjunction {
+                    conjunctions: vec![ProtoConjunction {
+                        constraints: vec![
+                            ProtoConstraint {
+                                x: Some(ComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Administration".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "z".to_string(),
+                                }),
+                                y: Some(ComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Machine".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "y".to_string(),
+                                }),
+                                strict: false,
+                                c: 0,
+                            },
+                            ProtoConstraint {
+                                x: Some(ComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Machine".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "y".to_string(),
+                                }),
+                                y: Some(ComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Researcher".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "x".to_string(),
+                                }),
+                                strict: false,
+                                c: 0,
+                            },
+                            ProtoConstraint {
+                                x: Some(ComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Researcher".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "x".to_string(),
+                                }),
+                                y: Some(ComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Administration".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "z".to_string(),
+                                }),
+                                strict: false,
+                                c: 0,
+                            },
+                        ],
+                    }],
+                }),
+            }),
+        }),
+        edges: vec![
+            ProtoEdge {
+                id: "E10".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E11".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E16".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E27".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E29".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E44".to_string(),
+                specific_component: None,
+            },
+        ],
+    };
+
+    let response = SimulationStepResponse {
+        new_decision_point: Some(proto_decision_point),
+    };
+
+    return Ok(Response::new(response));
+
 }
