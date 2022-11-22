@@ -1,9 +1,9 @@
 use tonic::Request;
 
 use crate::ProtobufServer::services::{
-    self, Component, ComponentsInfo, Conjunction, DecisionPoint, Disjunction, Edge, Federation,
-    Location, LocationTuple, SimulationInfo, SimulationStartRequest, SimulationStepRequest,
-    SpecificComponent, State,
+    self, Component, ComponentClock, ComponentsInfo, Conjunction, Constraint, DecisionPoint,
+    Disjunction, Edge, Federation, Location, LocationTuple, SimulationInfo, SimulationStartRequest,
+    SimulationStepRequest, SpecificComponent, State,
 };
 use std::fs;
 
@@ -12,11 +12,11 @@ static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
 pub fn create_edges_from_L5() -> Vec<Edge> {
     vec![
         Edge {
-            id: "E3".to_string(),
+            id: "E27".to_string(),
             specific_component: None,
         },
         Edge {
-            id: "E5".to_string(),
+            id: "E29".to_string(),
             specific_component: None,
         },
     ]
@@ -114,9 +114,38 @@ pub fn create_sample_json_component() -> String {
 //
 pub fn create_decision_point_after_taking_E5() -> DecisionPoint {
     DecisionPoint {
-        source: Some(create_1tuple_state_with_single_constraint(
-            "L5", "Machine", 0, "0", "y", -2, false,
-        )),
+        source: Some(State {
+            location_tuple: Some(LocationTuple {
+                locations: vec![Location {
+                    id: "L5".to_string(),
+                    specific_component: Some(SpecificComponent {
+                        component_name: "Machine".to_string(),
+                        component_index: 0,
+                    }),
+                }],
+            }),
+            federation: Some(Federation {
+                disjunction: Some(Disjunction {
+                    conjunctions: vec![Conjunction {
+                        constraints: vec![Constraint {
+                            x: Some(ComponentClock {
+                                specific_component: None,
+                                clock_name: "0".to_string(),
+                            }),
+                            y: Some(ComponentClock {
+                                specific_component: Some(SpecificComponent {
+                                    component_name: "Machine".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "y".to_string(),
+                            }),
+                            strict: false,
+                            c: -2,
+                        }],
+                    }],
+                }),
+            }),
+        }),
         edges: create_edges_from_L5(),
     }
 }

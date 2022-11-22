@@ -30,6 +30,12 @@ struct ComponentInfo {
     max_bounds: Bounds,
 }
 
+impl ComponentInfo {
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+}
+
 #[derive(Clone)]
 pub struct CompiledComponent {
     inputs: HashSet<Action>,
@@ -133,6 +139,10 @@ impl CompiledComponent {
             .compile(dimension)
             .unwrap()
     }
+
+    fn comp_info(&self) -> &ComponentInfo {
+        &self.comp_info
+    }
 }
 
 impl TransitionSystem for CompiledComponent {
@@ -145,7 +155,7 @@ impl TransitionSystem for CompiledComponent {
     }
 
     fn get_composition_type(&self) -> CompositionType {
-        panic!("Components do not have a composition type")
+        CompositionType::Simple
     }
 
     fn get_decls(&self) -> Vec<&Declarations> {

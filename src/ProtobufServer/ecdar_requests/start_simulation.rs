@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::iter::zip;
 
 use crate::component::State;
 use crate::DataReader::component_loader::ModelCache;
@@ -13,7 +14,7 @@ use crate::ProtobufServer::services::{
 use crate::Simulation::decision_point::DecisionPoint;
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
-use edbm::util::constraints::{ClockIndex, Conjunction, Constraint, Disjunction};
+use edbm::util::constraints::{Conjunction, Constraint, Disjunction};
 use edbm::zones::OwnedFederation;
 use log::trace;
 
@@ -150,31 +151,59 @@ impl ProtoConjunction {
 #[allow(unused_must_use)]
 impl ProtoConstraint {
     fn from(constraint: &Constraint, system: &TransitionSystemPtr) -> Self {
-        fn invert<T1, T2>(hash_map: &HashMap<T1, T2>) -> HashMap<&T2, &T1>
+        fn invert<T1, T2>(hash_map: HashMap<T1, T2>) -> HashMap<T2, T1>
         where
             T2: Hash + Eq,
         {
-            hash_map.iter().map(|x| (x.1, x.0)).collect()
+            hash_map.into_iter().map(|x| (x.1, x.0)).collect()
         }
 
-        fn clock_name(naming: &HashMap<&usize, &String>, clock_index: &ClockIndex) -> String {
-            naming
-                .get(clock_index)
-                .unwrap_or(&&"0".to_string())
-                .to_string()
+        fn clock_name(
+            index_to_identifier: &HashMap<usize, (String, String)>,
+            index: usize,
+        ) -> String {
+            let ZERO_CLOCK_NAME = "0";
+            match index_to_identifier.get(&index) {
+                Some((clock_name, _)) => clock_name.to_string(),
+                // If an index does not correspond to an index we assume it's the zero clock
+                None => ZERO_CLOCK_NAME.to_string(),
+            }
         }
 
-        let clocks = system.get_decls().first().unwrap().get_clocks();
-        let naming = invert(clocks);
+        fn clock_component(
+            index_to_identifier: &HashMap<usize, (String, String)>,
+            index: usize,
+        ) -> Option<SpecificComponent> {
+            index_to_identifier.get(&index).map(|x| SpecificComponent {
+                component_name: x.1.to_string(),
+                component_index: 0,
+            })
+        }
+
+        let binding = system.component_names();
+        let component_names = binding.into_iter();
+        let binding = system.get_decls();
+        let clock_to_index = binding.into_iter().map(|decl| decl.clocks.to_owned());
+
+        let index_to_name_and_component = zip(component_names, clock_to_index)
+            .map(|x| {
+                x.1.iter()
+                    .map(|y| ((y.0.to_owned(), x.0.to_string()), y.1.to_owned()))
+                    .collect::<HashMap<(String, String), usize>>()
+            })
+            .fold(HashMap::new(), |accumulator, head| {
+                accumulator.into_iter().chain(head).collect()
+            });
+        let index_to_name_and_component = invert(index_to_name_and_component);
 
         ProtoConstraint {
             x: Some(ComponentClock {
-                specific_component: None, // TODO how?
-                clock_name: clock_name(&naming, &constraint.i),
+                specific_component: clock_component(&index_to_name_and_component, constraint.i),
+                clock_name: clock_name(&index_to_name_and_component, constraint.i),
             }),
             y: Some(ComponentClock {
-                specific_component: None, // TODO how?
-                clock_name: clock_name(&naming, &constraint.j),
+                specific_component: clock_component(&index_to_name_and_component, constraint.j),
+                clock_name: clock_name(&index_to_name_and_component, constraint.j),
             }),
             strict: constraint.ineq().is_strict(),
             c: constraint.ineq().bound(),
@@ -208,7 +237,6 @@ mod tests {
     };
 
     #[test]
-    #[ignore]
     fn from__initial_DecisionPoint_EcdarUniversity_Machine__returns_correct_ProtoDecisionPoint() {
         // Arrange
         let transitionDecisionPoint = initial_transition_decision_point_EcdarUniversity_Machine();
@@ -233,7 +261,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn from__initial_DecisionPoint_EcdarUniversity_Machine_after_tea__returns_correct_ProtoDecisionPoint(
     ) {
         // Arrange
