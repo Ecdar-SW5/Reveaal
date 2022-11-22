@@ -22,7 +22,7 @@ use crate::ProtobufServer::services::{
     self, Component as ProtobufComponent, ComponentClock as ProtobufComponentClock,
     Conjunction as ProtobufConjunction, Constraint as ProtobufConstraint,
     Disjunction as ProtobufDisjunction, Federation, Location, LocationTuple, QueryRequest,
-    QueryResponse, State,
+    QueryResponse, SpecificComponent, State,
 };
 use crate::ProtobufServer::ConcreteEcdarBackend;
 use crate::System::executable_query::QueryResult;
@@ -245,7 +245,10 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                             location_tuple: Some(LocationTuple {
                                 locations: vec![Location {
                                     id: location_id.to_string(),
-                                    specific_component: None,
+                                    specific_component: Some(SpecificComponent {
+                                        component_name: location_id.get_component_id().unwrap(),
+                                        component_index: 0,
+                                    }),
                                 }],
                             }),
                             federation: None,
@@ -272,7 +275,10 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         location_tuple: Some(LocationTuple {
                             locations: vec![Location {
                                 id: location_id.to_string(),
-                                specific_component: None,
+                                specific_component: Some(SpecificComponent {
+                                    component_name: location_id.get_component_id().unwrap(),
+                                    component_index: 0,
+                                }),
                             }],
                         }),
                         federation: None,
@@ -329,7 +335,7 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                     location_tuple: Some(LocationTuple {
                         locations: vec![Location {
                             id: value_in_location(location_id),
-                            specific_component: None,
+                            specific_component: value_in_component(location_id),
                         }],
                     }),
                     federation: None,
@@ -390,6 +396,15 @@ fn value_in_location(maybe_location: &Option<LocationID>) -> String {
         Some(location_id) => location_id.to_string(),
         None => "".to_string(),
     }
+}
+
+fn value_in_component(maybe_location: &Option<LocationID>) -> Option<SpecificComponent> {
+    maybe_location
+        .as_ref()
+        .map(|location_id| SpecificComponent {
+            component_name: location_id.get_component_id().unwrap(),
+            component_index: 0,
+        })
 }
 
 fn value_in_action(maybe_action: &Option<String>) -> String {

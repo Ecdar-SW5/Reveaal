@@ -9,6 +9,8 @@ use crate::ProtobufServer::services::{
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
     LocationTuple as ProtoLocationTuple, State as ProtoState,
 };
+use crate::System::save_component::combine_components;
+use crate::System::save_component::PruningStrategy::NoPruning;
 use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
 
 #[derive(Debug)]
@@ -30,11 +32,35 @@ impl Decision {
         &self.decided
     }
 
+    pub fn convert_protoedge_to_edge(protoedge: ProtoEdge, system: &TransitionSystemPtr) -> Edge {
+        let component = combine_components(&system, NoPruning);
+
+        let edges = component.get_edges();
+
+        // Hvorfor er der en warning her? XD
+        edges
+            .iter()
+            .filter(|e| e.id == protoedge.id)
+            .collect::<Vec<&Edge>>();
+
+        let edge = match edges.first() {
+            Some(edge) => edge.to_owned(),
+            None => panic!("Oh no! No first slice found."),
+        };
+
+        edge
+    }
+
     pub fn from(proto_decision: ProtoDecision, system: &TransitionSystemPtr) -> Self {
         // Convert ProtoState to State
         let proto_state: ProtoState = match proto_decision.source {
             None => panic!("Not found"),
             Some(source) => source,
+        };
+
+        let proto_edge: ProtoEdge = match proto_decision.edge {
+            None => panic!("Edge not found!"),
+            Some(edge) => edge,
         };
 
         let proto_location_tuple: ProtoLocationTuple = match proto_state.location_tuple {
@@ -57,31 +83,11 @@ impl Decision {
 
         let state = State::create(location_tuple, zone);
 
-        // Convert ProtoEdge to Edge
-        let proto_edge: ProtoEdge = match proto_decision.edge {
-            None => panic!("No edge found"),
-            Some(edge) => edge,
-        };
-
-        let specific_component = match proto_edge.specific_component {
-            None => panic!("No specific component found"),
-            Some(component) => component,
-        };
-
-        let edge = Edge {
-            id: proto_edge.id.to_string(),
-            source_location: todo!(),
-            target_location: todo!(),
-            sync_type: todo!(),
-            guard: todo!(),
-            update: todo!(),
-            sync: todo!(),
-            component_name: Some(specific_component.component_name)
-        };
+        let decided = Self::convert_protoedge_to_edge(proto_edge, &system);
 
         Decision {
             source: state,
-            decided: edge,
+            decided,
         }
     }
 }
@@ -163,51 +169,47 @@ fn proto_federation_to_owned_federation(
 
 #[cfg(test)]
 mod tests {
-    // use crate::{
-    //     component::Edge,
-    //     tests::Simulation::helper::{
-    //         create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_system,
-    //         initial_transition_decision_point_EcdarUniversity_Machine,
-    //     },
-    //     Simulation::decision::Decision,
-    // };
+    use crate::{
+        component::Edge,
+        tests::Simulation::helper::{
+            create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_system,
+        },
+        Simulation::decision::Decision,
+    };
 
-    // // TODO this test is badly formatted
-    // #[test]
-    // fn Decision_from__ProtoDecision__returns_correct_Decision() {
-    //     // Arrange
-    //     let proto_decision = create_EcdarUniversity_Machine_Decision();
+    // TODO this test is badly formatted
+    #[ignore]
+    #[test]
+    fn Decision_from__ProtoDecision__returns_correct_Decision() {
+        // Arrange
+        let proto_decision = create_EcdarUniversity_Machine_Decision();
 
-    //     let transition_decisions = initial_transition_decision_point_EcdarUniversity_Machine();
-    //     let possible_decisions: Vec<Edge> = transition_decisions
-    //         .possible_decisions()
-    //         .iter()
-    //         .flat_map(|t| Vec::<Edge>::from(t))
-    //         .collect();
+        let system = create_EcdarUniversity_Machine_system();
 
-    //     let expected_decision = match possible_decisions.into_iter().next() {
-    //         None => panic!("No edges found"),
-    //         Some(edge) => edge,
-    //     };
+        let proto_edge = match proto_decision.clone().edge {
+            None => panic!("No edge found"),
+            Some(edge) => edge,
+        };
 
-    //     let system = create_EcdarUniversity_Machine_system();
-    //     let actual_decision = Decision::from(proto_decision, &system);
+        let actual_decision = Decision::from(proto_decision, &system);
 
-    //     let expected_source = match system.get_initial_state() {
-    //         None => panic!("No inital state found"),
-    //         Some(expected_source) => expected_source,
-    //     };
+        let expected_edge = Decision::convert_protoedge_to_edge(proto_edge, &system);
 
-    //     let expected_decision = Decision {
-    //         source: expected_source,
-    //         decided: expected_decision,
-    //     };
+        let expected_source = match system.get_initial_state() {
+            None => panic!("No inital state found"),
+            Some(expected_source) => expected_source,
+        };
 
-    //     // Act
-    //     let actual_decision = format!("{:?}", actual_decision);
-    //     let expected_decision = format!("{:?}", expected_decision);
+        let expected_decision = Decision {
+            source: expected_source,
+            decided: expected_edge,
+        };
 
-    //     // Assert
-    //     assert_eq!(actual_decision, expected_decision);
-    // }
+        // Act
+        let actual_decision = format!("{:?}", actual_decision);
+        let expected_decision = format!("{:?}", expected_decision);
+
+        // Assert
+        assert_eq!(actual_decision, expected_decision);
+    }
 }
