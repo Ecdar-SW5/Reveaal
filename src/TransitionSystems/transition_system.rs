@@ -94,13 +94,4 @@ pub trait TransitionSystem: DynClone {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    #[ignore]
-    #[test]
-    fn component_names__generic__returns_correct() {
-        assert!(false)
-    }
-}
-
 clone_trait_object!(TransitionSystem);
