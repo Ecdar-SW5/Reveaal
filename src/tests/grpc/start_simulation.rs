@@ -11,8 +11,7 @@ mod test {
         ProtobufServer::{
             self,
             services::{
-                component::Rep, ecdar_backend_server::EcdarBackend, Component, ComponentsInfo,
-                SimulationInfo, SimulationStartRequest, SimulationStepResponse,
+                ecdar_backend_server::EcdarBackend, Component, SimulationStartRequest, SimulationStepResponse,
             },
         },
         TransitionSystems::CompositionType,
