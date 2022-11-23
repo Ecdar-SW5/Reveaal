@@ -107,7 +107,7 @@ pub fn create_sample_json_component() -> String {
 }
 
 pub fn create_json_component_as_string(path: String) -> String {
-    fs::read_to_string(format!("{}", path)).unwrap()
+    fs::read_to_string(path).unwrap()
 }
 
 // Create the decision point drawn below:

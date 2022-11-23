@@ -242,12 +242,7 @@ impl Component {
 
     // Filters out specific edge using edge id
     pub fn find_edge_from_id(&self, id: &str) -> &Edge {
-        &self
-            .get_edges()
-            .iter()
-            .filter(|e| e.id.contains(id))
-            .nth(0)
-            .unwrap()
+        self.get_edges().iter().find(|e| e.id.contains(id)).unwrap()
     }
 
     /// Used in initial setup to split edges based on their sync type

@@ -21,9 +21,7 @@ use crate::ProtobufServer::services::{
 
 pub fn create_EcdarUniversity_Machine_component() -> Component {
     let project_path = "samples/json/EcdarUniversity";
-    let component = read_json_component(project_path, "Machine");
-
-    component
+    read_json_component(project_path, "Machine")
 }
 
 pub fn create_EcdarUniversity_Machine_system() -> TransitionSystemPtr {
@@ -168,53 +166,6 @@ pub fn create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision() -
     let specific_comp_dp1 = ProtoSpecificComponent {
         component_name: "Machine".to_string(),
         component_index: 1,
-    };
-
-    let specific_comp_dp2 = ProtoSpecificComponent {
-        component_name: "Machine3".to_string(),
-        component_index: 2,
-    };
-
-    let componentclock_dp1 = ProtoComponentClock {
-        specific_component: Some(specific_comp_dp2.clone()),
-        clock_name: "y".to_string(),
-    };
-    let componentclock_dp2 = ProtoComponentClock {
-        specific_component: Some(specific_comp_dp1.clone()),
-        clock_name: "y".to_string(),
-    };
-
-    let constraint29_dp = ProtoConstraint {
-        x: Some(componentclock_dp1),
-        y: Some(componentclock_dp2),
-        strict: false,
-        c: 0,
-    };
-
-    let conjunction_dp = ProtoConjunction {
-        constraints: vec![constraint29_dp],
-    };
-
-    let disjunction_dp = ProtoDisjunction {
-        conjunctions: vec![conjunction_dp],
-    };
-
-    let federation_dp = ProtoFederation {
-        disjunction: Some(disjunction_dp),
-    };
-
-    let location_dp1 = ProtoLocation {
-        id: "L5".to_string(),
-        specific_component: Some(specific_comp_dp1.clone()),
-    };
-
-    let location_dp2 = ProtoLocation {
-        id: "L8".to_string(),
-        specific_component: Some(specific_comp_dp2.clone()),
-    };
-
-    let loc_tuple_dp = ProtoLocationTuple {
-        locations: vec![location_dp2, location_dp1],
     };
 
     let source_dp = ProtoState {
@@ -414,7 +365,7 @@ pub fn get_composition_response_Administration_Machine_Researcher(
         new_decision_point: Some(proto_decision_point),
     };
 
-    return Ok(Response::new(response));
+    Ok(Response::new(response))
 }
 
 pub fn get_conjunction_response_HalfAdm1_HalfAdm2(
@@ -508,21 +459,20 @@ pub fn get_conjunction_response_HalfAdm1_HalfAdm2(
         new_decision_point: Some(proto_decision_point),
     };
 
-    return Ok(Response::new(response));
+    Ok(Response::new(response))
 }
 
 pub fn create_simulation_info(
     composition: String,
     components: Vec<ProtoComponent>,
 ) -> ProtoSimulationInfo {
-    let simulation_info = ProtoSimulationInfo {
+    ProtoSimulationInfo {
         component_composition: composition,
         components_info: Some(ProtoComponentsInfo {
             components,
             components_hash: 0,
         }),
-    };
-    simulation_info
+    }
 }
 
 pub fn create_composition_string(comp_names: &Vec<&str>, comp_type: CompositionType) -> String {
@@ -543,7 +493,7 @@ pub fn create_composition_string(comp_names: &Vec<&str>, comp_type: CompositionT
     composition
 }
 
-pub fn create_components(comp_names: &Vec<&str>, sample_name: String) -> Vec<ProtoComponent> {
+pub fn create_components(comp_names: &[&str], sample_name: String) -> Vec<ProtoComponent> {
     let components: Vec<String> = comp_names
         .iter()
         .map(|name| {
