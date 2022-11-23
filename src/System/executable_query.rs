@@ -1,9 +1,11 @@
 use edbm::util::constraints::ClockIndex;
+use std::sync::Arc;
 
 use crate::component::Transition;
 use crate::DataReader::component_loader::ComponentLoader;
 use crate::ModelObjects::component::Component;
 use crate::ModelObjects::component::State;
+use crate::ProtobufServer::threadpool::ThreadPool;
 use crate::System::reachability;
 use crate::System::reachability::Path;
 use crate::System::refine;
@@ -74,7 +76,7 @@ fn print_path(path: &Vec<Transition>) {
 }
 
 pub trait ExecutableQuery {
-    fn execute(self: Box<Self>) -> QueryResult;
+    fn execute(self: Box<Self>, threadpool: &Arc<ThreadPool>) -> QueryResult;
 }
 
 pub struct RefinementExecutor {
@@ -83,10 +85,10 @@ pub struct RefinementExecutor {
 }
 
 impl ExecutableQuery for RefinementExecutor {
-    fn execute(self: Box<Self>) -> QueryResult {
+    fn execute(self: Box<Self>, threadpool: &Arc<ThreadPool>) -> QueryResult {
         let (sys1, sys2) = (self.sys1, self.sys2);
 
-        match refine::check_refinement(sys1, sys2) {
+        match refine::check_refinement(sys1, sys2, threadpool) {
             RefinementResult::Success => QueryResult::Refinement(RefinementResult::Success),
             RefinementResult::Failure(the_failure) => {
                 QueryResult::Refinement(RefinementResult::Failure(the_failure))
@@ -107,7 +109,7 @@ pub struct ReachabilityExecutor {
     pub end_state: State,
 }
 impl ExecutableQuery for ReachabilityExecutor {
-    fn execute(self: Box<Self>) -> QueryResult {
+    fn execute(self: Box<Self>, threadpool: &Arc<ThreadPool>) -> QueryResult {
         match reachability::find_path(
             self.start_state,
             self.end_state,
@@ -126,7 +128,7 @@ pub struct GetComponentExecutor<'a> {
 }
 
 impl<'a> ExecutableQuery for GetComponentExecutor<'a> {
-    fn execute(self: Box<Self>) -> QueryResult {
+    fn execute(self: Box<Self>, threadpool: &Arc<ThreadPool>) -> QueryResult {
         let mut comp = combine_components(&self.system, PruningStrategy::Reachable);
         comp.name = self.comp_name;
 
@@ -144,9 +146,9 @@ pub struct ConsistencyExecutor {
 }
 
 impl ExecutableQuery for ConsistencyExecutor {
-    fn execute(self: Box<Self>) -> QueryResult {
-        let res = match self.recipe.compile(self.dim) {
-            Ok(system) => match system.precheck_sys_rep() {
+    fn execute(self: Box<Self>, threadpool: &Arc<ThreadPool>) -> QueryResult {
+        let res = match self.recipe.compile(self.dim, threadpool) {
+            Ok(system) => match system.precheck_sys_rep(threadpool) {
                 PrecheckResult::Success => QueryResult::Consistency(ConsistencyResult::Success),
                 PrecheckResult::NotDeterministic(location, action) => {
                     QueryResult::Consistency(ConsistencyResult::Failure(
@@ -168,8 +170,8 @@ pub struct DeterminismExecutor {
 }
 
 impl ExecutableQuery for DeterminismExecutor {
-    fn execute(self: Box<Self>) -> QueryResult {
-        let is_deterministic = self.system.is_deterministic();
+    fn execute(self: Box<Self>, threadpool: &Arc<ThreadPool>) -> QueryResult {
+        let is_deterministic = self.system.is_deterministic(threadpool);
 
         QueryResult::Determinism(is_deterministic)
     }

@@ -21,13 +21,18 @@ use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Hei
 use edbm::util::constraints::ClockIndex;
 use log::debug;
 use simple_error::bail;
+
+use crate::ProtobufServer::threadpool::ThreadPool;
 use std::error::Error;
+use std::sync::Arc;
+use std::thread::Thread;
 
 /// This function fetches the appropriate components based on the structure of the query and makes the enum structure match the query
 /// this function also handles setting up the correct indices for clocks based on the amount of components in each system representation
 pub fn create_executable_query<'a>(
     full_query: &Query,
     component_loader: &'a mut (dyn ComponentLoader + 'static),
+    threadpool: &Arc<ThreadPool>,
 ) -> Result<Box<dyn ExecutableQuery + 'a>, Box<dyn Error>> {
     let mut dim: ClockIndex = 0;
 
@@ -38,14 +43,14 @@ pub fn create_executable_query<'a>(
 
                 let mut left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
                 let mut right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
-                clock_reduction(&mut left, &mut right, component_loader.get_settings(), &mut dim)?;
+                clock_reduction(&mut left, &mut right, component_loader.get_settings(), &mut dim, threadpool)?;
                 Ok(Box::new(RefinementExecutor {
-                sys1: left.compile(dim)?,
-                sys2: right.compile(dim)?,
+                sys1: left.compile(dim, threadpool)?,
+                sys2: right.compile(dim, threadpool)?,
             }))},
             QueryExpression::Reachability(automata, start, end) => {
                 let machine = get_system_recipe(automata, component_loader, &mut dim, &mut None);
-                let transition_system = machine.clone().compile(dim)?;
+                let transition_system = machine.clone().compile(dim, threadpool)?;
 
                 validate_reachability_input(&machine, end)?;
 
@@ -88,14 +93,14 @@ pub fn create_executable_query<'a>(
                         component_loader,
                         &mut dim,
                         &mut None,
-                    ).compile(dim)?,
+                    ).compile(dim, threadpool)?,
                 }))
             },
             QueryExpression::GetComponent(save_as_expression) => {
                 if let QueryExpression::SaveAs(query_expression, comp_name) = save_as_expression.as_ref() {
                     Ok(Box::new(
                         GetComponentExecutor {
-                            system: get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim)?,
+                            system: get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim, threadpool)?,
                             comp_name: comp_name.clone(),
                             component_loader,
                         }
@@ -109,7 +114,7 @@ pub fn create_executable_query<'a>(
                 if let QueryExpression::SaveAs(query_expression, comp_name) = save_as_expression.as_ref() {
                     Ok(Box::new(
                         GetComponentExecutor {
-                            system: pruning::prune_system(get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim)?, dim),
+                            system: pruning::prune_system(get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim, threadpool)?, dim, threadpool),
                             comp_name: comp_name.clone(),
                             component_loader
                         }
@@ -132,6 +137,7 @@ fn clock_reduction(
     right: &mut Box<SystemRecipe>,
     set: &Settings,
     dim: &mut usize,
+    threadpool: &Arc<ThreadPool>,
 ) -> Result<(), String> {
     let height = max(left.height(), right.height());
     let heights = match set.reduce_clocks_level.to_owned().ok_or_else(|| "No clock reduction level specified".to_string())? {
@@ -143,9 +149,9 @@ fn clock_reduction(
 
     let clocks = left
         .clone()
-        .compile(*dim)?
+        .compile(*dim, threadpool)?
         .find_redundant_clocks(heights)
-        .intersect(&right.clone().compile(*dim)?.find_redundant_clocks(heights));
+        .intersect(&right.clone().compile(*dim, threadpool)?.find_redundant_clocks(heights));
 
     debug!("Clocks to be reduced: {clocks:?}");
     *dim -= clocks
@@ -182,19 +188,28 @@ pub enum SystemRecipe {
 }
 
 impl SystemRecipe {
-    pub fn compile(self, dim: ClockIndex) -> Result<TransitionSystemPtr, String> {
+    pub fn compile(
+        self,
+        dim: ClockIndex,
+        threadpool: &Arc<ThreadPool>,
+    ) -> Result<TransitionSystemPtr, String> {
         match self {
-            SystemRecipe::Composition(left, right) => {
-                Composition::new(left.compile(dim)?, right.compile(dim)?, dim + 1)
-            }
-            SystemRecipe::Conjunction(left, right) => {
-                Conjunction::new(left.compile(dim)?, right.compile(dim)?, dim + 1)
-            }
+            SystemRecipe::Composition(left, right) => Composition::new(
+                left.compile(dim, threadpool)?,
+                right.compile(dim, threadpool)?,
+                dim + 1,
+            ),
+            SystemRecipe::Conjunction(left, right) => Conjunction::new(
+                left.compile(dim, threadpool)?,
+                right.compile(dim, threadpool)?,
+                dim + 1,
+            ),
             SystemRecipe::Quotient(left, right, clock_index) => Quotient::new(
-                left.compile(dim)?,
-                right.compile(dim)?,
+                left.compile(dim, threadpool)?,
+                right.compile(dim, threadpool)?,
                 clock_index,
                 dim + 1,
+                threadpool,
             ),
             SystemRecipe::Component(comp) => match CompiledComponent::compile(*comp, dim + 1) {
                 Ok(comp) => Ok(comp),

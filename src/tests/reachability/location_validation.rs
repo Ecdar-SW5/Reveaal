@@ -1,10 +1,14 @@
 #[cfg(test)]
 mod reachability_parser_location_validation {
+    use crate::ProtobufServer::threadpool::ThreadPool;
     use crate::{
         tests::reachability::helper_functions::reachability_test_helper_functions,
         ModelObjects::representations::QueryExpression, System,
     };
+    use std::sync::Arc;
+    use std::thread::Thread;
     use test_case::test_case;
+
     const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
     // These tests check that the parser only accepts location arguments with existing locations.
     // i.e. check that the locations exist in the model.
@@ -15,11 +19,14 @@ mod reachability_parser_location_validation {
     #[test_case("NOTCORRECTNAME";
     "The location NOTCORRECTNAME in the state does not exist in the model")]
     fn query_parser_checks_invalid_locations(location_str: &str) {
+        let threadpool = Arc::new(ThreadPool::default());
+
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
         let (machine, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(
                 *mock_model,
                 FOLDER_PATH,
+                &threadpool,
             );
 
         let mock_state = Box::new(QueryExpression::State(
@@ -37,11 +44,14 @@ mod reachability_parser_location_validation {
     #[test_case("L23";
     "The location L23 in the state exists in the model")]
     fn query_parser_checks_valid_locations(location_str: &str) {
+        let threadpool = Arc::new(ThreadPool::default());
+
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
         let (machine, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(
                 *mock_model,
                 FOLDER_PATH,
+                &threadpool,
             );
 
         let mock_state = Box::new(QueryExpression::State(

@@ -1,9 +1,15 @@
+use crossbeam_channel::{bounded, unbounded, Sender, TryRecvError};
 use std::fmt;
+use std::ops::Deref;
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::{Arc, Mutex, RwLock};
 
 use edbm::zones::OwnedFederation;
 use log::warn;
+use tokio::runtime;
 
 use crate::ModelObjects::component::State;
+use crate::ProtobufServer::threadpool::{ThreadPool, ThreadPoolFuture};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 
 /// The result of a consistency check.
@@ -95,58 +101,134 @@ pub fn is_least_consistent(system: &dyn TransitionSystem) -> ConsistencyResult {
 }
 
 ///Checks if a [TransitionSystem] is deterministic.
-pub fn is_deterministic(system: &dyn TransitionSystem) -> DeterminismResult {
+pub fn is_deterministic(
+    system: Arc<Box<dyn TransitionSystem + Sync + Send>>,
+    threadpool: &Arc<ThreadPool>,
+) -> DeterminismResult {
     if system.get_initial_location().is_none() {
         return DeterminismResult::Success;
     }
-    let mut passed = vec![];
     let state = system.get_initial_state();
     if state.is_none() {
         return DeterminismResult::Success;
     }
     let mut state = state.unwrap();
     state.set_zone(OwnedFederation::universe(system.get_dim()));
-    is_deterministic_helper(state, &mut passed, system)
+
+    // This is broken on single core setups and cannot be fixed!
+    // We need some way to pause execution on a thread in the threadpool and let it run another task
+    // and come back to the other one later.
+    let passed = Arc::new(Mutex::new(vec![]));
+    let mut failure_thing: Arc<Mutex<Option<DeterminismResult>>> = Arc::new(Mutex::new(None));
+    let (sender, receiver) = unbounded();
+    let threads = num_cpus::get() - 1;
+    let pending_work = Arc::new(AtomicU32::new(1));
+    let mut futures: Vec<ThreadPoolFuture<()>> = (0..threads)
+        .map(|_| {
+            let thread_sender = sender.clone();
+            let thread_receiver = receiver.clone();
+            let thread_failure_thing = failure_thing.clone();
+            let thread_system = system.clone();
+            let thread_passed = passed.clone();
+            let thread_pending_work = pending_work.clone();
+            threadpool.enqueue(move |_| loop {
+                let mut result = thread_receiver.try_recv();
+                {
+                    let failure_thing = thread_failure_thing.lock().unwrap();
+                    if let Some(_) = *failure_thing {
+                        break;
+                    }
+                }
+                match result {
+                    Ok(state) => {
+                        is_deterministic_helper(
+                            &thread_failure_thing,
+                            state,
+                            &thread_passed,
+                            thread_system.clone(),
+                            &thread_sender,
+                            &thread_pending_work,
+                        );
+                    }
+                    Err(e) => {
+                        if e.is_empty() {
+                            if thread_pending_work.load(Ordering::SeqCst) == 0 {
+                                break;
+                            } else {
+                                continue;
+                            }
+                        }
+                        if e.is_disconnected() {
+                            break;
+                        }
+                    }
+                }
+            })
+        })
+        .collect();
+
+    sender.send(state).unwrap();
+
+    let runner = runtime::Builder::new_current_thread().build().unwrap();
+
+    loop {
+        match futures.pop() {
+            None => break,
+            Some(f) => runner.block_on(f),
+        }
+    }
+
+    let result = failure_thing.lock().unwrap().take();
+    let result = result.unwrap_or_else(|| DeterminismResult::Success);
+    result
 }
 
 fn is_deterministic_helper(
+    failure_thing: &Mutex<Option<DeterminismResult>>,
     state: State,
-    passed_list: &mut Vec<State>,
-    system: &dyn TransitionSystem,
-) -> DeterminismResult {
-    if state.is_contained_in_list(passed_list) {
-        return DeterminismResult::Success;
-    }
-
-    passed_list.push(state.clone());
-
+    passed_list: &Arc<Mutex<Vec<State>>>,
+    system: Arc<Box<dyn TransitionSystem + Send + Sync>>,
+    sender: &Sender<State>,
+    pending_work: &Arc<AtomicU32>,
+) {
     for action in system.get_actions() {
         let mut location_fed = OwnedFederation::empty(system.get_dim());
         for transition in &system.next_transitions(&state.decorated_locations, &action) {
             let mut new_state = state.clone();
             if transition.use_transition(&mut new_state) {
                 let mut allowed_fed = transition.get_allowed_federation();
-                allowed_fed = state.decorated_locations.apply_invariants(allowed_fed);
+                let allowed_fed = state.decorated_locations.apply_invariants(allowed_fed);
                 if allowed_fed.has_intersection(&location_fed) {
                     warn!(
                         "Not deterministic from location {} failing action {}",
                         state.get_location().id,
                         action
                     );
-                    return DeterminismResult::Failure(state.get_location().id.clone(), action);
+                    {
+                        let mut failure_thing = failure_thing.lock().unwrap();
+                        *failure_thing = Some(DeterminismResult::Failure(
+                            state.get_location().id.clone(),
+                            action.clone(),
+                        ));
+                        return;
+                    }
                 }
                 location_fed += allowed_fed;
+                let system = system.deref().deref();
                 new_state.extrapolate_max_bounds(system);
 
-                if let DeterminismResult::Failure(location, action) =
-                    is_deterministic_helper(new_state, passed_list, system)
                 {
-                    return DeterminismResult::Failure(location, action);
+                    let mut passed_list = passed_list.lock().unwrap();
+                    if !new_state.is_contained_in_list(&passed_list) {
+                        passed_list.push(new_state.clone());
+                        pending_work.fetch_add(1, Ordering::SeqCst);
+                        sender.send(new_state).unwrap();
+                    }
                 }
             }
         }
     }
-    DeterminismResult::Success
+    pending_work.fetch_sub(1, Ordering::SeqCst);
 }
 
 /// Local consistency check WITHOUT pruning

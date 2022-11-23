@@ -1,6 +1,7 @@
 use edbm::util::constraints::ClockIndex;
 use edbm::zones::OwnedFederation;
 use log::debug;
+use log::warn;
 
 use crate::EdgeEval::updater::CompiledUpdate;
 use crate::ModelObjects::component::Declarations;
@@ -11,10 +12,13 @@ use edbm::util::bounds::Bounds;
 
 use crate::ModelObjects::representations::{ArithExpression, BoolExpression};
 
+use crate::ProtobufServer::threadpool::ThreadPool;
 use crate::TransitionSystems::{
     LocationTuple, TransitionID, TransitionSystem, TransitionSystemPtr,
 };
 use std::collections::hash_set::HashSet;
+use std::sync::Arc;
+use std::thread::Thread;
 
 use super::CompositionType;
 
@@ -42,6 +46,7 @@ impl Quotient {
         S: TransitionSystemPtr,
         new_clock_index: ClockIndex,
         dim: ClockIndex,
+        threadpool: &Arc<ThreadPool>,
     ) -> Result<TransitionSystemPtr, String> {
         if !S.get_output_actions().is_disjoint(&T.get_input_actions()) {
             return Err(format!(
@@ -51,13 +56,13 @@ impl Quotient {
             ));
         }
 
-        match T.precheck_sys_rep() {
+        match T.precheck_sys_rep(threadpool) {
             PrecheckResult::Success => {}
             _ => {
                 return Err("T (left) must be least consistent for quotient".to_string());
             }
         }
-        match S.precheck_sys_rep() {
+        match S.precheck_sys_rep(threadpool) {
             PrecheckResult::Success => {}
             _ => {
                 return Err("T (left) must be least consistent for quotient".to_string());
@@ -398,15 +403,28 @@ impl TransitionSystem for Quotient {
         comps
     }
 
-    fn is_deterministic(&self) -> DeterminismResult {
-        if let DeterminismResult::Success = self.T.is_deterministic() {
-            if let DeterminismResult::Success = self.S.is_deterministic() {
+    fn precheck_sys_rep(&self, threadpool: &Arc<ThreadPool>) -> PrecheckResult {
+        if let DeterminismResult::Failure(location, action) = self.is_deterministic(threadpool) {
+            warn!("Not deterministic");
+            return PrecheckResult::NotDeterministic(location, action);
+        }
+
+        if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {
+            warn!("Not consistent");
+            return PrecheckResult::NotConsistent(failure);
+        }
+        PrecheckResult::Success
+    }
+
+    fn is_deterministic(&self, threadpool: &Arc<ThreadPool>) -> DeterminismResult {
+        if let DeterminismResult::Success = self.T.is_deterministic(threadpool) {
+            if let DeterminismResult::Success = self.S.is_deterministic(threadpool) {
                 DeterminismResult::Success
             } else {
-                self.S.is_deterministic()
+                self.S.is_deterministic(threadpool)
             }
         } else {
-            self.T.is_deterministic()
+            self.T.is_deterministic(threadpool)
         }
     }
 

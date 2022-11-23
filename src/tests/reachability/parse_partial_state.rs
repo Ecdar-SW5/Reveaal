@@ -1,10 +1,12 @@
 #[cfg(test)]
 mod reachability_parse_partial_state {
+    use crate::ProtobufServer::threadpool::ThreadPool;
     use crate::{
         extract_system_rep, parse_queries,
         tests::reachability::helper_functions::reachability_test_helper_functions,
         JsonProjectLoader, ModelObjects::representations::QueryExpression, System,
     };
+    use std::sync::Arc;
     use test_case::test_case;
 
     const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
@@ -14,11 +16,14 @@ mod reachability_parse_partial_state {
     #[test_case("L20", false;
     "State gets parsed as not partial")]
     fn query_parser_checks_invalid_locations(location_str: &str, expect_partial: bool) {
+        let threadpool = Arc::new(ThreadPool::default());
+
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
         let (machine, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(
                 *mock_model,
                 FOLDER_PATH,
+                &threadpool,
             );
 
         let mock_state = Box::new(QueryExpression::State(
@@ -47,6 +52,8 @@ mod reachability_parse_partial_state {
     #[test_case("reachability: Adm2 -> [_](); [_]()";
     "Both end and start are partial")]
     fn query_parser_reject_partial_start(parser_input: &str) {
+        let threadpool = Arc::new(ThreadPool::default());
+
         let mut comp_loader =
             JsonProjectLoader::new(String::from(FOLDER_PATH), crate::tests::TEST_SETTINGS)
                 .to_comp_loader();
@@ -54,7 +61,8 @@ mod reachability_parse_partial_state {
         let q = parse_queries::parse_to_query(parser_input);
         let queries = q.first().unwrap();
 
-        let result = extract_system_rep::create_executable_query(queries, &mut *comp_loader);
+        let result =
+            extract_system_rep::create_executable_query(queries, &mut *comp_loader, &threadpool);
         if let Err(e) = result {
             assert_eq!(
                 (*e).to_string(),

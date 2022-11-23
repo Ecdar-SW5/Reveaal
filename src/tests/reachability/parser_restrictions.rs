@@ -1,8 +1,10 @@
 #[cfg(test)]
 mod reachability_parser_restrictions_test {
+    use crate::ProtobufServer::threadpool::ThreadPool;
     use crate::{
         extract_system_rep, parse_queries, xml_parser, JsonProjectLoader, XmlProjectLoader,
     };
+    use std::sync::Arc;
     use test_case::test_case;
 
     //These tests check the parsers validity checks, like an equal amount of parameters
@@ -14,6 +16,8 @@ mod reachability_parser_restrictions_test {
     "Amount of machine and amount of location args does not match: 2 machines, 1 loc-arg")]
     // The amount of locations given as parameters must be the same as the amount of machines.
     fn query_parser_checks_invalid_amount_of_location_and_machine_args(parser_input: &str) {
+        let threadpool = Arc::new(ThreadPool::default());
+
         let folder_path = "samples/json/EcdarUniversity".to_string();
         let mut comp_loader = if xml_parser::is_xml_project(&folder_path) {
             XmlProjectLoader::new(folder_path, crate::tests::TEST_SETTINGS)
@@ -27,7 +31,7 @@ mod reachability_parser_restrictions_test {
 
         // Runs the "validate_reachability" function from extract_system_rep, which we wish to test.
         assert!(matches!(
-            extract_system_rep::create_executable_query(queries, &mut *comp_loader),
+            extract_system_rep::create_executable_query(queries, &mut *comp_loader, &threadpool),
             Err(_)
         ));
     }
@@ -37,6 +41,8 @@ mod reachability_parser_restrictions_test {
     "Matching amount of locations and machines: 2 machines, 2 loc args")]
     // The amount of locations given as parameters must be the same as the amount of machines.
     fn query_parser_checks_valid_amount_of_location_and_machine_args(parser_input: &str) {
+        let threadpool = Arc::new(ThreadPool::default());
+
         let folder_path = "samples/json/EcdarUniversity".to_string();
         let mut comp_loader = if xml_parser::is_xml_project(&folder_path) {
             XmlProjectLoader::new(folder_path, crate::tests::TEST_SETTINGS)
@@ -50,7 +56,7 @@ mod reachability_parser_restrictions_test {
 
         // Runs the "validate_reachability" function from extract_system_rep, which we wish to test.
         assert!(matches!(
-            extract_system_rep::create_executable_query(queries, &mut *comp_loader),
+            extract_system_rep::create_executable_query(queries, &mut *comp_loader, &threadpool),
             Ok(_)
         ));
     }

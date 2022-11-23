@@ -1,4 +1,5 @@
 use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
+use std::ops::Deref;
 
 use crate::DataReader::component_loader::ModelCache;
 use crate::ProtobufServer::services::{
@@ -8,13 +9,14 @@ use crate::ProtobufServer::services::{
 use futures::FutureExt;
 use std::panic::UnwindSafe;
 use std::sync::atomic::{AtomicI32, Ordering};
+use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
 use super::threadpool::ThreadPool;
 
 #[derive(Debug, Default)]
 pub struct ConcreteEcdarBackend {
-    thread_pool: ThreadPool,
+    thread_pool: Arc<ThreadPool>,
     model_cache: ModelCache,
     num: AtomicI32,
 }
@@ -22,7 +24,7 @@ pub struct ConcreteEcdarBackend {
 impl ConcreteEcdarBackend {
     pub fn new(thread_count: usize, cache_size: usize) -> Self {
         ConcreteEcdarBackend {
-            thread_pool: ThreadPool::new(thread_count),
+            thread_pool: Arc::new(ThreadPool::new(thread_count)),
             model_cache: ModelCache::new(cache_size),
             num: AtomicI32::new(1),
         }
@@ -56,18 +58,20 @@ impl ConcreteEcdarBackend {
     async fn handle_request<RequestT, ResponseT>(
         &self,
         request: Request<RequestT>,
-        handler: impl Fn(RequestT, ModelCache) -> Result<ResponseT, Status> + Send + 'static,
+        handler: impl Fn(RequestT, ModelCache, &Arc<ThreadPool>) -> Result<ResponseT, Status>
+            + Send
+            + 'static,
     ) -> Result<Response<ResponseT>, Status>
     where
         ResponseT: Send + 'static,
         RequestT: Send + 'static,
     {
         let cache = self.model_cache.clone();
-        let res = catch_unwind(
-            self.thread_pool
-                .enqueue(move || handler(request.into_inner(), cache)),
-        )
-        .await;
+        let res =
+            catch_unwind(self.thread_pool.enqueue(move |threadpool| {
+                handler(request.into_inner(), cache, &threadpool.clone())
+            }))
+            .await;
         res.map(Response::new)
     }
 }

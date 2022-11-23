@@ -1,5 +1,6 @@
 pub mod reachability_test_helper_functions {
     use edbm::util::constraints::ClockIndex;
+    use std::sync::Arc;
 
     use crate::extract_system_rep::get_system_recipe;
     use crate::extract_system_rep::SystemRecipe;
@@ -8,6 +9,7 @@ pub mod reachability_test_helper_functions {
     use crate::JsonProjectLoader;
     use crate::ModelObjects::representations::BoolExpression;
     use crate::ModelObjects::representations::QueryExpression;
+    use crate::ProtobufServer::threadpool::ThreadPool;
     use crate::TransitionSystems::TransitionSystem;
     use crate::XmlProjectLoader;
 
@@ -58,6 +60,7 @@ pub mod reachability_test_helper_functions {
     pub fn create_system_recipe_and_machine(
         model: QueryExpression,
         folder_path: &str,
+        threadpool: &Arc<ThreadPool>,
     ) -> (Box<SystemRecipe>, Box<dyn TransitionSystem>) {
         let mut comp_loader = if xml_parser::is_xml_project(folder_path) {
             XmlProjectLoader::new(folder_path.to_string(), crate::tests::TEST_SETTINGS)
@@ -68,7 +71,7 @@ pub mod reachability_test_helper_functions {
         let mut dim: ClockIndex = 0;
         let mut quotient_index = None;
         let machine = get_system_recipe(&model, &mut (*comp_loader), &mut dim, &mut quotient_index);
-        let system = machine.clone().compile(dim).unwrap();
+        let system = machine.clone().compile(dim, threadpool).unwrap();
         (machine, system)
     }
 }

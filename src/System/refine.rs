@@ -5,11 +5,13 @@ use crate::DataTypes::{PassedStateList, PassedStateListExt, WaitingStateList};
 use crate::ModelObjects::component::Transition;
 
 use crate::ModelObjects::statepair::StatePair;
+use crate::ProtobufServer::threadpool::ThreadPool;
 use crate::System::local_consistency::ConsistencyFailure;
 use crate::TransitionSystems::transition_system::PrecheckResult;
 use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use std::collections::HashSet;
 use std::fmt;
+use std::sync::Arc;
 
 /// The result of a refinement check. [RefinementFailure] specifies the failure.
 #[allow(clippy::large_enum_variant)] //TODO: consider boxing the large fields to reduce the total size of the enum
@@ -123,13 +125,17 @@ impl<'a> RefinementContext<'a> {
 }
 
 /// Checks if sys1 refines sys2
-pub fn check_refinement(sys1: TransitionSystemPtr, sys2: TransitionSystemPtr) -> RefinementResult {
+pub fn check_refinement(
+    sys1: TransitionSystemPtr,
+    sys2: TransitionSystemPtr,
+    threadpool: &Arc<ThreadPool>,
+) -> RefinementResult {
     let mut context = RefinementContext::new(&sys1, &sys2);
     let dimensions = sys1.get_dim();
     debug!("Dimensions: {}", dimensions);
 
     //Firstly we check the preconditions
-    if let RefinementResult::Failure(failure) = check_preconditions(&sys1, &sys2) {
+    if let RefinementResult::Failure(failure) = check_preconditions(&sys1, &sys2, threadpool) {
         warn!("Refinement failed with failure: {}", failure);
         return RefinementResult::Failure(failure);
     }
@@ -559,8 +565,12 @@ fn prepare_init_state(
     !initial_pair.ref_zone().is_empty()
 }
 
-fn check_preconditions(sys1: &TransitionSystemPtr, sys2: &TransitionSystemPtr) -> RefinementResult {
-    match sys1.precheck_sys_rep() {
+fn check_preconditions(
+    sys1: &TransitionSystemPtr,
+    sys2: &TransitionSystemPtr,
+    threadpool: &Arc<ThreadPool>,
+) -> RefinementResult {
+    match sys1.precheck_sys_rep(threadpool) {
         PrecheckResult::Success => {}
         PrecheckResult::NotDeterministic(location, action) => {
             warn!("Refinement failed - sys1 is not deterministic");
@@ -587,7 +597,7 @@ fn check_preconditions(sys1: &TransitionSystemPtr, sys2: &TransitionSystemPtr) -
             }
         }
     }
-    match sys2.precheck_sys_rep() {
+    match sys2.precheck_sys_rep(threadpool) {
         PrecheckResult::Success => {}
         PrecheckResult::NotDeterministic(location, action) => {
             warn!("Refinement failed - sys2 is not deterministic");

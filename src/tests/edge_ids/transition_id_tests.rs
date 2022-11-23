@@ -2,13 +2,16 @@
 mod reachability_transition_id_test {
     use std::collections::HashSet;
     use std::iter::FromIterator;
+    use std::sync::Arc;
 
+    use crate::ProtobufServer::threadpool::ThreadPool;
     use crate::TransitionSystems::TransitionID;
     use crate::{
         tests::reachability::helper_functions::reachability_test_helper_functions,
         ModelObjects::representations::QueryExpression,
     };
     use test_case::test_case;
+
     const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
 
     #[test_case(QueryExpression::VarName("Machine".to_string()), vec![
@@ -75,11 +78,14 @@ mod reachability_transition_id_test {
         machineExpression: QueryExpression,
         transition_ids: Vec<TransitionID>,
     ) {
+        let threadpool = Arc::new(ThreadPool::default());
+
         let mock_model = Box::new(machineExpression);
         let mut expected_ids: HashSet<&TransitionID> = HashSet::from_iter(transition_ids.iter());
         let (_, system) = reachability_test_helper_functions::create_system_recipe_and_machine(
             *mock_model,
             FOLDER_PATH,
+            &threadpool,
         );
         for loc in system.get_all_locations() {
             for ac in system.get_actions() {
