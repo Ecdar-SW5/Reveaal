@@ -34,30 +34,30 @@ impl TransitionID {
         &self,
         current_leaves: &mut Vec<Vec<TransitionID>>,
         index: usize,
-    ) -> (&TransitionID, usize) {
+    ) -> usize {
         match self {
             TransitionID::Conjunction(l, r) | TransitionID::Composition(l, r) => {
-                let a = l.get_leaves_helper(current_leaves, index);
-                let b = r.get_leaves_helper(current_leaves, a.1 + 1);
-                (self, b.1)
+                let index_left = l.get_leaves_helper(current_leaves, index);
+                let index_right = r.get_leaves_helper(current_leaves, index_left + 1);
+                index_right
             }
             TransitionID::Quotient(l, r) => {
-                let mut curIndex = index;
+                let mut index_left = index;
                 for t in l {
-                    (_, curIndex) = t.get_leaves_helper(current_leaves, index);
+                    index_left = t.get_leaves_helper(current_leaves, index);
                 }
-                let mut lastIndex = curIndex;
+                let mut index_right = index_left;
                 for s in r {
-                    (_, lastIndex) = s.get_leaves_helper(current_leaves, curIndex + 1);
+                    index_right = s.get_leaves_helper(current_leaves, index_left + 1);
                 }
-                (self, lastIndex)
+                index_right
             }
             TransitionID::Simple(_) | TransitionID::None => {
                 if current_leaves.len() <= index {
                     current_leaves.push(Vec::new());
                 }
                 current_leaves[index].push(self.clone());
-                (self, index)
+                index
             }
         }
     }

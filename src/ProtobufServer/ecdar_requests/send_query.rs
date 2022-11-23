@@ -165,14 +165,13 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
             refine::RefinementResult::Failure(failure) => convert_refinement_failure(failure),
         },
 
-        QueryResult::Reachability(path) => {
+        QueryResult::Reachability(res) => {
             let proto_path = TransitionID::split_into_component_lists(
-                &path
-                    .path
+                &res.path
                     .as_ref()
                     .unwrap()
                     .iter()
-                    .map(|p| p.id.clone())
+                    .map(|t| t.id.clone())
                     .collect(),
             );
 
@@ -191,8 +190,12 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         .collect();
 
                     Some(ProtobufResult::Reachability(ReachabilityResult {
-                        success: path.was_reachable,
-                        reason: if path.was_reachable {"".to_string()} else {"No path exists".to_string()},
+                        success: res.was_reachable,
+                        reason: if res.was_reachable {
+                            "".to_string()
+                        } else {
+                            "No path exists".to_string()
+                        },
                         state: None,
                         component_paths,
                     }))
