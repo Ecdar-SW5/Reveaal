@@ -6,7 +6,11 @@ use crate::{
 };
 use dyn_clone::{clone_trait_object, DynClone};
 use edbm::util::{bounds::Bounds, constraints::ClockIndex};
-use std::collections::hash_set::HashSet;
+use std::hash::Hash;
+use std::{
+    collections::{hash_set::HashSet, HashMap},
+    iter::zip,
+};
 
 pub type TransitionSystemPtr = Box<dyn TransitionSystem>;
 
@@ -91,6 +95,45 @@ pub trait TransitionSystem: DynClone {
             .into_iter()
             .chain(right_child.component_names().into_iter())
             .collect()
+    }
+
+    fn clock_name_and_component_to_index(&self, name: &str, component: &str) -> Option<usize> {
+        let index_to_clock_name_and_component = self.index_to_clock_name_and_component_map();
+        index_to_clock_name_and_component
+            .get(&(name.to_string(), component.to_string()))
+            .copied()
+    }
+
+    fn index_to_clock_name_and_component(&self, index: &usize) -> Option<(String, String)> {
+        fn invert<T1, T2>(hash_map: HashMap<T1, T2>) -> HashMap<T2, T1>
+        where
+            T2: Hash + Eq,
+        {
+            hash_map.into_iter().map(|x| (x.1, x.0)).collect()
+        }
+
+        let index_to_clock_name_and_component = self.index_to_clock_name_and_component_map();
+        let index_to_clock_name_and_component = invert(index_to_clock_name_and_component);
+        index_to_clock_name_and_component
+            .get(index)
+            .map(|x| x.to_owned())
+    }
+
+    fn index_to_clock_name_and_component_map(&self) -> HashMap<(String, String), usize> {
+        let binding = self.component_names();
+        let component_names = binding.into_iter();
+        let binding = self.get_decls();
+        let clock_to_index = binding.into_iter().map(|decl| decl.clocks.to_owned());
+
+        zip(component_names, clock_to_index)
+            .map(|x| {
+                x.1.iter()
+                    .map(|y| ((y.0.to_owned(), x.0.to_string()), y.1.to_owned()))
+                    .collect::<HashMap<(String, String), usize>>()
+            })
+            .fold(HashMap::new(), |accumulator, head| {
+                accumulator.into_iter().chain(head).collect()
+            })
     }
 }
 

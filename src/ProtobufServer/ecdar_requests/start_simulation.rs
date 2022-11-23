@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::hash::Hash;
-use std::iter::zip;
 
 use crate::component::State;
 use crate::DataReader::component_loader::ModelCache;
@@ -158,12 +157,9 @@ impl ProtoConstraint {
             hash_map.into_iter().map(|x| (x.1, x.0)).collect()
         }
 
-        fn clock_name(
-            index_to_identifier: &HashMap<usize, (String, String)>,
-            index: usize,
-        ) -> String {
+        fn clock_name(clock_name_and_component: Option<&(String, String)>) -> String {
             let ZERO_CLOCK_NAME = "0";
-            match index_to_identifier.get(&index) {
+            match clock_name_and_component {
                 Some((clock_name, _)) => clock_name.to_string(),
                 // If an index does not correspond to an index we assume it's the zero clock
                 None => ZERO_CLOCK_NAME.to_string(),
@@ -171,39 +167,25 @@ impl ProtoConstraint {
         }
 
         fn clock_component(
-            index_to_identifier: &HashMap<usize, (String, String)>,
-            index: usize,
+            clock_name_and_component: Option<&(String, String)>,
         ) -> Option<SpecificComponent> {
-            index_to_identifier.get(&index).map(|x| SpecificComponent {
+            clock_name_and_component.map(|x| SpecificComponent {
                 component_name: x.1.to_string(),
                 component_index: 0,
             })
         }
 
-        let binding = system.component_names();
-        let component_names = binding.into_iter();
-        let binding = system.get_decls();
-        let clock_to_index = binding.into_iter().map(|decl| decl.clocks.to_owned());
-
-        let index_to_name_and_component = zip(component_names, clock_to_index)
-            .map(|x| {
-                x.1.iter()
-                    .map(|y| ((y.0.to_owned(), x.0.to_string()), y.1.to_owned()))
-                    .collect::<HashMap<(String, String), usize>>()
-            })
-            .fold(HashMap::new(), |accumulator, head| {
-                accumulator.into_iter().chain(head).collect()
-            });
-        let index_to_name_and_component = invert(index_to_name_and_component);
+        let x = system.index_to_clock_name_and_component(&constraint.i);
+        let y = system.index_to_clock_name_and_component(&constraint.j);
 
         ProtoConstraint {
             x: Some(ComponentClock {
-                specific_component: clock_component(&index_to_name_and_component, constraint.i),
-                clock_name: clock_name(&index_to_name_and_component, constraint.i),
+                specific_component: clock_component(x.as_ref()),
+                clock_name: clock_name(x.as_ref()),
             }),
             y: Some(ComponentClock {
-                specific_component: clock_component(&index_to_name_and_component, constraint.j),
-                clock_name: clock_name(&index_to_name_and_component, constraint.j),
+                specific_component: clock_component(y.as_ref()),
+                clock_name: clock_name(y.as_ref()),
             }),
             strict: constraint.ineq().is_strict(),
             c: constraint.ineq().bound(),
