@@ -218,8 +218,68 @@ pub fn create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision() -
     };
 
     let source_dp = ProtoState {
-        location_tuple: Some(loc_tuple_dp),
-        federation: Some(federation_dp),
+        location_tuple: Some(ProtoLocationTuple {
+            locations: vec![
+                ProtoLocation {
+                    id: "L8".to_string(),
+                    specific_component: Some(ProtoSpecificComponent {
+                        component_name: "Machine3".to_string(),
+                        component_index: 0,
+                    }),
+                },
+                ProtoLocation {
+                    id: "L5".to_string(),
+                    specific_component: Some(ProtoSpecificComponent {
+                        component_name: "Machine".to_string(),
+                        component_index: 0,
+                    }),
+                },
+            ],
+        }),
+        federation: Some(ProtoFederation {
+            disjunction: Some(ProtoDisjunction {
+                conjunctions: vec![ProtoConjunction {
+                    constraints: vec![
+                        ProtoConstraint {
+                            x: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Machine3".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "y".to_string(),
+                            }),
+                            y: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Machine".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "y".to_string(),
+                            }),
+                            strict: false,
+                            c: 0,
+                        },
+                        ProtoConstraint {
+                            x: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Machine".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "y".to_string(),
+                            }),
+                            y: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Machine3".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "y".to_string(),
+                            }),
+                            strict: false,
+                            c: 0,
+                        },
+                    ],
+                }],
+            }),
+        }),
     };
 
     let edge29 = ProtoEdge {

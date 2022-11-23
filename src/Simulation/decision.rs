@@ -167,6 +167,7 @@ mod tests {
             create_EcdarUniversity_Machine_with_nonempty_Federation_Decision,
         },
         DataReader::json_reader::read_json_component,
+        ProtobufServer::services::State,
         Simulation::decision::Decision,
         TransitionSystems::CompiledComponent,
     };

@@ -70,7 +70,7 @@ impl ProtoDecisionPoint {
 }
 
 impl ProtoState {
-    fn from(s: &State, system: &TransitionSystemPtr) -> Self {
+    pub fn from(s: &State, system: &TransitionSystemPtr) -> Self {
         let location_tuple = ProtoLocationTuple::from(s.get_location());
         let federation = ProtoFederation::from(s.zone_ref(), system);
 
