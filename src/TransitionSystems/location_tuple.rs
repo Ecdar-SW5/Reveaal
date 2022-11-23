@@ -1,5 +1,3 @@
-use std::process::id;
-
 use edbm::{util::constraints::ClockIndex, zones::OwnedFederation};
 
 use crate::{

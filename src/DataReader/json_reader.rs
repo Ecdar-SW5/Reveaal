@@ -1,4 +1,3 @@
-use crate::component::Component;
 use crate::ModelObjects::component;
 use crate::ModelObjects::queries;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
