@@ -169,11 +169,12 @@ fn proto_federation_to_owned_federation(
 mod tests {
     use crate::{
         tests::Simulation::helper::{
+            create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision,
             create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_component,
             create_EcdarUniversity_Machine_system,
-            create_EcdarUniversity_Machine_with_nonempty_Federation_Decision, create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision,
+            create_EcdarUniversity_Machine_with_nonempty_Federation_Decision,
         },
-        DataReader::json_reader::{read_json_component},
+        DataReader::json_reader::read_json_component,
         Simulation::decision::Decision,
         TransitionSystems::CompiledComponent,
     };
@@ -248,7 +249,8 @@ mod tests {
         let machine = read_json_component("samples/json/EcdarUniversity", "Machine");
         let components = vec![machine3.clone(), machine.clone()];
         let system = CompiledComponent::from(components, "( Machine3 && Machine )");
-        let proto_decision = create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision();
+        let proto_decision =
+            create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision();
 
         let expected_edge = machine.find_edge_from_id("E29");
 
@@ -267,7 +269,6 @@ mod tests {
             decided: expected_edge.to_owned(),
         };
 
-
         // Act
         let actual_decision = Decision::from(proto_decision, &system);
 
@@ -276,7 +277,5 @@ mod tests {
 
         // Assert
         assert_eq!(actual_decision, expected_decision);
-        
-
     }
 }
