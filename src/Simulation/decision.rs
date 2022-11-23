@@ -1,9 +1,7 @@
-use edbm::util::constraints::{
-    ClockIndex, Conjunction, Constraint, Disjunction, Inequality, RawInequality,
-};
+use edbm::util::constraints::{Conjunction, Constraint, Disjunction, Inequality, RawInequality};
 use edbm::zones::OwnedFederation;
 
-use crate::component::{Declarations, Edge, State};
+use crate::component::{Edge, State};
 use crate::ProtobufServer::services::{
     Conjunction as ProtoConjunction, Constraint as ProtoConstraint, Decision as ProtoDecision,
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
@@ -91,19 +89,27 @@ fn proto_constraint_to_constraint(
     proto_constraint: ProtoConstraint,
     system: &TransitionSystemPtr,
 ) -> Constraint {
-    let decls: Vec<&Declarations> = system.get_decls();
-
-    let x_clock_name = match proto_constraint.x {
+    let x_clock = match proto_constraint.x {
         None => panic!("No clock name"),
-        Some(clock) => clock.clock_name,
+        Some(clock) => clock,
     };
-    let y_clock_name = match proto_constraint.y {
+    let y_clock = match proto_constraint.y {
         None => panic!("No clock name"),
-        Some(clock) => clock.clock_name,
+        Some(clock) => clock,
     };
 
-    let i = get_clock_index_from_name(&x_clock_name, &decls);
-    let j = get_clock_index_from_name(&y_clock_name, &decls);
+    let i = system
+        .clock_name_and_component_to_index(
+            &x_clock.clock_name,
+            &x_clock.specific_component.unwrap().component_name,
+        )
+        .unwrap();
+    let j = system
+        .clock_name_and_component_to_index(
+            &y_clock.clock_name,
+            &y_clock.specific_component.unwrap().component_name,
+        )
+        .unwrap();
 
     let inequality = match proto_constraint.strict {
         true => Inequality::LS(proto_constraint.c),
@@ -112,20 +118,6 @@ fn proto_constraint_to_constraint(
 
     let ineq: RawInequality = RawInequality::from_inequality(&inequality);
     Constraint::new(i, j, ineq)
-}
-
-fn get_clock_index_from_name(name: &str, decls: &Vec<&Declarations>) -> ClockIndex {
-    if name == "0" {
-        return 0;
-    } else {
-        for dec in decls {
-            match dec.get_clock_index_by_name(name) {
-                None => continue,
-                Some(clock) => return *clock,
-            };
-        }
-    }
-    panic!("Clock not found");
 }
 
 fn proto_federation_to_owned_federation(
