@@ -62,7 +62,6 @@ impl Decision {
             None => panic!("No loc tuple"),
             Some(loc_tuple) => loc_tuple,
         };
-    
 
         let proto_federation: ProtoFederation = match proto_state.federation {
             None => panic!("No federation found"),
@@ -128,8 +127,7 @@ fn get_clock_index_from_name(name: &str, decls: &Vec<&Declarations>) -> ClockInd
     }
     panic!("Clock not found");
 }
-// BLOCKED!! :tf:
-// TODO: This needs to be rewritten, as it most likely is not working corectly.
+
 fn proto_federation_to_owned_federation(
     proto_federation: ProtoFederation,
     system: &TransitionSystemPtr,
@@ -146,7 +144,7 @@ fn proto_federation_to_owned_federation(
         .collect();
 
     let mut constraints: Vec<Vec<Constraint>> = Vec::new();
-    // This does not work for some reason lol.
+
     for vec_proto_constraint in proto_constraints {
         let mut constraint_vec: Vec<Constraint> = Vec::new();
         for proto_constraint in vec_proto_constraint {
@@ -171,20 +169,22 @@ fn proto_federation_to_owned_federation(
 mod tests {
     use crate::{
         tests::Simulation::helper::{
-            create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_system,
+            create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_component,
+            create_EcdarUniversity_Machine_system,
+            create_EcdarUniversity_Machine_with_nonempty_Federation_Decision,
         },
         DataReader::json_reader::read_json_component,
         Simulation::decision::Decision,
+        TransitionSystems::CompiledComponent,
     };
 
     // TODO this test is badly formatted
     #[test]
     fn from__ProtoDecision_with_universal_ProtoFederation__returns_correct_Decision() {
         // Arrange
-        let project_path = "samples/json/EcdarUniversity";
+        let component = create_EcdarUniversity_Machine_component();
         let proto_decision = create_EcdarUniversity_Machine_Decision();
         let system = create_EcdarUniversity_Machine_system();
-        let component = read_json_component(project_path, "Machine");
 
         let expected_edge = component
             .get_edges()
@@ -214,9 +214,55 @@ mod tests {
         assert_eq!(actual_decision, expected_decision);
     }
 
+    #[test]
     fn from__ProtoDecision_with_nonuniversal_ProtoFederation__returns_correct_Decision() {
         // Arrange
+        let component = create_EcdarUniversity_Machine_component();
+        let proto_decision = create_EcdarUniversity_Machine_with_nonempty_Federation_Decision();
+        let system = create_EcdarUniversity_Machine_system();
 
+        let expected_edge = component
+            .get_edges()
+            .iter()
+            // .filter_map(|e| );
+            .filter(|e| e.id.contains("E29"))
+            .nth(0)
+            .unwrap();
+
+        let action = "tea";
+        let mut expected_source = system.get_initial_state().unwrap();
+        let transition =
+            system.next_transitions_if_available(expected_source.get_location(), action);
+        transition
+            .first()
+            .unwrap()
+            .use_transition(&mut expected_source);
+
+        let expected_decision = Decision {
+            source: expected_source,
+            decided: expected_edge.to_owned(),
+        };
+
+        // Act
+        let actual_decision = Decision::from(proto_decision, &system);
+
+        let actual_decision = format!("{:?}", actual_decision);
+        let expected_decision = format!("{:?}", expected_decision);
+
+        // Assert
+        assert_eq!(actual_decision, expected_decision);
+    }
+
+    #[test]
+    fn from__ProtoDecision_with_composite_components__returns_correct_Decision() {
+        // Arrange
+        let machine3 = read_json_component("samples/json/EcdarUniversity", "Machine3");
+        let machine = read_json_component("samples/json/EcdarUniversity", "Machine");
+        let components = vec![machine3, machine];
+        let system = CompiledComponent::from(components, "( machine3 && machine )");
+        let proto_decision = create_EcdarUniversity_Machine_Decision();
+
+        let expected_source = system.get_initial_state();
 
         // Act
 
