@@ -1,0 +1,4 @@
+{
+  "name": "System Declarations",
+  "declarations": "system LeftConjunction1, LeftConjunction2, LeftConjunction3, LeftConjunctionEmpty, RightConjunction1, RightConjunction2, RightConjunction3, RightConjunctionEmpty;\n"
+}

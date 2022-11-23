@@ -1,0 +1,4 @@
+{
+    "name": "System Declarations",
+    "declarations": "system CompiledComponent1, CompiledComponent2, CompiledComponent3;\n"
+  }
