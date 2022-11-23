@@ -163,6 +163,76 @@ pub fn create_EcdarUniversity_Machine_with_nonempty_Federation_Decision() -> Pro
     }
 }
 
+pub fn create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision() -> ProtoDecision {
+    // kopieret fra create_EcdarUnversity_Machine_Initial_Decision_Point men ved ikke hvordan det kunne gøres til en funktion smart
+    let specific_comp_dp1 = ProtoSpecificComponent {
+        component_name: "Machine".to_string(),
+        component_index: 1,
+    };
+
+    let specific_comp_dp2 = ProtoSpecificComponent {
+        component_name: "Machine3".to_string(),
+        component_index: 2,
+    };
+
+    let componentclock_dp1 = ProtoComponentClock {
+        specific_component: Some(specific_comp_dp1.clone()),
+        clock_name: "0".to_string(),
+    };
+    let componentclock_dp2 = ProtoComponentClock {
+        specific_component: Some(specific_comp_dp1.clone()),
+        clock_name: "y".to_string(),
+    };
+
+    let constraint29_dp = ProtoConstraint {
+        x: Some(componentclock_dp1),
+        y: Some(componentclock_dp2),
+        strict: false,
+        c: -2,
+    };
+
+    let conjunction_dp = ProtoConjunction {
+        constraints: vec![constraint29_dp],
+    };
+
+    let disjunction_dp = ProtoDisjunction {
+        conjunctions: vec![conjunction_dp],
+    };
+
+    let federation_dp = ProtoFederation {
+        disjunction: Some(disjunction_dp),
+    };
+
+    let location_dp1 = ProtoLocation {
+        id: "L5".to_string(),
+        specific_component: Some(specific_comp_dp1.clone()),
+    };
+
+    let location_dp2 = ProtoLocation {
+        id: "L8".to_string(),
+        specific_component: Some(specific_comp_dp2.clone()),
+    };
+
+    let loc_tuple_dp = ProtoLocationTuple {
+        locations: vec![location_dp2, location_dp1],
+    };
+
+    let source_dp = ProtoState {
+        location_tuple: Some(loc_tuple_dp),
+        federation: Some(federation_dp),
+    };
+
+    let edge29 = ProtoEdge {
+        id: "E29".to_string(),
+        specific_component: Some(specific_comp_dp1),
+    };
+
+    ProtoDecision {
+        source: Some(source_dp),
+        edge: Some(edge29),
+    }
+}
+
 pub fn initial_transition_decision_point_EcdarUniversity_Machine() -> TransitionDecisionPoint {
     let system = create_EcdarUniversity_Machine_system();
     TransitionDecisionPoint::initial(&system).unwrap()

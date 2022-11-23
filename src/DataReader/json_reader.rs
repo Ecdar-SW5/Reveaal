@@ -1,6 +1,7 @@
 use crate::ModelObjects::component;
 use crate::ModelObjects::queries;
 use crate::ModelObjects::system_declarations::SystemDeclarations;
+use crate::component::Component;
 use serde::de::DeserializeOwned;
 use std::fs::File;
 use std::io::Read;

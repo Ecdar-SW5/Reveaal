@@ -171,9 +171,9 @@ mod tests {
         tests::Simulation::helper::{
             create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_component,
             create_EcdarUniversity_Machine_system,
-            create_EcdarUniversity_Machine_with_nonempty_Federation_Decision,
+            create_EcdarUniversity_Machine_with_nonempty_Federation_Decision, create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision,
         },
-        DataReader::json_reader::read_json_component,
+        DataReader::json_reader::{read_json_component},
         Simulation::decision::Decision,
         TransitionSystems::CompiledComponent,
     };
@@ -186,13 +186,7 @@ mod tests {
         let proto_decision = create_EcdarUniversity_Machine_Decision();
         let system = create_EcdarUniversity_Machine_system();
 
-        let expected_edge = component
-            .get_edges()
-            .iter()
-            // .filter_map(|e| );
-            .filter(|e| e.id.contains("E29"))
-            .nth(0)
-            .unwrap();
+        let expected_edge = component.find_edge_from_id("E29");
 
         let expected_source = match system.get_initial_state() {
             None => panic!("No inital state found"),
@@ -221,13 +215,7 @@ mod tests {
         let proto_decision = create_EcdarUniversity_Machine_with_nonempty_Federation_Decision();
         let system = create_EcdarUniversity_Machine_system();
 
-        let expected_edge = component
-            .get_edges()
-            .iter()
-            // .filter_map(|e| );
-            .filter(|e| e.id.contains("E29"))
-            .nth(0)
-            .unwrap();
+        let expected_edge = component.find_edge_from_id("E29");
 
         let action = "tea";
         let mut expected_source = system.get_initial_state().unwrap();
@@ -258,14 +246,37 @@ mod tests {
         // Arrange
         let machine3 = read_json_component("samples/json/EcdarUniversity", "Machine3");
         let machine = read_json_component("samples/json/EcdarUniversity", "Machine");
-        let components = vec![machine3, machine];
-        let system = CompiledComponent::from(components, "( machine3 && machine )");
-        let proto_decision = create_EcdarUniversity_Machine_Decision();
+        let components = vec![machine3.clone(), machine.clone()];
+        let system = CompiledComponent::from(components, "( Machine3 && Machine )");
+        let proto_decision = create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision();
 
-        let expected_source = system.get_initial_state();
+        let expected_edge = machine.find_edge_from_id("E29");
+
+        let mut expected_source = system.get_initial_state().unwrap();
+
+        let action = "tea";
+        let transition =
+            system.next_transitions_if_available(expected_source.get_location(), action);
+        transition
+            .first()
+            .unwrap()
+            .use_transition(&mut expected_source);
+
+        let expected_decision = Decision {
+            source: expected_source.clone(),
+            decided: expected_edge.to_owned(),
+        };
+
 
         // Act
+        let actual_decision = Decision::from(proto_decision, &system);
+
+        let actual_decision = format!("{:?}", actual_decision);
+        let expected_decision = format!("{:?}", expected_decision);
 
         // Assert
+        assert_eq!(actual_decision, expected_decision);
+        
+
     }
 }

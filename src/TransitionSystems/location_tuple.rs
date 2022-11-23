@@ -1,3 +1,5 @@
+use std::process::id;
+
 use edbm::{util::constraints::ClockIndex, zones::OwnedFederation};
 
 use crate::{
@@ -74,6 +76,8 @@ impl LocationTuple {
                     .map(|c| c.component_name.to_string()),
             })
             .collect();
+
+        print!("{:?}", id_looking_for);
 
         system
             .get_all_locations()
