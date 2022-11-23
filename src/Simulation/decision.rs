@@ -1,14 +1,12 @@
 use edbm::util::constraints::{Conjunction, Constraint, Disjunction, Inequality, RawInequality};
 use edbm::zones::OwnedFederation;
 
-use crate::component::{Edge, State, Component};
+use crate::component::{Component, Edge, State};
 use crate::ProtobufServer::services::{
     Conjunction as ProtoConjunction, Constraint as ProtoConstraint, Decision as ProtoDecision,
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
     LocationTuple as ProtoLocationTuple, State as ProtoState,
 };
-use crate::System::save_component::combine_components;
-use crate::System::save_component::PruningStrategy::NoPruning;
 use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
 
 #[derive(Debug)]
@@ -30,19 +28,23 @@ impl Decision {
         &self.decided
     }
 
-    pub fn convert_protoedge_to_edge(protoedge: ProtoEdge, system: &TransitionSystemPtr, components: Vec<Component>) -> Edge {
-
-        let mut edges = components
+    pub fn convert_protoedge_to_edge(proto_edge: ProtoEdge, components: Vec<Component>) -> Edge {
+        components
             .into_iter()
-            .map(|x| x.get_edges())
-            .reduce(|accumulator, x| &vec![*accumulator, *x].concat())
-            .filter(|e| **e.id == protoedge.id)
-            .nth(0)
+            .map(|c| c.get_edges().to_owned())
+            .reduce(|acc, es| acc.into_iter().chain(es.into_iter()).collect())
+            .unwrap()
+            .into_iter()
+            .find(|e| e.id == proto_edge.id)
             .unwrap()
     }
 
     // TODO: This needs to be rewritten, as it most
-    pub fn from(proto_decision: ProtoDecision, system: &TransitionSystemPtr) -> Self {
+    pub fn from(
+        proto_decision: ProtoDecision,
+        system: &TransitionSystemPtr,
+        components: Vec<Component>,
+    ) -> Self {
         // Convert ProtoState to State
         let proto_state: ProtoState = match proto_decision.source {
             None => panic!("Not found"),
@@ -74,7 +76,7 @@ impl Decision {
 
         let state = State::create(location_tuple, zone);
 
-        let decided = Self::convert_protoedge_to_edge(proto_edge, &system);
+        let decided = Self::convert_protoedge_to_edge(proto_edge, components);
 
         Decision {
             source: state,
@@ -190,7 +192,7 @@ mod tests {
         };
 
         // Act
-        let actual_decision = Decision::from(proto_decision, &system);
+        let actual_decision = Decision::from(proto_decision, &system, vec![component]);
 
         let actual_decision = format!("{:?}", actual_decision);
         let expected_decision = format!("{:?}", expected_decision);
@@ -223,7 +225,7 @@ mod tests {
         };
 
         // Act
-        let actual_decision = Decision::from(proto_decision, &system);
+        let actual_decision = Decision::from(proto_decision, &system, vec![component]);
 
         let actual_decision = format!("{:?}", actual_decision);
         let expected_decision = format!("{:?}", expected_decision);
@@ -238,7 +240,7 @@ mod tests {
         let machine3 = read_json_component("samples/json/EcdarUniversity", "Machine3");
         let machine = read_json_component("samples/json/EcdarUniversity", "Machine");
         let components = vec![machine3.clone(), machine.clone()];
-        let system = CompiledComponent::from(components, "( Machine3 && Machine )");
+        let system = CompiledComponent::from(components.clone(), "( Machine3 && Machine )");
         let proto_decision =
             create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision();
 
@@ -252,7 +254,7 @@ mod tests {
         };
 
         // Act
-        let actual_decision = Decision::from(proto_decision, &system);
+        let actual_decision = Decision::from(proto_decision, &system, components);
 
         let actual_decision = format!("{:?}", actual_decision);
         let expected_decision = format!("{:?}", expected_decision);

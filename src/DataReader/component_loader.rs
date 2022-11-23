@@ -141,40 +141,13 @@ impl ComponentContainer {
 
         let components = proto_components
             .iter()
-            .flat_map(Self::parse_components_if_some)
+            .flat_map(parse_components_if_some)
             .flatten()
             .collect();
 
         let component_container = Self::create_component_container(components);
 
         Ok(component_container)
-    }
-
-    fn parse_components_if_some(
-        proto_component: &services::Component,
-    ) -> Result<Vec<Component>, tonic::Status> {
-        if let Some(rep) = &proto_component.rep {
-            match rep {
-                services::component::Rep::Json(json) => Self::parse_json_component(json),
-                services::component::Rep::Xml(xml) => Ok(Self::parse_xml_components(xml)),
-            }
-        } else {
-            Ok(vec![])
-        }
-    }
-
-    fn parse_json_component(json: &str) -> Result<Vec<Component>, tonic::Status> {
-        match json_reader::json_to_component(json) {
-            Ok(comp) => Ok(vec![comp]),
-            Err(_) => Err(tonic::Status::invalid_argument(
-                "Failed to parse json component",
-            )),
-        }
-    }
-
-    fn parse_xml_components(xml: &str) -> Vec<Component> {
-        let (comps, _, _) = xml_parser::parse_xml_from_str(xml);
-        comps
     }
 
     pub fn create_component_container(components: Vec<Component>) -> ComponentContainer {
@@ -197,6 +170,33 @@ impl ComponentContainer {
     pub(crate) fn set_settings(&mut self, settings: Settings) {
         self.settings = Some(settings);
     }
+}
+
+pub fn parse_components_if_some(
+    proto_component: &services::Component,
+) -> Result<Vec<Component>, tonic::Status> {
+    if let Some(rep) = &proto_component.rep {
+        match rep {
+            services::component::Rep::Json(json) => parse_json_component(json),
+            services::component::Rep::Xml(xml) => Ok(parse_xml_components(xml)),
+        }
+    } else {
+        Ok(vec![])
+    }
+}
+
+fn parse_json_component(json: &str) -> Result<Vec<Component>, tonic::Status> {
+    match json_reader::json_to_component(json) {
+        Ok(comp) => Ok(vec![comp]),
+        Err(_) => Err(tonic::Status::invalid_argument(
+            "Failed to parse json component",
+        )),
+    }
+}
+
+fn parse_xml_components(xml: &str) -> Vec<Component> {
+    let (comps, _, _) = xml_parser::parse_xml_from_str(xml);
+    comps
 }
 
 pub trait ProjectLoader: ComponentLoader {
