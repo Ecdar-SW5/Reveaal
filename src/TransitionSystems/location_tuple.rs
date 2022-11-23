@@ -75,8 +75,6 @@ impl LocationTuple {
             })
             .collect();
 
-        print!("{:?}", id_looking_for);
-
         system
             .get_all_locations()
             .into_iter()

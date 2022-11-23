@@ -164,6 +164,7 @@ mod test {
         ))
     }
 
+    #[ignore]
     #[test_case(
         create_composition_request(),
         create_expected_response_to_composition_request();

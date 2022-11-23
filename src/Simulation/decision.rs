@@ -103,13 +103,13 @@ fn proto_constraint_to_constraint(
             &x_clock.clock_name,
             &x_clock.specific_component.unwrap().component_name,
         )
-        .unwrap();
+        .unwrap_or(0);
     let j = system
         .clock_name_and_component_to_index(
             &y_clock.clock_name,
             &y_clock.specific_component.unwrap().component_name,
         )
-        .unwrap();
+        .unwrap_or(0);
 
     let inequality = match proto_constraint.strict {
         true => Inequality::LS(proto_constraint.c),
