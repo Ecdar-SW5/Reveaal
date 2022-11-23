@@ -1,16 +1,21 @@
 #[cfg(test)]
 mod test {
     use crate::{
-        tests::grpc::grpc_helper::{
-            create_initial_decision_point, create_sample_json_component,
-            create_simulation_start_request,
+        tests::{
+            grpc::grpc_helper::{
+                create_initial_decision_point, create_json_component_as_string,
+                create_sample_json_component, create_simulation_start_request,
+            },
+            Simulation::helper,
         },
         ProtobufServer::{
             self,
             services::{
-                ecdar_backend_server::EcdarBackend, SimulationStartRequest, SimulationStepResponse,
+                component::Rep, ecdar_backend_server::EcdarBackend, Component, ComponentsInfo,
+                SimulationInfo, SimulationStartRequest, SimulationStepResponse,
             },
         },
+        TransitionSystems::CompositionType,
     };
     use test_case::test_case;
     use tonic::{Request, Response, Status};
@@ -94,4 +99,79 @@ mod test {
     //         "Malformed composition, bad expression",
     //     ))
     // }
+
+    #[test_case(
+        create_composition_request(),
+        create_expected_response_to_composition_request();
+        "given a composition request, responds with correct component"
+    )]
+    #[test_case(
+        create_conjunction_request(),
+        create_expected_response_to_conjunction_request();
+        "given a good conjunction request, responds with correct component"
+    )]
+    #[tokio::test]
+    async fn start_simulation_step__get_composit_component__should_return_component(
+        request: Request<SimulationStartRequest>,
+        expected_response: Result<Response<SimulationStepResponse>, Status>,
+    ) {
+        let backend = ProtobufServer::ConcreteEcdarBackend::default();
+
+        let actual_response = backend.start_simulation(request).await;
+
+        // Assert
+        assert_eq!(
+            format!("{:?}", expected_response),
+            format!("{:?}", actual_response)
+        );
+    }
+
+    // A || B || C
+    fn create_composition_request() -> Request<SimulationStartRequest> {
+        let comp_names = vec!["Administration", "Machine", "Researcher"];
+        let sample_name = "EcdarUniversity".to_string();
+
+        let composition =
+            helper::create_composition_string(&comp_names, CompositionType::Composition);
+        let components: Vec<Component> = helper::create_components(&comp_names, sample_name);
+
+        let simulation_info = helper::create_simulation_info(composition, components);
+
+        let simulation_start_request = Request::new(SimulationStartRequest {
+            simulation_info: Some(simulation_info),
+        });
+
+        return simulation_start_request;
+    }
+
+    fn create_expected_response_to_composition_request(
+    ) -> Result<Response<SimulationStepResponse>, Status> {
+        let expected = helper::get_composition_response_Administration_Machine_Researcher();
+
+        expected
+    }
+
+    // A && B
+    fn create_conjunction_request() -> Request<SimulationStartRequest> {
+        let comp_names = vec!["HalfAdm1", "HalfAdm2"];
+        let sample_name = "EcdarUniversity".to_string();
+        let composition_string =
+            helper::create_composition_string(&comp_names, CompositionType::Conjunction);
+
+        let components: Vec<Component> = helper::create_components(&comp_names, sample_name);
+        let simulation_info = helper::create_simulation_info(composition_string, components);
+
+        let simulation_start_request = Request::new(SimulationStartRequest {
+            simulation_info: Some(simulation_info),
+        });
+
+        simulation_start_request
+    }
+
+    fn create_expected_response_to_conjunction_request(
+    ) -> Result<Response<SimulationStepResponse>, Status> {
+        let expected = helper::get_conjunction_response_HalfAdm1_HalfAdm2();
+
+        expected
+    }
 }

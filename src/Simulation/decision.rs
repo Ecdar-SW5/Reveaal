@@ -45,7 +45,7 @@ impl Decision {
             .to_owned()
     }
 
-    // TODO: This needs to be rewritten, as it most 
+    // TODO: This needs to be rewritten, as it most
     pub fn from(proto_decision: ProtoDecision, system: &TransitionSystemPtr) -> Self {
         // Convert ProtoState to State
         let proto_state: ProtoState = match proto_decision.source {
@@ -92,8 +92,6 @@ fn proto_constraint_to_constraint(
     proto_constraint: ProtoConstraint,
     system: &TransitionSystemPtr,
 ) -> Constraint {
-
-
     let decls: Vec<&Declarations> = system.get_decls();
 
     let x_clock_name = match proto_constraint.x {
@@ -113,15 +111,14 @@ fn proto_constraint_to_constraint(
         false => Inequality::LE(proto_constraint.c),
     };
 
-    
-
     let ineq: RawInequality = RawInequality::from_inequality(&inequality);
     Constraint::new(i, j, ineq)
 }
 
 fn get_clock_index_from_name(name: &str, decls: &Vec<&Declarations>) -> ClockIndex {
-    if name == "0" { return 0 }
-    else {
+    if name == "0" {
+        return 0;
+    } else {
         for dec in decls {
             match dec.get_clock_index_by_name(name) {
                 None => continue,
@@ -176,7 +173,8 @@ mod tests {
         tests::Simulation::helper::{
             create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_system,
         },
-        Simulation::decision::Decision, DataReader::json_reader::read_json_component,
+        DataReader::json_reader::read_json_component,
+        Simulation::decision::Decision,
     };
 
     // TODO this test is badly formatted
@@ -187,7 +185,6 @@ mod tests {
         let proto_decision = create_EcdarUniversity_Machine_Decision();
         let system = create_EcdarUniversity_Machine_system();
         let component = read_json_component(project_path, "Machine");
-
 
         let expected_edge = component
             .get_edges()
@@ -219,7 +216,7 @@ mod tests {
 
     fn from__ProtoDecision_with_nonuniversal_ProtoFederation__returns_correct_Decision() {
         // Arrange
-        
+
 
         // Act
 
