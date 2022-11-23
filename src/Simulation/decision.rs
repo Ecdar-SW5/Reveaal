@@ -37,19 +37,12 @@ impl Decision {
 
         let edges = component.get_edges();
 
-        // Hvorfor er der en warning her? XD
         edges
             .iter()
             .filter(|e| e.id == protoedge.id)
             .nth(0)
-            .unwrap();
-
-        let edge = match edges.first() {
-            Some(edge) => edge.to_owned(),
-            None => panic!("Oh no! No first slice found."),
-        };
-
-        edge
+            .unwrap()
+            .to_owned()
     }
 
     // TODO: This needs to be rewritten, as it most 
@@ -69,7 +62,7 @@ impl Decision {
             None => panic!("No loc tuple"),
             Some(loc_tuple) => loc_tuple,
         };
-
+    
 
         let proto_federation: ProtoFederation = match proto_state.federation {
             None => panic!("No federation found"),
@@ -188,7 +181,7 @@ mod tests {
 
     // TODO this test is badly formatted
     #[test]
-    fn Decision_from__ProtoDecision__returns_correct_Decision() {
+    fn from__ProtoDecision_with_universal_ProtoFederation__returns_correct_Decision() {
         // Arrange
         let project_path = "samples/json/EcdarUniversity";
         let proto_decision = create_EcdarUniversity_Machine_Decision();
@@ -222,5 +215,14 @@ mod tests {
 
         // Assert
         assert_eq!(actual_decision, expected_decision);
+    }
+
+    fn from__ProtoDecision_with_nonuniversal_ProtoFederation__returns_correct_Decision() {
+        // Arrange
+        
+
+        // Act
+
+        // Assert
     }
 }

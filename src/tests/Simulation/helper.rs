@@ -70,7 +70,7 @@ pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {
         clock_name: "y".to_string(),
     };
 
-    let constraint26_dp = ProtoConstraint {
+    let constraint29_dp = ProtoConstraint {
         x: Some(componentclock_dp1),
         y: Some(componentclock_dp2),
         strict: false,
@@ -78,7 +78,7 @@ pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {
     };
 
     let conjunction_dp = ProtoConjunction {
-        constraints: vec![constraint26_dp],
+        constraints: vec![],
     };
 
     let disjunction_dp = ProtoDisjunction {
@@ -90,17 +90,13 @@ pub fn create_EcdarUniversity_Machine_Decision() -> ProtoDecision {
     };
 
     let location_dp1 = ProtoLocation {
-        id: "L4".to_string(),
-        specific_component: Some(specific_comp_dp.clone()),
-    };
-
-    let location_dp2 = ProtoLocation {
         id: "L5".to_string(),
         specific_component: Some(specific_comp_dp.clone()),
     };
 
+
     let loc_tuple_dp = ProtoLocationTuple {
-        locations: vec![location_dp1, location_dp2],
+        locations: vec![location_dp1],
     };
 
     let source_dp = ProtoState {

@@ -80,7 +80,9 @@ impl LocationTuple {
             .into_iter()
             .map(|tuple| (tuple.id.clone(), tuple))
             .map(|(id, tuple)| (id.inorder_vec_tranform(), tuple))
-            .filter(|(id, _)| id.iter().eq(id_looking_for.iter()))
+            .filter(|(id, _)| {
+                id.iter().eq(id_looking_for.iter())
+            })
             .collect::<Vec<_>>()
             .first()
             .map(|(_, tuple)| tuple.to_owned())
