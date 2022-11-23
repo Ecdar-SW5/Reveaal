@@ -178,31 +178,24 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
 
             match proto_path {
                 Ok(p) => {
+                    // Format into result expected by protobuf
                     let component_paths = p
                         .iter()
                         .map(|component_path| services::Path {
                             edge_ids: component_path
-                                .concat()
+                                .concat() // Concat to break the edges of the transitions into one vec instead a vec of vecs.
                                 .iter()
                                 .map(|id| id.to_string())
                                 .collect(),
                         })
                         .collect();
-                    if path.was_reachable {
-                        Some(ProtobufResult::Reachability(ReachabilityResult {
-                            success: true,
-                            reason: "".to_string(),
-                            state: None,
-                            component_paths,
-                        }))
-                    } else {
-                        Some(ProtobufResult::Reachability(ReachabilityResult {
-                            success: false,
-                            reason: "Path was not reachable".to_string(),
-                            state: None,
-                            component_paths: vec![],
-                        }))
-                    }
+
+                    Some(ProtobufResult::Reachability(ReachabilityResult {
+                        success: path.was_reachable,
+                        reason: if path.was_reachable {"".to_string()} else {"No path exists".to_string()},
+                        state: None,
+                        component_paths,
+                    }))
                 }
                 Err(e) => Some(ProtobufResult::Reachability(ReachabilityResult {
                     success: false,
