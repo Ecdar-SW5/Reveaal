@@ -258,9 +258,9 @@ mod tests {
         let decision_point = DecisionPoint::new(
             system.get_initial_state().unwrap(),
             vec![
-                "E29".to_string(),
                 "E11".to_string(),
                 "E16".to_string(),
+                "E29".to_string(),
                 "E44".to_string(),
             ],
         );

@@ -6,7 +6,7 @@ mod test {
                 create_initial_decision_point, create_json_component_as_string,
                 create_sample_json_component, create_simulation_start_request,
             },
-            Simulation::helper::get_composition_response_Administration_Machine_Researcher,
+            Simulation::helper,
         },
         ProtobufServer::{
             self,
@@ -15,6 +15,7 @@ mod test {
                 SimulationInfo, SimulationStartRequest, SimulationStepResponse,
             },
         },
+        TransitionSystems::CompositionType,
     };
     use test_case::test_case;
     use tonic::{Request, Response, Status};
@@ -104,16 +105,11 @@ mod test {
         create_expected_response_to_composition_request();
         "given a composition request, responds with correct component"
     )]
-    // #[test_case(
-    //     create_conjunction_request(),
-    //     create_expected_response_to_conjunction_request();
-    //     "given a good conjunction request, responds with correct component"
-    // )]
-    // #[test_case(
-    //     create_quotient_request(),
-    //     create_expected_response_to_quotient_request();
-    //     "given a good quotient request, responds with correct component"
-    // )]
+    #[test_case(
+        create_conjunction_request(),
+        create_expected_response_to_conjunction_request();
+        "given a good conjunction request, responds with correct component"
+    )]
     #[tokio::test]
     async fn start_simulation_step__get_composit_component__should_return_component(
         request: Request<SimulationStartRequest>,
@@ -130,38 +126,16 @@ mod test {
         );
     }
 
-    // Helpers
+    // A || B || C
     fn create_composition_request() -> Request<SimulationStartRequest> {
-        let composition = "(Administration || Machine || Researcher)".to_string();
+        let comp_names = vec!["Administration", "Machine", "Researcher"];
+        let sample_name = "EcdarUniversity".to_string();
 
-        let administration_component = create_json_component_as_string(
-            "samples/json/EcdarUniversity/Components/Administration.json".to_string(),
-        );
-        let machine_component = create_json_component_as_string(
-            "samples/json/EcdarUniversity/Components/Machine.json".to_string(),
-        );
-        let researcher_component = create_json_component_as_string(
-            "samples/json/EcdarUniversity/Components/Researcher.json".to_string(),
-        );
+        let composition =
+            helper::create_composition_string(&comp_names, CompositionType::Composition);
+        let components: Vec<Component> = helper::create_components(&comp_names, sample_name);
 
-        let components: Vec<String> = vec![
-            administration_component,
-            machine_component,
-            researcher_component,
-        ];
-        let components = components
-            .iter()
-            .map(|string| Component {
-                rep: Some(Rep::Json(string.clone())),
-            })
-            .collect();
-        let simulation_info = SimulationInfo {
-            component_composition: composition,
-            components_info: Some(ComponentsInfo {
-                components,
-                components_hash: 0,
-            }),
-        };
+        let simulation_info = helper::create_simulation_info(composition, components);
 
         let simulation_start_request = Request::new(SimulationStartRequest {
             simulation_info: Some(simulation_info),
@@ -172,34 +146,32 @@ mod test {
 
     fn create_expected_response_to_composition_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        let expected = get_composition_response_Administration_Machine_Researcher();
+        let expected = helper::get_composition_response_Administration_Machine_Researcher();
 
         expected
     }
 
-    // fn create_conjunction_request() -> Request<SimulationStartRequest> {
-    //     todo!()
-    // }
+    // A && B
+    fn create_conjunction_request() -> Request<SimulationStartRequest> {
+        let comp_names = vec!["HalfAdm1", "HalfAdm2"];
+        let sample_name = "EcdarUniversity".to_string();
+        let composition_string =
+            helper::create_composition_string(&comp_names, CompositionType::Conjunction);
 
-    // fn create_expected_response_to_conjunction_request() -> Result<Response<SimulationStepResponse>, Status> {
-    //     todo!()
-    // }
+        let components: Vec<Component> = helper::create_components(&comp_names, sample_name);
+        let simulation_info = helper::create_simulation_info(composition_string, components);
 
-    // fn create_quotient_request() -> Request<SimulationStartRequest> {
-    //     todo!()
-    // }
+        let simulation_start_request = Request::new(SimulationStartRequest {
+            simulation_info: Some(simulation_info),
+        });
 
-    // fn create_expected_response_to_quotient_request() -> Result<Response<SimulationStepResponse>, Status> {
-    //     todo!()
-    // }
-    // fn create_good_request() -> Request<SimulationStartRequest> {
-    //     create_simulation_start_request(String::from("Machine"), create_sample_json_component())
-    // }
+        simulation_start_request
+    }
 
-    // fn create_expected_response_to_good_request() -> Result<Response<SimulationStepResponse>, Status>
-    // {
-    //     Ok(Response::new(SimulationStepResponse {
-    //         new_decision_point: Some(create_initial_decision_point()),
-    //     }))
-    // }
+    fn create_expected_response_to_conjunction_request(
+    ) -> Result<Response<SimulationStepResponse>, Status> {
+        let expected = helper::get_conjunction_response_HalfAdm1_HalfAdm2();
+
+        expected
+    }
 }
