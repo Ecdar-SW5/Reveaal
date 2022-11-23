@@ -3,16 +3,16 @@ mod test {
     use crate::{
         tests::{
             grpc::grpc_helper::{
-                create_initial_decision_point, create_json_component_as_string,
-                create_sample_json_component, create_simulation_start_request,
+                create_initial_decision_point, create_sample_json_component,
+                create_simulation_start_request,
             },
             Simulation::helper,
         },
         ProtobufServer::{
             self,
             services::{
-                ecdar_backend_server::EcdarBackend, Component, ComponentsInfo,
-                SimulationStartRequest, SimulationStepResponse,
+                component::Rep, ecdar_backend_server::EcdarBackend, Component, ComponentsInfo,
+                SimulationInfo, SimulationStartRequest, SimulationStepResponse,
             },
         },
         TransitionSystems::CompositionType,

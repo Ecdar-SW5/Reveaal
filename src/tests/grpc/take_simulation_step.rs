@@ -1,14 +1,15 @@
 #[cfg(test)]
 mod test {
     use crate::tests::grpc::grpc_helper::{
-        create_decision_point_after_taking_E5, create_edges_from_L5, create_empty_edge,
-        create_empty_state, create_initial_decision_point, create_sample_json_component,
-        create_simulation_info_from, create_simulation_step_request, create_state_not_in_machine,
-        create_state_setup_for_mismatch, create_1tuple_state_with_single_constraint,
+        create_1tuple_state_with_single_constraint, create_decision_point_after_taking_E5,
+        create_edges_from_L5, create_empty_edge, create_empty_state, create_initial_decision_point,
+        create_sample_json_component, create_simulation_info_from, create_simulation_step_request,
+        create_state_not_in_machine, create_state_setup_for_mismatch,
     };
     use crate::tests::Simulation::helper;
     use crate::ProtobufServer::services::{
-        Component as ProtoComponent, Edge as ProtoEdge, SimulationStepRequest, SimulationStepResponse, State as ProtoState, LocationTuple as ProtoLocationTuple, Location as ProtoLocation, SpecificComponent as ProtoSpecificComponent,
+        Component as ProtoComponent, Edge as ProtoEdge, SimulationStepRequest,
+        SimulationStepResponse,
     };
     use crate::ProtobufServer::{self, services::ecdar_backend_server::EcdarBackend};
     use crate::TransitionSystems::CompositionType;
@@ -168,11 +169,11 @@ mod test {
         create_expected_response_to_composition_request();
         "given a composition request, responds with correct component"
     )]
-    // #[test_case(
-    //     create_conjunction_request(),
-    //     create_expected_response_to_conjunction_request();
-    //     "given a good conjunction request, responds with correct component"
-    // )]
+    #[test_case(
+        create_conjunction_request(),
+        create_expected_response_to_conjunction_request();
+        "given a good conjunction request, responds with correct component"
+    )]
     #[tokio::test]
     async fn start_simulation_step__get_composit_component__should_return_component(
         request: Request<SimulationStepRequest>,
@@ -209,7 +210,8 @@ mod test {
             specific_component: None,
         };
 
-        let source = create_1tuple_state_with_single_constraint("L4", "Machine", 0, "0", "y", -6, false);
+        let source =
+            create_1tuple_state_with_single_constraint("L4", "Machine", 0, "0", "y", -6, false);
 
         let simulation_step_request = create_simulation_step_request(simulation_info, source, edge);
 
@@ -239,7 +241,8 @@ mod test {
             specific_component: None,
         };
 
-        let source = create_1tuple_state_with_single_constraint("L13", "HalfAdm1", 0, "x", "0", 2, false);
+        let source =
+            create_1tuple_state_with_single_constraint("L13", "HalfAdm1", 0, "x", "0", 2, false);
 
         let simulation_step_request = create_simulation_step_request(simulation_info, source, edge);
 
