@@ -1,4 +1,3 @@
-use edbm::util::constraints::ClockIndex;
 use edbm::zones::OwnedFederation;
 
 use crate::component::Declarations;
@@ -6,7 +5,7 @@ use crate::extract_system_rep::SystemRecipe;
 use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
 use crate::ModelObjects::component::State;
 use crate::ModelObjects::representations::{BoolExpression, QueryExpression};
-use crate::TransitionSystems::{CompositionType, LocationTuple, TransitionSystemPtr};
+use crate::TransitionSystems::{CompositionType, LocationID, LocationTuple, TransitionSystemPtr};
 use std::slice::Iter;
 
 /// This function takes a [`QueryExpression`], the system recipe, and the transitionsystem -
@@ -32,12 +31,7 @@ pub fn get_state(
 
         let declarations = system.get_combined_decls();
 
-        let locationtuple = build_location_tuple(
-            &mut locations.iter(),
-            machine,
-            &declarations,
-            &system.get_dim(),
-        )?;
+        let locationtuple = build_location_tuple(&mut locations.iter(), machine, system)?;
 
         let zone = create_zone_given_constraints(clock.as_deref(), &declarations, system)?;
 
@@ -69,36 +63,41 @@ fn create_zone_given_constraints(
 fn build_location_tuple(
     locations: &mut Iter<&str>,
     machine: &SystemRecipe,
-    decls: &Declarations,
-    dim: &ClockIndex,
+    system: &TransitionSystemPtr,
 ) -> Result<LocationTuple, String> {
     match machine {
-        SystemRecipe::Composition(left, right) => Ok(LocationTuple::compose(
-            &build_location_tuple(locations, left, decls, dim)?,
-            &build_location_tuple(locations, right, decls, dim)?,
-            CompositionType::Composition,
-        )),
-        SystemRecipe::Conjunction(left, right) => Ok(LocationTuple::compose(
-            &build_location_tuple(locations, left, decls, dim)?,
-            &build_location_tuple(locations, right, decls, dim)?,
-            CompositionType::Conjunction,
-        )),
-        SystemRecipe::Quotient(left, right, ..) => Ok(LocationTuple::merge_as_quotient(
-            &build_location_tuple(locations, left, decls, dim)?,
-            &build_location_tuple(locations, right, decls, dim)?,
-        )),
+        SystemRecipe::Composition(left, right) => {
+            let (left_system, right_system) = system.get_children();
+            Ok(LocationTuple::compose(
+                &build_location_tuple(locations, left, left_system)?,
+                &build_location_tuple(locations, right, right_system)?,
+                CompositionType::Composition,
+            ))
+        }
+        SystemRecipe::Conjunction(left, right) => {
+            let (left_system, right_system) = system.get_children();
+            Ok(LocationTuple::compose(
+                &build_location_tuple(locations, left, left_system)?,
+                &build_location_tuple(locations, right, right_system)?,
+                CompositionType::Conjunction,
+            ))
+        }
+        SystemRecipe::Quotient(left, right, ..) => {
+            let (left_system, right_system) = system.get_children();
+            Ok(LocationTuple::merge_as_quotient(
+                &build_location_tuple(locations, left, left_system)?,
+                &build_location_tuple(locations, right, right_system)?,
+            ))
+        }
         SystemRecipe::Component(component) => match locations.next().unwrap().trim() {
             // It is ensured .next() will not give a None, since the number of location is same as number of component. This is also being checked in validate_reachability_input function, that is called before get_state
             "_" => Ok(LocationTuple::build_any_location_tuple()),
-            str => match component.get_locations().iter().find(|l| l.get_id() == str) {
-                Some(loc) => Ok(LocationTuple::simple(
-                    loc,
-                    Some(component.get_name().to_owned()),
-                    decls,
-                    *dim,
-                )),
-                None => Err(format!("Location {} does not exist in the system", str)),
-            },
+            str => system
+                .get_location(&LocationID::Simple {
+                    location_id: str.to_string(),
+                    component_id: Some(component.get_name().clone()),
+                })
+                .ok_or(format!("Location {} does not exist in the system", str)),
         },
     }
 }

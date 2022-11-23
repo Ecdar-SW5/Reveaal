@@ -205,4 +205,8 @@ impl TransitionSystem for CompiledComponent {
     fn get_combined_decls(&self) -> Declarations {
         self.comp_info.declarations.clone()
     }
+
+    fn get_location(&self, id: &LocationID) -> Option<LocationTuple> {
+        self.locations.get(id).cloned()
+    }
 }

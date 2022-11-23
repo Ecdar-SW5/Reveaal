@@ -68,6 +68,13 @@ pub trait TransitionSystem: DynClone {
 
     fn get_all_locations(&self) -> Vec<LocationTuple>;
 
+    fn get_location(&self, id: &LocationID) -> Option<LocationTuple> {
+        self.get_all_locations()
+            .iter()
+            .find(|loc| loc.id == *id)
+            .cloned()
+    }
+
     fn get_decls(&self) -> Vec<&Declarations>;
 
     fn get_combined_decls(&self) -> Declarations;
