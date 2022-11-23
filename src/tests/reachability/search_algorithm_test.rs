@@ -25,6 +25,7 @@ mod reachability_search_algorithm_test {
     #[test_case(PATH, "reachability: Researcher && Researcher -> [U0, U0](); [U0, U0]()", true; "Trivially reachable")]
     #[test_case(PATH, "reachability: Researcher && Researcher -> [U0, U0](); [U0, U0](x>5)", true; "Trivially reachable but with clocks")]
     #[test_case(PATH, "reachability: Researcher && Researcher -> [U0, U0](); [L6, U0]()", false; "Trivially unreachable")]
+    #[test_case(PATH, "reachability: Researcher && Researcher -> [U0, U0](); [_, U0]()", true; "Trivially reachable because _ is U0")]
     fn search_algorithm_returns_result_university(path: &str, query: &str, expected: bool) {
         match json_run_query(path, query) {
             QueryResult::Reachability(path) => assert_eq!(path.was_reachable, expected),
@@ -64,6 +65,7 @@ mod reachability_search_algorithm_test {
     #[test_case(PATH2, "reachability: Component9 -> [L23](x>5); [L26]()", Vec::from(["E17", "E18"]); "Path in Component9 from L23 x gt 5 to L26")]
     #[test_case(PATH2, "reachability: Component9 -> [L23](x<5); [L26]()", Vec::from(["E16", "E19"]); "Path in Component9 from L23 x lt 5 to L26")]
     #[test_case(PATH2, "reachability: Component3 && Component3 -> [L6, L6](); [L7, L7]()", Vec::from(["E5&&E5"]); "Path in Component3 && Component3 from L6 && L6 to L7 && L7")]
+    #[test_case(PATH, "reachability: Researcher && Researcher -> [U0, U0](); [_, U0]()", Vec::from([]); "Path in Researcher && Researcher from universal state to partial universal state")]
     fn path_gen_test_correct_path(folder_path: &str, query: &str, expected_path: Vec<&str>) {
         match json_run_query(folder_path, query) {
             QueryResult::Reachability(actual_path) => {
