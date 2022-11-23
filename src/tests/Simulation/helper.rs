@@ -176,8 +176,8 @@ pub fn create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision() -
     };
 
     let componentclock_dp1 = ProtoComponentClock {
-        specific_component: Some(specific_comp_dp1.clone()),
-        clock_name: "0".to_string(),
+        specific_component: Some(specific_comp_dp2.clone()),
+        clock_name: "y".to_string(),
     };
     let componentclock_dp2 = ProtoComponentClock {
         specific_component: Some(specific_comp_dp1.clone()),
@@ -188,7 +188,7 @@ pub fn create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision() -
         x: Some(componentclock_dp1),
         y: Some(componentclock_dp2),
         strict: false,
-        c: -2,
+        c: 0,
     };
 
     let conjunction_dp = ProtoConjunction {

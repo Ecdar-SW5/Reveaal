@@ -1,7 +1,7 @@
 use edbm::util::constraints::{Conjunction, Constraint, Disjunction, Inequality, RawInequality};
 use edbm::zones::OwnedFederation;
 
-use crate::component::{Edge, State};
+use crate::component::{Edge, State, Component};
 use crate::ProtobufServer::services::{
     Conjunction as ProtoConjunction, Constraint as ProtoConstraint, Decision as ProtoDecision,
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
@@ -30,17 +30,15 @@ impl Decision {
         &self.decided
     }
 
-    pub fn convert_protoedge_to_edge(protoedge: ProtoEdge, system: &TransitionSystemPtr) -> Edge {
-        let component = combine_components(&system, NoPruning);
+    pub fn convert_protoedge_to_edge(protoedge: ProtoEdge, system: &TransitionSystemPtr, components: Vec<Component>) -> Edge {
 
-        let edges = component.get_edges();
-
-        edges
-            .iter()
-            .filter(|e| e.id == protoedge.id)
+        let mut edges = components
+            .into_iter()
+            .map(|x| x.get_edges())
+            .reduce(|accumulator, x| &vec![*accumulator, *x].concat())
+            .filter(|e| **e.id == protoedge.id)
             .nth(0)
             .unwrap()
-            .to_owned()
     }
 
     // TODO: This needs to be rewritten, as it most
@@ -246,15 +244,7 @@ mod tests {
 
         let expected_edge = machine.find_edge_from_id("E29");
 
-        let mut expected_source = system.get_initial_state().unwrap();
-
-        let action = "tea";
-        let transition =
-            system.next_transitions_if_available(expected_source.get_location(), action);
-        transition
-            .first()
-            .unwrap()
-            .use_transition(&mut expected_source);
+        let expected_source = system.get_initial_state().unwrap();
 
         let expected_decision = Decision {
             source: expected_source.clone(),
