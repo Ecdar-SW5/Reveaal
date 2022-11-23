@@ -1,14 +1,18 @@
 #[cfg(test)]
 mod test {
     use crate::{
-        tests::grpc::grpc_helper::{
-            create_initial_decision_point, create_sample_json_component,
-            create_simulation_start_request,
+        tests::{
+            grpc::grpc_helper::{
+                create_initial_decision_point, create_json_component_as_string,
+                create_sample_json_component, create_simulation_start_request,
+            },
+            Simulation::helper::get_composition_response_Administration_Machine_Researcher,
         },
         ProtobufServer::{
             self,
             services::{
-                ecdar_backend_server::EcdarBackend, SimulationStartRequest, SimulationStepResponse,
+                component::Rep, ecdar_backend_server::EcdarBackend, Component, ComponentsInfo,
+                SimulationInfo, SimulationStartRequest, SimulationStepResponse,
             },
         },
     };
@@ -93,5 +97,109 @@ mod test {
     //     Err(tonic::Status::invalid_argument(
     //         "Malformed composition, bad expression",
     //     ))
+    // }
+
+    #[test_case(
+        create_composition_request(),
+        create_expected_response_to_composition_request();
+        "given a composition request, responds with correct component"
+    )]
+    // #[test_case(
+    //     create_conjunction_request(),
+    //     create_expected_response_to_conjunction_request();
+    //     "given a good conjunction request, responds with correct component"
+    // )]
+    // #[test_case(
+    //     create_quotient_request(),
+    //     create_expected_response_to_quotient_request();
+    //     "given a good quotient request, responds with correct component"
+    // )]
+    #[tokio::test]
+    async fn start_simulation_step__get_composit_component__should_return_component(
+        request: Request<SimulationStartRequest>,
+        expected_response: Result<Response<SimulationStepResponse>, Status>,
+    ) {
+        let backend = ProtobufServer::ConcreteEcdarBackend::default();
+
+        let actual_response = backend.start_simulation(request).await;
+
+        // Assert
+        assert_eq!(
+            format!("{:?}", expected_response),
+            format!("{:?}", actual_response)
+        );
+    }
+
+    // Helpers
+    fn create_composition_request() -> Request<SimulationStartRequest> {
+        let composition = "(Administration || Machine || Researcher)".to_string();
+
+        let administration_component = create_json_component_as_string(
+            "samples/json/EcdarUniversity/Components/Administration.json".to_string(),
+        );
+        let machine_component = create_json_component_as_string(
+            "samples/json/EcdarUniversity/Components/Machine.json".to_string(),
+        );
+        let researcher_component = create_json_component_as_string(
+            "samples/json/EcdarUniversity/Components/Researcher.json".to_string(),
+        );
+
+        let components: Vec<String> = vec![
+            administration_component,
+            machine_component,
+            researcher_component,
+        ];
+        let components = components
+            .iter()
+            .map(|string| Component {
+                rep: Some(Rep::Json(string.clone())),
+            })
+            .collect();
+        let simulation_info = SimulationInfo {
+            component_composition: composition,
+            components_info: Some(ComponentsInfo {
+                components,
+                components_hash: 0,
+            }),
+        };
+
+        let simulation_start_request = Request::new(SimulationStartRequest {
+            simulation_info: Some(simulation_info),
+        });
+
+        return simulation_start_request;
+    }
+
+    fn create_expected_response_to_composition_request(
+    ) -> Result<Response<SimulationStepResponse>, Status> {
+        let expected = get_composition_response_Administration_Machine_Researcher();
+
+        expected
+    }
+
+    // fn create_conjunction_request() -> Request<SimulationStartRequest> {
+    //     todo!()
+    // }
+
+    // fn create_expected_response_to_conjunction_request() -> Result<Response<SimulationStepResponse>, Status> {
+    //     todo!()
+    // }
+
+    // fn create_quotient_request() -> Request<SimulationStartRequest> {
+    //     todo!()
+    // }
+
+    // fn create_expected_response_to_quotient_request() -> Result<Response<SimulationStepResponse>, Status> {
+    //     todo!()
+    // }
+    // fn create_good_request() -> Request<SimulationStartRequest> {
+    //     create_simulation_start_request(String::from("Machine"), create_sample_json_component())
+    // }
+
+    // fn create_expected_response_to_good_request() -> Result<Response<SimulationStepResponse>, Status>
+    // {
+    //     Ok(Response::new(SimulationStepResponse {
+    //         new_decision_point: Some(create_initial_decision_point()),
+    //     }))
     // }
 }

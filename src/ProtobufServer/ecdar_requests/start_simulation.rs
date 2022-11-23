@@ -222,19 +222,11 @@ impl ProtoEdge {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::grpc::grpc_helper::create_json_component_as_string;
     use crate::tests::Simulation::helper::get_composition_response_Administration_Machine_Researcher;
-    use crate::ProtobufServer::services::{
-        ComponentClock, Conjunction as ProtoConjunction, Constraint as ProtoConstraint,
-        Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
-        Location as ProtoLocation, LocationTuple as ProtoLocationTuple, SpecificComponent,
-        State as ProtoState,
-    };
     use crate::{
         tests::{
             grpc::grpc_helper::{
-                convert_json_component_to_string, create_decision_point_after_taking_E5,
-                create_initial_decision_point,
+                create_decision_point_after_taking_E5, create_initial_decision_point,
             },
             Simulation::helper::{
                 create_EcdarUniversity_Machine_system,
@@ -242,19 +234,11 @@ mod tests {
             },
         },
         DataReader::json_reader::read_json_component,
-        ProtobufServer::{
-            self,
-            services::{
-                component::Rep, ecdar_backend_server::EcdarBackend, Component, ComponentsInfo,
-                DecisionPoint as ProtoDecisionPoint, SimulationInfo, SimulationStartRequest,
-                SimulationStepResponse,
-            },
-        },
+        ProtobufServer::services::{DecisionPoint as ProtoDecisionPoint, SimulationStepResponse},
         Simulation::decision_point::DecisionPoint,
         TransitionSystems::CompiledComponent,
     };
-    use test_case::test_case;
-    use tonic::{Request, Response, Status};
+    use tonic::Response;
 
     #[test]
     fn from__initial_DecisionPoint_EcdarUniversity_Administration_par_Machine_par_Researcher__returns_correct_ProtoDecisionPoint(
@@ -342,108 +326,4 @@ mod tests {
         assert!(actual.edges.contains(&expected.edges[0]));
         assert!(actual.edges.contains(&expected.edges[1]));
     }
-
-    #[test_case(
-        create_composition_request(),
-        create_expected_response_to_composition_request();
-        "given a composition request, responds with correct component"
-    )]
-    // #[test_case(
-    //     create_conjunction_request(),
-    //     create_expected_response_to_conjunction_request();
-    //     "given a good conjunction request, responds with correct component"
-    // )]
-    // #[test_case(
-    //     create_quotient_request(),
-    //     create_expected_response_to_quotient_request();
-    //     "given a good quotient request, responds with correct component"
-    // )]
-    #[tokio::test]
-    async fn start_simulation_step__get_composit_component__should_return_component(
-        request: Request<SimulationStartRequest>,
-        expected_response: Result<Response<SimulationStepResponse>, Status>,
-    ) {
-        let backend = ProtobufServer::ConcreteEcdarBackend::default();
-
-        let actual_response = backend.start_simulation(request).await;
-
-        // Assert
-        assert_eq!(
-            format!("{:?}", expected_response),
-            format!("{:?}", actual_response)
-        );
-    }
-
-    // Helpers
-    fn create_composition_request() -> Request<SimulationStartRequest> {
-        let composition = "(Administration || Machine || Researcher)".to_string();
-
-        let administration_component = create_json_component_as_string(
-            "samples/json/EcdarUniversity/Components/Administration.json".to_string(),
-        );
-        let machine_component = create_json_component_as_string(
-            "samples/json/EcdarUniversity/Components/Machine.json".to_string(),
-        );
-        let researcher_component = create_json_component_as_string(
-            "samples/json/EcdarUniversity/Components/Researcher.json".to_string(),
-        );
-
-        let components: Vec<String> = vec![
-            administration_component,
-            machine_component,
-            researcher_component,
-        ];
-        let components = components
-            .iter()
-            .map(|string| Component {
-                rep: Some(Rep::Json(string.clone())),
-            })
-            .collect();
-        let simulation_info = SimulationInfo {
-            component_composition: composition,
-            components_info: Some(ComponentsInfo {
-                components,
-                components_hash: 0,
-            }),
-        };
-
-        let simulation_start_request = Request::new(SimulationStartRequest {
-            simulation_info: Some(simulation_info),
-        });
-
-        return simulation_start_request;
-    }
-
-    fn create_expected_response_to_composition_request(
-    ) -> Result<Response<SimulationStepResponse>, Status> {
-        let expected = get_composition_response_Administration_Machine_Researcher();
-
-        expected
-    }
-
-    // fn create_conjunction_request() -> Request<SimulationStartRequest> {
-    //     todo!()
-    // }
-
-    // fn create_expected_response_to_conjunction_request() -> Result<Response<SimulationStepResponse>, Status> {
-    //     todo!()
-    // }
-
-    // fn create_quotient_request() -> Request<SimulationStartRequest> {
-    //     todo!()
-    // }
-
-    // fn create_expected_response_to_quotient_request() -> Result<Response<SimulationStepResponse>, Status> {
-    //     todo!()
-    // }
-    // fn create_good_request() -> Request<SimulationStartRequest> {
-    //     create_simulation_start_request(String::from("Machine"), create_sample_json_component())
-    // }
-
-    // fn create_expected_response_to_good_request() -> Result<Response<SimulationStepResponse>, Status>
-    // {
-    //     Ok(Response::new(SimulationStepResponse {
-    //         new_decision_point: Some(create_initial_decision_point()),
-    //     }))
-    // }
 }

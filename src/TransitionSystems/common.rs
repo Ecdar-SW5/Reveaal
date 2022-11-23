@@ -9,7 +9,7 @@ use log::warn;
 
 use crate::{
     ModelObjects::component::{Declarations, State, Transition},
-    System::local_consistency::{ConsistencyResult, DeterminismResult}
+    System::local_consistency::{ConsistencyResult, DeterminismResult},
 };
 
 use super::{

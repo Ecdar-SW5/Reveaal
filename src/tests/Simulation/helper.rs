@@ -218,15 +218,15 @@ pub fn get_composition_response_Administration_Machine_Researcher(
         }),
         edges: vec![
             ProtoEdge {
-                id: "E29".to_string(),
-                specific_component: None,
-            },
-            ProtoEdge {
                 id: "E11".to_string(),
                 specific_component: None,
             },
             ProtoEdge {
                 id: "E16".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E29".to_string(),
                 specific_component: None,
             },
             ProtoEdge {
