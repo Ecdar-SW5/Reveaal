@@ -31,7 +31,7 @@ struct ComponentInfo {
 }
 
 impl ComponentInfo {
-    pub fn name(&self) -> &str {
+    pub fn _name(&self) -> &str {
         self.name.as_ref()
     }
 }
@@ -140,7 +140,7 @@ impl CompiledComponent {
             .unwrap()
     }
 
-    fn comp_info(&self) -> &ComponentInfo {
+    fn _comp_info(&self) -> &ComponentInfo {
         &self.comp_info
     }
 }

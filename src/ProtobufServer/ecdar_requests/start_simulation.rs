@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-use std::hash::Hash;
-
 use crate::component::State;
 use crate::DataReader::component_loader::ModelCache;
 use crate::ProtobufServer::ecdar_requests::helpers;
@@ -150,13 +147,6 @@ impl ProtoConjunction {
 #[allow(unused_must_use)]
 impl ProtoConstraint {
     fn from(constraint: &Constraint, system: &TransitionSystemPtr) -> Self {
-        fn invert<T1, T2>(hash_map: HashMap<T1, T2>) -> HashMap<T2, T1>
-        where
-            T2: Hash + Eq,
-        {
-            hash_map.into_iter().map(|x| (x.1, x.0)).collect()
-        }
-
         fn clock_name(clock_name_and_component: Option<&(String, String)>) -> String {
             let ZERO_CLOCK_NAME = "0";
             match clock_name_and_component {
