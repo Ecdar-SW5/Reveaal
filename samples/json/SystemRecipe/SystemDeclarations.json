@@ -1,0 +1,4 @@
+{
+    "name": "System Declarations",
+    "declarations": "system CompiledComponent1, CompiledComponent2, CompiledComponent3, DeterministicQuotientComp, LeftComposition1, LeftComposition2, LeftComposition3, LeftConjunction1, LeftConjunction2, LeftConjunction3, LeftConjunctionEmpty, LeftQuotient1, NotDeterministicQuotientComp, RightComposition1, RightComposition2, RightComposition3, RightConjunction1, RightConjunction2, RightConjunction3, RightConjunctionEmpty, RightQuotient1;\n"
+  }
