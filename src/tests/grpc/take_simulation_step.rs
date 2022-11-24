@@ -8,6 +8,7 @@ mod test {
     };
     use crate::tests::Simulation::helper::{
         self, get_state_after_Administration_Machine_Researcher_composition,
+        get_state_after_HalfAdm1_HalfAdm2_conjunction,
     };
     use crate::ProtobufServer::services::{
         Component as ProtoComponent, Edge as ProtoEdge, SimulationStepRequest,
@@ -171,11 +172,11 @@ mod test {
         create_expected_response_to_composition_request();
         "given a composition request, responds with correct component"
     )]
-    // #[test_case(
-    //     create_conjunction_request(),
-    //     create_expected_response_to_conjunction_request();
-    //     "given a good conjunction request, responds with correct component"
-    // )]
+    #[test_case(
+        create_conjunction_request(),
+        create_expected_response_to_conjunction_request();
+        "given a good conjunction request, responds with correct component"
+    )]
     #[tokio::test]
     async fn take_simulation_step__get_composit_component__should_return_component(
         request: Request<SimulationStepRequest>,
@@ -226,29 +227,27 @@ mod test {
     fn create_conjunction_request() -> Request<SimulationStepRequest> {
         let comp_names = vec!["HalfAdm1", "HalfAdm2"];
         let sample_name = "EcdarUniversity".to_string();
-        let composition_string =
-            helper::create_composition_string(&comp_names, CompositionType::Conjunction);
+        let composition_string = "HalfAdm1 && HalfAdm2".to_string();
+        helper::create_composition_string(&comp_names, CompositionType::Conjunction);
 
         let components: Vec<ProtoComponent> = helper::create_components(&comp_names, sample_name);
         let simulation_info = helper::create_simulation_info(composition_string, components);
 
         let edge = ProtoEdge {
-            id: "E38".to_string(),
+            id: "E37".to_string(),
             specific_component: None,
         };
 
-        let source =
-            create_1tuple_state_with_single_constraint("L13", "HalfAdm1", 0, "x", "0", 2, false);
+        let source = get_state_after_HalfAdm1_HalfAdm2_conjunction();
 
         let simulation_step_request = create_simulation_step_request(simulation_info, source, edge);
 
         Request::new(simulation_step_request)
     }
 
-    // TODO: Don't know if this is correct (it is not :)
     fn create_expected_response_to_conjunction_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        let expected = helper::get_conjunction_response_HalfAdm1_HalfAdm2();
+        let expected = helper::get_conjunction_response_HalfAdm1_HalfAdm2_after_E37();
 
         expected
     }

@@ -1,3 +1,5 @@
+use std::vec;
+
 use tonic::{Response, Status};
 
 use crate::{
@@ -360,7 +362,7 @@ pub fn get_composition_response_Administration_Machine_Researcher(
                         }),
                     },
                     ProtoLocation {
-                        id: "L7".to_string(),
+                        id: "L6".to_string(),
                         specific_component: Some(ProtoSpecificComponent {
                             component_name: "Researcher".to_string(),
                             component_index: 0,
@@ -733,6 +735,72 @@ pub fn get_composition_response_Administration_Machine_Researcher_after_E29(
     Ok(Response::new(response))
 }
 //to here
+pub fn get_state_after_HalfAdm1_HalfAdm2_conjunction() -> ProtoState {
+    ProtoState {
+        location_tuple: Some(ProtoLocationTuple {
+            locations: vec![
+                ProtoLocation {
+                    id: "L12".to_string(),
+                    specific_component: Some(ProtoSpecificComponent {
+                        component_name: "HalfAdm1".to_string(),
+                        component_index: 0,
+                    }),
+                },
+                ProtoLocation {
+                    id: "L14".to_string(),
+                    specific_component: Some(ProtoSpecificComponent {
+                        component_name: "HalfAdm2".to_string(),
+                        component_index: 0,
+                    }),
+                },
+            ],
+        }),
+        federation: Some(ProtoFederation {
+            disjunction: Some(ProtoDisjunction {
+                conjunctions: vec![ProtoConjunction {
+                    constraints: vec![
+                        ProtoConstraint {
+                            x: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "HalfAdm1".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "x".to_string(),
+                            }),
+                            y: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "HalfAdm2".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "y".to_string(),
+                            }),
+                            strict: false,
+                            c: 0,
+                        },
+                        ProtoConstraint {
+                            x: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "HalfAdm2".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "y".to_string(),
+                            }),
+                            y: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "HalfAdm1".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "x".to_string(),
+                            }),
+                            strict: false,
+                            c: 0,
+                        },
+                    ],
+                }],
+            }),
+        }),
+    }
+}
 
 pub fn get_conjunction_response_HalfAdm1_HalfAdm2(
 ) -> Result<Response<SimulationStepResponse>, Status> {
@@ -825,6 +893,104 @@ pub fn get_conjunction_response_HalfAdm1_HalfAdm2(
         new_decision_points: vec![proto_decision_point],
     };
 
+    Ok(Response::new(response))
+}
+
+pub fn get_conjunction_response_HalfAdm1_HalfAdm2_after_E37(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    let new_decision_points = ProtoDecisionPoint {
+        source: Some(ProtoState {
+            location_tuple: Some(ProtoLocationTuple {
+                locations: vec![
+                    ProtoLocation {
+                        id: "L13".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "HalfAdm1".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                    ProtoLocation {
+                        id: "L14".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "HalfAdm2".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                ],
+            }),
+            federation: Some(ProtoFederation {
+                disjunction: Some(ProtoDisjunction {
+                    conjunctions: vec![ProtoConjunction {
+                        constraints: vec![
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "HalfAdm1".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "x".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: None,
+                                    clock_name: "0".to_string(),
+                                }),
+                                strict: false,
+                                c: 2,
+                            },
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "HalfAdm1".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "x".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "HalfAdm2".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "y".to_string(),
+                                }),
+                                strict: false,
+                                c: 0,
+                            },
+                        ],
+                    }],
+                }),
+            }),
+        }),
+        edges: vec![
+            ProtoEdge {
+                id: "E30".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E35".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E36".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E38".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E40".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E41".to_string(),
+                specific_component: None,
+            },
+        ],
+    };
+
+    let response = SimulationStepResponse {
+        new_decision_points: vec![new_decision_points],
+    };
     Ok(Response::new(response))
 }
 
