@@ -150,7 +150,7 @@ impl SystemRecipe {
         }
     }
 
-    /// Takes in an output [Vec]<[Component]> and pushes only the components to the vector
+    /// Returns the components in [SystemRecipe] as a [Vec]<[Component]> in the same order as they visited.
     pub fn get_components(&self) -> Vec<Component> {
         match self {
             SystemRecipe::Composition(left, right)
