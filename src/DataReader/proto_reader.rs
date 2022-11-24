@@ -77,13 +77,19 @@ fn proto_constraint_to_constraint(
     let i = system
         .clock_name_and_component_to_index(
             &x_clock.clock_name,
-            &x_clock.specific_component.unwrap().component_name,
+            &x_clock
+                .specific_component
+                .map(|c| c.component_name)
+                .unwrap_or_default(),
         )
         .unwrap_or(0);
     let j = system
         .clock_name_and_component_to_index(
             &y_clock.clock_name,
-            &y_clock.specific_component.unwrap().component_name,
+            &y_clock
+                .specific_component
+                .map(|c| c.component_name)
+                .unwrap_or_default(),
         )
         .unwrap_or(0);
 

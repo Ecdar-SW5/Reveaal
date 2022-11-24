@@ -234,12 +234,18 @@ mod tests {
 
     #[test_case(
         vec![
+            read_json_component("samples/json/EcdarUniversity", "Machine"),
+            ],
+        "(Machine)";
+        "(Machine)"
+    )]
+    #[test_case(
+        vec![
             read_json_component("samples/json/EcdarUniversity", "Administration"),
             read_json_component("samples/json/EcdarUniversity", "Machine"),
-            read_json_component("samples/json/EcdarUniversity", "Researcher"),
             ],
-        "(Administration || Machine || Researcher)";
-        "(Administration || Machine || Researcher)"
+        "(Administration || Machine)";
+        "(Administration || Machine)"
     )]
     #[test_case(
         vec![
@@ -255,22 +261,6 @@ mod tests {
             ],
         "(HalfAdm1 && HalfAdm2)";
         "(HalfAdm1 && HalfAdm2)"
-    )]
-    #[test_case(
-        vec![
-            read_json_component("samples/json/AG", "A"),
-            read_json_component("samples/json/AG", "G"),
-            ],
-        "(A || G)";
-        "(A || G)"
-    )]
-    #[test_case(
-        vec![
-            read_json_component("samples/json/AG", "A"),
-            read_json_component("samples/json/AG", "Imp"),
-            ],
-        "(A || Imp)";
-        "(A || Imp)"
     )]
     fn state_to_proto_state_to_state_is_same_state(components: Vec<Component>, composition: &str) {
         let system = CompiledComponent::from(components, composition);
