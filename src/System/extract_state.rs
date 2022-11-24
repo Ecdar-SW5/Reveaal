@@ -1,6 +1,5 @@
 use edbm::zones::OwnedFederation;
 
-use crate::component::Declarations;
 use crate::extract_system_rep::SystemRecipe;
 use crate::EdgeEval::constraint_applyer::apply_constraints_to_state;
 use crate::ModelObjects::component::State;
@@ -29,13 +28,10 @@ pub fn get_state(
             };
         }
 
-        let declarations = system.get_combined_decls();
-
-        let locationtuple = build_location_tuple(&mut locations.iter(), machine, system)?;
-
-        let zone = create_zone_given_constraints(clock.as_deref(), &declarations, system)?;
-
-        Ok(State::create(locationtuple, zone))
+        Ok(State::create(
+            build_location_tuple(&mut locations.iter(), machine, system)?,
+            create_zone_given_constraints(clock.as_deref(), system)?,
+        ))
     } else {
         panic!("Expected QueryExpression::State, but got {:?}", state_query)
     }
@@ -43,7 +39,6 @@ pub fn get_state(
 
 fn create_zone_given_constraints(
     constraints: Option<&BoolExpression>,
-    decls: &Declarations,
     system: &TransitionSystemPtr,
 ) -> Result<OwnedFederation, String> {
     constraints
@@ -52,7 +47,7 @@ fn create_zone_given_constraints(
             |clock| {
                 apply_constraints_to_state(
                     clock,
-                    decls,
+                    &system.get_combined_decls(),
                     OwnedFederation::universe(system.get_dim()),
                 )
             },

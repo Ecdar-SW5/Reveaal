@@ -154,14 +154,18 @@ fn take_transition(
     let mut new_state = sub_path.destination_state.clone();
     if transition.use_transition(&mut new_state) {
         new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
+
         let new_location_id = &new_state.get_location().id;
         let existing_zones = visited_states.entry(new_location_id.clone()).or_default();
+
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
             remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
+
             visited_states
                 .get_mut(new_location_id)
                 .unwrap()
                 .push(new_state.zone_ref().clone());
+
             frontier_states.push(Rc::new(SubPath {
                 previous_sub_path: Some(Rc::clone(sub_path)),
                 destination_state: new_state,
@@ -192,10 +196,9 @@ fn remove_existing_subsets_of_zone(
     existing_zones.retain(|existing_zone| !existing_zone.subset_eq(new_zone));
 }
 /// Makes the path from the last subpath
-fn make_path(sub_path: Rc<SubPath>) -> Path {
+fn make_path(mut sub_path: Rc<SubPath>) -> Path {
     let mut path: Vec<Transition> = Vec::new();
 
-    let mut sub_path = sub_path;
     while sub_path.previous_sub_path.is_some() {
         path.push(sub_path.transition.clone().unwrap());
         sub_path = Rc::clone(sub_path.previous_sub_path.as_ref().unwrap());
