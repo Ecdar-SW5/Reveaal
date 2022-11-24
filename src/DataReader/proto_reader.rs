@@ -15,7 +15,6 @@ pub fn proto_decision_to_decision(
     system: &TransitionSystemPtr,
     components: Vec<Component>,
 ) -> Decision {
-    // Convert ProtoState to State
     let proto_state: ProtoState = match proto_decision.source {
         None => panic!("Not found"),
         Some(source) => source,
@@ -25,30 +24,30 @@ pub fn proto_decision_to_decision(
         None => panic!("Edge not found!"),
         Some(edge) => edge,
     };
+    let state = proto_state_to_state(proto_state, system);
 
-    let proto_location_tuple: ProtoLocationTuple = match proto_state.location_tuple {
+    let decided = proto_edge_to_edge(proto_edge, components);
+
+    Decision::new(state, decided)
+}
+
+pub fn proto_state_to_state(state: ProtoState, system: &TransitionSystemPtr) -> State {
+    // Convert ProtoState to State
+    let proto_location_tuple: ProtoLocationTuple = match state.location_tuple {
         None => panic!("No loc tuple"),
         Some(loc_tuple) => loc_tuple,
     };
-
-    let proto_federation: ProtoFederation = match proto_state.federation {
+    let proto_federation: ProtoFederation = match state.federation {
         None => panic!("No federation found"),
         Some(federation) => federation,
     };
-
     let zone: OwnedFederation = proto_federation_to_owned_federation(proto_federation, system);
-
     let location_tuple =
         match LocationTuple::from_proto_location_tuple(&proto_location_tuple, system) {
             None => panic!("No location tuple found"),
             Some(loc_tuple) => loc_tuple,
         };
-
-    let state = State::create(location_tuple, zone);
-
-    let decided = proto_edge_to_edge(proto_edge, components);
-
-    Decision::new(state, decided)
+    State::create(location_tuple, zone)
 }
 
 fn proto_edge_to_edge(proto_edge: ProtoEdge, components: Vec<Component>) -> Edge {
