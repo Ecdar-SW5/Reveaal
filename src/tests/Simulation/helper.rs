@@ -248,7 +248,97 @@ pub fn initial_transition_decision_point_EcdarUniversity_Machine() -> Transition
     let system = create_EcdarUniversity_Machine_system();
     TransitionDecisionPoint::initial(&system).unwrap()
 }
-
+pub fn get_state_after_Administration_Machine_Researcher_composition() -> ProtoState {
+    ProtoState {
+        location_tuple: Some(ProtoLocationTuple {
+            locations: vec![
+                ProtoLocation {
+                    id: "L0".to_string(),
+                    specific_component: Some(ProtoSpecificComponent {
+                        component_name: "Administration".to_string(),
+                        component_index: 0,
+                    }),
+                },
+                ProtoLocation {
+                    id: "L5".to_string(),
+                    specific_component: Some(ProtoSpecificComponent {
+                        component_name: "Machine".to_string(),
+                        component_index: 0,
+                    }),
+                },
+                ProtoLocation {
+                    id: "L6".to_string(),
+                    specific_component: Some(ProtoSpecificComponent {
+                        component_name: "Researcher".to_string(),
+                        component_index: 0,
+                    }),
+                },
+            ],
+        }),
+        federation: Some(ProtoFederation {
+            disjunction: Some(ProtoDisjunction {
+                conjunctions: vec![ProtoConjunction {
+                    constraints: vec![
+                        ProtoConstraint {
+                            x: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Administration".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "z".to_string(),
+                            }),
+                            y: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Machine".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "y".to_string(),
+                            }),
+                            strict: false,
+                            c: 0,
+                        },
+                        ProtoConstraint {
+                            x: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Machine".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "y".to_string(),
+                            }),
+                            y: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Researcher".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "x".to_string(),
+                            }),
+                            strict: false,
+                            c: 0,
+                        },
+                        ProtoConstraint {
+                            x: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Researcher".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "x".to_string(),
+                            }),
+                            y: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Administration".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "z".to_string(),
+                            }),
+                            strict: false,
+                            c: 0,
+                        },
+                    ],
+                }],
+            }),
+        }),
+    }
+}
 pub fn get_composition_response_Administration_Machine_Researcher(
 ) -> Result<Response<SimulationStepResponse>, Status> {
     let proto_decision_point = ProtoDecisionPoint {
@@ -270,7 +360,7 @@ pub fn get_composition_response_Administration_Machine_Researcher(
                         }),
                     },
                     ProtoLocation {
-                        id: "L6".to_string(),
+                        id: "L7".to_string(),
                         specific_component: Some(ProtoSpecificComponent {
                             component_name: "Researcher".to_string(),
                             component_index: 0,
@@ -367,6 +457,282 @@ pub fn get_composition_response_Administration_Machine_Researcher(
 
     Ok(Response::new(response))
 }
+
+pub fn get_composition_response_Administration_Machine_Researcher_after_E29(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    let decisionpoint1 = ProtoDecisionPoint {
+        source: Some(ProtoState {
+            location_tuple: Some(ProtoLocationTuple {
+                locations: vec![
+                    ProtoLocation {
+                        id: "L0".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "Administration".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                    ProtoLocation {
+                        id: "L5".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "Machine".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                    ProtoLocation {
+                        id: "L7".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "Researcher".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                ],
+            }),
+            federation: Some(ProtoFederation {
+                disjunction: Some(ProtoDisjunction {
+                    conjunctions: vec![ProtoConjunction {
+                        constraints: vec![
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Administration".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "z".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Machine".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "y".to_string(),
+                                }),
+                                strict: false,
+                                c: 0,
+                            },
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Administration".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "z".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Researcher".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "x".to_string(),
+                                }),
+                                strict: false,
+                                c: 15,
+                            },
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Machine".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "y".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Administration".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "z".to_string(),
+                                }),
+                                strict: false,
+                                c: 0,
+                            },
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Researcher".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "x".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: None,
+                                    clock_name: "0".to_string(),
+                                }),
+                                strict: false,
+                                c: 8,
+                            },
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Researcher".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "x".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Administration".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "z".to_string(),
+                                }),
+                                strict: false,
+                                c: -2,
+                            },
+                        ],
+                    }],
+                }),
+            }),
+        }),
+        edges: vec![
+            ProtoEdge {
+                id: "E13".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E29".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E44".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E9".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "input_L0_pub".to_string(),
+                specific_component: None,
+            },
+        ],
+    };
+    let decisionpoint2 = ProtoDecisionPoint {
+        source: Some(ProtoState {
+            location_tuple: Some(ProtoLocationTuple {
+                locations: vec![
+                    ProtoLocation {
+                        id: "L0".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "Administration".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                    ProtoLocation {
+                        id: "L5".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "Machine".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                    ProtoLocation {
+                        id: "U0".to_string(),
+                        specific_component: Some(ProtoSpecificComponent {
+                            component_name: "Researcher".to_string(),
+                            component_index: 0,
+                        }),
+                    },
+                ],
+            }),
+            federation: Some(ProtoFederation {
+                disjunction: Some(ProtoDisjunction {
+                    conjunctions: vec![ProtoConjunction {
+                        constraints: vec![
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: None,
+                                    clock_name: "0".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Administration".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "z".to_string(),
+                                }),
+                                strict: true,
+                                c: -15,
+                            },
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Administration".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "z".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Machine".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "y".to_string(),
+                                }),
+                                strict: false,
+                                c: 0,
+                            },
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Machine".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "y".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Researcher".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "x".to_string(),
+                                }),
+                                strict: false,
+                                c: 0,
+                            },
+                            ProtoConstraint {
+                                x: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Researcher".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "x".to_string(),
+                                }),
+                                y: Some(ProtoComponentClock {
+                                    specific_component: Some(ProtoSpecificComponent {
+                                        component_name: "Administration".to_string(),
+                                        component_index: 0,
+                                    }),
+                                    clock_name: "z".to_string(),
+                                }),
+                                strict: false,
+                                c: 0,
+                            },
+                        ],
+                    }],
+                }),
+            }),
+        }),
+        edges: vec![
+            ProtoEdge {
+                id: "E29".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "E44".to_string(),
+                specific_component: None,
+            },
+            ProtoEdge {
+                id: "input_L0_pub".to_string(),
+                specific_component: None,
+            },
+        ],
+    };
+    let response = SimulationStepResponse {
+        new_decision_points: vec![decisionpoint1, decisionpoint2],
+    };
+
+    Ok(Response::new(response))
+}
+//to here
 
 pub fn get_conjunction_response_HalfAdm1_HalfAdm2(
 ) -> Result<Response<SimulationStepResponse>, Status> {
