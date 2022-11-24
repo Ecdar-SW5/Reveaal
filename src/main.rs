@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             None => num_cpus::get(),
         };
         let cache_count: usize = matches
-            .value_of("cache_size")
+            .value_of("cache-size")
             .unwrap()
             .parse()
             .expect("Could not parse input for the cache_size");

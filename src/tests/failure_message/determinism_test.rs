@@ -12,6 +12,7 @@ mod test {
     #[test]
     fn determinism_failure_test() {
         let actual = json_run_query(PATH, "determinism: NonDeterminismCom");
+
         assert!(matches!(
             actual,
             QueryResult::Determinism(DeterminismResult::Failure(..))

@@ -48,6 +48,19 @@ impl LocationID {
             LocationID::AnyLocation() => true,
         }
     }
+
+    ///Gets the component_id of from a [`LocationID::Simple`] returns a clone.
+    pub fn get_component_id(&self) -> Option<String> {
+        if let LocationID::Simple {
+            location_id: _,
+            component_id,
+        } = self
+        {
+            component_id.clone()
+        } else {
+            None
+        }
+    }
 }
 
 impl From<QueryExpression> for LocationID {
@@ -136,7 +149,9 @@ impl Display for LocationID {
             LocationID::Simple {
                 location_id,
                 component_id: _,
-            } => write!(f, "{}", location_id)?,
+            } => {
+                write!(f, "{}", location_id)?;
+            }
             LocationID::AnyLocation() => write!(f, "_")?,
         }
         Ok(())
