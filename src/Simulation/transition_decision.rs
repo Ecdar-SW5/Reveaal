@@ -1,3 +1,5 @@
+use regex::Regex;
+
 use crate::{
     component::{State, Transition},
     TransitionSystems::{TransitionID, TransitionSystemPtr},
@@ -16,6 +18,8 @@ impl TransitionDecision {
     /// Returns all `TransitionDecision`s equivalent to the given `&Decision` in relation to the given `&TransitionSystemPtr`
     pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Vec<Self> {
         fn contains(transition: &Transition, edge_id: &String) -> bool {
+            let filter = Regex::new("(input_).*").unwrap();
+
             transition
                 .id
                 .get_leaves()
@@ -25,6 +29,7 @@ impl TransitionDecision {
                     TransitionID::Simple(x) => Some(x),
                     _ => None,
                 })
+                .filter(|x| !filter.is_match(x))
                 .any(|x| x == edge_id)
         }
         let source = decision.source().to_owned();
