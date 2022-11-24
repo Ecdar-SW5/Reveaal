@@ -43,7 +43,7 @@ mod test {
         );
     }
 
-    #[ignore]
+    #[ignore = "Server hangs on panic"]
     #[test_case(
         create_malformed_component_request();
         "given a request with a malformed component, respond with error"
