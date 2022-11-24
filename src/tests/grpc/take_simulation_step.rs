@@ -6,7 +6,9 @@ mod test {
         create_sample_json_component, create_simulation_info_from, create_simulation_step_request,
         create_state_not_in_machine, create_state_setup_for_mismatch,
     };
-    use crate::tests::Simulation::helper;
+    use crate::tests::Simulation::helper::{
+        self, get_state_after_Administration_Machine_Researcher_composition,
+    };
     use crate::ProtobufServer::services::{
         Component as ProtoComponent, Edge as ProtoEdge, SimulationStepRequest,
         SimulationStepResponse,
@@ -164,25 +166,25 @@ mod test {
         ))
     }
 
-    #[ignore]
     #[test_case(
         create_composition_request(),
         create_expected_response_to_composition_request();
         "given a composition request, responds with correct component"
     )]
-    #[test_case(
-        create_conjunction_request(),
-        create_expected_response_to_conjunction_request();
-        "given a good conjunction request, responds with correct component"
-    )]
+    // #[test_case(
+    //     create_conjunction_request(),
+    //     create_expected_response_to_conjunction_request();
+    //     "given a good conjunction request, responds with correct component"
+    // )]
     #[tokio::test]
-    async fn start_simulation_step__get_composit_component__should_return_component(
+    async fn take_simulation_step__get_composit_component__should_return_component(
         request: Request<SimulationStepRequest>,
         expected_response: Result<Response<SimulationStepResponse>, Status>,
     ) {
         let backend = ProtobufServer::ConcreteEcdarBackend::default();
 
         let actual_response = backend.take_simulation_step(request).await;
+        println!("{:#?}", actual_response);
 
         // Assert
         assert_eq!(
@@ -193,36 +195,29 @@ mod test {
 
     // A || B || C
     fn create_composition_request() -> Request<SimulationStepRequest> {
-        // let simulation_step_request = Request::new(SimulationStepRequest {
-        //     simulation_info: Some(simulation_info),
-        //     chosen_decision: todo!(),
-        // });
-
         let comp_names = vec!["Administration", "Machine", "Researcher"];
         let sample_name = "EcdarUniversity".to_string();
-        let composition_string =
-            helper::create_composition_string(&comp_names, CompositionType::Composition);
+        let composition_string = "Administration || Machine || Researcher".to_string();
 
         let components: Vec<ProtoComponent> = helper::create_components(&comp_names, sample_name);
         let simulation_info = helper::create_simulation_info(composition_string, components);
 
         let edge = ProtoEdge {
-            id: "E25".to_string(),
+            id: "E29".to_string(),
             specific_component: None,
         };
 
-        let source =
-            create_1tuple_state_with_single_constraint("L4", "Machine", 0, "0", "y", -6, false);
+        let source = get_state_after_Administration_Machine_Researcher_composition();
 
         let simulation_step_request = create_simulation_step_request(simulation_info, source, edge);
 
         Request::new(simulation_step_request)
     }
 
-    // TODO: Don't know if this is the correct way to do this
     fn create_expected_response_to_composition_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        let expected = helper::get_composition_response_Administration_Machine_Researcher();
+        let expected =
+            helper::get_composition_response_Administration_Machine_Researcher_after_E29();
 
         expected
     }
@@ -250,7 +245,7 @@ mod test {
         Request::new(simulation_step_request)
     }
 
-    // TODO: Don't know if this is correct
+    // TODO: Don't know if this is correct (it is not :)
     fn create_expected_response_to_conjunction_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
         let expected = helper::get_conjunction_response_HalfAdm1_HalfAdm2();
