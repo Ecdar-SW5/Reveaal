@@ -661,10 +661,6 @@ pub struct Transition {
     pub updates: Vec<CompiledUpdate>,
 }
 impl Transition {
-    pub fn get_edges(&self) -> Vec<Edge> {
-        todo!("get_edges")
-    }
-
     /// Create a new transition not based on an edge with no identifier
     pub fn new(target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
         Transition {
@@ -898,8 +894,6 @@ pub struct Edge {
     pub update: Option<Vec<parse_edge::Update>>,
     #[serde(deserialize_with = "decode_sync")]
     pub sync: String,
-    #[serde(skip)] // TODO: DO NOT SKIP
-    pub component_name: Option<String>,
 }
 
 const TRUE: BoolExpression = BoolExpression::Bool(true);

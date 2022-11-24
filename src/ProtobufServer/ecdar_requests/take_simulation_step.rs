@@ -13,6 +13,7 @@ use crate::{
     },
     Simulation::{decision::Decision, transition_decision::TransitionDecision},
 };
+
 impl ConcreteEcdarBackend {
     pub fn handle_take_simulation_step(
         request: SimulationStepRequest,
