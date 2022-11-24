@@ -11,7 +11,9 @@ use log::warn;
 use std::collections::hash_map::Entry;
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
+use std::hash::Hash;
 use std::ops::Range;
+use crate::ModelObjects::representations::Clock;
 
 pub type TransitionSystemPtr = Box<dyn TransitionSystem>;
 pub type Action = String;
@@ -359,53 +361,39 @@ impl ClockAnalysisGraph {
             //First the clocks which are equivalent in this edge are found. This is defined by every
             //clock in their respective group are set to the same value. This is done through a
             //HashMap with the value being key and the group of clocks being the value
-            let mut locally_equivalent_clock_groups: HashMap<i32, HashSet<ClockIndex>> =
+            let mut locally_equivalent_clock_groups: HashMap<ClockIndex, u32> =
                 HashMap::new();
-            //Here the clocks are grouped by the value they are set to
+
             for update in edge.updates.iter() {
-                //This gets the values' clock group or creates a new one and inserts the new one
-                //in the hashset and returns a mutable reference
-                let clock_group: &mut HashSet<ClockIndex> =
-                    match locally_equivalent_clock_groups.entry(update.value) {
-                        Entry::Occupied(o) => o.into_mut(),
-                        Entry::Vacant(v) => v.insert(HashSet::new()),
-                    };
-                clock_group.insert(update.clock_index);
+                locally_equivalent_clock_groups.insert(update.clock_index, update.value as u32);
             }
-            //Then we maintain the loop invariant by creating a new list of clock groups and
-            //dividing the old groups when clocks are found to not be equivalent
-            let mut new_groups: Vec<HashSet<ClockIndex>> = Vec::new();
-            //We do this by iterating on each globally equivalent clock group and removing the clocks
-            //that are not updated to the same value
+
+            let mut new_groups: HashMap<usize, HashSet<ClockIndex>> = HashMap::new();
+            let mut group_offset: usize = u32::MAX as usize;
+            let mut old_group_index: usize = 0;
+
             for equivalent_clock_group in &mut equivalent_clock_groups {
-                //For each of the locally equivalent clock groups we can construct a new clock group
-                //for the clocks that are in the globally equivalant clock group we are iterating
-                //over now.
-                //Then we remove the clocks from the globally equivalent clocks that we use in
-                //the new group
-                for locally_equivalent_clock_group in &locally_equivalent_clock_groups {
-                    let mut new_clock_group = HashSet::new();
-                    for locally_equivalent_clock in locally_equivalent_clock_group.1 {
-                        if equivalent_clock_group.contains(locally_equivalent_clock) {
-                            new_clock_group.insert(*locally_equivalent_clock);
-                            equivalent_clock_group.remove(locally_equivalent_clock);
-                        }
-                    }
-                    //If the new clock group only contains one clock then there is no reason to keep
-                    //Track of it, since it will never be redundant
-                    if new_clock_group.len() > 1 {
-                        new_groups.push(new_clock_group);
+                for clock in equivalent_clock_group.iter() {
+                    if let Some(groupId) = locally_equivalent_clock_groups.get(&clock) {
+                        ClockAnalysisGraph::get_or_insert(&mut new_groups, (group_offset + ((*groupId) as usize))).insert(*clock);
+                    } else {
+                        ClockAnalysisGraph::get_or_insert(&mut new_groups, old_group_index).insert(*clock);
                     }
                 }
-                //The same thing is done here
-                if equivalent_clock_group.len() > 1 {
-                    new_groups.push(equivalent_clock_group.clone());
-                }
+                group_offset += (u32::MAX as usize) * 2;
+                old_group_index += 1;
             }
             //Then we use the new groups which uphold the loop invariant
-            equivalent_clock_groups = new_groups;
+            equivalent_clock_groups = new_groups.into_iter().map(|pair| pair.1).filter(|group| group.len() > 1).collect();
         }
         equivalent_clock_groups
+    }
+
+    fn get_or_insert<'a, K: Eq + Hash, V: Default>(map: &'a mut HashMap<K, V>, key: K) -> &'a mut V {
+            match map.entry(key) {
+                Entry::Occupied(o) => o.into_mut(),
+                Entry::Vacant(v) => v.insert(V::default()),
+            }
     }
 }
 
