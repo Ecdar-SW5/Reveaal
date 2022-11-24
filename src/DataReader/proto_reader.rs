@@ -3,9 +3,10 @@ use edbm::zones::OwnedFederation;
 
 use crate::component::{Component, Edge, State};
 use crate::ProtobufServer::services::{
-    Conjunction as ProtoConjunction, Constraint as ProtoConstraint, Decision as ProtoDecision,
-    Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
-    LocationTuple as ProtoLocationTuple, State as ProtoState,
+    ComponentClock as ProtoComponentClock, Conjunction as ProtoConjunction,
+    Constraint as ProtoConstraint, Decision as ProtoDecision, Disjunction as ProtoDisjunction,
+    Edge as ProtoEdge, Federation as ProtoFederation, LocationTuple as ProtoLocationTuple,
+    State as ProtoState,
 };
 use crate::Simulation::decision::Decision;
 use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
@@ -65,6 +66,18 @@ fn proto_constraint_to_constraint(
     proto_constraint: ProtoConstraint,
     system: &TransitionSystemPtr,
 ) -> Constraint {
+    fn determine_index(clock: ProtoComponentClock, system: &TransitionSystemPtr) -> usize {
+        if clock.clock_name == "0" && clock.specific_component.is_none() {
+            return 0;
+        } else {
+            system
+                .clock_name_and_component_to_index(
+                    &clock.clock_name,
+                    &clock.specific_component.unwrap().component_name,
+                )
+                .unwrap()
+        }
+    }
     let x_clock = match proto_constraint.x {
         None => panic!("No clock name"),
         Some(clock) => clock,
@@ -74,24 +87,8 @@ fn proto_constraint_to_constraint(
         Some(clock) => clock,
     };
 
-    let i = system
-        .clock_name_and_component_to_index(
-            &x_clock.clock_name,
-            &x_clock
-                .specific_component
-                .map(|c| c.component_name)
-                .unwrap_or_default(),
-        )
-        .unwrap_or(0);
-    let j = system
-        .clock_name_and_component_to_index(
-            &y_clock.clock_name,
-            &y_clock
-                .specific_component
-                .map(|c| c.component_name)
-                .unwrap_or_default(),
-        )
-        .unwrap_or(0);
+    let i = determine_index(x_clock, system);
+    let j = determine_index(y_clock, system);
 
     let inequality = match proto_constraint.strict {
         true => Inequality::LS(proto_constraint.c),

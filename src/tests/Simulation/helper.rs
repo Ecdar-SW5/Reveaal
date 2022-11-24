@@ -111,7 +111,7 @@ pub fn create_EcdarUniversity_Machine_with_nonempty_Federation_Decision() -> Pro
     };
 
     let componentclock_dp1 = ProtoComponentClock {
-        specific_component: Some(specific_comp_dp.clone()),
+        specific_component: None,
         clock_name: "0".to_string(),
     };
     let componentclock_dp2 = ProtoComponentClock {
