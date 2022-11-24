@@ -21,7 +21,7 @@ pub fn simulation_info_to_transition_system(
     let component_info = simulation_info.components_info.as_ref().unwrap();
     // Extract components from the request message
 
-    let mut component_container = ComponentContainer::from(&component_info).unwrap();
+    let mut component_container = ComponentContainer::from(component_info).unwrap();
 
     // Build transition_system as specified in the composition string
     component_loader_to_transition_system(&mut component_container, &composition)
@@ -93,7 +93,7 @@ fn proto_constraint_to_constraint(
 ) -> Constraint {
     fn determine_index(clock: ProtoComponentClock, system: &TransitionSystemPtr) -> usize {
         if clock.clock_name == "0" && clock.specific_component.is_none() {
-            return 0;
+            0
         } else {
             system
                 .clock_name_and_component_to_index(
@@ -237,7 +237,7 @@ mod tests {
         // Arrange
         let machine3 = read_json_component("samples/json/EcdarUniversity", "Machine3");
         let machine = read_json_component("samples/json/EcdarUniversity", "Machine");
-        let components = vec![machine3.clone(), machine.clone()];
+        let components = vec![machine3, machine.clone()];
         let system = components_to_transition_system(components.clone(), "( Machine3 && Machine )");
         let proto_decision =
             create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision();
@@ -246,7 +246,7 @@ mod tests {
 
         let expected_source = system.get_initial_state().unwrap();
 
-        let expected_decision = Decision::new(expected_source.clone(), expected_edge.to_owned());
+        let expected_decision = Decision::new(expected_source, expected_edge.to_owned());
 
         // Act
         let actual_decision = proto_decision_to_decision(proto_decision, &system, components);

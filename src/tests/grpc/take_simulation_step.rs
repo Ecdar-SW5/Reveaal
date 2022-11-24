@@ -217,10 +217,7 @@ mod test {
 
     fn create_expected_response_to_composition_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        let expected =
-            helper::get_composition_response_Administration_Machine_Researcher_after_E29();
-
-        expected
+        helper::get_composition_response_Administration_Machine_Researcher_after_E29()
     }
 
     // A && B
@@ -247,8 +244,6 @@ mod test {
 
     fn create_expected_response_to_conjunction_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        let expected = helper::get_conjunction_response_HalfAdm1_HalfAdm2_after_E37();
-
-        expected
+        helper::get_conjunction_response_HalfAdm1_HalfAdm2_after_E37()
     }
 }

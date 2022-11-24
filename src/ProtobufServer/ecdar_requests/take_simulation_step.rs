@@ -25,7 +25,7 @@ impl ConcreteEcdarBackend {
         let simulation_info = request_message.simulation_info.unwrap();
 
         let components =
-            components_info_to_components(&simulation_info.components_info.as_ref().unwrap());
+            components_info_to_components(simulation_info.components_info.as_ref().unwrap());
 
         let transition_system = simulation_info_to_transition_system(&simulation_info);
 

@@ -113,7 +113,7 @@ mod tests {
         let initial = system.get_initial_state().unwrap();
 
         let transition = system
-            .next_transitions_if_available(initial.clone().get_location(), "coin")
+            .next_transitions_if_available(initial.get_location(), "coin")
             .first()
             .unwrap()
             .to_owned();
@@ -130,17 +130,17 @@ mod tests {
         let actual_source = format!("{:?}", actual.source());
         let actual_possible_decisions: Vec<String> = actual
             .possible_decisions()
-            .into_iter()
+            .iter()
             .map(|x| format!("{:?}", x))
             .collect();
 
-        let mut source = initial.clone();
+        let mut source = initial;
         transition.use_transition(&mut source);
         let expected = TransitionDecisionPoint::from(&system, &source);
         let expected_source = format!("{:?}", expected.source());
         let expected_possible_decisions = expected
             .possible_decisions()
-            .into_iter()
+            .iter()
             .map(|x| format!("{:?}", x));
 
         assert_eq!(actual_source, expected_source);
@@ -160,7 +160,7 @@ mod tests {
         let initial = system.get_initial_state().unwrap();
         let edge = component.get_edges()[4].clone();
 
-        let decision = Decision::new(initial.clone(), edge.clone());
+        let decision = Decision::new(initial.clone(), edge);
 
         let expected = TransitionDecision {
             source: initial.clone(),
@@ -189,7 +189,7 @@ mod tests {
 
         let expected = TransitionDecision {
             source: initial.clone(),
-            decided: system.next_transitions(initial.get_location(), &edge_action)[0].clone(),
+            decided: system.next_transitions(initial.get_location(), edge_action)[0].clone(),
         };
 
         assert__from__good_Decision__returns_correct_TransitionDecision(system, decision, expected);

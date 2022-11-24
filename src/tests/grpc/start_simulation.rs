@@ -140,14 +140,12 @@ mod test {
             simulation_info: Some(simulation_info),
         });
 
-        return simulation_start_request;
+        simulation_start_request
     }
 
     fn create_expected_response_to_composition_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        let expected = helper::get_composition_response_Administration_Machine_Researcher();
-
-        expected
+        helper::get_composition_response_Administration_Machine_Researcher()
     }
 
     // A && B
@@ -160,17 +158,13 @@ mod test {
         let components: Vec<Component> = helper::create_components(&comp_names, sample_name);
         let simulation_info = helper::create_simulation_info(composition_string, components);
 
-        let simulation_start_request = Request::new(SimulationStartRequest {
+        Request::new(SimulationStartRequest {
             simulation_info: Some(simulation_info),
-        });
-
-        simulation_start_request
+        })
     }
 
     fn create_expected_response_to_conjunction_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        let expected = helper::get_conjunction_response_HalfAdm1_HalfAdm2();
-
-        expected
+        helper::get_conjunction_response_HalfAdm1_HalfAdm2()
     }
 }
