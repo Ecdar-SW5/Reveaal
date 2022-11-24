@@ -9,10 +9,7 @@ use crate::{
         },
         ConcreteEcdarBackend,
     },
-    Simulation::{
-        decision::Decision, transition_decision::TransitionDecision,
-        transition_decision_point::TransitionDecisionPoint,
-    },
+    Simulation::{decision::Decision, transition_decision::TransitionDecision},
 };
 impl ConcreteEcdarBackend {
     pub fn handle_take_simulation_step(
@@ -39,27 +36,14 @@ impl ConcreteEcdarBackend {
             Decision::from(chosen_decision, &transition_system, components);
         let chosen_decisions = TransitionDecision::from(&chosen_decision, &transition_system);
 
-        let decision_points: Vec<TransitionDecisionPoint> = chosen_decisions
+        let decision_points: Vec<_> = chosen_decisions
             .into_iter()
             .map(|d| d.resolve(transition_system.clone()))
+            .map(|d| ProtoDecisionPoint::from_transition_decision_point(&d, &transition_system))
             .collect();
 
-        // TODO should be removed once the API supports non-determinism
-        let decision_point = match decision_points.len() {
-            0 => {
-                return Err(Status::internal(
-                    "0 Decision Points exist after stepping along this edge",
-                ))
-            }
-            1 => decision_points.first().unwrap(),
-            _ => return Err(Status::internal("Ambiguity not supported yet")),
-        };
-
-        let decision_point =
-            ProtoDecisionPoint::from_transition_decision_point(&decision_point, &transition_system);
-
         let simulation_step_response = SimulationStepResponse {
-            new_decision_point: Some(decision_point),
+            new_decision_points: decision_points,
         };
 
         Ok(simulation_step_response)

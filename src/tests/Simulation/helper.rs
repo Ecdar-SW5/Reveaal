@@ -362,7 +362,7 @@ pub fn get_composition_response_Administration_Machine_Researcher(
     };
 
     let response = SimulationStepResponse {
-        new_decision_point: Some(proto_decision_point),
+        new_decision_points: vec![proto_decision_point],
     };
 
     Ok(Response::new(response))
@@ -456,7 +456,7 @@ pub fn get_conjunction_response_HalfAdm1_HalfAdm2(
     };
 
     let response = SimulationStepResponse {
-        new_decision_point: Some(proto_decision_point),
+        new_decision_points: vec![proto_decision_point],
     };
 
     Ok(Response::new(response))
@@ -472,6 +472,7 @@ pub fn create_simulation_info(
             components,
             components_hash: 0,
         }),
+        user_id: 0,
     }
 }
 

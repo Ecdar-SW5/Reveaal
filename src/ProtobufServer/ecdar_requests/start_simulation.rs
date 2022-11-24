@@ -23,11 +23,18 @@ impl ConcreteEcdarBackend {
         request: SimulationStartRequest,
         _cache: ModelCache, // TODO should be used...
     ) -> Result<SimulationStepResponse, Status> {
+        fn option_to_vec<T>(o: Option<T>) -> Vec<T> {
+            match o {
+                None => vec![],
+                Some(e) => vec![e],
+            }
+        }
+
         trace!("Received query: {:?}", request);
 
         let simulation_info = match request.simulation_info {
             Some(v) => v,
-            None => return Err(Status::invalid_argument("simulation_info was None")),
+            None => return Err(Status::invalid_argument("simulation_info was empty")),
         };
 
         let transition_system = helpers::simulation_info_to_transition_system(simulation_info);
@@ -36,7 +43,7 @@ impl ConcreteEcdarBackend {
             .map(|i| ProtoDecisionPoint::from_transition_decision_point(&i, &transition_system));
 
         Ok(SimulationStepResponse {
-            new_decision_point: initial,
+            new_decision_points: option_to_vec(initial),
         })
     }
 }
@@ -240,7 +247,7 @@ mod tests {
         // Act
         let actual = ProtoDecisionPoint::from(&decision_point, &system);
         let actual = Response::new(SimulationStepResponse {
-            new_decision_point: Some(actual),
+            new_decision_points: vec![actual],
         });
 
         // Assert

@@ -208,6 +208,7 @@ pub fn create_empty_edge() -> Edge {
 
 pub fn create_simulation_info_from(composition: String, component_json: String) -> SimulationInfo {
     SimulationInfo {
+        user_id: 0,
         component_composition: composition,
         components_info: Some(ComponentsInfo {
             components: vec![Component {
