@@ -4,12 +4,11 @@ use crate::{
     DataReader::{
         component_loader::{parse_components_if_some, ModelCache},
         proto_reader::proto_decision_to_decision,
+        proto_writer::transition_decision_point_to_proto_decision_point,
     },
     ProtobufServer::{
         ecdar_requests::helpers,
-        services::{
-            DecisionPoint as ProtoDecisionPoint, SimulationStepRequest, SimulationStepResponse,
-        },
+        services::{SimulationStepRequest, SimulationStepResponse},
         ConcreteEcdarBackend,
     },
     Simulation::{decision::Decision, transition_decision::TransitionDecision},
@@ -42,7 +41,7 @@ impl ConcreteEcdarBackend {
         let decision_points: Vec<_> = chosen_decisions
             .into_iter()
             .map(|d| d.resolve(transition_system.clone()))
-            .map(|d| ProtoDecisionPoint::from_transition_decision_point(&d, &transition_system))
+            .map(|d| transition_decision_point_to_proto_decision_point(&d, &transition_system))
             .collect();
 
         let simulation_step_response = SimulationStepResponse {
