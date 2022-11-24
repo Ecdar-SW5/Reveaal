@@ -38,8 +38,7 @@ impl TransitionID {
         match self {
             TransitionID::Conjunction(l, r) | TransitionID::Composition(l, r) => {
                 let index_left = l.get_leaves_helper(current_leaves, index);
-                let index_right = r.get_leaves_helper(current_leaves, index_left + 1);
-                index_right
+                r.get_leaves_helper(current_leaves, index_left + 1) // return index right
             }
             TransitionID::Quotient(l, r) => {
                 let mut index_left = index;
