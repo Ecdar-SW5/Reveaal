@@ -243,6 +243,13 @@ mod tests {
     )]
     #[test_case(
         vec![
+            read_json_component("samples/json/EcdarUniversity", "Machine"),
+            ],
+        "(Machine && Machine)";
+        "(Machine && Machine)"
+    )]
+    #[test_case(
+        vec![
             read_json_component("samples/json/EcdarUniversity", "HalfAdm1"),
             read_json_component("samples/json/EcdarUniversity", "HalfAdm2"),
             ],
