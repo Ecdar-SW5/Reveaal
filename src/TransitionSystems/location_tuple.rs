@@ -174,7 +174,7 @@ impl LocationTuple {
         self.loc_type == LocationType::Inconsistent
     }
 
-    /// This function is used when you want to compare a [`LocationTuple`] containing a partial location with another [`LocationTuple`].
+    /// This function is used when you want to compare [`LocationTuple`]s that can contain partial locations.
     pub fn compare_partial_locations(&self, other: &LocationTuple) -> bool {
         match (&self.id, &other.id) {
             (LocationID::Composition(..), LocationID::Composition(..))
