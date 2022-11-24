@@ -17,43 +17,47 @@ use crate::{
     TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr},
 };
 
-impl ProtoDecisionPoint {
-    pub fn from_transition_decision_point(
-        decision_point: &TransitionDecisionPoint,
-        system: &TransitionSystemPtr,
-    ) -> ProtoDecisionPoint {
-        let decision_point: DecisionPoint = DecisionPoint::from(decision_point);
-        let decision_point: ProtoDecisionPoint = ProtoDecisionPoint::from(&decision_point, system);
-        decision_point
+pub fn transition_decision_point_to_proto_decision_point(
+    decision_point: &TransitionDecisionPoint,
+    system: &TransitionSystemPtr,
+) -> ProtoDecisionPoint {
+    let decision_point: DecisionPoint = DecisionPoint::from(decision_point);
+    let decision_point: ProtoDecisionPoint =
+        decision_point_to_proto_decision_point(&decision_point, system);
+    decision_point
+}
+
+fn decision_point_to_proto_decision_point(
+    decision_point: &DecisionPoint,
+    system: &TransitionSystemPtr,
+) -> ProtoDecisionPoint {
+    let source = state_to_proto_state(decision_point.source(), system);
+
+    let edges = decision_point
+        .possible_decisions()
+        .iter()
+        .map(edge_id_to_proto_edge)
+        .collect();
+
+    ProtoDecisionPoint {
+        source: Some(source),
+        edges,
     }
 }
 
-impl ProtoDecisionPoint {
-    fn from(decision_point: &DecisionPoint, system: &TransitionSystemPtr) -> Self {
-        let source = ProtoState::from(decision_point.source(), system);
+fn state_to_proto_state(s: &State, system: &TransitionSystemPtr) -> ProtoState {
+    let location_tuple = location_tuple_to_proto_location_tuple(s.get_location());
+    let federation = federation_to_proto_federation(s.zone_ref(), system);
 
-        let edges = decision_point
-            .possible_decisions()
-            .iter()
-            .map(ProtoEdge::from)
-            .collect();
-
-        ProtoDecisionPoint {
-            source: Some(source),
-            edges,
-        }
+    ProtoState {
+        location_tuple: Some(location_tuple),
+        federation: Some(federation),
     }
 }
 
-impl ProtoState {
-    pub fn from(s: &State, system: &TransitionSystemPtr) -> Self {
-        let location_tuple = ProtoLocationTuple::from(s.get_location());
-        let federation = ProtoFederation::from(s.zone_ref(), system);
-
-        ProtoState {
-            location_tuple: Some(location_tuple),
-            federation: Some(federation),
-        }
+fn location_tuple_to_proto_location_tuple(l: &LocationTuple) -> ProtoLocationTuple {
+    ProtoLocationTuple {
+        locations: location_id_to_proto_location_vec(&l.id),
     }
 }
 
@@ -79,90 +83,87 @@ fn location_id_to_proto_location_vec(is: &LocationID) -> Vec<ProtoLocation> {
     }
 }
 
-impl From<&LocationTuple> for ProtoLocationTuple {
-    fn from(l: &LocationTuple) -> Self {
-        ProtoLocationTuple {
-            locations: location_id_to_proto_location_vec(&l.id),
-        }
+fn federation_to_proto_federation(
+    f: &OwnedFederation,
+    system: &TransitionSystemPtr,
+) -> ProtoFederation {
+    ProtoFederation {
+        disjunction: Some(disjunction_to_proto_disjunction(
+            &f.minimal_constraints(),
+            system,
+        )),
     }
 }
 
-impl ProtoFederation {
-    fn from(f: &OwnedFederation, system: &TransitionSystemPtr) -> Self {
-        ProtoFederation {
-            disjunction: Some(ProtoDisjunction::from(&f.minimal_constraints(), system)),
-        }
+fn disjunction_to_proto_disjunction(
+    d: &Disjunction,
+    system: &TransitionSystemPtr,
+) -> ProtoDisjunction {
+    ProtoDisjunction {
+        conjunctions: d
+            .conjunctions
+            .iter()
+            .map(|x| conjunction_to_proto_conjunction(x, system))
+            .collect(),
     }
 }
 
-impl ProtoDisjunction {
-    fn from(d: &Disjunction, system: &TransitionSystemPtr) -> Self {
-        ProtoDisjunction {
-            conjunctions: d
-                .conjunctions
-                .iter()
-                .map(|x| ProtoConjunction::from(x, system))
-                .collect(),
-        }
+fn conjunction_to_proto_conjunction(
+    c: &Conjunction,
+    system: &TransitionSystemPtr,
+) -> ProtoConjunction {
+    ProtoConjunction {
+        constraints: c
+            .constraints
+            .iter()
+            .map(|x| constraint_to_proto_constraint(x, system))
+            .collect(),
     }
 }
 
-impl ProtoConjunction {
-    fn from(c: &Conjunction, system: &TransitionSystemPtr) -> Self {
-        ProtoConjunction {
-            constraints: c
-                .constraints
-                .iter()
-                .map(|x| ProtoConstraint::from(x, system))
-                .collect(),
+fn constraint_to_proto_constraint(
+    constraint: &Constraint,
+    system: &TransitionSystemPtr,
+) -> ProtoConstraint {
+    fn clock_name(clock_name_and_component: Option<&(String, String)>) -> String {
+        let ZERO_CLOCK_NAME = "0";
+        match clock_name_and_component {
+            Some((clock_name, _)) => clock_name.to_string(),
+            // If an index does not correspond to an index we assume it's the zero clock
+            None => ZERO_CLOCK_NAME.to_string(),
         }
+    }
+
+    fn clock_component(
+        clock_name_and_component: Option<&(String, String)>,
+    ) -> Option<SpecificComponent> {
+        clock_name_and_component.map(|x| SpecificComponent {
+            component_name: x.1.to_string(),
+            component_index: 0,
+        })
+    }
+
+    let x = system.index_to_clock_name_and_component(&constraint.i);
+    let y = system.index_to_clock_name_and_component(&constraint.j);
+
+    ProtoConstraint {
+        x: Some(ComponentClock {
+            specific_component: clock_component(x.as_ref()),
+            clock_name: clock_name(x.as_ref()),
+        }),
+        y: Some(ComponentClock {
+            specific_component: clock_component(y.as_ref()),
+            clock_name: clock_name(y.as_ref()),
+        }),
+        strict: constraint.ineq().is_strict(),
+        c: constraint.ineq().bound(),
     }
 }
 
-impl ProtoConstraint {
-    fn from(constraint: &Constraint, system: &TransitionSystemPtr) -> Self {
-        fn clock_name(clock_name_and_component: Option<&(String, String)>) -> String {
-            let ZERO_CLOCK_NAME = "0";
-            match clock_name_and_component {
-                Some((clock_name, _)) => clock_name.to_string(),
-                // If an index does not correspond to an index we assume it's the zero clock
-                None => ZERO_CLOCK_NAME.to_string(),
-            }
-        }
-
-        fn clock_component(
-            clock_name_and_component: Option<&(String, String)>,
-        ) -> Option<SpecificComponent> {
-            clock_name_and_component.map(|x| SpecificComponent {
-                component_name: x.1.to_string(),
-                component_index: 0,
-            })
-        }
-
-        let x = system.index_to_clock_name_and_component(&constraint.i);
-        let y = system.index_to_clock_name_and_component(&constraint.j);
-
-        ProtoConstraint {
-            x: Some(ComponentClock {
-                specific_component: clock_component(x.as_ref()),
-                clock_name: clock_name(x.as_ref()),
-            }),
-            y: Some(ComponentClock {
-                specific_component: clock_component(y.as_ref()),
-                clock_name: clock_name(y.as_ref()),
-            }),
-            strict: constraint.ineq().is_strict(),
-            c: constraint.ineq().bound(),
-        }
-    }
-}
-
-impl ProtoEdge {
-    fn from(e: &String) -> Self {
-        ProtoEdge {
-            id: e.to_string(),
-            specific_component: None, // Edge id's are unique thus this is not needed
-        }
+fn edge_id_to_proto_edge(e: &String) -> ProtoEdge {
+    ProtoEdge {
+        id: e.to_string(),
+        specific_component: None, // Edge id's are unique thus this is not needed
     }
 }
 
@@ -180,11 +181,13 @@ mod tests {
             },
         },
         DataReader::json_reader::read_json_component,
-        ProtobufServer::services::{DecisionPoint as ProtoDecisionPoint, SimulationStepResponse},
+        ProtobufServer::services::SimulationStepResponse,
         Simulation::decision_point::DecisionPoint,
         TransitionSystems::CompiledComponent,
     };
     use tonic::Response;
+
+    use super::decision_point_to_proto_decision_point;
 
     #[test]
     fn from__initial_DecisionPoint_EcdarUniversity_Administration_par_Machine_par_Researcher__returns_correct_ProtoDecisionPoint(
@@ -212,7 +215,7 @@ mod tests {
         );
 
         // Act
-        let actual = ProtoDecisionPoint::from(&decision_point, &system);
+        let actual = decision_point_to_proto_decision_point(&decision_point, &system);
         let actual = Response::new(SimulationStepResponse {
             new_decision_points: vec![actual],
         });
@@ -236,7 +239,7 @@ mod tests {
         );
 
         // Act
-        let actual = ProtoDecisionPoint::from(&decisionPoint, &system);
+        let actual = decision_point_to_proto_decision_point(&decisionPoint, &system);
 
         // Assert
         let expected = create_initial_decision_point();
@@ -262,7 +265,7 @@ mod tests {
             DecisionPoint::new(after_tea, vec!["E27".to_string(), "E29".to_string()]);
 
         // Act
-        let actual = ProtoDecisionPoint::from(&decisionPoint, &system);
+        let actual = decision_point_to_proto_decision_point(&decisionPoint, &system);
 
         // Assert
         let expected = create_decision_point_after_taking_E5();
