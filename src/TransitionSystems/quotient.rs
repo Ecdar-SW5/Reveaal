@@ -452,10 +452,6 @@ impl TransitionSystem for Quotient {
     fn get_dim(&self) -> ClockIndex {
         self.dim
     }
-
-    fn component_names(&self) -> Vec<&str> {
-        todo!()
-    }
 }
 
 fn merge(t: &LocationTuple, s: &LocationTuple) -> LocationTuple {
