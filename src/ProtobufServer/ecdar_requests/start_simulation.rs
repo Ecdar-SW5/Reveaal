@@ -25,11 +25,10 @@ impl ConcreteEcdarBackend {
     ) -> Result<SimulationStepResponse, Status> {
         fn option_to_vec<T>(o: Option<T>) -> Vec<T> {
             match o {
-                None => vec![],
                 Some(e) => vec![e],
+                None => vec![],
             }
         }
-
         trace!("Received query: {:?}", request);
 
         let simulation_info = match request.simulation_info {
