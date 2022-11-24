@@ -1,4 +1,4 @@
-use crossbeam_channel::{bounded, unbounded, Sender, TryRecvError};
+use crossbeam_channel::{bounded, unbounded, Receiver, Sender, TryRecvError};
 use std::fmt;
 use std::ops::Deref;
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -119,7 +119,7 @@ pub fn is_deterministic(
     // We need some way to pause execution on a thread in the threadpool and let it run another task
     // and come back to the other one later.
     let passed = Arc::new(Mutex::new(vec![]));
-    let mut failure_thing: Arc<Mutex<Option<DeterminismResult>>> = Arc::new(Mutex::new(None));
+    let failure_thing: Arc<RwLock<Option<DeterminismResult>>> = Arc::new(RwLock::new(None));
     let (sender, receiver) = unbounded();
     let threads = num_cpus::get() - 1;
     let pending_work = Arc::new(AtomicU32::new(1));
@@ -131,43 +131,29 @@ pub fn is_deterministic(
             let thread_system = system.clone();
             let thread_passed = passed.clone();
             let thread_pending_work = pending_work.clone();
-            threadpool.enqueue(move |_| loop {
-                let mut result = thread_receiver.try_recv();
-                {
-                    let failure_thing = thread_failure_thing.lock().unwrap();
-                    if let Some(_) = *failure_thing {
-                        break;
-                    }
-                }
-                match result {
-                    Ok(state) => {
-                        is_deterministic_helper(
-                            &thread_failure_thing,
-                            state,
-                            &thread_passed,
-                            thread_system.clone(),
-                            &thread_sender,
-                            &thread_pending_work,
-                        );
-                    }
-                    Err(e) => {
-                        if e.is_empty() {
-                            if thread_pending_work.load(Ordering::SeqCst) == 0 {
-                                break;
-                            } else {
-                                continue;
-                            }
-                        }
-                        if e.is_disconnected() {
-                            break;
-                        }
-                    }
-                }
+            threadpool.enqueue(move |_| {
+                thingamagic(
+                    thread_sender,
+                    thread_receiver,
+                    thread_failure_thing,
+                    thread_system,
+                    thread_passed,
+                    thread_pending_work,
+                );
             })
         })
         .collect();
 
     sender.send(state).unwrap();
+
+    thingamagic(
+        sender,
+        receiver,
+        failure_thing.clone(),
+        system,
+        passed,
+        pending_work,
+    );
 
     let runner = runtime::Builder::new_current_thread().build().unwrap();
 
@@ -178,16 +164,61 @@ pub fn is_deterministic(
         }
     }
 
-    let result = failure_thing.lock().unwrap().take();
+    let result = failure_thing.write().unwrap().take();
     let result = result.unwrap_or_else(|| DeterminismResult::Success);
     result
 }
 
+fn thingamagic(
+    sender: Sender<State>,
+    receiver: Receiver<State>,
+    failure_thing: Arc<RwLock<Option<DeterminismResult>>>,
+    system: Arc<Box<dyn TransitionSystem + Send + Sync>>,
+    passed: Arc<Mutex<Vec<State>>>,
+    pending_work: Arc<AtomicU32>,
+) {
+    loop {
+        let mut result = receiver.try_recv();
+        {
+            let failure_thing = failure_thing.try_read();
+            if failure_thing.is_ok() {
+                if let Some(_) = *failure_thing.unwrap() {
+                    break;
+                }
+            }
+        }
+        match result {
+            Ok(state) => {
+                is_deterministic_helper(
+                    &failure_thing,
+                    state,
+                    &passed,
+                    &system,
+                    &sender,
+                    &pending_work,
+                );
+            }
+            Err(e) => {
+                if e.is_empty() {
+                    if pending_work.load(Ordering::SeqCst) == 0 {
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
+                if e.is_disconnected() {
+                    break;
+                }
+            }
+        }
+    }
+}
+
 fn is_deterministic_helper(
-    failure_thing: &Mutex<Option<DeterminismResult>>,
+    failure_thing: &RwLock<Option<DeterminismResult>>,
     state: State,
     passed_list: &Arc<Mutex<Vec<State>>>,
-    system: Arc<Box<dyn TransitionSystem + Send + Sync>>,
+    system: &Arc<Box<dyn TransitionSystem + Send + Sync>>,
     sender: &Sender<State>,
     pending_work: &Arc<AtomicU32>,
 ) {
@@ -205,7 +236,7 @@ fn is_deterministic_helper(
                         action
                     );
                     {
-                        let mut failure_thing = failure_thing.lock().unwrap();
+                        let mut failure_thing = failure_thing.write().unwrap();
                         *failure_thing = Some(DeterminismResult::Failure(
                             state.get_location().id.clone(),
                             action.clone(),
