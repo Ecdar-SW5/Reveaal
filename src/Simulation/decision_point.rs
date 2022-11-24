@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use regex::Regex;
 
 use super::transition_decision_point::TransitionDecisionPoint;
 use crate::{component::State, TransitionSystems::TransitionID};
@@ -28,6 +29,10 @@ impl DecisionPoint {
 
 impl From<&TransitionDecisionPoint> for DecisionPoint {
     fn from(transition_decision_point: &TransitionDecisionPoint) -> Self {
+        fn is_hidden(x: &str) -> bool {
+            let is_hidden_regex = Regex::new("(input_).*").unwrap();
+            is_hidden_regex.is_match(x)
+        }
         let possible_decisions = transition_decision_point
             .possible_decisions()
             .iter()
@@ -39,6 +44,7 @@ impl From<&TransitionDecisionPoint> for DecisionPoint {
             })
             .unique()
             .sorted()
+            .filter(|x| !is_hidden(x))
             .collect();
 
         DecisionPoint {

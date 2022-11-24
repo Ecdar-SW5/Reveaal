@@ -604,10 +604,6 @@ pub fn get_composition_response_Administration_Machine_Researcher_after_E29(
                 id: "E9".to_string(),
                 specific_component: None,
             },
-            ProtoEdge {
-                id: "input_L0_pub".to_string(),
-                specific_component: None,
-            },
         ],
     };
     let decisionpoint2 = ProtoDecisionPoint {
@@ -722,10 +718,6 @@ pub fn get_composition_response_Administration_Machine_Researcher_after_E29(
             },
             ProtoEdge {
                 id: "E44".to_string(),
-                specific_component: None,
-            },
-            ProtoEdge {
-                id: "input_L0_pub".to_string(),
                 specific_component: None,
             },
         ],
