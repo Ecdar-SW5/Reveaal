@@ -1,7 +1,7 @@
-use crossbeam_channel::{bounded, unbounded, Receiver, Sender, TryRecvError};
+use crossbeam_channel::{bounded, select, unbounded, Receiver, Sender, TryRecvError};
 use std::fmt;
 use std::ops::Deref;
-use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 
 use edbm::zones::OwnedFederation;
@@ -121,20 +121,26 @@ pub fn is_deterministic(
     let passed = Arc::new(Mutex::new(vec![]));
     let failure_thing: Arc<RwLock<Option<DeterminismResult>>> = Arc::new(RwLock::new(None));
     let (sender, receiver) = unbounded();
+    let (state_sender, state_receiver) = unbounded();
     let threads = num_cpus::get() - 1;
-    let pending_work = Arc::new(AtomicU32::new(1));
+    let pending_work = Arc::new(AtomicUsize::new(1));
     let mut futures: Vec<ThreadPoolFuture<()>> = (0..threads)
         .map(|_| {
             let thread_sender = sender.clone();
             let thread_receiver = receiver.clone();
+            let thread_state_sender = state_sender.clone();
+            let thread_state_receiver = state_receiver.clone();
             let thread_failure_thing = failure_thing.clone();
             let thread_system = system.clone();
             let thread_passed = passed.clone();
             let thread_pending_work = pending_work.clone();
             threadpool.enqueue(move |_| {
                 thingamagic(
+                    threads,
                     thread_sender,
                     thread_receiver,
+                    thread_state_sender,
+                    thread_state_receiver,
                     thread_failure_thing,
                     thread_system,
                     thread_passed,
@@ -147,8 +153,11 @@ pub fn is_deterministic(
     sender.send(state).unwrap();
 
     thingamagic(
+        threads,
         sender,
         receiver,
+        state_sender,
+        state_receiver,
         failure_thing.clone(),
         system,
         passed,
@@ -170,57 +179,40 @@ pub fn is_deterministic(
 }
 
 fn thingamagic(
+    num_threads: usize,
     sender: Sender<State>,
     receiver: Receiver<State>,
+    state_sender: Sender<()>,
+    state_receiver: Receiver<()>,
     failure_thing: Arc<RwLock<Option<DeterminismResult>>>,
     system: Arc<Box<dyn TransitionSystem + Send + Sync>>,
     passed: Arc<Mutex<Vec<State>>>,
-    pending_work: Arc<AtomicU32>,
+    pending_work: Arc<AtomicUsize>,
 ) {
     loop {
-        let mut result = receiver.try_recv();
-        {
-            let failure_thing = failure_thing.try_read();
-            if failure_thing.is_ok() {
-                if let Some(_) = *failure_thing.unwrap() {
-                    break;
-                }
-            }
+        select! {
+            recv(state_receiver) -> _ => return,
+            recv(receiver) -> state => is_deterministic_helper(num_threads + 1, &failure_thing, state.unwrap(), &passed, &system, &sender, &pending_work, &state_sender),
         }
-        match result {
-            Ok(state) => {
-                is_deterministic_helper(
-                    &failure_thing,
-                    state,
-                    &passed,
-                    &system,
-                    &sender,
-                    &pending_work,
-                );
-            }
-            Err(e) => {
-                if e.is_empty() {
-                    if pending_work.load(Ordering::SeqCst) == 0 {
-                        break;
-                    } else {
-                        continue;
-                    }
-                }
-                if e.is_disconnected() {
-                    break;
-                }
+
+        // Exit when done
+        if pending_work.load(Ordering::SeqCst) == 0 {
+            for _ in 0..num_threads + 1 {
+                state_sender.send(()).unwrap();
             }
         }
     }
 }
 
 fn is_deterministic_helper(
+    num_threads: usize,
     failure_thing: &RwLock<Option<DeterminismResult>>,
     state: State,
     passed_list: &Arc<Mutex<Vec<State>>>,
     system: &Arc<Box<dyn TransitionSystem + Send + Sync>>,
     sender: &Sender<State>,
-    pending_work: &Arc<AtomicU32>,
+    pending_work: &Arc<AtomicUsize>,
+    state_sender: &Sender<()>,
 ) {
     for action in system.get_actions() {
         let mut location_fed = OwnedFederation::empty(system.get_dim());
@@ -241,6 +233,10 @@ fn is_deterministic_helper(
                             state.get_location().id.clone(),
                             action.clone(),
                         ));
+                        for _ in 0..num_threads {
+                            state_sender.send(()).unwrap();
+                        }
+                        pending_work.fetch_sub(1, Ordering::SeqCst);
                         return;
                     }
                 }
