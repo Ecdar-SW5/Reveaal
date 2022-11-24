@@ -173,6 +173,7 @@ mod tests {
     use crate::component::Component;
     use crate::tests::Simulation::helper::get_composition_response_Administration_Machine_Researcher;
     use crate::DataReader::proto_reader::proto_state_to_state;
+    use crate::TransitionSystems::transition_system::components_to_transition_system;
     use crate::{
         tests::{
             grpc::grpc_helper::{
@@ -186,7 +187,6 @@ mod tests {
         DataReader::json_reader::read_json_component,
         ProtobufServer::services::SimulationStepResponse,
         Simulation::decision_point::DecisionPoint,
-        TransitionSystems::CompiledComponent,
     };
     use test_case::test_case;
     use tonic::Response;
@@ -204,7 +204,7 @@ mod tests {
         let combined = vec![administration, machine, researcher];
         let composition = "(Administration || Machine || Researcher)";
 
-        let system = CompiledComponent::from(combined, composition);
+        let system = components_to_transition_system(combined, composition);
 
         let decision_point = DecisionPoint::new(
             system.get_initial_state().unwrap(),
@@ -264,7 +264,7 @@ mod tests {
         "(HalfAdm1 && HalfAdm2)"
     )]
     fn state_to_proto_state_to_state_is_same_state(components: Vec<Component>, composition: &str) {
-        let system = CompiledComponent::from(components, composition);
+        let system = components_to_transition_system(components, composition);
         let initial = system.get_initial_state().unwrap();
 
         // exploit the fact that:

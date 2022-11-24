@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod test {
     use crate::tests::grpc::grpc_helper::{
-        create_1tuple_state_with_single_constraint, create_decision_point_after_taking_E5,
-        create_edges_from_L5, create_empty_edge, create_empty_state, create_initial_decision_point,
-        create_sample_json_component, create_simulation_info_from, create_simulation_step_request,
-        create_state_not_in_machine, create_state_setup_for_mismatch,
+        create_decision_point_after_taking_E5, create_edges_from_L5, create_empty_edge,
+        create_empty_state, create_initial_decision_point, create_sample_json_component,
+        create_simulation_info_from, create_simulation_step_request, create_state_not_in_machine,
+        create_state_setup_for_mismatch,
     };
     use crate::tests::Simulation::helper::{
         self, get_state_after_Administration_Machine_Researcher_composition,
@@ -19,7 +19,7 @@ mod test {
     use test_case::test_case;
     use tonic::{self, Request, Response, Status};
 
-    #[ignore = "Server hangs"]
+    #[ignore = "Server hangs on panic"]
     #[test_case(
         create_good_request(),
         create_expected_response_to_good_request();

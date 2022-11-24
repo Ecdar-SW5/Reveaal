@@ -14,6 +14,8 @@ use std::collections::HashMap;
 use std::num::NonZeroUsize;
 use std::sync::{Arc, Mutex};
 
+use super::proto_reader::components_info_to_components;
+
 type ComponentsMap = HashMap<String, Component>;
 
 struct ComponentTuple {
@@ -137,16 +139,8 @@ impl ComponentContainer {
     pub fn from(
         components_info: &services::ComponentsInfo,
     ) -> Result<ComponentContainer, tonic::Status> {
-        let proto_components = &components_info.components;
-
-        let components = proto_components
-            .iter()
-            .flat_map(parse_components_if_some)
-            .flatten()
-            .collect();
-
+        let components = components_info_to_components(components_info);
         let component_container = Self::create_component_container(components);
-
         Ok(component_container)
     }
 

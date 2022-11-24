@@ -8,7 +8,9 @@ use crate::{
     DataReader::json_reader::read_json_component,
     ProtobufServer::services::{component::Rep, SimulationStepResponse},
     Simulation::transition_decision_point::TransitionDecisionPoint,
-    TransitionSystems::{CompiledComponent, CompositionType, TransitionSystemPtr},
+    TransitionSystems::{
+        transition_system::components_to_transition_system, CompositionType, TransitionSystemPtr,
+    },
 };
 
 use crate::ProtobufServer::services::{
@@ -48,7 +50,7 @@ pub fn create_EcdarUniversity_Researcher_system() -> TransitionSystemPtr {
 
 pub fn create_system_from_path(path: &str, name: &str) -> TransitionSystemPtr {
     let component = read_json_component(path, name);
-    CompiledComponent::from(vec![component], name)
+    components_to_transition_system(vec![component], name)
 }
 
 pub fn create_Simulation_Machine_system() -> TransitionSystemPtr {

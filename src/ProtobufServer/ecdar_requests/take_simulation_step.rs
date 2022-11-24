@@ -2,12 +2,14 @@ use tonic::Status;
 
 use crate::{
     DataReader::{
-        component_loader::{parse_components_if_some, ModelCache},
-        proto_reader::proto_decision_to_decision,
+        component_loader::ModelCache,
+        proto_reader::{
+            components_info_to_components, proto_decision_to_decision,
+            simulation_info_to_transition_system,
+        },
         proto_writer::transition_decision_point_to_proto_decision_point,
     },
     ProtobufServer::{
-        ecdar_requests::helpers,
         services::{SimulationStepRequest, SimulationStepResponse},
         ConcreteEcdarBackend,
     },
@@ -22,17 +24,10 @@ impl ConcreteEcdarBackend {
         let request_message = request;
         let simulation_info = request_message.simulation_info.unwrap();
 
-        let components = simulation_info
-            .clone()
-            .components_info
-            .unwrap()
-            .components
-            .iter()
-            .flat_map(parse_components_if_some)
-            .flatten()
-            .collect();
+        let components =
+            components_info_to_components(&simulation_info.components_info.as_ref().unwrap());
 
-        let transition_system = helpers::simulation_info_to_transition_system(simulation_info);
+        let transition_system = simulation_info_to_transition_system(&simulation_info);
 
         let chosen_decision = request_message.chosen_decision.unwrap();
         let chosen_decision: Decision =

@@ -1,5 +1,3 @@
-use crate::ProtobufServer;
-
 #[ignore = "TODO"]
 #[tokio::test]
 async fn start_simulation_then_take_simulation_step(// component_names: &[&str],

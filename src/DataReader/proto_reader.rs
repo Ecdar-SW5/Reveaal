@@ -3,13 +3,38 @@ use edbm::zones::OwnedFederation;
 
 use crate::component::{Component, Edge, State};
 use crate::ProtobufServer::services::{
-    ComponentClock as ProtoComponentClock, Conjunction as ProtoConjunction,
+    ComponentClock as ProtoComponentClock, ComponentsInfo, Conjunction as ProtoConjunction,
     Constraint as ProtoConstraint, Decision as ProtoDecision, Disjunction as ProtoDisjunction,
     Edge as ProtoEdge, Federation as ProtoFederation, LocationTuple as ProtoLocationTuple,
-    State as ProtoState,
+    SimulationInfo, State as ProtoState,
 };
 use crate::Simulation::decision::Decision;
+use crate::TransitionSystems::transition_system::component_loader_to_transition_system;
 use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
+
+use super::component_loader::{parse_components_if_some, ComponentContainer};
+
+pub fn simulation_info_to_transition_system(
+    simulation_info: &SimulationInfo,
+) -> TransitionSystemPtr {
+    let composition = simulation_info.component_composition.to_owned();
+    let component_info = simulation_info.components_info.as_ref().unwrap();
+    // Extract components from the request message
+
+    let mut component_container = ComponentContainer::from(&component_info).unwrap();
+
+    // Build transition_system as specified in the composition string
+    component_loader_to_transition_system(&mut component_container, &composition)
+}
+
+pub fn components_info_to_components(components_info: &ComponentsInfo) -> Vec<Component> {
+    components_info
+        .components
+        .iter()
+        .flat_map(parse_components_if_some)
+        .flatten()
+        .collect()
+}
 
 pub fn proto_decision_to_decision(
     proto_decision: ProtoDecision,
@@ -147,7 +172,7 @@ mod tests {
         },
         DataReader::{json_reader::read_json_component, proto_reader::proto_decision_to_decision},
         Simulation::decision::Decision,
-        TransitionSystems::CompiledComponent,
+        TransitionSystems::transition_system::components_to_transition_system,
     };
 
     // TODO this test is badly formatted
@@ -213,7 +238,7 @@ mod tests {
         let machine3 = read_json_component("samples/json/EcdarUniversity", "Machine3");
         let machine = read_json_component("samples/json/EcdarUniversity", "Machine");
         let components = vec![machine3.clone(), machine.clone()];
-        let system = CompiledComponent::from(components.clone(), "( Machine3 && Machine )");
+        let system = components_to_transition_system(components.clone(), "( Machine3 && Machine )");
         let proto_decision =
             create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision();
 

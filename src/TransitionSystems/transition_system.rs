@@ -1,11 +1,18 @@
 use super::{CompositionType, LocationID, LocationTuple};
+use crate::DataReader::parse_queries::Rule;
 use crate::{
+    component::Component,
+    extract_system_rep::get_system_recipe,
+    parse_queries::{build_expression_from_pair, QueryParser},
+    ComponentLoader,
+    DataReader::component_loader::ComponentContainer,
     ModelObjects::component::{Declarations, State, Transition},
     System::local_consistency::DeterminismResult,
     System::local_consistency::{ConsistencyFailure, ConsistencyResult},
 };
 use dyn_clone::{clone_trait_object, DynClone};
 use edbm::util::{bounds::Bounds, constraints::ClockIndex};
+use pest::Parser;
 use std::hash::Hash;
 use std::{
     collections::{hash_set::HashSet, HashMap},
@@ -135,6 +142,29 @@ pub trait TransitionSystem: DynClone {
                 accumulator.into_iter().chain(head).collect()
             })
     }
+}
+
+pub fn components_to_transition_system(
+    components: Vec<Component>,
+    composition: &str,
+) -> TransitionSystemPtr {
+    let mut component_container = ComponentContainer::create_component_container(components);
+    component_loader_to_transition_system(&mut component_container, composition)
+}
+
+pub fn component_loader_to_transition_system(
+    loader: &mut dyn ComponentLoader,
+    composition: &str,
+) -> TransitionSystemPtr {
+    let mut dimension = 0;
+    let composition = QueryParser::parse(Rule::expr, composition)
+        .unwrap()
+        .next()
+        .unwrap();
+    let composition = build_expression_from_pair(composition);
+    get_system_recipe(&composition, loader, &mut dimension, &mut None)
+        .compile(dimension)
+        .unwrap()
 }
 
 clone_trait_object!(TransitionSystem);

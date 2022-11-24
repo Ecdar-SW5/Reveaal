@@ -1,6 +1,6 @@
 use crate::DataReader::component_loader::ModelCache;
+use crate::DataReader::proto_reader::simulation_info_to_transition_system;
 use crate::DataReader::proto_writer::transition_decision_point_to_proto_decision_point;
-use crate::ProtobufServer::ecdar_requests::helpers;
 use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
 use log::trace;
@@ -27,7 +27,7 @@ impl ConcreteEcdarBackend {
             None => return Err(Status::invalid_argument("simulation_info was empty")),
         };
 
-        let transition_system = helpers::simulation_info_to_transition_system(simulation_info);
+        let transition_system = simulation_info_to_transition_system(&simulation_info);
 
         let initial = TransitionDecisionPoint::initial(&transition_system)
             .map(|i| transition_decision_point_to_proto_decision_point(&i, &transition_system));
