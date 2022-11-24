@@ -1,7 +1,10 @@
 use tonic::Status;
 
 use crate::{
-    DataReader::component_loader::{parse_components_if_some, ModelCache},
+    DataReader::{
+        component_loader::{parse_components_if_some, ModelCache},
+        proto_reader::proto_decision_to_decision,
+    },
     ProtobufServer::{
         ecdar_requests::helpers,
         services::{
@@ -33,7 +36,7 @@ impl ConcreteEcdarBackend {
 
         let chosen_decision = request_message.chosen_decision.unwrap();
         let chosen_decision: Decision =
-            Decision::from(chosen_decision, &transition_system, components);
+            proto_decision_to_decision(chosen_decision, &transition_system, components);
         let chosen_decisions = TransitionDecision::from(&chosen_decision, &transition_system);
 
         let decision_points: Vec<_> = chosen_decisions
