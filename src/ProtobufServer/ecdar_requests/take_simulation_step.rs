@@ -52,11 +52,3 @@ impl ConcreteEcdarBackend {
         Ok(simulation_step_response)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    #[ignore]
-    fn _take_simulation_step__get_composit_component__should_return_component() {
-        // TODO
-    }
-}
