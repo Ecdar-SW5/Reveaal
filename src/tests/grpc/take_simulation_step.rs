@@ -185,7 +185,6 @@ mod test {
         let backend = ProtobufServer::ConcreteEcdarBackend::default();
 
         let actual_response = backend.take_simulation_step(request).await;
-        println!("{:#?}", actual_response);
 
         // Assert
         assert_eq!(

@@ -2,12 +2,11 @@ use crate::DataReader::component_loader::ModelCache;
 use crate::DataReader::proto_reader::simulation_info_to_transition_system;
 use crate::DataReader::proto_writer::transition_decision_point_to_proto_decision_point;
 use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
+use crate::ProtobufServer::ConcreteEcdarBackend;
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
 use log::trace;
 
 use tonic::Status;
-
-use crate::ProtobufServer::ConcreteEcdarBackend;
 
 impl ConcreteEcdarBackend {
     pub fn handle_start_simulation(
