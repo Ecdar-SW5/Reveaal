@@ -10,7 +10,7 @@ use crate::ProtobufServer::services::{
 };
 use crate::Simulation::decision::Decision;
 use crate::TransitionSystems::transition_system::component_loader_to_transition_system;
-use crate::TransitionSystems::{LocationTuple, TransitionSystemPtr};
+use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 
 use super::component_loader::{parse_components_if_some, ComponentContainer};
 
@@ -34,6 +34,33 @@ pub fn components_info_to_components(components_info: &ComponentsInfo) -> Vec<Co
         .flat_map(parse_components_if_some)
         .flatten()
         .collect()
+}
+
+pub fn proto_location_tuple_to_location_tuple(
+    location_tuple: &ProtoLocationTuple,
+    system: &TransitionSystemPtr,
+) -> Option<LocationTuple> {
+    let id_looking_for: Vec<LocationID> = location_tuple
+        .locations
+        .iter()
+        .map(|l| LocationID::Simple {
+            location_id: l.id.to_string(),
+            component_id: l
+                .specific_component
+                .as_ref()
+                .map(|c| c.component_name.to_string()),
+        })
+        .collect();
+
+    system
+        .get_all_locations()
+        .into_iter()
+        .map(|tuple| (tuple.id.clone(), tuple))
+        .map(|(id, tuple)| (id.inorder_vec_tranform(), tuple))
+        .filter(|(id, _)| id.iter().eq(id_looking_for.iter()))
+        .collect::<Vec<_>>()
+        .first()
+        .map(|(_, tuple)| tuple.to_owned())
 }
 
 pub fn proto_decision_to_decision(
@@ -68,11 +95,11 @@ pub fn proto_state_to_state(state: ProtoState, system: &TransitionSystemPtr) -> 
         Some(federation) => federation,
     };
     let zone: OwnedFederation = proto_federation_to_owned_federation(proto_federation, system);
-    let location_tuple =
-        match LocationTuple::from_proto_location_tuple(&proto_location_tuple, system) {
-            None => panic!("No location tuple found"),
-            Some(loc_tuple) => loc_tuple,
-        };
+    let location_tuple = match proto_location_tuple_to_location_tuple(&proto_location_tuple, system)
+    {
+        None => panic!("No location tuple found"),
+        Some(loc_tuple) => loc_tuple,
+    };
     State::create(location_tuple, zone)
 }
 
