@@ -27,17 +27,17 @@ impl ConcreteEcdarBackend {
         let components =
             components_info_to_components(simulation_info.components_info.as_ref().unwrap());
 
-        let transition_system = simulation_info_to_transition_system(&simulation_info);
+        let system = simulation_info_to_transition_system(&simulation_info);
 
         let chosen_decision = request_message.chosen_decision.unwrap();
         let chosen_decision: Decision =
-            proto_decision_to_decision(chosen_decision, &transition_system, components);
-        let chosen_decisions = TransitionDecision::from(&chosen_decision, &transition_system);
+            proto_decision_to_decision(chosen_decision, &system, components);
+        let chosen_decisions = TransitionDecision::from(&chosen_decision, &system);
 
         let decision_points: Vec<_> = chosen_decisions
             .into_iter()
-            .map(|d| d.resolve(&transition_system))
-            .map(|d| transition_decision_point_to_proto_decision_point(&d, &transition_system))
+            .map(|d| d.resolve(&system))
+            .map(|d| transition_decision_point_to_proto_decision_point(&d, &system))
             .collect();
 
         let simulation_step_response = SimulationStepResponse {
