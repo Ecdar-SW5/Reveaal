@@ -20,14 +20,14 @@ mod tests {
         "(Machine)"
     )]
     #[test_case(
-        &["Administration", "Machine", "Researcher"],
-        "samples/json/EcdarUniversity",
-        "(Administration || Machine || Researcher)"
-    )]
-    #[test_case(
         &["HalfAdm1", "HalfAdm2"],
         "samples/json/EcdarUniversity",
         "(HalfAdm1 && HalfAdm2)"
+    )]
+    #[test_case(
+        &["Administration", "Machine", "Researcher"],
+        "samples/json/EcdarUniversity",
+        "(Administration || Machine || Researcher)"
     )]
     #[test_case(
         &["HalfAdm1", "HalfAdm2", "Machine", "Researcher"],
