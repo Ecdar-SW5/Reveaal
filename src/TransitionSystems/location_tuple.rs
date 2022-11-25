@@ -56,8 +56,8 @@ impl LocationTuple {
     }
     /// This method is used to a build partial [`LocationTuple`].
     /// A partial [`LocationTuple`] means it has a [`LocationID`] that is [`LocationID::AnyLocation`].
-    /// A partial [`LocationTuple`] has `None` in these fields: `invariant`, `left` and `right` since a partial [`LocationTuple`]
-    /// covers more than one location, and therefore there is no specific `invariant`, `left` and `right`
+    /// A partial [`LocationTuple`] has `None` in the field `invariant` since a partial [`LocationTuple`]
+    /// covers more than one location, and therefore there is no specific `invariant`
     pub fn build_any_location_tuple() -> Self {
         LocationTuple {
             id: LocationID::AnyLocation(),
