@@ -141,7 +141,7 @@ fn take_transition(
 ) {
     let mut new_state = sub_path.destination_state.clone();
     if transition.use_transition(&mut new_state) {
-        new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
+        new_state.extrapolate_max_bounds(system); // Ensures the bounds cant grow infinitely, avoiding infinite loops in an edge case TODO: does not take end state zone into account, leading to a very rare edge case
         let new_location_id = &new_state.get_location().id;
         let existing_zones = visited_states.entry(new_location_id.clone()).or_default();
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
