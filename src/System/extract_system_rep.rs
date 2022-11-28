@@ -46,7 +46,7 @@ pub fn create_executable_query<'a>(
 
                 let start_state: State = if let Some(state) = start.as_ref() {
                     validate_reachability_input(&machine, state)?;
-                    let state = get_state(state, &machine, &transition_system)?;
+                    let state = get_state(state, &machine, &transition_system).map_err(|err| format!("Invalid Start state: {}",err))?;
                     if state.get_location().id.is_partial_location() {
                         return Err("Start state is a partial state, which it must not be".into())
                     }
@@ -59,7 +59,7 @@ pub fn create_executable_query<'a>(
                     }
                 };
 
-                let end_state: State = get_state(end, &machine, &transition_system)?;
+                let end_state: State = get_state(end, &machine, &transition_system).map_err(|err| format!("Invalid End state: {}",err))?;
 
                 Ok(Box::new(ReachabilityExecutor {
                     transition_system,
@@ -147,21 +147,6 @@ impl SystemRecipe {
                 Ok(comp) => Ok(comp),
                 Err(err) => Err(err),
             },
-        }
-    }
-
-    /// Returns the components in [SystemRecipe] as a [Vec]<[Component]> in the same order as they visited.
-    pub fn get_components(&self) -> Vec<Component> {
-        match self {
-            SystemRecipe::Composition(left, right)
-            | SystemRecipe::Conjunction(left, right)
-            | SystemRecipe::Quotient(left, right, _) => {
-                let mut temp: Vec<Component> = vec![];
-                temp.append(&mut left.get_components());
-                temp.append(&mut right.get_components());
-                temp
-            }
-            SystemRecipe::Component(comp) => vec![comp.as_ref().clone()],
         }
     }
 }

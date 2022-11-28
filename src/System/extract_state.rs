@@ -33,7 +33,10 @@ pub fn get_state(
             create_zone_given_constraints(clock.as_deref(), system)?,
         ))
     } else {
-        panic!("Expected QueryExpression::State, but got {:?}", state_query)
+        Err(format!(
+            "The following information \"{}\" could not be used to create a State",
+            state_query.pretty_string()
+        ))
     }
 }
 
@@ -92,7 +95,11 @@ fn build_location_tuple(
                     location_id: str.to_string(),
                     component_id: Some(component.get_name().clone()),
                 })
-                .ok_or(format!("Location {} does not exist in the system", str)),
+                .ok_or(format!(
+                    "Location {} does not exist in the component {}",
+                    str,
+                    component.get_name()
+                )),
         },
     }
 }

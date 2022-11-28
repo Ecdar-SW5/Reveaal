@@ -6,7 +6,7 @@ use crate::{
 };
 use dyn_clone::{clone_trait_object, DynClone};
 use edbm::util::{bounds::Bounds, constraints::ClockIndex};
-use std::collections::hash_set::HashSet;
+use std::collections::{hash_set::HashSet, HashMap};
 
 pub type TransitionSystemPtr = Box<dyn TransitionSystem>;
 
@@ -77,7 +77,17 @@ pub trait TransitionSystem: DynClone {
 
     fn get_decls(&self) -> Vec<&Declarations>;
 
-    fn get_combined_decls(&self) -> Declarations;
+    fn get_combined_decls(&self) -> Declarations {
+        let (left, right) = self.get_children();
+        let mut clocks = HashMap::new();
+        let mut ints = HashMap::new();
+        for decl in [left.get_combined_decls(), right.get_combined_decls()] {
+            clocks.extend(decl.clocks);
+            ints.extend(decl.ints)
+        }
+
+        Declarations { ints, clocks }
+    }
 
     fn precheck_sys_rep(&self) -> PrecheckResult;
 
