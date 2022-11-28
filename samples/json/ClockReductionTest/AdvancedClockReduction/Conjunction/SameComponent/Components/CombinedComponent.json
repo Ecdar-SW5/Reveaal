@@ -1,0 +1,107 @@
+{
+  "name": "CombinedComponent",
+  "declarations": "clock x, x1;",
+  "locations": [
+    {
+      "id": "L0&&L0",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "nickname": "",
+      "x": 170.03445,
+      "y": 519.5344,
+      "color": 2,
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L1&&L1",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "nickname": "",
+      "x": 166.736,
+      "y": 316.0433,
+      "color": 2,
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L2&&L2",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "nickname": "",
+      "x": 280.94012,
+      "y": 211.43246,
+      "color": 2,
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "sourceLocation": "L0&&L0",
+      "targetLocation": "L1&&L1",
+      "status": "OUTPUT",
+      "guard": "x>2 && x1>2",
+      "update": "",
+      "sync": "o1",
+      "select": "",
+      "nails": [
+        {
+          "x": 63.598396,
+          "y": 569.61523,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 50.0,
+          "y": 406.91302,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    },
+    {
+      "sourceLocation": "L1&&L1",
+      "targetLocation": "L2&&L2",
+      "status": "OUTPUT",
+      "guard": "",
+      "update": "x=0, x1=0",
+      "sync": "o2",
+      "select": "",
+      "nails": [
+        {
+          "x": 156.48865,
+          "y": 119.47308,
+          "propertyType": "UPDATE",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 258.19644,
+          "y": 50.0,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "includeInPeriodicCheck": false,
+  "color": "2",
+  "x": -165.47006,
+  "y": -309.80762,
+  "width": 330.94012,
+  "height": 619.61523
+}
