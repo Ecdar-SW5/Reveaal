@@ -194,7 +194,10 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         component_paths,
                     }))
                 }
-                Err(e) => Some(ProtobufResult::Error(format!("Internal error occurred during reachability check: {}", e))),
+                Err(e) => Some(ProtobufResult::Error(format!(
+                    "Internal error occurred during reachability check: {}",
+                    e
+                ))),
             }
         }
 
