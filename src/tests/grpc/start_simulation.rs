@@ -25,6 +25,16 @@ mod test {
         create_expected_response_to_good_request();
         "given a good request, responds with correct state"
     )]
+    #[test_case(
+        create_composition_request(),
+        create_expected_response_to_composition_request();
+        "given a composition request, responds with correct component"
+    )]
+    #[test_case(
+        create_conjunction_request(),
+        create_expected_response_to_conjunction_request();
+        "given a good conjunction request, responds with correct component"
+    )]
     #[tokio::test]
     async fn start_simulation__responds_as_expected(
         request: Request<SimulationStartRequest>,
@@ -98,32 +108,6 @@ mod test {
     //         "Malformed composition, bad expression",
     //     ))
     // }
-
-    #[test_case(
-        create_composition_request(),
-        create_expected_response_to_composition_request();
-        "given a composition request, responds with correct component"
-    )]
-    #[test_case(
-        create_conjunction_request(),
-        create_expected_response_to_conjunction_request();
-        "given a good conjunction request, responds with correct component"
-    )]
-    #[tokio::test]
-    async fn start_simulation_step__get_composit_component__should_return_component(
-        request: Request<SimulationStartRequest>,
-        expected_response: Result<Response<SimulationStepResponse>, Status>,
-    ) {
-        let backend = ProtobufServer::ConcreteEcdarBackend::default();
-
-        let actual_response = backend.start_simulation(request).await;
-
-        // Assert
-        assert_eq!(
-            format!("{:?}", expected_response),
-            format!("{:?}", actual_response)
-        );
-    }
 
     // A || B || C
     fn create_composition_request() -> Request<SimulationStartRequest> {
