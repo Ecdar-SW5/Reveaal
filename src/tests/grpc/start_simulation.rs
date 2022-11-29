@@ -1,21 +1,10 @@
 #[cfg(test)]
 mod test {
-    use crate::{
-        tests::Simulation::{
-            helper,
-            test_data::{
-                get_composition_response_Administration_Machine_Researcher,
-                get_conjunction_response_HalfAdm1_HalfAdm2,
-            },
+    use crate::ProtobufServer::{
+        self,
+        services::{
+            ecdar_backend_server::EcdarBackend, SimulationStartRequest, SimulationStepResponse,
         },
-        ProtobufServer::{
-            self,
-            services::{
-                ecdar_backend_server::EcdarBackend, Component, SimulationStartRequest,
-                SimulationStepResponse,
-            },
-        },
-        TransitionSystems::CompositionType,
     };
     use test_case::test_case;
     use tonic::{Request, Response, Status};

@@ -1,27 +1,19 @@
 use std::{fs, vec};
 
-use tonic::{Request, Response, Status};
+use tonic::Request;
 
 use crate::ProtobufServer::services::{
-    self, Component as ProtoComponent, ComponentClock as ProtoComponentClock,
-    ComponentsInfo as ProtoComponentsInfo, Conjunction as ProtoConjunction,
-    Constraint as ProtoConstraint, Decision as ProtoDecision, DecisionPoint as ProtoDecisionPoint,
-    Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
-    Location as ProtoLocation, LocationTuple as ProtoLocationTuple,
+    self, Component as ProtoComponent, ComponentsInfo as ProtoComponentsInfo, Edge as ProtoEdge,
     SimulationInfo as ProtoSimulationInfo, SimulationStartRequest, SimulationStepRequest,
-    SpecificComponent as ProtoSpecificComponent, State as ProtoState,
+    State as ProtoState,
 };
 use crate::{
-    component::Component,
     DataReader::json_reader::read_json_component,
-    ProtobufServer::services::{component::Rep, SimulationStepResponse},
-    Simulation::transition_decision_point::TransitionDecisionPoint,
+    ProtobufServer::services::component::Rep,
     TransitionSystems::{
         transition_system::components_to_transition_system, CompositionType, TransitionSystemPtr,
     },
 };
-
-use super::test_data::create_EcdarUniversity_Machine_system;
 
 pub fn create_system_from_path(path: &str, name: &str) -> TransitionSystemPtr {
     let component = read_json_component(path, name);

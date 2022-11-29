@@ -4,12 +4,11 @@ use tonic::{Request, Response, Status};
 
 use crate::ProtobufServer::services::{
     Component as ProtoComponent, ComponentClock as ProtoComponentClock,
-    ComponentsInfo as ProtoComponentsInfo, Conjunction as ProtoConjunction,
-    Constraint as ProtoConstraint, Decision as ProtoDecision, DecisionPoint as ProtoDecisionPoint,
-    Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
-    Location as ProtoLocation, LocationTuple as ProtoLocationTuple,
-    SimulationInfo as ProtoSimulationInfo, SimulationStartRequest, SimulationStepRequest,
-    SimulationStepResponse, SpecificComponent as ProtoSpecificComponent, State as ProtoState,
+    Conjunction as ProtoConjunction, Constraint as ProtoConstraint, Decision as ProtoDecision,
+    DecisionPoint as ProtoDecisionPoint, Disjunction as ProtoDisjunction, Edge as ProtoEdge,
+    Federation as ProtoFederation, Location as ProtoLocation, LocationTuple as ProtoLocationTuple,
+    SimulationStartRequest, SimulationStepRequest, SimulationStepResponse,
+    SpecificComponent as ProtoSpecificComponent, State as ProtoState,
 };
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
 use crate::TransitionSystems::CompositionType;
