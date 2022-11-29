@@ -68,3 +68,7 @@ harness = false
 [[bench]]
 name = "threadpool_bench"
 harness = false
+
+[[bench]]
+name = "benchmark_heap_clock_reduction"
+harness = false
