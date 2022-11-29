@@ -5,7 +5,7 @@ use crate::{
 
 use super::{decision::Decision, transition_decision_point::TransitionDecisionPoint};
 
-/// Represent a decision in a transition system, that has been taken: In the current `source` state I have `decided` to use this `Transition`.
+/// Represent a decision in a transition system, that has been taken: In the current `source` [`State`] I have `decided` to use this [`Transition`].
 #[derive(Debug)]
 pub struct TransitionDecision {
     source: State,
@@ -13,7 +13,7 @@ pub struct TransitionDecision {
 }
 
 impl TransitionDecision {
-    /// Returns all `TransitionDecision`s equivalent to the given `&Decision` in relation to the given `&TransitionSystemPtr`
+    /// Returns all [`TransitionDecision`]s equivalent to the given [`Decision`] in relation to the given [`TransitionSystemPtr`].
     pub fn from(decision: &Decision, system: &TransitionSystemPtr) -> Vec<Self> {
         fn contains(transition: &Transition, edge_id: &String) -> bool {
             transition
@@ -43,7 +43,7 @@ impl TransitionDecision {
             .collect::<Vec<_>>()
     }
 
-    /// Resolves a `TransitionDecision`: use the `decided: Transition` and return the `TransitionDecisionPoint` of the destination `State`  
+    /// Resolves a [`TransitionDecision`]: use the `decided` [`Transition`] and return the [`TransitionDecisionPoint`] of the destination [`State`].  
     pub fn resolve(mut self, system: &TransitionSystemPtr) -> TransitionDecisionPoint {
         self.decided.use_transition(&mut self.source);
         TransitionDecisionPoint::from(&system, &self.source)
