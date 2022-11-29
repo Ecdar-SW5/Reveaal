@@ -75,7 +75,6 @@ impl Component {
             panic!("Unable to retrieve location based on id: {}", name)
         }
     }
-
     pub fn get_edges(&self) -> &Vec<Edge> {
         &self.edges
     }
