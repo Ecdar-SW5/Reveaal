@@ -4,7 +4,6 @@ use crate::DataReader::proto_writer::transition_decision_point_to_proto_decision
 use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
 use crate::ProtobufServer::ConcreteEcdarBackend;
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
-use log::trace;
 
 use tonic::Status;
 
@@ -13,13 +12,12 @@ impl ConcreteEcdarBackend {
         request: SimulationStartRequest,
         _cache: ModelCache, // TODO should be used...
     ) -> Result<SimulationStepResponse, Status> {
-        fn option_to_vec<T>(o: Option<T>) -> Vec<T> {
-            match o {
-                Some(e) => vec![e],
+        fn option_to_vec<T>(option: Option<T>) -> Vec<T> {
+            match option {
+                Some(item) => vec![item],
                 None => vec![],
             }
         }
-        trace!("Received query: {:?}", request);
 
         let simulation_info = match request.simulation_info {
             Some(v) => v,
