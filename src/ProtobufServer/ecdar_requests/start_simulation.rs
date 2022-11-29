@@ -8,6 +8,7 @@ use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
 use tonic::Status;
 
 impl ConcreteEcdarBackend {
+    /// Handles a start simulation request: Responding with the initial decision point in the transition system given in the `request`.
     pub fn handle_start_simulation(
         request: SimulationStartRequest,
         _cache: ModelCache, // TODO should be used...
