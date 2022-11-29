@@ -1,4 +1,3 @@
-pub mod grpc_helper;
 pub mod send_query;
 pub mod simulation;
 pub mod start_simulation;

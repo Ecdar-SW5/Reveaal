@@ -172,16 +172,13 @@ mod tests {
     use super::{decision_point_to_proto_decision_point, state_to_proto_state};
     use crate::component::Component;
     use crate::tests::Simulation::test_data::{
-        create_EcdarUniversity_Machine_system,
-        get_composition_response_Administration_Machine_Researcher,
+        create_EcdarUniversity_Machine_system, create_decision_point_after_taking_E5,
+        create_initialdecision_point, get_composition_response_Administration_Machine_Researcher,
         initial_transition_decision_point_EcdarUniversity_Machine,
     };
     use crate::DataReader::proto_reader::proto_state_to_state;
     use crate::TransitionSystems::transition_system::components_to_transition_system;
     use crate::{
-        tests::grpc::grpc_helper::{
-            create_decision_point_after_taking_E5, create_initial_decision_point,
-        },
         DataReader::json_reader::read_json_component,
         ProtobufServer::services::SimulationStepResponse,
         Simulation::decision_point::DecisionPoint,
@@ -292,7 +289,7 @@ mod tests {
         let actual = decision_point_to_proto_decision_point(&decisionPoint, &system);
 
         // Assert
-        let expected = create_initial_decision_point();
+        let expected = create_initialdecision_point();
 
         assert_eq!(actual.source, expected.source);
         assert_eq!(actual.edges.len(), 2);

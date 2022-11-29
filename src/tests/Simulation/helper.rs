@@ -1,19 +1,18 @@
-use std::vec;
+use std::{fs, vec};
 
-use tonic::{Response, Status};
+use tonic::{Request, Response, Status};
 
 use crate::ProtobufServer::services::{
-    Component as ProtoComponent, ComponentClock as ProtoComponentClock,
+    self, Component as ProtoComponent, ComponentClock as ProtoComponentClock,
     ComponentsInfo as ProtoComponentsInfo, Conjunction as ProtoConjunction,
     Constraint as ProtoConstraint, Decision as ProtoDecision, DecisionPoint as ProtoDecisionPoint,
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
     Location as ProtoLocation, LocationTuple as ProtoLocationTuple,
-    SimulationInfo as ProtoSimulationInfo, SpecificComponent as ProtoSpecificComponent,
-    State as ProtoState,
+    SimulationInfo as ProtoSimulationInfo, SimulationStartRequest, SimulationStepRequest,
+    SpecificComponent as ProtoSpecificComponent, State as ProtoState,
 };
 use crate::{
     component::Component,
-    tests::grpc::grpc_helper::create_json_component_as_string,
     DataReader::json_reader::read_json_component,
     ProtobufServer::services::{component::Rep, SimulationStepResponse},
     Simulation::transition_decision_point::TransitionDecisionPoint,
@@ -80,4 +79,110 @@ pub fn create_components(comp_names: &[&str], sample_name: String) -> Vec<ProtoC
         .collect();
 
     components
+}
+
+pub fn create_1tuple_state_with_single_constraint(
+    id: &str,
+    component_name: &str,
+    component_index: u32,
+    clock_x_name: &str,
+    clock_y_name: &str,
+    clock_constraint: i32,
+    is_constrain_strict: bool,
+) -> services::State {
+    services::State {
+        location_tuple: Some(services::LocationTuple {
+            locations: vec![services::Location {
+                id: String::from(id),
+                specific_component: Some(services::SpecificComponent {
+                    component_name: String::from(component_name),
+                    component_index,
+                }),
+            }],
+        }),
+        federation: Some(services::Federation {
+            disjunction: Some(services::Disjunction {
+                conjunctions: vec![services::Conjunction {
+                    constraints: vec![
+                        // constraint (x - y <= c)
+                        services::Constraint {
+                            x: Some(services::ComponentClock {
+                                specific_component: Some(services::SpecificComponent {
+                                    component_name: String::from(component_name),
+                                    component_index,
+                                }),
+                                clock_name: String::from(clock_x_name),
+                            }),
+                            y: Some(services::ComponentClock {
+                                specific_component: Some(services::SpecificComponent {
+                                    component_name: String::from(component_name),
+                                    component_index,
+                                }),
+                                clock_name: String::from(clock_y_name),
+                            }),
+                            strict: is_constrain_strict,
+                            c: clock_constraint,
+                        },
+                    ],
+                }],
+            }),
+        }),
+    }
+}
+
+pub fn create_json_component_as_string(path: String) -> String {
+    fs::read_to_string(path).unwrap()
+}
+
+pub fn create_simulation_step_request(
+    simulation_info: ProtoSimulationInfo,
+    source: services::State,
+    edge: services::Edge,
+) -> SimulationStepRequest {
+    SimulationStepRequest {
+        simulation_info: Some(simulation_info),
+        chosen_decision: Some(services::Decision {
+            source: Some(source),
+            edge: Some(edge),
+        }),
+    }
+}
+
+pub fn create_simulation_start_request(
+    composition: String,
+    component_json: String,
+) -> Request<SimulationStartRequest> {
+    Request::new(SimulationStartRequest {
+        simulation_info: Some(create_simulation_info_from(composition, component_json)),
+    })
+}
+
+pub fn create_empty_state() -> ProtoState {
+    ProtoState {
+        location_tuple: None,
+        federation: None,
+    }
+}
+
+pub fn create_empty_edge() -> ProtoEdge {
+    ProtoEdge {
+        id: String::from(""),
+        specific_component: None,
+    }
+}
+
+pub fn create_simulation_info_from(
+    composition: String,
+    component_json: String,
+) -> ProtoSimulationInfo {
+    ProtoSimulationInfo {
+        user_id: 0,
+        component_composition: composition,
+        components_info: Some(ProtoComponentsInfo {
+            components: vec![ProtoComponent {
+                rep: Some(services::component::Rep::Json(component_json)),
+            }],
+            components_hash: 0,
+        }),
+    }
 }

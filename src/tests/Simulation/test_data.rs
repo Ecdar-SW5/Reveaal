@@ -1,11 +1,7 @@
+use std::fs;
+
 use tonic::{Request, Response, Status};
 
-use crate::tests::grpc::grpc_helper::{
-    create_decision_point_after_taking_E5, create_edges_from_L5, create_empty_edge,
-    create_empty_state, create_initial_decision_point, create_sample_json_component,
-    create_simulation_info_from, create_simulation_start_request, create_simulation_step_request,
-    create_state_not_in_machine, create_state_setup_for_mismatch,
-};
 use crate::ProtobufServer::services::{
     Component as ProtoComponent, ComponentClock as ProtoComponentClock,
     ComponentsInfo as ProtoComponentsInfo, Conjunction as ProtoConjunction,
@@ -23,8 +19,12 @@ use crate::{
 };
 
 use super::helper::{
-    create_components, create_composition_string, create_simulation_info, create_system_from_path,
+    create_1tuple_state_with_single_constraint, create_components, create_composition_string,
+    create_empty_edge, create_empty_state, create_simulation_info, create_simulation_info_from,
+    create_simulation_start_request, create_simulation_step_request, create_system_from_path,
 };
+
+static ECDAR_UNI: &str = "samples/json/EcdarUniversity";
 
 pub fn create_EcdarUniversity_Machine_component() -> Component {
     let project_path = "samples/json/EcdarUniversity";
@@ -996,7 +996,7 @@ pub fn get_conjunction_response_HalfAdm1_HalfAdm2_after_E37(
 pub fn create_good_request() -> tonic::Request<SimulationStepRequest> {
     let simulation_info =
         create_simulation_info_from(String::from("Machine"), create_sample_json_component());
-    let initial_decision_point = create_initial_decision_point();
+    let initial_decision_point = create_initialdecision_point();
     let chosen_source = initial_decision_point.source.clone().unwrap();
     let chosen_edge = initial_decision_point.edges[1].clone();
 
@@ -1151,7 +1151,7 @@ pub fn create_good_start_request() -> Request<SimulationStartRequest> {
 pub fn create_expected_response_to_good_start_request(
 ) -> Result<Response<SimulationStepResponse>, Status> {
     Ok(Response::new(SimulationStepResponse {
-        new_decision_points: vec![create_initial_decision_point()],
+        new_decision_points: vec![create_initialdecision_point()],
     }))
 }
 
@@ -1202,4 +1202,111 @@ pub fn create_conjunction_start_request() -> Request<SimulationStartRequest> {
 pub fn create_expected_response_to_conjunction_start_request(
 ) -> Result<Response<SimulationStepResponse>, Status> {
     get_conjunction_response_HalfAdm1_HalfAdm2()
+}
+
+pub fn create_edges_from_L5() -> Vec<ProtoEdge> {
+    vec![
+        ProtoEdge {
+            id: "E27".to_string(),
+            specific_component: None,
+        },
+        ProtoEdge {
+            id: "E29".to_string(),
+            specific_component: None,
+        },
+    ]
+}
+
+// Create the decision point drawn below:
+//
+//           -----coin? E3----->
+//          /
+// (L5, universe)-------tea! E5----->
+//
+pub fn create_initialdecision_point() -> ProtoDecisionPoint {
+    ProtoDecisionPoint {
+        source: Some(ProtoState {
+            location_tuple: Some(ProtoLocationTuple {
+                locations: vec![ProtoLocation {
+                    id: "L5".to_string(),
+                    specific_component: Some(ProtoSpecificComponent {
+                        component_name: "Machine".to_string(),
+                        component_index: 0,
+                    }),
+                }],
+            }),
+            federation: Some(ProtoFederation {
+                disjunction: Some(ProtoDisjunction {
+                    conjunctions: vec![ProtoConjunction {
+                        constraints: vec![],
+                    }],
+                }),
+            }),
+        }),
+        edges: create_edges_from_L5(),
+    }
+}
+
+// Returns the Machine component as a String, in the .json format
+pub fn create_sample_json_component() -> String {
+    fs::read_to_string(format!("{}/Components/Machine.json", ECDAR_UNI)).unwrap()
+}
+
+// Create the decision point drawn below:
+//
+//           -----coin? E3----->
+//          /
+// (L5,y>=2)-------tea! E5----->
+//
+pub fn create_decision_point_after_taking_E5() -> ProtoDecisionPoint {
+    ProtoDecisionPoint {
+        source: Some(ProtoState {
+            location_tuple: Some(ProtoLocationTuple {
+                locations: vec![ProtoLocation {
+                    id: "L5".to_string(),
+                    specific_component: Some(ProtoSpecificComponent {
+                        component_name: "Machine".to_string(),
+                        component_index: 0,
+                    }),
+                }],
+            }),
+            federation: Some(ProtoFederation {
+                disjunction: Some(ProtoDisjunction {
+                    conjunctions: vec![ProtoConjunction {
+                        constraints: vec![ProtoConstraint {
+                            x: Some(ProtoComponentClock {
+                                specific_component: None,
+                                clock_name: "0".to_string(),
+                            }),
+                            y: Some(ProtoComponentClock {
+                                specific_component: Some(ProtoSpecificComponent {
+                                    component_name: "Machine".to_string(),
+                                    component_index: 0,
+                                }),
+                                clock_name: "y".to_string(),
+                            }),
+                            strict: false,
+                            c: -2,
+                        }],
+                    }],
+                }),
+            }),
+        }),
+        edges: create_edges_from_L5(),
+    }
+}
+
+// Create a simulation state with the Machine component and the decision point drawn below:
+//
+//          -----coin? E3----->
+//         /
+// (ε,y>=0)-------tea! E5----->
+//
+pub fn create_state_not_in_machine() -> ProtoState {
+    create_1tuple_state_with_single_constraint("", "Machine", 0, "0", "y", 0, false)
+}
+
+// create a state such that can't transition via E5
+pub fn create_state_setup_for_mismatch() -> ProtoState {
+    create_1tuple_state_with_single_constraint("L5", "Machine", 0, "y", "0", 2, true)
 }

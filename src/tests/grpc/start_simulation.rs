@@ -1,17 +1,11 @@
 #[cfg(test)]
 mod test {
     use crate::{
-        tests::{
-            grpc::grpc_helper::{
-                create_initial_decision_point, create_sample_json_component,
-                create_simulation_start_request,
-            },
-            Simulation::{
-                helper,
-                test_data::{
-                    get_composition_response_Administration_Machine_Researcher,
-                    get_conjunction_response_HalfAdm1_HalfAdm2,
-                },
+        tests::Simulation::{
+            helper,
+            test_data::{
+                get_composition_response_Administration_Machine_Researcher,
+                get_conjunction_response_HalfAdm1_HalfAdm2,
             },
         },
         ProtobufServer::{
