@@ -17,6 +17,8 @@ use crate::{
 };
 
 impl ConcreteEcdarBackend {
+    /// Handles a tame simulation step request:
+    /// Given a decision and transition system in the request, walk along the decided edge and respond with the resulting decision points.
     pub fn handle_take_simulation_step(
         request: SimulationStepRequest,
         _cache: ModelCache, // TODO should be used...
