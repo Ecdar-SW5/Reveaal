@@ -1,7 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use reveaal::tests;
-use reveaal::System::local_consistency::is_fully_consistent;
-use reveaal::TransitionSystems::transition_system::{ClockReductionInstruction, Heights};
+use reveaal::TransitionSystems::transition_system::Heights;
 use reveaal::TransitionSystems::{CompiledComponent, TransitionSystem};
 use tests::ClockReduction::helper::test::read_json_component_and_process;
 
