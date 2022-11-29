@@ -1,4 +1,3 @@
-#[cfg(test)]
 pub mod test {
     use crate::component;
     use crate::component::{Edge, SyncType};

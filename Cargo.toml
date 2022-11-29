@@ -72,3 +72,7 @@ harness = false
 [[bench]]
 name = "benchmark_heap_clock_reduction"
 harness = false
+
+[[bench]]
+name = "clock_reduction_bench"
+harness = false

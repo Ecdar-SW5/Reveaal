@@ -1,7 +1,9 @@
-use criterion::{criterion_group, criterion_main, Criterion, black_box};
+use criterion::{criterion_group, criterion_main, Criterion};
 use reveaal::tests::refinement::Helper::json_refinement_check;
 
+mod clock_reduction_bench;
 pub mod flamegraph;
+
 mod benchmark_heap_clock_reduction;
 use flamegraph::flamegraph_profiler::FlamegraphProfiler;
 
