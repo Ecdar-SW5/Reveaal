@@ -1,21 +1,30 @@
-use tonic::{Response, Status};
+use tonic::{Request, Response, Status};
 
+use crate::tests::grpc::grpc_helper::{
+    create_decision_point_after_taking_E5, create_edges_from_L5, create_empty_edge,
+    create_empty_state, create_initial_decision_point, create_sample_json_component,
+    create_simulation_info_from, create_simulation_step_request, create_state_not_in_machine,
+    create_state_setup_for_mismatch,
+};
 use crate::ProtobufServer::services::{
     Component as ProtoComponent, ComponentClock as ProtoComponentClock,
     ComponentsInfo as ProtoComponentsInfo, Conjunction as ProtoConjunction,
     Constraint as ProtoConstraint, Decision as ProtoDecision, DecisionPoint as ProtoDecisionPoint,
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
     Location as ProtoLocation, LocationTuple as ProtoLocationTuple,
-    SimulationInfo as ProtoSimulationInfo, SimulationStepResponse,
+    SimulationInfo as ProtoSimulationInfo, SimulationStepRequest, SimulationStepResponse,
     SpecificComponent as ProtoSpecificComponent, State as ProtoState,
 };
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
+use crate::TransitionSystems::CompositionType;
 use crate::{
     component::Component, DataReader::json_reader::read_json_component,
     TransitionSystems::TransitionSystemPtr,
 };
 
-use super::helper::create_system_from_path;
+use super::helper::{
+    create_components, create_composition_string, create_simulation_info, create_system_from_path,
+};
 
 pub fn create_EcdarUniversity_Machine_component() -> Component {
     let project_path = "samples/json/EcdarUniversity";
@@ -976,4 +985,161 @@ pub fn get_conjunction_response_HalfAdm1_HalfAdm2_after_E37(
         new_decision_points: vec![new_decision_points],
     };
     Ok(Response::new(response))
+}
+
+// A request that Chooses the FAT EDGE:
+//
+//           ----coin? E3---->
+//          /
+// (L5,y>=0)=====tea! E5=====>
+//
+pub fn create_good_request() -> tonic::Request<SimulationStepRequest> {
+    let simulation_info =
+        create_simulation_info_from(String::from("Machine"), create_sample_json_component());
+    let initial_decision_point = create_initial_decision_point();
+    let chosen_source = initial_decision_point.source.clone().unwrap();
+    let chosen_edge = initial_decision_point.edges[1].clone();
+
+    tonic::Request::new(create_simulation_step_request(
+        simulation_info,
+        chosen_source,
+        chosen_edge,
+    ))
+}
+
+pub fn create_expected_response_to_good_request() -> Result<Response<SimulationStepResponse>, Status>
+{
+    Ok(Response::new(SimulationStepResponse {
+        new_decision_points: vec![create_decision_point_after_taking_E5()],
+    }))
+}
+
+pub fn create_mismatched_request_1() -> Request<SimulationStepRequest> {
+    let simulation_info =
+        create_simulation_info_from(String::from("Machine"), create_sample_json_component());
+    let chosen_source = create_state_not_in_machine();
+    let chosen_edge = create_edges_from_L5()[0].clone();
+
+    tonic::Request::new(create_simulation_step_request(
+        simulation_info,
+        chosen_source,
+        chosen_edge,
+    ))
+}
+
+pub fn create_expected_response_to_mismatched_request_1(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    Err(tonic::Status::invalid_argument(
+        "Mismatch between decision and system, state not in system",
+    ))
+}
+
+pub fn create_mismatched_request_2() -> Request<SimulationStepRequest> {
+    let simulation_info =
+        create_simulation_info_from(String::from("Machine"), create_sample_json_component());
+
+    let chosen_source = create_state_setup_for_mismatch();
+    let chosen_edge = create_edges_from_L5()[1].clone(); // Should not be able to choose this edge
+    Request::new(create_simulation_step_request(
+        simulation_info,
+        chosen_source,
+        chosen_edge,
+    ))
+}
+
+pub fn create_expected_response_to_mismatched_request_2(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    Err(tonic::Status::invalid_argument(
+        "Mismatch between decision and system, could not make transition",
+    ))
+}
+
+pub fn create_malformed_component_request() -> Request<SimulationStepRequest> {
+    let simulation_info = create_simulation_info_from(String::from(""), String::from(""));
+    let chosen_source = create_empty_state();
+    let chosen_edge = create_empty_edge();
+
+    Request::new(create_simulation_step_request(
+        simulation_info,
+        chosen_source,
+        chosen_edge,
+    ))
+}
+
+pub fn create_response_to_malformed_component_request(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    Err(Status::invalid_argument("Malformed component, bad json"))
+}
+
+pub fn create_malformed_composition_request() -> Request<SimulationStepRequest> {
+    let simulation_info =
+        create_simulation_info_from(String::from(""), create_sample_json_component());
+    let chosen_source = create_empty_state();
+    let chosen_edge = create_empty_edge();
+
+    Request::new(create_simulation_step_request(
+        simulation_info,
+        chosen_source,
+        chosen_edge,
+    ))
+}
+
+pub fn create_response_to_malformed_compostion_request(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    Err(Status::invalid_argument(
+        "Malformed composition, bad expression",
+    ))
+}
+
+// A || B || C
+pub fn create_composition_request() -> Request<SimulationStepRequest> {
+    let comp_names = vec!["Administration", "Machine", "Researcher"];
+    let sample_name = "EcdarUniversity".to_string();
+    let composition_string = "Administration || Machine || Researcher".to_string();
+
+    let components: Vec<ProtoComponent> = create_components(&comp_names, sample_name);
+    let simulation_info = create_simulation_info(composition_string, components);
+
+    let edge = ProtoEdge {
+        id: "E29".to_string(),
+        specific_component: None,
+    };
+
+    let source = get_state_after_Administration_Machine_Researcher_composition();
+
+    let simulation_step_request = create_simulation_step_request(simulation_info, source, edge);
+
+    Request::new(simulation_step_request)
+}
+
+pub fn create_expected_response_to_composition_request(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    get_composition_response_Administration_Machine_Researcher_after_E29()
+}
+
+// A && B
+pub fn create_conjunction_request() -> Request<SimulationStepRequest> {
+    let comp_names = vec!["HalfAdm1", "HalfAdm2"];
+    let sample_name = "EcdarUniversity".to_string();
+    let composition_string = "HalfAdm1 && HalfAdm2".to_string();
+    create_composition_string(&comp_names, CompositionType::Conjunction);
+
+    let components: Vec<ProtoComponent> = create_components(&comp_names, sample_name);
+    let simulation_info = create_simulation_info(composition_string, components);
+
+    let edge = ProtoEdge {
+        id: "E37".to_string(),
+        specific_component: None,
+    };
+
+    let source = get_state_after_HalfAdm1_HalfAdm2_conjunction();
+
+    let simulation_step_request = create_simulation_step_request(simulation_info, source, edge);
+
+    Request::new(simulation_step_request)
+}
+
+pub fn create_expected_response_to_conjunction_request(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    get_conjunction_response_HalfAdm1_HalfAdm2_after_E37()
 }
