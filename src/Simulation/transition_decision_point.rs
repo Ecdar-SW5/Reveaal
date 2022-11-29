@@ -11,14 +11,14 @@ pub struct TransitionDecisionPoint {
 }
 
 impl TransitionDecisionPoint {
-    /// Constructs the initial `TransitionDecisionPoint` for a given `TransitionSystemPtr`
+    /// Constructs the initial [`TransitionDecisionPoint`] for a given [`TransitionSystemPtr`].
     pub fn initial(system: &TransitionSystemPtr) -> Option<Self> {
         system
             .get_initial_state()
             .map(|source| Self::from(system, &source))
     }
 
-    /// Constructs the `TransitionDecisionPoint` from a `source: State` and a given `TransitionSystemPtr`
+    /// Constructs the [`TransitionDecisionPoint`] from a `source` [`State`] and a given [`TransitionSystemPtr`].
     pub fn from(system: &TransitionSystemPtr, source: &State) -> TransitionDecisionPoint {
         let actions = system.get_actions();
         let transitions: Vec<Transition> = actions
