@@ -171,18 +171,16 @@ fn edge_id_to_proto_edge(e: &String) -> ProtoEdge {
 mod tests {
     use super::{decision_point_to_proto_decision_point, state_to_proto_state};
     use crate::component::Component;
-    use crate::tests::Simulation::helper::get_composition_response_Administration_Machine_Researcher;
+    use crate::tests::Simulation::test_data::{
+        create_EcdarUniversity_Machine_system,
+        get_composition_response_Administration_Machine_Researcher,
+        initial_transition_decision_point_EcdarUniversity_Machine,
+    };
     use crate::DataReader::proto_reader::proto_state_to_state;
     use crate::TransitionSystems::transition_system::components_to_transition_system;
     use crate::{
-        tests::{
-            grpc::grpc_helper::{
-                create_decision_point_after_taking_E5, create_initial_decision_point,
-            },
-            Simulation::helper::{
-                create_EcdarUniversity_Machine_system,
-                initial_transition_decision_point_EcdarUniversity_Machine,
-            },
+        tests::grpc::grpc_helper::{
+            create_decision_point_after_taking_E5, create_initial_decision_point,
         },
         DataReader::json_reader::read_json_component,
         ProtobufServer::services::SimulationStepResponse,

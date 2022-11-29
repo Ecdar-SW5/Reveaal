@@ -53,7 +53,7 @@ impl TransitionDecision {
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::Simulation::helper::{
+        tests::Simulation::test_data::{
             create_EcdarUniversity_Machine_system, create_Simulation_Machine_system,
         },
         DataReader::json_reader::read_json_component,

@@ -191,7 +191,7 @@ fn proto_federation_to_owned_federation(
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::Simulation::helper::{
+        tests::Simulation::test_data::{
             create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision,
             create_EcdarUniversity_Machine_Decision, create_EcdarUniversity_Machine_component,
             create_EcdarUniversity_Machine_system,

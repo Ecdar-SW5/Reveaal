@@ -7,7 +7,12 @@ mod test {
         create_state_setup_for_mismatch,
     };
     use crate::tests::Simulation::helper::{
-        self, get_state_after_Administration_Machine_Researcher_composition,
+        create_components, create_composition_string, create_simulation_info,
+    };
+    use crate::tests::Simulation::test_data::{
+        get_composition_response_Administration_Machine_Researcher_after_E29,
+        get_conjunction_response_HalfAdm1_HalfAdm2_after_E37,
+        get_state_after_Administration_Machine_Researcher_composition,
         get_state_after_HalfAdm1_HalfAdm2_conjunction,
     };
     use crate::ProtobufServer::services::{
@@ -193,8 +198,8 @@ mod test {
         let sample_name = "EcdarUniversity".to_string();
         let composition_string = "Administration || Machine || Researcher".to_string();
 
-        let components: Vec<ProtoComponent> = helper::create_components(&comp_names, sample_name);
-        let simulation_info = helper::create_simulation_info(composition_string, components);
+        let components: Vec<ProtoComponent> = create_components(&comp_names, sample_name);
+        let simulation_info = create_simulation_info(composition_string, components);
 
         let edge = ProtoEdge {
             id: "E29".to_string(),
@@ -210,7 +215,7 @@ mod test {
 
     fn create_expected_response_to_composition_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        helper::get_composition_response_Administration_Machine_Researcher_after_E29()
+        get_composition_response_Administration_Machine_Researcher_after_E29()
     }
 
     // A && B
@@ -218,10 +223,10 @@ mod test {
         let comp_names = vec!["HalfAdm1", "HalfAdm2"];
         let sample_name = "EcdarUniversity".to_string();
         let composition_string = "HalfAdm1 && HalfAdm2".to_string();
-        helper::create_composition_string(&comp_names, CompositionType::Conjunction);
+        create_composition_string(&comp_names, CompositionType::Conjunction);
 
-        let components: Vec<ProtoComponent> = helper::create_components(&comp_names, sample_name);
-        let simulation_info = helper::create_simulation_info(composition_string, components);
+        let components: Vec<ProtoComponent> = create_components(&comp_names, sample_name);
+        let simulation_info = create_simulation_info(composition_string, components);
 
         let edge = ProtoEdge {
             id: "E37".to_string(),
@@ -237,6 +242,6 @@ mod test {
 
     fn create_expected_response_to_conjunction_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        helper::get_conjunction_response_HalfAdm1_HalfAdm2_after_E37()
+        get_conjunction_response_HalfAdm1_HalfAdm2_after_E37()
     }
 }

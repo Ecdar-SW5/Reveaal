@@ -56,8 +56,9 @@ impl From<&TransitionDecisionPoint> for DecisionPoint {
 
 #[cfg(test)]
 pub(crate) mod test {
+    use crate::tests::Simulation::test_data::initial_transition_decision_point_EcdarUniversity_Machine;
+
     use super::DecisionPoint;
-    use crate::tests::Simulation::helper::initial_transition_decision_point_EcdarUniversity_Machine;
 
     #[test]
     #[ignore]

@@ -6,7 +6,13 @@ mod test {
                 create_initial_decision_point, create_sample_json_component,
                 create_simulation_start_request,
             },
-            Simulation::helper,
+            Simulation::{
+                helper,
+                test_data::{
+                    get_composition_response_Administration_Machine_Researcher,
+                    get_conjunction_response_HalfAdm1_HalfAdm2,
+                },
+            },
         },
         ProtobufServer::{
             self,
@@ -129,7 +135,7 @@ mod test {
 
     fn create_expected_response_to_composition_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        helper::get_composition_response_Administration_Machine_Researcher()
+        get_composition_response_Administration_Machine_Researcher()
     }
 
     // A && B
@@ -149,6 +155,6 @@ mod test {
 
     fn create_expected_response_to_conjunction_request(
     ) -> Result<Response<SimulationStepResponse>, Status> {
-        helper::get_conjunction_response_HalfAdm1_HalfAdm2()
+        get_conjunction_response_HalfAdm1_HalfAdm2()
     }
 }
