@@ -341,6 +341,7 @@ pub fn get_state_after_Administration_Machine_Researcher_composition() -> ProtoS
         }),
     }
 }
+
 pub fn get_composition_response_Administration_Machine_Researcher(
 ) -> Result<Response<SimulationStepResponse>, Status> {
     let proto_decision_point = ProtoDecisionPoint {
@@ -726,7 +727,7 @@ pub fn get_composition_response_Administration_Machine_Researcher_after_E29(
 
     Ok(Response::new(response))
 }
-//to here
+
 pub fn get_state_after_HalfAdm1_HalfAdm2_conjunction() -> ProtoState {
     ProtoState {
         location_tuple: Some(ProtoLocationTuple {
