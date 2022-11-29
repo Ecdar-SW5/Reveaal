@@ -1,11 +1,11 @@
 use std::{fs, vec};
 
-use tonic::Request;
+use tonic::{Request, Response, Status};
 
 use crate::ProtobufServer::services::{
-    self, Component as ProtoComponent, ComponentsInfo as ProtoComponentsInfo, Edge as ProtoEdge,
-    SimulationInfo as ProtoSimulationInfo, SimulationStartRequest, SimulationStepRequest,
-    State as ProtoState,
+    self, Component as ProtoComponent, ComponentsInfo as ProtoComponentsInfo,
+    Decision as ProtoDecision, Edge as ProtoEdge, SimulationInfo as ProtoSimulationInfo,
+    SimulationStartRequest, SimulationStepRequest, SimulationStepResponse, State as ProtoState,
 };
 use crate::{
     DataReader::json_reader::read_json_component,
@@ -174,6 +174,79 @@ pub fn create_simulation_info_from(
             components: vec![ProtoComponent {
                 rep: Some(services::component::Rep::Json(component_json)),
             }],
+            components_hash: 0,
+        }),
+    }
+}
+
+pub fn create_start_request(
+    component_names: &[&str],
+    components_path: &str,
+    composition: &str,
+) -> Request<SimulationStartRequest> {
+    let simulation_info = create_simulation_info_1(component_names, components_path, composition);
+    Request::new(SimulationStartRequest {
+        simulation_info: Some(simulation_info),
+    })
+}
+
+pub fn create_step_request(
+    component_names: &[&str],
+    components_path: &str,
+    composition: &str,
+    last_response: Result<Response<SimulationStepResponse>, Status>,
+) -> Request<SimulationStepRequest> {
+    let simulation_info = create_simulation_info_1(component_names, components_path, composition);
+    let last_response = last_response.unwrap().into_inner();
+    let source = last_response
+        .clone()
+        .new_decision_points
+        .first()
+        .unwrap()
+        .source
+        .to_owned();
+    let decision = last_response
+        .clone()
+        .new_decision_points
+        .first()
+        .unwrap()
+        .edges
+        .first()
+        .unwrap()
+        .to_owned();
+
+    Request::new(SimulationStepRequest {
+        simulation_info: Some(simulation_info),
+        chosen_decision: Some(ProtoDecision {
+            source: source,
+            edge: Some(decision),
+        }),
+    })
+}
+
+fn create_simulation_info_1(
+    component_names: &[&str],
+    components_path: &str,
+    composition: &str,
+) -> ProtoSimulationInfo {
+    let json_components: Vec<_> = component_names
+        .into_iter()
+        .map(|component_name| ProtoComponent {
+            rep: Some(Rep::Json(
+                fs::read_to_string(format!(
+                    "{}/Components/{}.json",
+                    components_path, component_name
+                ))
+                .unwrap(),
+            )),
+        })
+        .collect();
+
+    ProtoSimulationInfo {
+        user_id: 0,
+        component_composition: composition.to_string(),
+        components_info: Some(ProtoComponentsInfo {
+            components: json_components,
             components_hash: 0,
         }),
     }
