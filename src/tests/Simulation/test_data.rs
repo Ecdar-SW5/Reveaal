@@ -3,8 +3,8 @@ use tonic::{Request, Response, Status};
 use crate::tests::grpc::grpc_helper::{
     create_decision_point_after_taking_E5, create_edges_from_L5, create_empty_edge,
     create_empty_state, create_initial_decision_point, create_sample_json_component,
-    create_simulation_info_from, create_simulation_step_request, create_state_not_in_machine,
-    create_state_setup_for_mismatch,
+    create_simulation_info_from, create_simulation_start_request, create_simulation_step_request,
+    create_state_not_in_machine, create_state_setup_for_mismatch,
 };
 use crate::ProtobufServer::services::{
     Component as ProtoComponent, ComponentClock as ProtoComponentClock,
@@ -12,8 +12,8 @@ use crate::ProtobufServer::services::{
     Constraint as ProtoConstraint, Decision as ProtoDecision, DecisionPoint as ProtoDecisionPoint,
     Disjunction as ProtoDisjunction, Edge as ProtoEdge, Federation as ProtoFederation,
     Location as ProtoLocation, LocationTuple as ProtoLocationTuple,
-    SimulationInfo as ProtoSimulationInfo, SimulationStepRequest, SimulationStepResponse,
-    SpecificComponent as ProtoSpecificComponent, State as ProtoState,
+    SimulationInfo as ProtoSimulationInfo, SimulationStartRequest, SimulationStepRequest,
+    SimulationStepResponse, SpecificComponent as ProtoSpecificComponent, State as ProtoState,
 };
 use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
 use crate::TransitionSystems::CompositionType;
@@ -1142,4 +1142,64 @@ pub fn create_conjunction_request() -> Request<SimulationStepRequest> {
 pub fn create_expected_response_to_conjunction_request(
 ) -> Result<Response<SimulationStepResponse>, Status> {
     get_conjunction_response_HalfAdm1_HalfAdm2_after_E37()
+}
+
+pub fn create_good_start_request() -> Request<SimulationStartRequest> {
+    create_simulation_start_request(String::from("Machine"), create_sample_json_component())
+}
+
+pub fn create_expected_response_to_good_start_request(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    Ok(Response::new(SimulationStepResponse {
+        new_decision_points: vec![create_initial_decision_point()],
+    }))
+}
+
+pub fn create_malformed_component_start_request() -> Request<SimulationStartRequest> {
+    create_simulation_start_request(String::from(""), String::from(""))
+}
+
+pub fn create_malformed_composition_start_request() -> Request<SimulationStartRequest> {
+    create_simulation_start_request(String::from(""), create_sample_json_component())
+}
+
+// A || B || C
+pub fn create_composition_start_request() -> Request<SimulationStartRequest> {
+    let comp_names = vec!["Administration", "Machine", "Researcher"];
+    let sample_name = "EcdarUniversity".to_string();
+
+    let composition = create_composition_string(&comp_names, CompositionType::Composition);
+    let components: Vec<ProtoComponent> = create_components(&comp_names, sample_name);
+
+    let simulation_info = create_simulation_info(composition, components);
+
+    let simulation_start_request = Request::new(SimulationStartRequest {
+        simulation_info: Some(simulation_info),
+    });
+
+    simulation_start_request
+}
+
+pub fn create_expected_response_to_composition_start_request(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    get_composition_response_Administration_Machine_Researcher()
+}
+
+// A && B
+pub fn create_conjunction_start_request() -> Request<SimulationStartRequest> {
+    let comp_names = vec!["HalfAdm1", "HalfAdm2"];
+    let sample_name = "EcdarUniversity".to_string();
+    let composition_string = create_composition_string(&comp_names, CompositionType::Conjunction);
+
+    let components: Vec<ProtoComponent> = create_components(&comp_names, sample_name);
+    let simulation_info = create_simulation_info(composition_string, components);
+
+    Request::new(SimulationStartRequest {
+        simulation_info: Some(simulation_info),
+    })
+}
+
+pub fn create_expected_response_to_conjunction_start_request(
+) -> Result<Response<SimulationStepResponse>, Status> {
+    get_conjunction_response_HalfAdm1_HalfAdm2()
 }

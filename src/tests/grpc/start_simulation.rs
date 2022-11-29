@@ -27,18 +27,18 @@ mod test {
     use tonic::{Request, Response, Status};
 
     #[test_case(
-        create_good_request(),
-        create_expected_response_to_good_request();
+        crate::tests::Simulation::test_data::create_good_start_request(),
+        crate::tests::Simulation::test_data::create_expected_response_to_good_start_request();
         "given a good request, responds with correct state"
     )]
     #[test_case(
-        create_composition_request(),
-        create_expected_response_to_composition_request();
+        crate::tests::Simulation::test_data::create_composition_start_request(),
+        crate::tests::Simulation::test_data::create_expected_response_to_composition_start_request();
         "given a composition request, responds with correct component"
     )]
     #[test_case(
-        create_conjunction_request(),
-        create_expected_response_to_conjunction_request();
+        crate::tests::Simulation::test_data::create_conjunction_start_request(),
+        crate::tests::Simulation::test_data::create_expected_response_to_conjunction_start_request();
         "given a good conjunction request, responds with correct component"
     )]
     #[tokio::test]
@@ -61,11 +61,11 @@ mod test {
 
     #[ignore = "Server hangs on panic"]
     #[test_case(
-        create_malformed_component_request();
+        crate::tests::Simulation::test_data::create_malformed_component_start_request();
         "given a request with a malformed component, respond with error"
     )]
     #[test_case(
-        create_malformed_composition_request();
+        crate::tests::Simulation::test_data::create_malformed_composition_start_request();
         "given a request with a malformed composition, respond with error"
     )]
     #[tokio::test]
@@ -80,81 +80,5 @@ mod test {
 
         // Assert
         assert!(actual_response.is_err());
-    }
-
-    fn create_good_request() -> Request<SimulationStartRequest> {
-        create_simulation_start_request(String::from("Machine"), create_sample_json_component())
-    }
-
-    fn create_expected_response_to_good_request() -> Result<Response<SimulationStepResponse>, Status>
-    {
-        Ok(Response::new(SimulationStepResponse {
-            new_decision_points: vec![create_initial_decision_point()],
-        }))
-    }
-
-    fn create_malformed_component_request() -> Request<SimulationStartRequest> {
-        create_simulation_start_request(String::from(""), String::from(""))
-    }
-
-    // fn create_expected_response_to_malformed_component_request(
-    // ) -> Result<Response<SimulationStepResponse>, Status> {
-    //     Err(tonic::Status::invalid_argument(
-    //         "Malformed component, bad json",
-    //     ))
-    // }
-
-    fn create_malformed_composition_request() -> Request<SimulationStartRequest> {
-        create_simulation_start_request(String::from(""), create_sample_json_component())
-    }
-
-    // fn create_expected_response_to_malformed_composition_request(
-    // ) -> Result<Response<SimulationStepResponse>, Status> {
-    //     Err(tonic::Status::invalid_argument(
-    //         "Malformed composition, bad expression",
-    //     ))
-    // }
-
-    // A || B || C
-    fn create_composition_request() -> Request<SimulationStartRequest> {
-        let comp_names = vec!["Administration", "Machine", "Researcher"];
-        let sample_name = "EcdarUniversity".to_string();
-
-        let composition =
-            helper::create_composition_string(&comp_names, CompositionType::Composition);
-        let components: Vec<Component> = helper::create_components(&comp_names, sample_name);
-
-        let simulation_info = helper::create_simulation_info(composition, components);
-
-        let simulation_start_request = Request::new(SimulationStartRequest {
-            simulation_info: Some(simulation_info),
-        });
-
-        simulation_start_request
-    }
-
-    fn create_expected_response_to_composition_request(
-    ) -> Result<Response<SimulationStepResponse>, Status> {
-        get_composition_response_Administration_Machine_Researcher()
-    }
-
-    // A && B
-    fn create_conjunction_request() -> Request<SimulationStartRequest> {
-        let comp_names = vec!["HalfAdm1", "HalfAdm2"];
-        let sample_name = "EcdarUniversity".to_string();
-        let composition_string =
-            helper::create_composition_string(&comp_names, CompositionType::Conjunction);
-
-        let components: Vec<Component> = helper::create_components(&comp_names, sample_name);
-        let simulation_info = helper::create_simulation_info(composition_string, components);
-
-        Request::new(SimulationStartRequest {
-            simulation_info: Some(simulation_info),
-        })
-    }
-
-    fn create_expected_response_to_conjunction_request(
-    ) -> Result<Response<SimulationStepResponse>, Status> {
-        get_conjunction_response_HalfAdm1_HalfAdm2()
     }
 }
