@@ -1,8 +1,8 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use reveaal::tests::refinement::Helper::json_refinement_check;
 
-pub mod flamegraph;
 mod clock_reduction_bench;
+pub mod flamegraph;
 
 use flamegraph::flamegraph_profiler::FlamegraphProfiler;
 
