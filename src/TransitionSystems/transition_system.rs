@@ -78,12 +78,12 @@ pub trait TransitionSystem: DynClone {
     fn get_decls(&self) -> Vec<&Declarations>;
 
     fn get_combined_decls(&self) -> Declarations {
-        let (left, right) = self.get_children();
         let mut clocks = HashMap::new();
         let mut ints = HashMap::new();
-        for decl in [left.get_combined_decls(), right.get_combined_decls()] {
-            clocks.extend(decl.clocks);
-            ints.extend(decl.ints)
+
+        for decl in self.get_decls() {
+            clocks.extend(decl.clocks.clone());
+            ints.extend(decl.ints.clone())
         }
 
         Declarations { ints, clocks }

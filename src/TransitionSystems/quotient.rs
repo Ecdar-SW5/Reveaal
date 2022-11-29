@@ -15,7 +15,6 @@ use crate::TransitionSystems::{
     LocationTuple, TransitionID, TransitionSystem, TransitionSystemPtr,
 };
 use std::collections::hash_set::HashSet;
-use std::collections::HashMap;
 
 use super::CompositionType;
 
@@ -452,21 +451,6 @@ impl TransitionSystem for Quotient {
 
     fn get_dim(&self) -> ClockIndex {
         self.dim
-    }
-
-    fn get_combined_decls(&self) -> Declarations {
-        let mut clocks = HashMap::new();
-        let mut ints = HashMap::new();
-        for decl in [
-            self.S.get_combined_decls(),
-            self.T.get_combined_decls(),
-            self.decls.clone(),
-        ] {
-            clocks.extend(decl.clocks);
-            ints.extend(decl.ints)
-        }
-
-        Declarations { ints, clocks }
     }
 }
 
