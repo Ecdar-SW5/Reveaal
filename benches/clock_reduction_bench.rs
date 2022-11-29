@@ -16,11 +16,14 @@ pub(crate) fn bench_clock_reduction(c: &mut Criterion) {
     let dim = component.declarations.clocks.len() + 1;
     let compiled_component = CompiledComponent::compile(component.clone(), dim).unwrap();
     let clock_reduction_instructions = compiled_component.find_redundant_clocks(Heights::empty());
+
     let mut clock_reduced_component = component.clone();
     clock_reduced_component.reduce_clocks(clock_reduction_instructions);
     let reduced_dim = clock_reduced_component.declarations.clocks.len() + 1;
     let clock_reduced_compiled_component =
         CompiledComponent::compile(clock_reduced_component, reduced_dim).unwrap();
+
+    // Set up the bench.
     let mut group = c.benchmark_group("Clock Reduction");
     group.bench_function("Consistency check - No reduction", |b| {
         b.iter(|| black_box(compiled_component.is_locally_consistent()))
