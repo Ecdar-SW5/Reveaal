@@ -36,7 +36,7 @@ impl LocationID {
         }
     }
 
-    /// Does an inorder walk of the `LocationID` tree mapping it to a list of `LocationID::Simple`
+    /// Does an inorder walk of the [`LocationID`] tree mapping it to a list of [`LocationID::Simple`].
     pub fn inorder_vec_tranform(&self) -> Vec<Self> {
         match self {
             LocationID::Composition(left, right)
