@@ -44,9 +44,12 @@ impl TransitionDecision {
     }
 
     /// Resolves a [`TransitionDecision`]: use the `decided` [`Transition`] and return the [`TransitionDecisionPoint`] of the destination [`State`].  
-    pub fn resolve(mut self, system: &TransitionSystemPtr) -> TransitionDecisionPoint {
-        self.decided.use_transition(&mut self.source);
-        TransitionDecisionPoint::from(&system, &self.source)
+    pub fn resolve(&self, system: &TransitionSystemPtr) -> Option<TransitionDecisionPoint> {
+        let mut source = self.source.to_owned();
+        match self.decided.use_transition(&mut source) {
+            true => Some(TransitionDecisionPoint::from(&system, &source)),
+            false => None,
+        }
     }
 }
 
@@ -119,7 +122,7 @@ mod tests {
         };
 
         // Act
-        let actual = decision.resolve(&system);
+        let actual = decision.resolve(&system).unwrap();
 
         // Assert
         let actual_source = format!("{:?}", actual.source());
