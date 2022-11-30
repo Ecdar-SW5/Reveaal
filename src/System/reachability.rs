@@ -19,12 +19,14 @@ struct SubPath {
 }
 
 fn is_trivially_unreachable(start_state: &State, end_state: &State) -> bool {
+    // If the end location has invariants and these do not have an intersection (overlap) with the zone of the end state of the query
     if let Some(invariants) = end_state.get_location().get_invariants() {
         if !end_state.zone_ref().has_intersection(invariants) {
             return true;
         }
     }
-
+    // If the start state is a universal or inconsistent location and the end state isn't
+    // Since universal and inconsistent locations cannot reach other locations
     if matches!(
         start_state.decorated_locations.loc_type,
         LocationType::Universal | LocationType::Inconsistent
@@ -105,6 +107,7 @@ fn search_algorithm(start_state: &State, end_state: &State, system: &dyn Transit
         vec![start_clone.zone_ref().clone()],
     );
 
+    // Push state state to frontier
     frontier_states.push(Rc::new(SubPath {
         previous_sub_path: None,
         destination_state: start_clone,
@@ -156,15 +159,16 @@ fn take_transition(
         new_state.extrapolate_max_bounds(system); // Ensures the bounds cant grow infinitely, avoiding infinite loops in an edge case TODO: does not take end state zone into account, leading to a very rare edge case
         let new_location_id = &new_state.get_location().id;
         let existing_zones = visited_states.entry(new_location_id.clone()).or_default();
-
+        // If this location has not already been reached (explored) with a larger zone
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
+            // Remove the smaller zones for this location in visited_states
             remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
-
+            // Add the new zone to the list of zones for this location in visited_states
             visited_states
                 .get_mut(new_location_id)
                 .unwrap()
                 .push(new_state.zone_ref().clone());
-
+            // Add the new state to the frontier
             frontier_states.push(Rc::new(SubPath {
                 previous_sub_path: Some(Rc::clone(sub_path)),
                 destination_state: new_state,
@@ -197,12 +201,12 @@ fn remove_existing_subsets_of_zone(
 /// Makes the path from the last subpath
 fn make_path(mut sub_path: Rc<SubPath>) -> Path {
     let mut path: Vec<Transition> = Vec::new();
-
+    // Traverse the subpaths to make the path (from end location to start location)
     while sub_path.previous_sub_path.is_some() {
         path.push(sub_path.transition.clone().unwrap());
         sub_path = Rc::clone(sub_path.previous_sub_path.as_ref().unwrap());
     }
-
+    // Revese the path since the transitions are in reverse order (now from start location to end location)
     path.reverse();
 
     Path {
