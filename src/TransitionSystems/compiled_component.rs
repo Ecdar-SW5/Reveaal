@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use super::{CompositionType, LocationID};
 
-pub type Action = String;
+type Action = String;
 
 #[derive(Clone)]
 struct ComponentInfo {

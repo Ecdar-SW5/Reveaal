@@ -40,11 +40,12 @@ impl Heights {
     /// Function to "go down" a level in the tree
     pub fn level_down(&self) -> Heights {
         Heights {
-            tree: self.tree,
+            tree: self.tree - 1,
             ..*self
         }
     }
 
+    /// Creates an empty `Heights` (ALl values are `0`)
     pub fn empty() -> Heights {
         Heights::new(0, 0)
     }

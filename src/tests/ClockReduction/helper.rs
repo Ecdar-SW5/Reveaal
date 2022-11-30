@@ -7,6 +7,7 @@ pub mod test {
     use edbm::util::constraints::ClockIndex;
     use std::collections::HashSet;
 
+    /// Reads and processes a component.
     pub fn read_json_component_and_process(
         project_path: &str,
         component_name: &str,
