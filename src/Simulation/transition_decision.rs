@@ -56,8 +56,9 @@ impl TransitionDecision {
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::Simulation::test_data::{
-            create_EcdarUniversity_Machine_system, create_Simulation_Machine_system,
+        tests::Simulation::{
+            helper::create_system_from_path,
+            test_data::{create_EcdarUniversity_Machine_system, create_Simulation_Machine_system},
         },
         DataReader::json_reader::read_json_component,
         Simulation::{
@@ -83,22 +84,23 @@ mod tests {
     #[ignore]
     #[test]
     fn from__Determinism_NonDeterminismCom__returns_ok() {
-        //     // Arrange
-        //     let path = "samples/json/Determinism";
-        //     let component = "NonDeterminismCom";
-        //     let system = create_system_from_path(path, component);
-        //     let component = read_json_component(path, component);
+        // Arrange
+        let path = "samples/json/Determinism";
+        let component = "NonDeterminismCom";
+        let system = create_system_from_path(path, component);
+        let component = read_json_component(path, component);
 
-        //     let decision = Decision::new(
-        //         system.get_initial_state().unwrap(),
-        //         component.get_edges().first().unwrap().to_owned(),
-        //     );
+        let decision = Decision::new(
+            system.get_initial_state().unwrap(),
+            component.get_edges().first().unwrap().to_owned(),
+        );
 
-        //     // Act
-        //     let actual = TransitionDecision::from(&decision, &system);
+        // Act
+        let actual = TransitionDecision::from(&decision, &system);
 
-        //     // Assert
-        //     assert!(actual.is_ok());
+        // Assert
+        let expected_len = 1;
+        assert_eq!(actual.len(), expected_len);
     }
 
     // Yes this test is stupid, no you will not remove it >:(
