@@ -61,15 +61,15 @@ fn location_tuple_to_proto_location_tuple(l: &LocationTuple) -> ProtoLocationTup
     }
 }
 
-fn location_id_to_proto_location_vec(is: &LocationID) -> Vec<ProtoLocation> {
-    match is {
+fn location_id_to_proto_location_vec(id: &LocationID) -> Vec<ProtoLocation> {
+    match id {
         LocationID::Simple {
             location_id,
             component_id,
         } => vec![ProtoLocation {
             id: location_id.to_string(),
             specific_component: Some(SpecificComponent {
-                component_name: component_id.as_ref().unwrap().to_string(), //TODO unwrap bad!
+                component_name: component_id.as_ref().unwrap_or(&"".to_string()).to_string(), // TODO this looks disgusting
                 component_index: 0,
             }),
         }],
@@ -84,39 +84,39 @@ fn location_id_to_proto_location_vec(is: &LocationID) -> Vec<ProtoLocation> {
 }
 
 fn federation_to_proto_federation(
-    f: &OwnedFederation,
+    federation: &OwnedFederation,
     system: &TransitionSystemPtr,
 ) -> ProtoFederation {
     ProtoFederation {
         disjunction: Some(disjunction_to_proto_disjunction(
-            &f.minimal_constraints(),
+            &federation.minimal_constraints(),
             system,
         )),
     }
 }
 
 fn disjunction_to_proto_disjunction(
-    d: &Disjunction,
+    disjunction: &Disjunction,
     system: &TransitionSystemPtr,
 ) -> ProtoDisjunction {
     ProtoDisjunction {
-        conjunctions: d
+        conjunctions: disjunction
             .conjunctions
             .iter()
-            .map(|x| conjunction_to_proto_conjunction(x, system))
+            .map(|conjunction| conjunction_to_proto_conjunction(conjunction, system))
             .collect(),
     }
 }
 
 fn conjunction_to_proto_conjunction(
-    c: &Conjunction,
+    conjunction: &Conjunction,
     system: &TransitionSystemPtr,
 ) -> ProtoConjunction {
     ProtoConjunction {
-        constraints: c
+        constraints: conjunction
             .constraints
             .iter()
-            .map(|x| constraint_to_proto_constraint(x, system))
+            .map(|constraint| constraint_to_proto_constraint(constraint, system))
             .collect(),
     }
 }
@@ -160,9 +160,9 @@ fn constraint_to_proto_constraint(
     }
 }
 
-fn edge_id_to_proto_edge(e: &String) -> ProtoEdge {
+fn edge_id_to_proto_edge(edge: &String) -> ProtoEdge {
     ProtoEdge {
-        id: e.to_string(),
+        id: edge.to_string(),
         specific_component: None, // Edge id's are unique thus this is not needed
     }
 }
