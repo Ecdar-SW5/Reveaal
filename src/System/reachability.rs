@@ -1,5 +1,6 @@
 use edbm::zones::OwnedFederation;
 
+use crate::component::LocationType;
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
@@ -17,14 +18,26 @@ struct SubPath {
     transition: Option<Transition>,
 }
 
-fn is_trivially_unreachable(end_state: &State, _system: &dyn TransitionSystem) -> bool {
+fn is_trivially_unreachable(start_state: &State, end_state: &State) -> bool {
     if let Some(invariants) = end_state.get_location().get_invariants() {
         if !end_state.zone_ref().has_intersection(invariants) {
             return true;
         }
     }
+
+    if matches!(
+        start_state.decorated_locations.loc_type,
+        LocationType::Universal | LocationType::Inconsistent
+    ) && !start_state
+        .decorated_locations
+        .compare_partial_locations(&end_state.decorated_locations)
+    {
+        return true;
+    }
+
     false
 }
+
 ///# Find path
 ///
 /// Returns a path from a start state to an end state in a transition system.
@@ -61,7 +74,7 @@ pub fn find_path(
     end_state: State,
     system: &dyn TransitionSystem,
 ) -> Result<Path, String> {
-    if is_trivially_unreachable(&end_state, system) {
+    if is_trivially_unreachable(&start_state, &end_state) {
         return Ok(Path {
             path: None,
             was_reachable: false,
@@ -127,8 +140,7 @@ fn search_algorithm(start_state: &State, end_state: &State, system: &dyn Transit
 fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
     cur_state
         .get_location()
-        .id
-        .compare_partial_locations(&end_state.get_location().id)
+        .compare_partial_locations(end_state.get_location())
         && cur_state.zone_ref().has_intersection(end_state.zone_ref())
 }
 
@@ -141,15 +153,18 @@ fn take_transition(
 ) {
     let mut new_state = sub_path.destination_state.clone();
     if transition.use_transition(&mut new_state) {
-        new_state.extrapolate_max_bounds(system); // Do we need to do this? consistency check does this
+        new_state.extrapolate_max_bounds(system); // Ensures the bounds cant grow infinitely, avoiding infinite loops in an edge case TODO: does not take end state zone into account, leading to a very rare edge case
         let new_location_id = &new_state.get_location().id;
         let existing_zones = visited_states.entry(new_location_id.clone()).or_default();
+
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
             remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
+
             visited_states
                 .get_mut(new_location_id)
                 .unwrap()
                 .push(new_state.zone_ref().clone());
+
             frontier_states.push(Rc::new(SubPath {
                 previous_sub_path: Some(Rc::clone(sub_path)),
                 destination_state: new_state,
@@ -180,10 +195,9 @@ fn remove_existing_subsets_of_zone(
     existing_zones.retain(|existing_zone| !existing_zone.subset_eq(new_zone));
 }
 /// Makes the path from the last subpath
-fn make_path(sub_path: Rc<SubPath>) -> Path {
+fn make_path(mut sub_path: Rc<SubPath>) -> Path {
     let mut path: Vec<Transition> = Vec::new();
 
-    let mut sub_path = sub_path;
     while sub_path.previous_sub_path.is_some() {
         path.push(sub_path.transition.clone().unwrap());
         sub_path = Rc::clone(sub_path.previous_sub_path.as_ref().unwrap());

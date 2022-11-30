@@ -36,65 +36,6 @@ impl LocationID {
         }
     }
 
-    /// This function is used when you want to compare a [`LocationID`] containing a partial location [`LocationID::AnyLocation`] with another [`LocationID`].
-    /// [`LocationID::AnyLocation`] should always be true when compared to [`LocationID::Simple`]
-    /// ```
-    /// use reveaal::TransitionSystems::LocationID;
-    /// // Make two locations where `a` has LocationID::AnyLocation
-    /// let a = LocationID::Quotient(Box::new(LocationID::Simple { location_id: "L5".to_string(),  component_id: None } ),
-    ///                              Box::new(LocationID::AnyLocation()));
-    ///
-    /// let b = LocationID::Quotient(Box::new(LocationID::Simple { location_id: "L5".to_string(),  component_id: None } ),
-    ///                              Box::new(LocationID::Simple { location_id: "L1".to_string(),  component_id: None } ));
-    ///
-    /// assert!(a.compare_partial_locations(&b));
-    /// ```
-    pub fn compare_partial_locations(&self, other: &Self) -> bool {
-        match (self, other) {
-            (
-                LocationID::Composition(self_left, self_right),
-                LocationID::Composition(other_left, other_right),
-            )
-            | (
-                LocationID::Conjunction(self_left, self_right),
-                LocationID::Conjunction(other_left, other_right),
-            )
-            | (
-                LocationID::Quotient(self_left, self_right),
-                LocationID::Quotient(other_left, other_right),
-            ) => {
-                self_left.compare_partial_locations(other_left)
-                    && self_right.compare_partial_locations(other_right)
-            }
-            (
-                LocationID::AnyLocation(),
-                LocationID::Simple {
-                    location_id: _,
-                    component_id: _,
-                },
-            )
-            | (
-                LocationID::Simple {
-                    location_id: _,
-                    component_id: _,
-                },
-                LocationID::AnyLocation(),
-            ) => true,
-            (LocationID::AnyLocation(), LocationID::AnyLocation()) => true,
-            (
-                LocationID::Simple {
-                    location_id: location_id_1,
-                    component_id: component_id_1,
-                },
-                LocationID::Simple {
-                    location_id: location_id_2,
-                    component_id: component_id_2,
-                },
-            ) => location_id_1 == location_id_2 && component_id_1 == component_id_2,
-            (_, _) => false,
-        }
-    }
-
     /// It check whether the [`LocationID`] is a partial location by search through [`LocationID`] structure and see if there is any [`LocationID::AnyLocation`]
     pub fn is_partial_location(&self) -> bool {
         match self {
@@ -103,10 +44,7 @@ impl LocationID {
             | LocationID::Quotient(left, right) => {
                 left.is_partial_location() || right.is_partial_location()
             }
-            LocationID::Simple {
-                location_id: _,
-                component_id: _,
-            } => false,
+            LocationID::Simple { .. } => false,
             LocationID::AnyLocation() => true,
         }
     }

@@ -11,7 +11,6 @@ use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 
 use crate::ModelObjects::representations::BoolExpression;
-use crate::TransitionSystems::transition_system::ClockReductionInstruction;
 use crate::TransitionSystems::{CompositionType, TransitionSystem};
 use crate::TransitionSystems::{LocationTuple, TransitionID};
 use edbm::zones::OwnedFederation;
@@ -270,23 +269,6 @@ impl Component {
         self.create_edge_io_split();
     }
 
-    /// Function for reducing the clocks found on the component.
-    /// Unused clocks and "duplicate" clocks (clocks that are never reset)
-    /// and then remove them.
-    pub fn reduce_clocks(&mut self, redundant_clocks: Vec<&ClockReductionInstruction>) {
-        for clock in redundant_clocks {
-            match clock {
-                ClockReductionInstruction::RemoveClock { clock_index } => {
-                    self.remove_clock(*clock_index)
-                }
-                ClockReductionInstruction::ReplaceClocks {
-                    clock_index,
-                    clock_indices,
-                } => self.replace_clock(*clock_index, clock_indices),
-            };
-        }
-    }
-
     /// Removes unused clock
     /// # Arguments
     /// `index`: The index to be removed
@@ -320,7 +302,10 @@ impl Component {
                     e.update.as_mut().unwrap().remove(i);
                 }
             });
-        info!("Removed Clock '{}' has been removed", name); // Should be changed in the future to be the information logger
+        info!(
+            "Removed Clock '{name}' has been removed from component {}",
+            self.name
+        ); // Should be changed in the future to be the information logger
     }
 
     /// Replaces duplicate clock with a new
@@ -332,21 +317,15 @@ impl Component {
         global_index: ClockIndex,
         indices: &HashSet<ClockIndex>,
     ) {
-        let global = self
+        for (name, index) in self
             .declarations
-            .get_clock_name_by_index(global_index)
-            .expect("Couldn't find clock with index")
-            .to_owned();
-        for i in indices {
-            let name = self
-                .declarations
-                .get_clock_name_by_index(*i)
-                .expect("Couldn't find clock with index")
-                .to_owned();
-
-            *(self.declarations.clocks.get_mut(&name).unwrap()) = global_index;
-
-            info!("Replaced Clock {name} with {global}"); // Should be changed in the future to be the information logger
+            .clocks
+            .iter_mut()
+            .filter(|(_, c)| indices.contains(c))
+        {
+            *index = global_index;
+            // TODO: Maybe log the global clock name instead of index
+            info!("Replaced Clock {name} with {global_index}"); // Should be changed in the future to be the information logger
         }
     }
 
@@ -446,6 +425,7 @@ pub enum LocationType {
     Initial,
     Universal,
     Inconsistent,
+    Any,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
