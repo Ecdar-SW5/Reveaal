@@ -56,13 +56,12 @@ impl From<&TransitionDecisionPoint> for DecisionPoint {
 }
 
 #[cfg(test)]
-pub(crate) mod test {
+mod test {
     use crate::tests::Simulation::test_data::initial_transition_decision_point_EcdarUniversity_Machine;
 
     use super::DecisionPoint;
 
     #[test]
-    #[ignore]
     fn DecisionPoint_from__initial_EcdarUniversity_Machine__returns_correct_DecisionPoint() {
         // Arrange
         let transition_decision_point = initial_transition_decision_point_EcdarUniversity_Machine();
@@ -73,7 +72,7 @@ pub(crate) mod test {
 
         // Assert
         assert_eq!(actual.possible_decisions.len(), 2);
-        assert!(actual_edge_ids.contains(&"E5".to_string()));
-        assert!(actual_edge_ids.contains(&"E3".to_string()));
+        assert!(actual_edge_ids.contains(&"E27".to_string()));
+        assert!(actual_edge_ids.contains(&"E29".to_string()));
     }
 }
