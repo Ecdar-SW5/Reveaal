@@ -17,8 +17,8 @@ use crate::{
 };
 
 impl ConcreteEcdarBackend {
-    /// Handles a tame simulation step request:
-    /// Given a decision and transition system in the `request`, walk along the decided edge and respond with the resulting decision points.
+    /// Handles a take simulation step request:
+    /// Given a `decision` and transition system in the `request`, walk along the decided edge and respond with the resulting decision points.
     pub fn handle_take_simulation_step(
         request: SimulationStepRequest,
         _cache: ModelCache, // TODO should be used...
@@ -32,14 +32,13 @@ impl ConcreteEcdarBackend {
         let system = simulation_info_to_transition_system(&simulation_info);
 
         let chosen_decision = request_message.chosen_decision.unwrap();
-        let chosen_decision: Decision =
-            proto_decision_to_decision(chosen_decision, &system, components);
+        let chosen_decision = proto_decision_to_decision(chosen_decision, &system, components);
         let chosen_decisions = TransitionDecision::from(&chosen_decision, &system);
 
         let decision_points: Vec<_> = chosen_decisions
             .into_iter()
-            .filter_map(|d| d.resolve(&system))
-            .map(|d| transition_decision_point_to_proto_decision_point(&d, &system))
+            .filter_map(|decision| decision.resolve(&system))
+            .map(|decision| transition_decision_point_to_proto_decision_point(&decision, &system))
             .collect();
 
         let simulation_step_response = SimulationStepResponse {
