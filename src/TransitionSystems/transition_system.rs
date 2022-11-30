@@ -93,6 +93,7 @@ pub trait TransitionSystem: DynClone {
 
     fn get_composition_type(&self) -> CompositionType;
 
+    /// Returns a [`Vec`] of all component names in a given [`TransitionSystem`].
     fn component_names(&self) -> Vec<&str> {
         let children = self.get_children();
         let left_child = children.0;
@@ -104,13 +105,15 @@ pub trait TransitionSystem: DynClone {
             .collect()
     }
 
+    /// Maps a clock- and component name to a clock index for a given [`TransitionSystem`].
     fn clock_name_and_component_to_index(&self, name: &str, component: &str) -> Option<usize> {
-        let index_to_clock_name_and_component = self.index_to_clock_name_and_component_map();
+        let index_to_clock_name_and_component = self.clock_name_and_component_to_index_map();
         index_to_clock_name_and_component
             .get(&(name.to_string(), component.to_string()))
             .copied()
     }
 
+    /// Maps a clock index to a clock- and component name for a given [`TransitionSystem`].
     fn index_to_clock_name_and_component(&self, index: &usize) -> Option<(String, String)> {
         fn invert<T1, T2>(hash_map: HashMap<T1, T2>) -> HashMap<T2, T1>
         where
@@ -119,14 +122,15 @@ pub trait TransitionSystem: DynClone {
             hash_map.into_iter().map(|x| (x.1, x.0)).collect()
         }
 
-        let index_to_clock_name_and_component = self.index_to_clock_name_and_component_map();
+        let index_to_clock_name_and_component = self.clock_name_and_component_to_index_map();
         let index_to_clock_name_and_component = invert(index_to_clock_name_and_component);
         index_to_clock_name_and_component
             .get(index)
             .map(|x| x.to_owned())
     }
 
-    fn index_to_clock_name_and_component_map(&self) -> HashMap<(String, String), usize> {
+    /// Returns a [`HashMap`] from clock- and component names to clock indices.
+    fn clock_name_and_component_to_index_map(&self) -> HashMap<(String, String), usize> {
         let binding = self.component_names();
         let component_names = binding.into_iter();
         let binding = self.get_decls();
