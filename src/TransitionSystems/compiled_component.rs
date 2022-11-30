@@ -1,7 +1,10 @@
+use crate::extract_system_rep::SystemRecipeFailure;
 use crate::ModelObjects::component::{
     Component, DeclarationProvider, Declarations, State, Transition,
 };
-use crate::System::local_consistency::{self, ConsistencyResult, DeterminismResult};
+use crate::System::local_consistency::{
+    self, ConsistencyResult, DeterminismFailure, DeterminismResult,
+};
 use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
@@ -9,6 +12,7 @@ use log::warn;
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
 
+use super::common::CollectionOperation;
 use super::transition_system::PrecheckResult;
 use super::{CompositionType, LocationID};
 
@@ -38,9 +42,13 @@ impl CompiledComponent {
         inputs: HashSet<String>,
         outputs: HashSet<String>,
         dim: ClockIndex,
-    ) -> Result<Box<Self>, String> {
-        if !inputs.is_disjoint(&outputs) {
-            return Err("Inputs and outputs must be disjoint in component".to_string());
+    ) -> Result<Box<Self>, SystemRecipeFailure> {
+        if let Err(actions) = inputs.is_disjoint_action(&outputs) {
+            return Err(SystemRecipeFailure::new_from_component(
+                "Input is not disjoint from output".to_string(),
+                component,
+                actions,
+            ));
         }
 
         let locations: HashMap<LocationID, LocationTuple> = component
@@ -90,7 +98,10 @@ impl CompiledComponent {
         }))
     }
 
-    pub fn compile(component: Component, dim: ClockIndex) -> Result<Box<Self>, String> {
+    pub fn compile(
+        component: Component,
+        dim: ClockIndex,
+    ) -> Result<Box<Self>, SystemRecipeFailure> {
         let inputs: HashSet<_> = component
             .get_input_actions()
             .iter()
@@ -178,7 +189,11 @@ impl TransitionSystem for CompiledComponent {
     }
 
     fn precheck_sys_rep(&self) -> PrecheckResult {
-        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
+        if let DeterminismResult::Failure(DeterminismFailure::NotDeterministicFrom(
+            location,
+            action,
+        )) = self.is_deterministic()
+        {
             warn!("Not deterministic");
             return PrecheckResult::NotDeterministic(location, action);
         }
@@ -200,5 +215,13 @@ impl TransitionSystem for CompiledComponent {
 
     fn get_dim(&self) -> ClockIndex {
         self.dim
+    }
+
+    fn get_combined_decls(&self) -> Declarations {
+        self.comp_info.declarations.clone()
+    }
+
+    fn get_location(&self, id: &LocationID) -> Option<LocationTuple> {
+        self.locations.get(id).cloned()
     }
 }

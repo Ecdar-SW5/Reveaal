@@ -9,7 +9,7 @@ use log::warn;
 
 use crate::{
     ModelObjects::component::{Declarations, State, Transition},
-    System::local_consistency::{ConsistencyResult, DeterminismResult},
+    System::local_consistency::{ConsistencyResult, DeterminismFailure, DeterminismResult},
 };
 
 use super::{
@@ -84,7 +84,11 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
     }
 
     fn precheck_sys_rep(&self) -> PrecheckResult {
-        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
+        if let DeterminismResult::Failure(DeterminismFailure::NotDeterministicFrom(
+            location,
+            action,
+        )) = self.is_deterministic()
+        {
             warn!("Not deterministic");
             return PrecheckResult::NotDeterministic(location, action);
         }
@@ -152,5 +156,23 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
 
     fn get_composition_type(&self) -> CompositionType {
         self.get_composition_type()
+    }
+}
+
+pub trait CollectionOperation {
+    fn is_disjoint_action(&self, other: &HashSet<String>) -> Result<bool, Vec<String>>;
+}
+impl CollectionOperation for HashSet<String> {
+    fn is_disjoint_action(&self, other: &HashSet<String>) -> Result<bool, Vec<String>> {
+        let mut reason: Vec<String> = vec![];
+        for action in other {
+            if self.contains(action) {
+                reason.push(String::from(action));
+            }
+        }
+        if !reason.is_empty() {
+            return Err(reason);
+        }
+        Ok(true)
     }
 }

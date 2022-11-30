@@ -16,7 +16,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let yaml = load_yaml!("cli.yml");
     let matches = App::from(yaml).get_matches();
     setup_logger().unwrap();
-
     if let Some(ip_endpoint) = matches.value_of("endpoint") {
         let thread_count: usize = match matches.value_of("thread_number") {
             Some(num_of_threads) => num_of_threads

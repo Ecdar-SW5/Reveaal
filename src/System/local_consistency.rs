@@ -3,6 +3,7 @@ use std::fmt;
 use edbm::zones::OwnedFederation;
 use log::warn;
 
+use crate::extract_system_rep::SystemRecipeFailure;
 use crate::ModelObjects::component::State;
 use crate::TransitionSystems::{LocationID, TransitionSystem};
 
@@ -29,6 +30,7 @@ pub enum ConsistencyFailure {
     EmptyInitialState,
     NotConsistentFrom(LocationID, String),
     NotDeterministicFrom(LocationID, String),
+    NotDisjoint(SystemRecipeFailure),
 }
 
 impl fmt::Display for ConsistencyFailure {
@@ -50,6 +52,9 @@ impl fmt::Display for ConsistencyFailure {
                     location, action
                 )
             }
+            ConsistencyFailure::NotDisjoint(srf) => {
+                write!(f, "Not Disjoint: {} {:?}", srf.reason, srf.actions)
+            }
         }
     }
 }
@@ -58,19 +63,31 @@ impl fmt::Display for ConsistencyFailure {
 /// Failure includes the [LocationID].
 pub enum DeterminismResult {
     Success,
-    Failure(LocationID, String),
+    //Failure should contain a DeterminsmFailure which should contain either a location + a string, or a SystemRecipeFailure
+    Failure(DeterminismFailure),
+}
+
+pub enum DeterminismFailure {
+    NotDeterministicFrom(LocationID, String),
+    NotDisjoint(SystemRecipeFailure),
 }
 
 impl fmt::Display for DeterminismResult {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             DeterminismResult::Success => write!(f, "Success"),
-            DeterminismResult::Failure(location, action) => {
+            DeterminismResult::Failure(DeterminismFailure::NotDeterministicFrom(
+                location,
+                action,
+            )) => {
                 write!(
                     f,
                     "Not Deterministic From {} failing action {}",
                     location, action
                 )
+            }
+            DeterminismResult::Failure(DeterminismFailure::NotDisjoint(srf)) => {
+                write!(f, "Not Disjoint: {} {:?}", srf.reason, srf.actions)
             }
         }
     }
@@ -133,15 +150,22 @@ fn is_deterministic_helper(
                         state.get_location().id,
                         action
                     );
-                    return DeterminismResult::Failure(state.get_location().id.clone(), action);
+                    return DeterminismResult::Failure(DeterminismFailure::NotDeterministicFrom(
+                        state.get_location().id.clone(),
+                        action,
+                    ));
                 }
                 location_fed += allowed_fed;
                 new_state.extrapolate_max_bounds(system);
 
-                if let DeterminismResult::Failure(location, action) =
-                    is_deterministic_helper(new_state, passed_list, system)
+                if let DeterminismResult::Failure(DeterminismFailure::NotDeterministicFrom(
+                    location,
+                    action,
+                )) = is_deterministic_helper(new_state, passed_list, system)
                 {
-                    return DeterminismResult::Failure(location, action);
+                    return DeterminismResult::Failure(DeterminismFailure::NotDeterministicFrom(
+                        location, action,
+                    ));
                 }
             }
         }

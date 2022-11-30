@@ -2,10 +2,12 @@ use edbm::util::constraints::ClockIndex;
 use edbm::zones::OwnedFederation;
 use log::{debug, warn};
 
+use crate::extract_system_rep::SystemRecipeFailure;
 use crate::EdgeEval::updater::CompiledUpdate;
 use crate::ModelObjects::component::Declarations;
 use crate::ModelObjects::component::{Location, LocationType, State, Transition};
-use crate::System::local_consistency::{ConsistencyResult, DeterminismResult};
+use crate::System::local_consistency::{ConsistencyResult, DeterminismFailure, DeterminismResult};
+use crate::TransitionSystems::common::CollectionOperation;
 use crate::TransitionSystems::transition_system::PrecheckResult;
 use edbm::util::bounds::Bounds;
 
@@ -15,6 +17,7 @@ use crate::TransitionSystems::{
     LocationTuple, TransitionID, TransitionSystem, TransitionSystemPtr,
 };
 use std::collections::hash_set::HashSet;
+use std::vec;
 
 use super::CompositionType;
 
@@ -42,25 +45,39 @@ impl Quotient {
         S: TransitionSystemPtr,
         new_clock_index: ClockIndex,
         dim: ClockIndex,
-    ) -> Result<TransitionSystemPtr, String> {
-        if !S.get_output_actions().is_disjoint(&T.get_input_actions()) {
-            return Err(format!(
-                "s_out and t_in not disjoint in quotient! s_out: {:?} t_in {:?}",
-                S.get_output_actions(),
-                T.get_input_actions()
+    ) -> Result<TransitionSystemPtr, SystemRecipeFailure> {
+        if let Err(actions) = S
+            .get_input_actions()
+            .is_disjoint_action(&T.get_output_actions())
+        {
+            return Err(SystemRecipeFailure::new(
+                "s_out and t_in not disjoint in quotient!".to_string(),
+                T,
+                S,
+                actions,
             ));
         }
 
         match T.precheck_sys_rep() {
             PrecheckResult::Success => {}
             _ => {
-                return Err("T (left) must be least consistent for quotient".to_string());
+                return Err(SystemRecipeFailure::new(
+                    "T (left) must be least consistent for quotient".to_string(),
+                    T,
+                    S,
+                    vec![],
+                ));
             }
         }
         match S.precheck_sys_rep() {
             PrecheckResult::Success => {}
             _ => {
-                return Err("T (left) must be least consistent for quotient".to_string());
+                return Err(SystemRecipeFailure::new(
+                    "S (right) must be least consistent for quotient".to_string(),
+                    T,
+                    S,
+                    vec![],
+                ));
             }
         }
 
@@ -399,7 +416,11 @@ impl TransitionSystem for Quotient {
     }
 
     fn precheck_sys_rep(&self) -> PrecheckResult {
-        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
+        if let DeterminismResult::Failure(DeterminismFailure::NotDeterministicFrom(
+            location,
+            action,
+        )) = self.is_deterministic()
+        {
             warn!("Not deterministic");
             return PrecheckResult::NotDeterministic(location, action);
         }

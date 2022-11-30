@@ -20,6 +20,63 @@ use simple_error::bail;
 
 use std::error::Error;
 
+pub struct SystemRecipeFailure {
+    pub reason: String,
+    pub left_name: Option<String>,
+    pub right_name: Option<String>,
+    pub actions: Vec<String>,
+}
+impl std::fmt::Display for SystemRecipeFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "SystemRecipeFailure: {}", self.reason)
+    }
+}
+
+impl std::fmt::Debug for SystemRecipeFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "SystemRecipeFailure: {}", self.reason)
+    }
+}
+impl std::error::Error for SystemRecipeFailure {
+    fn description(&self) -> &str {
+        &self.reason
+    }
+}
+
+impl SystemRecipeFailure {
+    pub fn new_from_component(reason: String, component: Component, actions: Vec<String>) -> Self {
+        SystemRecipeFailure {
+            reason,
+            left_name: Some(component.get_name().to_string()),
+            right_name: None,
+            actions,
+        }
+    }
+    pub fn new(
+        reason: String,
+        left: TransitionSystemPtr,
+        right: TransitionSystemPtr,
+        actions: Vec<String>,
+    ) -> Self {
+        let mut left_name = None;
+        let mut right_name = None;
+
+        if let Some(location) = left.get_initial_location() {
+            left_name = location.id.get_component_id()
+        }
+        if let Some(location) = right.get_initial_location() {
+            right_name = location.id.get_component_id()
+        }
+
+        SystemRecipeFailure {
+            reason,
+            left_name,
+            right_name,
+            actions,
+        }
+    }
+}
+
 /// This function fetches the appropriate components based on the structure of the query and makes the enum structure match the query
 /// this function also handles setting up the correct indices for clocks based on the amount of components in each system representation
 pub fn create_executable_query<'a>(
@@ -46,7 +103,7 @@ pub fn create_executable_query<'a>(
 
                 let start_state: State = if let Some(state) = start.as_ref() {
                     validate_reachability_input(&machine, state)?;
-                    let state = get_state(state, &machine, &transition_system)?;
+                    let state = get_state(state, &machine, &transition_system).map_err(|err| format!("Invalid Start state: {}",err))?;
                     if state.get_location().id.is_partial_location() {
                         return Err("Start state is a partial state, which it must not be".into())
                     }
@@ -59,7 +116,7 @@ pub fn create_executable_query<'a>(
                     }
                 };
 
-                let end_state: State = get_state(end, &machine, &transition_system)?;
+                let end_state: State = get_state(end, &machine, &transition_system).map_err(|err| format!("Invalid End state: {}",err))?;
 
                 Ok(Box::new(ReachabilityExecutor {
                     transition_system,
@@ -129,7 +186,7 @@ pub enum SystemRecipe {
 }
 
 impl SystemRecipe {
-    pub fn compile(self, dim: ClockIndex) -> Result<TransitionSystemPtr, String> {
+    pub fn compile(self, dim: ClockIndex) -> Result<TransitionSystemPtr, SystemRecipeFailure> {
         match self {
             SystemRecipe::Composition(left, right) => {
                 Composition::new(left.compile(dim)?, right.compile(dim)?, dim + 1)

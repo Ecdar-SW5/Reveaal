@@ -6,7 +6,7 @@ use crate::{
 };
 use dyn_clone::{clone_trait_object, DynClone};
 use edbm::util::{bounds::Bounds, constraints::ClockIndex};
-use std::collections::hash_set::HashSet;
+use std::collections::{hash_set::HashSet, HashMap};
 
 pub type TransitionSystemPtr = Box<dyn TransitionSystem>;
 
@@ -19,7 +19,6 @@ pub enum PrecheckResult {
 
 pub trait TransitionSystem: DynClone {
     fn get_local_max_bounds(&self, loc: &LocationTuple) -> Bounds;
-
     fn get_dim(&self) -> ClockIndex;
 
     fn next_transitions_if_available(
@@ -68,7 +67,26 @@ pub trait TransitionSystem: DynClone {
 
     fn get_all_locations(&self) -> Vec<LocationTuple>;
 
+    fn get_location(&self, id: &LocationID) -> Option<LocationTuple> {
+        self.get_all_locations()
+            .iter()
+            .find(|loc| loc.id == *id)
+            .cloned()
+    }
+
     fn get_decls(&self) -> Vec<&Declarations>;
+
+    fn get_combined_decls(&self) -> Declarations {
+        let mut clocks = HashMap::new();
+        let mut ints = HashMap::new();
+
+        for decl in self.get_decls() {
+            clocks.extend(decl.clocks.clone());
+            ints.extend(decl.ints.clone())
+        }
+
+        Declarations { ints, clocks }
+    }
 
     fn precheck_sys_rep(&self) -> PrecheckResult;
 
