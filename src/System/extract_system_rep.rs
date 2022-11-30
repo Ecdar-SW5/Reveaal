@@ -39,7 +39,15 @@ pub fn create_executable_query<'a>(
                 let mut left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
                 let mut right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
 
+                for x in right.get_components() {
+                    println!("{:?}", x.declarations.clocks.values());
+                }
+                println!("Dim: {}", dim);
                 clock_reduction(&mut left, &mut right, component_loader.get_settings(), &mut dim)?;
+                for x in right.get_components() {
+                    println!("{:?}", x.declarations.clocks.values());
+                }
+                println!("Dim: {}", dim);
 
                 Ok(Box::new(RefinementExecutor {
                 sys1: left.compile(dim)?,
@@ -210,7 +218,7 @@ impl SystemRecipe {
         match self {
             SystemRecipe::Composition(l, r)
             | SystemRecipe::Conjunction(l, r)
-            | SystemRecipe::Quotient(l, r, _) => max(l.height(), r.height()),
+            | SystemRecipe::Quotient(l, r, _) => 1 + max(l.height(), r.height()),
             SystemRecipe::Component(_) => 1,
         }
     }
