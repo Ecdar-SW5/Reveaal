@@ -186,4 +186,12 @@ impl TransitionSystem for CompiledComponent {
     fn get_composition_type(&self) -> CompositionType {
         panic!("Components do not have a composition type")
     }
+
+    fn get_combined_decls(&self) -> Declarations {
+        self.comp_info.declarations.clone()
+    }
+
+    fn get_location(&self, id: &LocationID) -> Option<LocationTuple> {
+        self.locations.get(id).cloned()
+    }
 }
