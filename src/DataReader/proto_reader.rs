@@ -15,6 +15,11 @@ use crate::TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr};
 use super::component_loader::{parse_components_if_some, ComponentContainer};
 
 /// Borrows a [`SimulationInfo`] and returns the corresponding [`TransitionsSystemPtr`].
+///
+/// # Panics
+/// If:
+/// - `simulation_info.components_info` is `None`.
+/// - building the [`ComponentContainer`] fails.
 pub fn simulation_info_to_transition_system(
     simulation_info: &SimulationInfo,
 ) -> TransitionSystemPtr {
@@ -37,45 +42,41 @@ pub fn components_info_to_components(components_info: &ComponentsInfo) -> Vec<Co
 }
 
 /// Consumes a [`ProtoDecision`] and the borrows the [`TransitionsSystemPtr`] it belongs to and returns the corresponding [`Decision`].
+///
+/// # Panics
+/// If:
+/// - `proto_decision.source` is `None`.
+/// - `proto_decision.edge` is `None`.
 pub fn proto_decision_to_decision(
     proto_decision: ProtoDecision,
     system: &TransitionSystemPtr,
     components: Vec<Component>,
 ) -> Decision {
-    let proto_state: ProtoState = match proto_decision.source {
-        None => panic!("Not found"),
-        Some(source) => source,
-    };
-
-    let proto_edge: ProtoEdge = match proto_decision.edge {
-        None => panic!("Edge not found!"),
-        Some(edge) => edge,
-    };
+    let proto_state: ProtoState = proto_decision.source.unwrap();
     let state = proto_state_to_state(proto_state, system);
 
+    let proto_edge: ProtoEdge = proto_decision.edge.unwrap();
     let decided = proto_edge_to_edge(proto_edge, components);
 
     Decision::new(state, decided)
 }
 
 /// Consumes a [`ProtoState`] and the borrows the [`TransitionsSystemPtr`] it belongs to and returns the corresponding [`State`].
+///
+/// # Panics
+/// If:
+/// - `state.federation` is `None`.
+/// - `state.location_tuple` is `None`.
 pub fn proto_state_to_state(state: ProtoState, system: &TransitionSystemPtr) -> State {
-    // Convert ProtoState to State
-    let proto_location_tuple: ProtoLocationTuple = match state.location_tuple {
-        None => panic!("No loc tuple"),
-        Some(loc_tuple) => loc_tuple,
-    };
-    let proto_federation: ProtoFederation = match state.federation {
-        None => panic!("No federation found"),
-        Some(federation) => federation,
-    };
-    let zone: OwnedFederation = proto_federation_to_owned_federation(proto_federation, system);
-    let location_tuple = match proto_location_tuple_to_location_tuple(&proto_location_tuple, system)
-    {
-        None => panic!("No location tuple found"),
-        Some(loc_tuple) => loc_tuple,
-    };
-    State::create(location_tuple, zone)
+    let proto_federation: ProtoFederation = state.federation.unwrap();
+    let federation: OwnedFederation =
+        proto_federation_to_owned_federation(proto_federation, system);
+
+    let proto_location_tuple: ProtoLocationTuple = state.location_tuple.unwrap();
+    let location_tuple =
+        proto_location_tuple_to_location_tuple(&proto_location_tuple, system).unwrap();
+
+    State::create(location_tuple, federation)
 }
 
 fn proto_location_tuple_to_location_tuple(
@@ -132,16 +133,11 @@ fn proto_constraint_to_constraint(
                 .unwrap()
         }
     }
-    let x_clock = match proto_constraint.x {
-        None => panic!("No clock name"),
-        Some(clock) => clock,
-    };
-    let y_clock = match proto_constraint.y {
-        None => panic!("No clock name"),
-        Some(clock) => clock,
-    };
 
+    let x_clock = proto_constraint.x.unwrap();
     let i = determine_index(x_clock, system);
+
+    let y_clock = proto_constraint.y.unwrap();
     let j = determine_index(y_clock, system);
 
     let inequality = match proto_constraint.strict {
@@ -157,10 +153,7 @@ fn proto_federation_to_owned_federation(
     proto_federation: ProtoFederation,
     system: &TransitionSystemPtr,
 ) -> OwnedFederation {
-    let proto_disjunction: ProtoDisjunction = match proto_federation.disjunction {
-        None => panic!("No Disjuntion found"),
-        Some(disjunction) => disjunction,
-    };
+    let proto_disjunction: ProtoDisjunction = proto_federation.disjunction.unwrap();
 
     let proto_conjunctions: Vec<ProtoConjunction> = proto_disjunction.conjunctions;
     let proto_constraints: Vec<Vec<ProtoConstraint>> = proto_conjunctions
