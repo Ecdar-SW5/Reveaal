@@ -1,5 +1,3 @@
-use std::convert::identity;
-
 use tonic::Status;
 
 use crate::{
@@ -41,7 +39,7 @@ impl ConcreteEcdarBackend {
         let decision_points: Vec<_> = chosen_decisions
             .into_iter()
             .map(|d| d.resolve(&system))
-            .filter_map(identity)
+            .flatten()
             .map(|d| transition_decision_point_to_proto_decision_point(&d, &system))
             .collect();
 

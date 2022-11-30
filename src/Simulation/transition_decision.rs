@@ -47,7 +47,7 @@ impl TransitionDecision {
     pub fn resolve(&self, system: &TransitionSystemPtr) -> Option<TransitionDecisionPoint> {
         let mut source = self.source.to_owned();
         match self.decided.use_transition(&mut source) {
-            true => Some(TransitionDecisionPoint::from(&system, &source)),
+            true => Some(TransitionDecisionPoint::from(system, &source)),
             false => None,
         }
     }
