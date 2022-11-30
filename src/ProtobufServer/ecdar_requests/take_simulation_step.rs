@@ -38,8 +38,7 @@ impl ConcreteEcdarBackend {
 
         let decision_points: Vec<_> = chosen_decisions
             .into_iter()
-            .map(|d| d.resolve(&system))
-            .flatten()
+            .filter_map(|d| d.resolve(&system))
             .map(|d| transition_decision_point_to_proto_decision_point(&d, &system))
             .collect();
 
