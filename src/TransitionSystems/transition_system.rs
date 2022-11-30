@@ -152,7 +152,7 @@ pub trait TransitionSystem: DynClone {
         //Constructs a node to represent this location and add it to the graph.
         let mut node: ClockAnalysisNode = ClockAnalysisNode {
             invariant_dependencies: HashSet::new(),
-            id: location.id.to_owned(),
+            id: location.id.get_unique_string(),
         };
 
         //Finds clocks used in invariants in this location.
@@ -172,8 +172,8 @@ pub trait TransitionSystem: DynClone {
             let transitions = self.next_transitions_if_available(location, action);
             for transition in transitions {
                 let mut edge = ClockAnalysisEdge {
-                    from: location.id.to_owned(),
-                    to: transition.target_locations.id.clone(),
+                    from: location.id.get_unique_string(),
+                    to: transition.target_locations.id.get_unique_string(),
                     guard_dependencies: HashSet::new(),
                     updates: transition.updates,
                     edge_type: action.to_string(),
@@ -192,7 +192,7 @@ pub trait TransitionSystem: DynClone {
 
                 //Calls itself on the transitions target location if the location is not already in
                 //represented as a node in the graph.
-                if !graph.nodes.contains_key(&transition.target_locations.id) {
+                if !graph.nodes.contains_key(&transition.target_locations.id.get_unique_string()) {
                     self.find_edges_and_nodes(&transition.target_locations, actions, graph);
                 }
             }
@@ -206,7 +206,9 @@ pub trait TransitionSystem: DynClone {
             out.extend(b.find_redundant_clocks(height.level_down()));
             out
         } else {
-            self.get_analysis_graph().find_clock_redundancies()
+            let red = self.get_analysis_graph().find_clock_redundancies();
+            println!("{:?}", red);
+            red
         }
     }
 }
@@ -261,13 +263,13 @@ impl ClockReductionInstruction {
 #[derive(Debug)]
 pub struct ClockAnalysisNode {
     pub invariant_dependencies: HashSet<ClockIndex>,
-    pub id: LocationID,
+    pub id: String,
 }
 
 #[derive(Debug)]
 pub struct ClockAnalysisEdge {
-    pub from: LocationID,
-    pub to: LocationID,
+    pub from: String,
+    pub to: String,
     pub guard_dependencies: HashSet<ClockIndex>,
     pub updates: Vec<CompiledUpdate>,
     pub edge_type: String,
@@ -275,7 +277,7 @@ pub struct ClockAnalysisEdge {
 
 #[derive(Debug)]
 pub struct ClockAnalysisGraph {
-    pub nodes: HashMap<LocationID, ClockAnalysisNode>,
+    pub nodes: HashMap<String, ClockAnalysisNode>,
     pub edges: Vec<ClockAnalysisEdge>,
     pub dim: ClockIndex,
 }
