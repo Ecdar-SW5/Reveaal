@@ -17,6 +17,7 @@ use crate::{
     TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr},
 };
 
+/// Returns the equivalent [`ProtoDecisionPoint`] for a given [`TransitionDecisionPoint`] in the given [`TransitionSystemPtr`].
 pub fn transition_decision_point_to_proto_decision_point(
     decision_point: &TransitionDecisionPoint,
     system: &TransitionSystemPtr,
