@@ -26,7 +26,7 @@ pub fn simulation_info_to_transition_system(
     let composition = simulation_info.component_composition.to_owned();
     let component_info = simulation_info.components_info.as_ref().unwrap();
 
-    let mut component_container = ComponentContainer::from(component_info).unwrap();
+    let mut component_container = ComponentContainer::from_info(component_info).unwrap();
 
     component_loader_to_transition_system(&mut component_container, &composition)
 }

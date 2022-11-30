@@ -136,15 +136,17 @@ impl ComponentContainer {
         }
     }
 
-    pub fn from(
+    /// Creates a [`ComponentContainer`] from a [`services::ComponentsInfo`].
+    pub fn from_info(
         components_info: &services::ComponentsInfo,
     ) -> Result<ComponentContainer, tonic::Status> {
         let components = components_info_to_components(components_info);
-        let component_container = Self::create_component_container(components);
+        let component_container = Self::from_components(components);
         Ok(component_container)
     }
 
-    pub fn create_component_container(components: Vec<Component>) -> ComponentContainer {
+    /// Creates a [`ComponentContainer`] from a [`Vec`] of [`Component`]s
+    pub fn from_components(components: Vec<Component>) -> ComponentContainer {
         let mut comp_hashmap = HashMap::<String, Component>::new();
         for mut component in components {
             log::trace!("Adding comp {} to container", component.get_name());
@@ -160,6 +162,7 @@ impl ComponentContainer {
         }
         ComponentContainer::new(Arc::new(comp_hashmap))
     }
+
     /// Sets the settings
     pub(crate) fn set_settings(&mut self, settings: Settings) {
         self.settings = Some(settings);
