@@ -7,7 +7,7 @@ mod test {
 
     #[test]
     fn quotient1_fails_correctly() {
-        let actual = json_run_query(PATH, "consistency: LeftQuotient1 / RightQuotient1");
+        let actual = json_run_query(PATH, "consistency: LeftQuotient1 // RightQuotient1");
         assert!(matches!(
             actual,
             QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
@@ -18,7 +18,7 @@ mod test {
     fn left_quotient_fails_correctly() {
         let actual = json_run_query(
             PATH,
-            "consistency: NotDeterministicQuotientComp / DeterministicQuotientComp",
+            "consistency: NotDeterministicQuotientComp // DeterministicQuotientComp"
         );
         assert!(matches!(
             actual,
@@ -30,7 +30,7 @@ mod test {
     fn right_quotient_fails_correctly() {
         let actual = json_run_query(
             PATH,
-            "consistency: DeterministicQuotientComp / NotDeterministicQuotientComp",
+            "consistency: DeterministicQuotientComp // NotDeterministicQuotientComp"
         );
         assert!(matches!(
             actual,
