@@ -102,6 +102,7 @@ fn search_algorithm(start_state: &State, end_state: &State, system: &dyn Transit
     let mut actions: Vec<String> = system.get_actions().into_iter().collect();
     actions.sort();
 
+    // Push start state to visited state
     visited_states.insert(
         start_clone.get_location().id.clone(),
         vec![start_clone.zone_ref().clone()],
@@ -114,6 +115,7 @@ fn search_algorithm(start_state: &State, end_state: &State, system: &dyn Transit
         transition: None,
     }));
 
+    // Take the first state from the frontier and exprore it
     while let Some(sub_path) = frontier_states.pop() {
         if reached_end_state(&sub_path.destination_state, end_state) {
             return make_path(sub_path);

@@ -48,7 +48,7 @@ pub fn create_executable_query<'a>(
                 let transition_system = machine.clone().compile(dim)?;
 
                 validate_reachability_input(&machine, end)?;
-
+                // Assign the start state to the initial state of the transition system if no start state is given by the query
                 let start_state: State = if let Some(state) = start.as_ref() {
                     validate_reachability_input(&machine, state)?;
                     let state = get_state(state, &machine, &transition_system).map_err(|err| format!("Invalid Start state: {}",err))?;
