@@ -81,7 +81,6 @@ mod tests {
         assert_eq!(format!("{:?}", actual), format!("{:?}", expected))
     }
 
-    #[ignore]
     #[test]
     fn from__Determinism_NonDeterminismCom__returns_ok() {
         // Arrange
