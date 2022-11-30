@@ -224,7 +224,6 @@ pub trait TransitionSystem: DynClone {
             out
         } else {
             let red = self.get_analysis_graph().find_clock_redundancies();
-            println!("{:?}", red);
             red
         }
     }
