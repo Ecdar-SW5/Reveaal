@@ -243,14 +243,6 @@ mod tests {
         "(Administration || Machine)";
         "(Administration || Machine)"
     )]
-    // TODO: This specific case fails. It fails because the index of the "two" clocks can't be found from the clock name and component that the clock belongs too. There are two clock with name y that both belong to Machine but they have different indexes.
-    // #[test_case(
-    //     vec![
-    //         read_json_component("samples/json/EcdarUniversity", "Machine"),
-    //         ],
-    //     "(Machine && Machine)";
-    //     "(Machine && Machine)"
-    // )]
     #[test_case(
         vec![
             read_json_component("samples/json/EcdarUniversity", "HalfAdm1"),
@@ -260,6 +252,34 @@ mod tests {
         "(HalfAdm1 && HalfAdm2)"
     )]
     fn state_to_proto_state_to_state_is_same_state(components: Vec<Component>, composition: &str) {
+        let system = components_to_transition_system(components, composition);
+        let initial = system.get_initial_state().unwrap();
+
+        // exploit the fact that:
+        // x == convert (convert x)
+        assert_eq!(
+            format!("{:?}", initial),
+            format!(
+                "{:?}",
+                proto_state_to_state(state_to_proto_state(&initial, &system), &system)
+            )
+        );
+    }
+
+    // TODO: this specific case fails because:
+    // TransitionSystem::clock_name_and_component_to_index_map can only map component and clock to one clock...
+    #[ignore = "won't fix, see comment"]
+    #[test_case(
+        vec![
+            read_json_component("samples/json/EcdarUniversity", "Machine"),
+            ],
+        "(Machine && Machine)";
+        "(Machine && Machine)"
+    )]
+    fn state_to_proto_state_to_state_is_same_state_____dup_for_ignore(
+        components: Vec<Component>,
+        composition: &str,
+    ) {
         let system = components_to_transition_system(components, composition);
         let initial = system.get_initial_state().unwrap();
 
