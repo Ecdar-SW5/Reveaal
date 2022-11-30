@@ -240,9 +240,9 @@ impl Component {
         max_bounds
     }
 
-    // Filters out specific edge using edge id
-    pub fn find_edge_from_id(&self, id: &str) -> &Edge {
-        self.get_edges().iter().find(|e| e.id.contains(id)).unwrap()
+    /// Find [`Edge`] in the component given the edges `id`.
+    pub fn find_edge_from_id(&self, id: &str) -> Option<&Edge> {
+        self.get_edges().iter().find(|e| e.id.contains(id))
     }
 
     /// Used in initial setup to split edges based on their sync type

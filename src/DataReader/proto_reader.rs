@@ -212,7 +212,7 @@ mod tests {
         let proto_decision = create_EcdarUniversity_Machine_Decision();
         let system = create_EcdarUniversity_Machine_system();
 
-        let expected_edge = component.find_edge_from_id("E29");
+        let expected_edge = component.find_edge_from_id("E29").unwrap();
 
         let expected_source = match system.get_initial_state() {
             None => panic!("No inital state found"),
@@ -238,7 +238,7 @@ mod tests {
         let proto_decision = create_EcdarUniversity_Machine_with_nonempty_Federation_Decision();
         let system = create_EcdarUniversity_Machine_system();
 
-        let expected_edge = component.find_edge_from_id("E29");
+        let expected_edge = component.find_edge_from_id("E29").unwrap();
 
         let action = "tea";
         let mut expected_source = system.get_initial_state().unwrap();
@@ -271,7 +271,7 @@ mod tests {
         let proto_decision =
             create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision();
 
-        let expected_edge = machine.find_edge_from_id("E29");
+        let expected_edge = machine.find_edge_from_id("E29").unwrap();
 
         let expected_source = system.get_initial_state().unwrap();
 
