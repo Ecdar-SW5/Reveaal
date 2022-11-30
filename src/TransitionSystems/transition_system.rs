@@ -148,6 +148,7 @@ pub trait TransitionSystem: DynClone {
     }
 }
 
+/// Returns a [`TransitionSystemPtr`] equivalent to a `composition` of some `components`.
 pub fn components_to_transition_system(
     components: Vec<Component>,
     composition: &str,
@@ -156,6 +157,7 @@ pub fn components_to_transition_system(
     component_loader_to_transition_system(&mut component_container, composition)
 }
 
+/// Returns a [`TransitionSystemPtr`] equivalent to a `composition` of some components in a [`ComponentLoader`].
 pub fn component_loader_to_transition_system(
     loader: &mut dyn ComponentLoader,
     composition: &str,
