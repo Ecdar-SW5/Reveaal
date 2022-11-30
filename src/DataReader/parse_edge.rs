@@ -23,7 +23,7 @@ pub enum EdgeAttribute {
     Guard(BoolExpression),
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, std::cmp::PartialEq, std::cmp::Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Update {
     pub variable: String,
     #[serde(serialize_with = "encode_boolexpr")]

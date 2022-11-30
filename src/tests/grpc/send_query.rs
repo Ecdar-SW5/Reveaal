@@ -2,12 +2,12 @@
 mod refinements {
     use crate::ProtobufServer::services::component::Rep;
     use crate::ProtobufServer::services::ecdar_backend_server::EcdarBackend;
-    use crate::ProtobufServer::services::query_response::query_ok;
-    use crate::ProtobufServer::services::query_response::Response;
+    use crate::ProtobufServer::services::query_response;
     use crate::ProtobufServer::services::Component;
     use crate::ProtobufServer::services::ComponentsInfo;
     use crate::ProtobufServer::services::QueryRequest;
     use crate::ProtobufServer::ConcreteEcdarBackend;
+    use crate::TEST_SETTINGS;
     use tonic::Request;
 
     //static CONJUN: &str = "samples/xml/conjun.xml";
@@ -22,13 +22,10 @@ mod refinements {
         assert!(query_response.is_ok());
 
         let query_result = query_response.unwrap().into_inner();
-
-        if let Response::QueryOk(query_ok) = query_result.response.unwrap() {
-            let result = query_ok.result.unwrap();
-            match result {
-                query_ok::Result::Refinement(refine) => assert!(refine.success),
-                _ => panic!(),
-            }
+        let result = query_result.result.unwrap();
+        match result {
+            query_response::Result::Refinement(refine) => assert!(refine.success),
+            _ => panic!(),
         }
     }
 
@@ -41,13 +38,10 @@ mod refinements {
         assert!(query_response.is_ok());
 
         let query_result = query_response.unwrap().into_inner();
-
-        if let Response::QueryOk(query_ok) = query_result.response.unwrap() {
-            let result = query_ok.result.unwrap();
-            match result {
-                query_ok::Result::Consistency(consistent) => assert!(consistent.success),
-                _ => panic!(),
-            }
+        let result = query_result.result.unwrap();
+        match result {
+            query_response::Result::Consistency(consistent) => assert!(consistent.success),
+            _ => panic!(),
         }
     }
 
@@ -60,13 +54,10 @@ mod refinements {
         assert!(query_response.is_ok());
 
         let query_result = query_response.unwrap().into_inner();
-
-        if let Response::QueryOk(query_ok) = query_result.response.unwrap() {
-            let result = query_ok.result.unwrap();
-            match result {
-                query_ok::Result::Determinism(determinism) => assert!(determinism.success),
-                _ => panic!(),
-            }
+        let result = query_result.result.unwrap();
+        match result {
+            query_response::Result::Determinism(determinism) => assert!(determinism.success),
+            _ => panic!(),
         }
     }
 
@@ -85,7 +76,7 @@ mod refinements {
                 components_hash: 0,
             }),
             ignored_input_outputs: None,
-            settings: None,
+            settings: Some(TEST_SETTINGS),
         })
     }
 }

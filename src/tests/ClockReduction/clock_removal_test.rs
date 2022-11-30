@@ -1,28 +1,62 @@
 #[cfg(test)]
 pub mod clock_removal_tests {
-    use crate::tests::ClockReduction::helper::test::assert_edges_in_component;
     use crate::DataReader::json_reader::read_json_component;
+    use crate::TransitionSystems::{CompiledComponent, TransitionSystem};
     use std::collections::HashSet;
 
-    // Tests that the clocks that are never used in any guards are removed.
     #[test]
-    fn test_removal_unused_clocks() {
+    fn test_check_declarations_unused_clocks_are_removed() {
+        check_declarations_unused_clocks_are_removed("Component1", "x");
+        check_declarations_unused_clocks_are_removed("Component2", "i");
+        check_declarations_unused_clocks_are_removed("Component3", "c");
+    }
+
+    fn check_declarations_unused_clocks_are_removed(component_name: &str, clock: &str) {
         let mut component = read_json_component(
-            "samples/json/ClockReductionTest/UnusedClockWithCycle",
+            "samples/json/ClockReductionTest/UnusedClock",
+            component_name,
+        );
+
+        let clock_index = component
+            .declarations
+            .get_clock_index_by_name(clock)
+            .unwrap();
+
+        component.remove_clock(*clock_index);
+
+        let clock_reduced_compiled_component =
+            CompiledComponent::compile(component.clone(), component.declarations.clocks.len() + 1)
+                .unwrap();
+
+        let decls = clock_reduced_compiled_component.get_decls();
+
+        assert!(!decls[0].clocks.contains_key(clock));
+    }
+
+    #[test]
+    fn test_check_declarations_duplicated_clocks_are_removed() {
+        let mut component = read_json_component(
+            "samples/json/ClockReductionTest/RedundantClocks",
             "Component1",
         );
-        let redundant_clocks = component.find_redundant_clocks();
 
-        component.reduce_clocks(redundant_clocks);
+        let clock_1_index = component.declarations.get_clock_index_by_name("x").unwrap();
+        let mut duplicate_clocks_index = HashSet::new();
+        duplicate_clocks_index
+            .insert(*component.declarations.get_clock_index_by_name("y").unwrap());
+        duplicate_clocks_index
+            .insert(*component.declarations.get_clock_index_by_name("z").unwrap());
 
-        assert_edges_in_component(
-            &component,
-            &HashSet::from([
-                "L0-y->L1".to_string(),
-                "L1-y->L0".to_string(),
-                "L0-->L1".to_string(),
-                "L1-y->L3".to_string(),
-            ]),
-        )
+        component.replace_clock(*clock_1_index, &duplicate_clocks_index);
+
+        let clock_reduced_compiled_component =
+            CompiledComponent::compile(component.clone(), component.declarations.clocks.len() + 1)
+                .unwrap();
+
+        let decls = clock_reduced_compiled_component.get_decls();
+
+        assert_eq!(*decls[0].clocks.get_key_value("x").unwrap().1, 1);
+        assert_eq!(*decls[0].clocks.get_key_value("y").unwrap().1, 1);
+        assert_eq!(*decls[0].clocks.get_key_value("z").unwrap().1, 1);
     }
 }

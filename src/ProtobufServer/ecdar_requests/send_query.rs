@@ -9,15 +9,11 @@ use crate::DataReader::json_writer::component_to_json;
 use crate::DataReader::parse_queries;
 use crate::ModelObjects::queries::Query;
 use crate::ProtobufServer::services::component::Rep;
-use crate::ProtobufServer::services::query_response::query_ok::{
+use crate::ProtobufServer::services::query_response::{
     ComponentResult, ConsistencyResult as ProtobufConsistencyResult,
-    DeterminismResult as ProtobufDeterminismResult, RefinementResult,
+    DeterminismResult as ProtobufDeterminismResult, ReachabilityResult, RefinementResult,
+    Result as ProtobufResult,
 };
-use crate::ProtobufServer::services::query_response::query_ok::{
-    ReachabilityResult, Result as ProtobufResult,
-};
-use crate::ProtobufServer::services::query_response::QueryOk;
-use crate::ProtobufServer::services::query_response::Response as QueryOkOrErrorResponse;
 use crate::ProtobufServer::services::{
     self, Component as ProtobufComponent, ComponentClock as ProtobufComponentClock,
     Conjunction as ProtobufConjunction, Constraint as ProtobufConstraint,
@@ -83,11 +79,9 @@ impl ConcreteEcdarBackend {
         let result = executable_query.execute();
 
         let reply = QueryResponse {
-            response: Some(QueryOkOrErrorResponse::QueryOk(QueryOk {
-                query_id: query_request.query_id,
-                info: vec![], // TODO: Should be logs
-                result: convert_ecdar_result(&result),
-            })),
+            query_id: query_request.query_id,
+            info: vec![], // TODO: Should be logs
+            result: convert_ecdar_result(&result),
         };
 
         Ok(reply)
@@ -200,12 +194,10 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         component_paths,
                     }))
                 }
-                Err(e) => Some(ProtobufResult::Reachability(ReachabilityResult {
-                    success: false,
-                    reason: format!("Internal error occurred during reachability check: {}", e),
-                    state: None,
-                    component_paths: vec![],
-                })),
+                Err(e) => Some(ProtobufResult::Error(format!(
+                    "Internal error occurred during reachability check: {}",
+                    e
+                ))),
             }
         }
 

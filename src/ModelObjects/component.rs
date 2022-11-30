@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 /// The basic struct used to represent components read from either Json or xml
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq)]
 #[serde(into = "DummyComponent")]
 pub struct Component {
     pub name: String,
@@ -136,7 +136,7 @@ impl Component {
 
     pub fn get_input_actions(&self) -> Vec<Channel> {
         let mut actions = vec![];
-        for edge in self.input_edges.as_ref().unwrap() {
+        for edge in self.input_edges.as_ref().unwrap_or(&vec![]) {
             if *edge.get_sync_type() == SyncType::Input && !contain(&actions, edge.get_sync()) {
                 if edge.get_sync() == "*" {
                     continue;
@@ -151,7 +151,7 @@ impl Component {
 
     pub fn get_output_actions(&self) -> Vec<Channel> {
         let mut actions = vec![];
-        for edge in self.output_edges.as_ref().unwrap() {
+        for edge in self.output_edges.as_ref().unwrap_or(&vec![]) {
             if *edge.get_sync_type() == SyncType::Output && !contain(&actions, edge.get_sync()) {
                 if edge.get_sync() == "*" {
                     continue;
@@ -272,266 +272,80 @@ impl Component {
         self.create_edge_io_split();
     }
 
-    /// Function for reducing the clocks found on the component.
-    /// Unused clocks and "duplicate" clocks (clocks that are never reset)
-    /// and then remove them.
-    pub fn reduce_clocks(&mut self, redundant_clocks: Vec<RedundantClock>) {
-        for clock in redundant_clocks {
-            match &clock.reason {
-                ClockReductionReason::Duplicate(global) => {
-                    self.replace_clock(&clock, global);
-                    info!("Replaced Clock {} with {global}", clock.clock); // Should be changed in the future to be the information logger
-                }
-                ClockReductionReason::Unused => {
-                    self.remove_clock(&clock.updates);
-                    info!("Removed Clock {}", clock.clock);
-                }
-            }
+    /// Removes unused clock
+    /// # Arguments
+    /// `index`: The index to be removed
+    pub(crate) fn remove_clock(&mut self, index: ClockIndex) {
+        // Removes from declarations, and updates the other
+        let name = self
+            .declarations
+            .get_clock_name_by_index(index)
+            .expect("Couldn't find clock with index")
+            .to_owned();
+        self.declarations.clocks.remove(&name);
+        self.declarations
+            .clocks
+            .values_mut()
+            .filter(|val| **val > index)
+            .for_each(|val| *val -= 1);
 
-            let clock_val = *self
-                .declarations
-                .clocks
-                .get(clock.clock.as_str())
-                .unwrap_or_else(|| panic!("Clock {} is not in the declarations", clock.clock));
-            self.declarations
-                .clocks
-                .values_mut()
-                .filter(|val| **val > clock_val)
-                .for_each(|val| *val -= 1);
-            self.declarations.clocks.remove(clock.clock.as_str());
-        }
-    }
-
-    /// Used to find redundant clocks - checks for unused and duplicates clocks.
-
-    /// Returns [`Vec<RedundantClock>`] with all found redundant clock.
-    /// If no redundant clocks are found the vector will be empty
-    pub(crate) fn find_redundant_clocks(&self) -> Vec<RedundantClock> {
-        let mut out: Vec<RedundantClock> = vec![];
-        let mut seen_clocks: HashMap<String, Box<[Vec<usize>; 2]>> =
-            self.clocks_in_edges_and_locations(&mut out);
-        let seen_updates: HashMap<String, HashMap<usize, usize>> = self.clocks_in_updates(&mut out);
-
-        let mut global: Option<String> = None;
-        for (clock, places) in seen_clocks
+        // Yeets from updates
+        self.edges
             .iter_mut()
-            .filter(|(x, _)| !seen_updates.contains_key(x.as_str()))
-        {
-            if let Some(global_clock) = &global {
-                out.push(RedundantClock::duplicate(
-                    clock.to_string(),
-                    places[0].clone(),
-                    places[1].clone(),
-                    global_clock.clone(),
-                ));
-            } else {
-                global = Some(clock.to_string());
-            }
-        }
-        out
-    }
-
-    /// This function loop loops over the edges and locations that have guards and invariants, and returns said clocks
-    fn clocks_in_edges_and_locations(
-        &self,
-        seen: &mut Vec<RedundantClock>,
-    ) -> HashMap<String, Box<[Vec<usize>; 2]>> {
-        let clocks: HashSet<String> = self.declarations.get_clocks().keys().cloned().collect();
-        let mut out: HashMap<String, Box<[Vec<usize>; 2]>> = HashMap::new();
-
-        // `index` is the index in either `self.edges` or `self.locations`
-        // `expr` is the guard or invariant itself
-        // `which` determines if it is an edge or location, used for saving the indices correctly (0 = edge, 1 = location)
-        for (index, expr, which) in self
-            .edges
-            .iter()
-            .enumerate()
-            .filter(|(_, x)| x.guard.is_some())
-            .map(|(i, e)| (i, e.guard.as_ref().unwrap(), 0))
-            .chain(
-                self.locations
+            .filter(|e| e.update.is_some())
+            .for_each(|e| {
+                if let Some((i, _)) = e
+                    .update
+                    .as_ref()
+                    .unwrap()
                     .iter()
                     .enumerate()
-                    .filter(|(_, x)| x.invariant.is_some())
-                    .map(|(i, l)| (i, l.invariant.as_ref().unwrap(), 1)),
-            )
-        {
-            // Here we find all varnames in the expression so we can save where it is used
-            for name in expr.get_varnames() {
-                if clocks.contains(name) {
-                    if let Some(clock_indices) = out.get_mut(name) {
-                        // Either we have seen the clock, and just add the index in the correct vec (edge or location)
-                        // We know that `which` will be valid because we set it in the loop above
-                        clock_indices.get_mut(which).unwrap().push(index);
-                    } else {
-                        // Or we have not seen the clock before, and have to input it in the HashMap
-                        // and then input the index correctly
-                        out.insert(name.to_string(), Box::new([vec![], vec![]]));
-                        out.get_mut(name)
-                            .unwrap()
-                            .get_mut(which)
-                            .unwrap()
-                            .push(index);
-                    }
+                    .find(|(_, u)| u.variable == name)
+                {
+                    e.update.as_mut().unwrap().remove(i);
                 }
-            }
-        }
-        for contain in clocks.iter().filter(|k| !out.contains_key(*k)) {
-            seen.push(RedundantClock::unused(contain.clone()));
-        }
-        out
-    }
-
-    /// This function loop loops over the updates in the component.
-    /// It saves the indices of already seen clocks (unused clocks that should be removed),
-    /// and returns all other clocks it finds
-    fn clocks_in_updates(
-        &self,
-        seen: &mut [RedundantClock],
-    ) -> HashMap<String, HashMap<usize, usize>> {
-        let mut out: HashMap<String, HashMap<usize, usize>> = HashMap::new();
-        for (i, updates) in self
-            .edges
-            .iter()
-            .enumerate()
-            .filter(|(_, x)| x.update.is_some())
-            .map(|(i, y)| (i, y.update.as_ref().unwrap()))
-        {
-            for (j, upd) in updates.iter().enumerate() {
-                if let Some(c) = seen.iter_mut().find(|x| x.clock == upd.variable) {
-                    c.updates.insert(i, j);
-                } else {
-                    out.entry(upd.variable.clone())
-                        .or_insert_with(HashMap::new)
-                        .entry(i)
-                        .or_insert(j);
-                }
-            }
-        }
-        out
-    }
-
-    /// Removes unused clock
-
-    /// # Arguments
-    /// `clock_updates`: Hashmap where the keys are the indices for the `edges`, and the value is the index in `updates` on said edge
-    pub(crate) fn remove_clock(&mut self, clock_updates: &HashMap<usize, usize>) {
-        for (i, u) in clock_updates {
-            self.edges[*i]
-                .update
-                .as_mut()
-                .expect("No updates on the edge")
-                .remove(*u);
-        }
+            });
+        info!(
+            "Removed Clock '{name}' has been removed from component {}",
+            self.name
+        ); // Should be changed in the future to be the information logger
     }
 
     /// Replaces duplicate clock with a new
     /// # Arguments
-    /// `clock`: [`RedundantClock`] representing the clock to be replaced
-    /// `other_clock`: The name of the clock to replace `clock`
-    pub(crate) fn replace_clock(&mut self, clock: &RedundantClock, other_clock: &String) {
-        for e in &clock.edge_indices {
-            self.edges[*e]
-                .guard
-                .as_mut()
-                .unwrap()
-                .replace_varname(&clock.clock, other_clock);
-        }
-        for l in &clock.location_indices {
-            self.locations[*l]
-                .invariant
-                .as_mut()
-                .unwrap()
-                .replace_varname(&clock.clock, other_clock);
-        }
-        for (i, u) in &clock.updates {
-            let mut upd = &mut self.edges[*i].update.as_mut().unwrap()[*u];
-            (*upd).variable = other_clock.clone();
-            upd.expression.replace_varname(&clock.clock, other_clock);
-        }
-    }
-}
-
-///Enum to hold the reason for why a clock is declared redundant.
-#[derive(Debug)]
-pub enum ClockReductionReason {
-    ///Which clock is it a duplicate of.
-    Duplicate(String),
-    ///If a clock is not used by a guard or invariant it is unused.
-    Unused,
-}
-
-///Datastructure to hold the found redundant clocks, where they are used and their reason for being redundant.
-#[derive(Debug)]
-#[allow(dead_code)]
-pub struct RedundantClock {
-    ///Name of the redundant clock.
-    pub(crate) clock: String,
-    ///Indices of which edges the clock are being used on.
-    pub(crate) edge_indices: Vec<usize>,
-    ///Indices of which locations the clock are being used in.
-    pub(crate) location_indices: Vec<usize>,
-    ///Reason for why the clock is declared redundant.
-    pub(crate) reason: ClockReductionReason,
-    /// Which updates clock occurs in. Key is index of edge and Value is the index for the update
-    pub(crate) updates: HashMap<usize, usize>,
-}
-
-impl RedundantClock {
-    ///Creates a new [`RedundantClock`]
-    #[allow(unused)]
-    fn new(
-        clock: String,
-        edge_indices: Vec<usize>,
-        location_indices: Vec<usize>,
-        reason: ClockReductionReason,
-        updates: HashMap<usize, usize>,
-    ) -> RedundantClock {
-        RedundantClock {
-            clock,
-            edge_indices,
-            location_indices,
-            reason,
-            updates,
+    /// `global_index`: The index of the global clock\n
+    /// `indices` are the duplicate clocks that should be set to `global_index`
+    pub(crate) fn replace_clock(
+        &mut self,
+        global_index: ClockIndex,
+        indices: &HashSet<ClockIndex>,
+    ) {
+        for (name, index) in self
+            .declarations
+            .clocks
+            .iter_mut()
+            .filter(|(_, c)| indices.contains(c))
+        {
+            *index = global_index;
+            // TODO: Maybe log the global clock name instead of index
+            info!("Replaced Clock {name} with {global_index}"); // Should be changed in the future to be the information logger
         }
     }
 
-    ///Shorthand function to create a duplicated [`RedundantClock`]
-    fn duplicate(
-        clock: String,
-        edge_indices: Vec<usize>,
-        location_indices: Vec<usize>,
-        duplicate: String,
-    ) -> RedundantClock {
-        RedundantClock {
-            clock,
-            edge_indices,
-            location_indices,
-            reason: ClockReductionReason::Duplicate(duplicate),
-            updates: HashMap::new(),
-        }
-    }
-
-    ///Shorthand function to create a unused [`RedundantClock`]
-    fn unused(clock: String) -> RedundantClock {
-        RedundantClock {
-            clock,
-            edge_indices: vec![],
-            location_indices: vec![],
-            reason: ClockReductionReason::Unused,
-            updates: HashMap::new(),
+    /// Decrements the indices of the clocks to decrement the DBM
+    pub(crate) fn decrement_dim(&mut self, decr: usize, omit: Vec<ClockIndex>) {
+        for index in self
+            .declarations
+            .clocks
+            .values_mut()
+            .filter(|i| !omit.contains(i))
+        {
+            *index -= decr;
         }
     }
 }
-
 pub fn contain(channels: &[Channel], channel: &str) -> bool {
-    for c in channels {
-        if c.name == channel {
-            return true;
-        }
-    }
-
-    false
+    channels.iter().any(|c| c.name == channel)
 }
 
 /// FullState is a struct used for initial verification of consistency, and determinism as a state that also hols a dbm
@@ -609,6 +423,7 @@ pub enum LocationType {
     Initial,
     Universal,
     Inconsistent,
+    Any,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
@@ -660,6 +475,7 @@ pub struct Transition {
     pub target_locations: LocationTuple,
     pub updates: Vec<CompiledUpdate>,
 }
+
 impl Transition {
     /// Create a new transition not based on an edge with no identifier
     pub fn new(target_locations: &LocationTuple, dim: ClockIndex) -> Transition {
@@ -1095,5 +911,14 @@ impl Declarations {
 
     pub fn get_clock_index_by_name(&self, name: &str) -> Option<&ClockIndex> {
         self.get_clocks().get(name)
+    }
+
+    /// Gets the name of a given `ClockIndex`.
+    /// Returns `None` if it does not exist in the declarations
+    pub fn get_clock_name_by_index(&self, index: ClockIndex) -> Option<&String> {
+        self.clocks
+            .iter()
+            .find(|(_, v)| **v == index)
+            .map(|(k, _)| k)
     }
 }

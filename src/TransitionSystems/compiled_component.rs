@@ -5,11 +5,9 @@ use crate::System::local_consistency::{self, ConsistencyResult, DeterminismResul
 use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
-use log::warn;
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
 
-use super::transition_system::PrecheckResult;
 use super::{CompositionType, LocationID};
 
 type Action = String;
@@ -125,32 +123,8 @@ impl TransitionSystem for CompiledComponent {
         }
     }
 
-    fn get_composition_type(&self) -> CompositionType {
-        CompositionType::Simple
-    }
-
-    fn get_decls(&self) -> Vec<&Declarations> {
-        vec![&self.comp_info.declarations]
-    }
-
-    fn get_input_actions(&self) -> HashSet<String> {
-        self.inputs.clone()
-    }
-
-    fn get_output_actions(&self) -> HashSet<String> {
-        self.outputs.clone()
-    }
-
-    fn get_actions(&self) -> HashSet<String> {
-        self.inputs.union(&self.outputs).cloned().collect()
-    }
-
-    fn get_initial_location(&self) -> Option<LocationTuple> {
-        self.initial_location.clone()
-    }
-
-    fn get_all_locations(&self) -> Vec<LocationTuple> {
-        self.locations.values().cloned().collect()
+    fn get_dim(&self) -> ClockIndex {
+        self.dim
     }
 
     fn next_transitions(&self, locations: &LocationTuple, action: &str) -> Vec<Transition> {
@@ -177,27 +151,28 @@ impl TransitionSystem for CompiledComponent {
         transitions
     }
 
-    fn get_initial_state(&self) -> Option<State> {
-        let init_loc = self.get_initial_location().unwrap();
-
-        State::from_location(init_loc, self.dim)
+    fn get_input_actions(&self) -> HashSet<String> {
+        self.inputs.clone()
     }
 
-    fn get_children(&self) -> (&TransitionSystemPtr, &TransitionSystemPtr) {
-        unimplemented!()
+    fn get_output_actions(&self) -> HashSet<String> {
+        self.outputs.clone()
     }
 
-    fn precheck_sys_rep(&self) -> PrecheckResult {
-        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
-            warn!("Not deterministic");
-            return PrecheckResult::NotDeterministic(location, action);
-        }
+    fn get_actions(&self) -> HashSet<String> {
+        self.inputs.union(&self.outputs).cloned().collect()
+    }
 
-        if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {
-            warn!("Not consistent");
-            return PrecheckResult::NotConsistent(failure);
-        }
-        PrecheckResult::Success
+    fn get_initial_location(&self) -> Option<LocationTuple> {
+        self.initial_location.clone()
+    }
+
+    fn get_all_locations(&self) -> Vec<LocationTuple> {
+        self.locations.values().cloned().collect()
+    }
+
+    fn get_decls(&self) -> Vec<&Declarations> {
+        vec![&self.comp_info.declarations]
     }
 
     fn is_deterministic(&self) -> DeterminismResult {
@@ -208,8 +183,26 @@ impl TransitionSystem for CompiledComponent {
         local_consistency::is_least_consistent(self)
     }
 
-    fn get_dim(&self) -> ClockIndex {
-        self.dim
+    fn get_initial_state(&self) -> Option<State> {
+        let init_loc = self.get_initial_location().unwrap();
+
+        State::from_location(init_loc, self.dim)
+    }
+
+    fn get_children(&self) -> (&TransitionSystemPtr, &TransitionSystemPtr) {
+        unimplemented!()
+    }
+
+    fn get_composition_type(&self) -> CompositionType {
+        CompositionType::Simple
+    }
+
+    fn get_combined_decls(&self) -> Declarations {
+        self.comp_info.declarations.clone()
+    }
+
+    fn get_location(&self, id: &LocationID) -> Option<LocationTuple> {
+        self.locations.get(id).cloned()
     }
 
     fn component_names(&self) -> Vec<&str> {

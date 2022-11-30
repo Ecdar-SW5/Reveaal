@@ -1,31 +1,52 @@
 #[cfg(test)]
 mod unused_clocks_tests {
-    use crate::component::Component;
-    use crate::tests::ClockReduction::helper::test::assert_clock_reason;
+    use crate::tests::ClockReduction::helper::test::assert_unused_clock_in_clock_reduction_instruction_vec;
     use crate::DataReader::json_reader::read_json_component;
-    use std::collections::HashSet;
+    use crate::TransitionSystems::transition_system::Heights;
+    use crate::TransitionSystems::{CompiledComponent, TransitionSystem};
 
+    /// Loads the sample in `samples/json/ClockReductionTest/UnusedClockWithCycle` which contains
+    /// unused clocks. It then tests that these clocks are located correctly.
     fn unused_clocks_with_cycles(component_name: &str, unused_clock: &str) {
         let component = read_json_component(
             "samples/json/ClockReductionTest/UnusedClockWithCycle",
             component_name,
         );
 
-        unused_clocks_are_found(&component, HashSet::from([unused_clock]));
+        let compiled_component =
+            CompiledComponent::compile(component.clone(), component.declarations.clocks.len() + 1)
+                .unwrap();
+
+        let clock_index = component
+            .declarations
+            .get_clock_index_by_name(unused_clock)
+            .unwrap();
+
+        let instructions = compiled_component.find_redundant_clocks(Heights::empty());
+
+        assert_unused_clock_in_clock_reduction_instruction_vec(instructions, *clock_index)
     }
 
+    /// Loads the sample in `samples/json/ClockReductionTest/UnusedClock` which contains
+    /// unused clocks. It then tests that these clocks are located correctly.
     fn unused_clock(component_name: &str, unused_clock: &str) {
         let component = read_json_component(
             "samples/json/ClockReductionTest/UnusedClock",
             component_name,
         );
 
-        unused_clocks_are_found(&component, HashSet::from([unused_clock]));
-    }
+        let compiled_component =
+            CompiledComponent::compile(component.clone(), component.declarations.clocks.len() + 1)
+                .unwrap();
 
-    fn unused_clocks_are_found(component: &Component, unused_clocks: HashSet<&str>) {
-        let redundant_clocks = component.find_redundant_clocks();
-        assert_clock_reason(&redundant_clocks, 1, unused_clocks, true)
+        let clock_index = component
+            .declarations
+            .get_clock_index_by_name(unused_clock)
+            .unwrap();
+
+        let instructions = compiled_component.find_redundant_clocks(Heights::empty());
+
+        assert_unused_clock_in_clock_reduction_instruction_vec(instructions, *clock_index)
     }
 
     #[test]
