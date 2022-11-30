@@ -1,14 +1,17 @@
 #[cfg(test)]
 
 mod test {
-    use crate::tests::refinement::Helper::json_run_query;
+    use crate::{tests::refinement::Helper::json_run_query, QueryResult, System::local_consistency::{ConsistencyResult, ConsistencyFailure}};
 
     const PATH: &str = "samples/json/SystemRecipe/Quotient";
 
     #[test]
     fn quotient1_fails_correctly() {
         let actual = json_run_query(PATH, "consistency: LeftQuotient1 / RightQuotient1");
-        //TODO: Assertion
+        assert!(matches!(
+            actual,
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+        ))
     }
 
     #[test]
@@ -17,7 +20,10 @@ mod test {
             PATH,
             "consistency: NotDeterministicQuotientComp / DeterministicQuotientComp",
         );
-        //TODO: Assertion
+        assert!(matches!(
+            actual,
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+        ))
     }
 
     #[test]
@@ -26,6 +32,9 @@ mod test {
             PATH,
             "consistency: DeterministicQuotientComp / NotDeterministicQuotientComp",
         );
-        //TODO: Assertion
+        assert!(matches!(
+            actual,
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+        ))
     }
 }
