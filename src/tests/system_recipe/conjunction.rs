@@ -1,7 +1,11 @@
 #[cfg(test)]
 
 mod test {
-    use crate::{tests::refinement::Helper::json_run_query, QueryResult, System::local_consistency::{ConsistencyResult, ConsistencyFailure}};
+    use crate::{
+        tests::refinement::Helper::json_run_query,
+        QueryResult,
+        System::local_consistency::{ConsistencyFailure, ConsistencyResult},
+    };
 
     const PATH: &str = "samples/json/SystemRecipe/Conjunction";
 
@@ -10,7 +14,9 @@ mod test {
         let actual = json_run_query(PATH, "consistency: LeftConjunction1 && RightConjunction1");
         assert!(matches!(
             actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
+                ..
+            )))
         ));
     }
 
@@ -19,7 +25,9 @@ mod test {
         let actual = json_run_query(PATH, "consistency: LeftConjunction2 && RightConjunction2");
         assert!(matches!(
             actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
+                ..
+            )))
         ));
     }
 
@@ -28,7 +36,9 @@ mod test {
         let actual = json_run_query(PATH, "consistency: LeftConjunction3 && RightConjunction3");
         assert!(matches!(
             actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
+                ..
+            )))
         ));
     }
 
@@ -41,7 +51,9 @@ mod test {
         // TODO: Determine why this fails
         assert!(matches!(
             actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
+                ..
+            )))
         ));
     }
 }

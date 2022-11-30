@@ -1,7 +1,11 @@
 #[cfg(test)]
 
 mod test {
-    use crate::{tests::refinement::Helper::json_run_query, System::local_consistency::{ConsistencyResult, ConsistencyFailure}, QueryResult};
+    use crate::{
+        tests::refinement::Helper::json_run_query,
+        QueryResult,
+        System::local_consistency::{ConsistencyFailure, ConsistencyResult},
+    };
 
     const PATH: &str = "samples/json/SystemRecipe/Composition";
 
@@ -10,7 +14,9 @@ mod test {
         let actual = json_run_query(PATH, "consistency: LeftComposition1 || RightComposition1");
         assert!(matches!(
             actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
+                ..
+            )))
         ));
     }
 
@@ -19,7 +25,9 @@ mod test {
         let actual = json_run_query(PATH, "consistency: LeftComposition2 || RightComposition2");
         assert!(matches!(
             actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
+                ..
+            )))
         ));
     }
 
@@ -28,7 +36,9 @@ mod test {
         let actual = json_run_query(PATH, "consistency: LeftComposition3 || RightComposition3");
         assert!(matches!(
             actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
+                ..
+            )))
         ));
     }
 }

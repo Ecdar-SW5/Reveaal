@@ -1,7 +1,11 @@
 #[cfg(test)]
 
 mod test {
-    use crate::{tests::refinement::Helper::json_run_query, QueryResult, System::local_consistency::{ConsistencyResult, ConsistencyFailure}};
+    use crate::{
+        tests::refinement::Helper::json_run_query,
+        QueryResult,
+        System::local_consistency::{ConsistencyFailure, ConsistencyResult},
+    };
 
     const PATH: &str = "samples/json/SystemRecipe/Quotient";
 
@@ -10,7 +14,9 @@ mod test {
         let actual = json_run_query(PATH, "consistency: LeftQuotient1 // RightQuotient1");
         assert!(matches!(
             actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
+                ..
+            )))
         ))
     }
 
@@ -18,11 +24,13 @@ mod test {
     fn left_quotient_fails_correctly() {
         let actual = json_run_query(
             PATH,
-            "consistency: NotDeterministicQuotientComp // DeterministicQuotientComp"
+            "consistency: NotDeterministicQuotientComp // DeterministicQuotientComp",
         );
         assert!(matches!(
             actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
+                ..
+            )))
         ))
     }
 
@@ -30,11 +38,13 @@ mod test {
     fn right_quotient_fails_correctly() {
         let actual = json_run_query(
             PATH,
-            "consistency: DeterministicQuotientComp // NotDeterministicQuotientComp"
+            "consistency: DeterministicQuotientComp // NotDeterministicQuotientComp",
         );
         assert!(matches!(
             actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(..)))
+            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
+                ..
+            )))
         ))
     }
 }
