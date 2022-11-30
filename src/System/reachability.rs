@@ -6,12 +6,12 @@ use crate::TransitionSystems::{LocationID, TransitionSystem};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-/// This hold the result of a reachability query
+/// This holds the result of a reachability query
 pub struct Path {
     pub path: Option<Vec<Transition>>,
     pub was_reachable: bool,
 }
-
+// This holds which transition from which state (the destination_state of the previous_sub_path) we took to reach this state
 struct SubPath {
     previous_sub_path: Option<Rc<SubPath>>,
     destination_state: State,
