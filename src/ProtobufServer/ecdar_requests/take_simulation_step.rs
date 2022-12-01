@@ -7,13 +7,12 @@ use crate::{
             components_info_to_components, proto_decision_to_decision,
             simulation_info_to_transition_system,
         },
-        proto_writer::transition_decision_point_to_proto_decision_point,
+        proto_writer::decision_point_to_proto_decision_point,
     },
     ProtobufServer::{
         services::{SimulationStepRequest, SimulationStepResponse},
         ConcreteEcdarBackend,
     },
-    Simulation::transition_decision::TransitionDecision,
 };
 
 impl ConcreteEcdarBackend {
@@ -33,12 +32,12 @@ impl ConcreteEcdarBackend {
 
         let chosen_decision = request_message.chosen_decision.unwrap();
         let chosen_decision = proto_decision_to_decision(chosen_decision, &system, components);
-        let chosen_decisions = TransitionDecision::from(&chosen_decision, &system);
 
-        let decision_points: Vec<_> = chosen_decisions
+        let decision_points = chosen_decision.resolve(&system);
+
+        let decision_points = decision_points
             .into_iter()
-            .filter_map(|decision| decision.resolve(&system))
-            .map(|decision| transition_decision_point_to_proto_decision_point(&decision, &system))
+            .map(|dp| decision_point_to_proto_decision_point(&dp, &system))
             .collect();
 
         let simulation_step_response = SimulationStepResponse {

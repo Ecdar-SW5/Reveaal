@@ -11,24 +11,11 @@ use crate::{
         Federation as ProtoFederation, Location as ProtoLocation,
         LocationTuple as ProtoLocationTuple, SpecificComponent, State as ProtoState,
     },
-    Simulation::{
-        decision_point::DecisionPoint, transition_decision_point::TransitionDecisionPoint,
-    },
+    Simulation::decision_point::DecisionPoint,
     TransitionSystems::{LocationID, LocationTuple, TransitionSystemPtr},
 };
 
-/// Returns the equivalent [`ProtoDecisionPoint`] for a given [`TransitionDecisionPoint`] in the given [`TransitionSystemPtr`].
-pub fn transition_decision_point_to_proto_decision_point(
-    decision_point: &TransitionDecisionPoint,
-    system: &TransitionSystemPtr,
-) -> ProtoDecisionPoint {
-    let decision_point: DecisionPoint = DecisionPoint::from(decision_point);
-    let decision_point: ProtoDecisionPoint =
-        decision_point_to_proto_decision_point(&decision_point, system);
-    decision_point
-}
-
-fn decision_point_to_proto_decision_point(
+pub fn decision_point_to_proto_decision_point(
     decision_point: &DecisionPoint,
     system: &TransitionSystemPtr,
 ) -> ProtoDecisionPoint {

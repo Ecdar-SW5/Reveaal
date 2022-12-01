@@ -1,9 +1,9 @@
 use crate::DataReader::component_loader::ModelCache;
 use crate::DataReader::proto_reader::simulation_info_to_transition_system;
-use crate::DataReader::proto_writer::transition_decision_point_to_proto_decision_point;
+use crate::DataReader::proto_writer::decision_point_to_proto_decision_point;
 use crate::ProtobufServer::services::{SimulationStartRequest, SimulationStepResponse};
 use crate::ProtobufServer::ConcreteEcdarBackend;
-use crate::Simulation::transition_decision_point::TransitionDecisionPoint;
+use crate::Simulation::decision_point::DecisionPoint;
 
 use tonic::Status;
 
@@ -24,8 +24,8 @@ impl ConcreteEcdarBackend {
 
         let transition_system = simulation_info_to_transition_system(&simulation_info);
 
-        let initial = TransitionDecisionPoint::initial(&transition_system)
-            .map(|i| transition_decision_point_to_proto_decision_point(&i, &transition_system));
+        let initial = DecisionPoint::initial(&transition_system)
+            .map(|i| decision_point_to_proto_decision_point(&i, &transition_system));
 
         Ok(SimulationStepResponse {
             new_decision_points: option_to_vec(initial),

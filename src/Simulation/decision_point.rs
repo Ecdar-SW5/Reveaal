@@ -1,8 +1,12 @@
 use itertools::Itertools;
 use regex::Regex;
 
+use crate::{
+    component::State,
+    TransitionSystems::{TransitionID, TransitionSystemPtr},
+};
+
 use super::transition_decision_point::TransitionDecisionPoint;
-use crate::{component::State, TransitionSystems::TransitionID};
 
 /// Represents a decision in any composition of components: In the current `source` state there is a decision of using one of the `possible_decisions`.
 #[derive(Clone, Debug)]
@@ -25,6 +29,10 @@ impl DecisionPoint {
 
     pub fn possible_decisions(&self) -> &[String] {
         self.possible_decisions.as_ref()
+    }
+
+    pub fn initial(system: &TransitionSystemPtr) -> Option<Self> {
+        TransitionDecisionPoint::initial(system).map(|i| DecisionPoint::from(&i))
     }
 }
 

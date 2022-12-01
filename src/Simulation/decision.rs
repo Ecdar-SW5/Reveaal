@@ -1,4 +1,9 @@
-use crate::component::{Edge, State};
+use crate::{
+    component::{Edge, State},
+    TransitionSystems::TransitionSystemPtr,
+};
+
+use super::{decision_point::DecisionPoint, transition_decision::TransitionDecision};
 
 /// Represent a decision in a any composition of components, that has been taken: In the current `source` state I have `decided` to use this [`Edge`].
 #[derive(Debug)]
@@ -18,5 +23,13 @@ impl Decision {
 
     pub fn decided(&self) -> &Edge {
         &self.decided
+    }
+
+    pub fn resolve(&self, system: &TransitionSystemPtr) -> Vec<DecisionPoint> {
+        TransitionDecision::from(self, &system)
+            .into_iter()
+            .filter_map(|decision| decision.resolve(&system))
+            .map(|decision_point| DecisionPoint::from(&decision_point))
+            .collect()
     }
 }
