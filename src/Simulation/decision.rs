@@ -26,9 +26,9 @@ impl Decision {
     }
 
     pub fn resolve(&self, system: &TransitionSystemPtr) -> Vec<DecisionPoint> {
-        TransitionDecision::from(self, &system)
+        TransitionDecision::from(self, system)
             .into_iter()
-            .filter_map(|decision| decision.resolve(&system))
+            .filter_map(|decision| decision.resolve(system))
             .map(|decision_point| DecisionPoint::from(&decision_point))
             .collect()
     }
