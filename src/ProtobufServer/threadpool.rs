@@ -49,15 +49,18 @@ impl ThreadPool {
     ///
     /// * `function` - The function to execute on the threadpool.
     pub fn enqueue<T: Send + 'static>(
-        &self,
-        function: impl FnOnce() -> T + Send + 'static,
+        self: &Arc<Self>,
+        function: impl FnOnce(Arc<ThreadPool>) -> T + Send + 'static,
     ) -> ThreadPoolFuture<T> {
         let mut thread_future = ThreadPoolFuture::default();
         let return_future = thread_future.clone();
+        let threadpool = self.clone();
         self.sender
             .as_ref()
             .unwrap()
-            .send(Box::new(move || thread_future.complete(function())))
+            .send(Box::new(move || {
+                thread_future.complete(function(threadpool))
+            }))
             .unwrap();
         return_future
     }

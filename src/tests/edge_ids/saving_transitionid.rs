@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod saving_transitionid_test {
+    use crate::ProtobufServer::threadpool::ThreadPool;
     use crate::System::save_component::{combine_components, PruningStrategy};
     use crate::{
         tests::reachability::helper_functions::reachability_test_helper_functions,
@@ -7,7 +8,9 @@ mod saving_transitionid_test {
     };
     use std::collections::HashSet;
     use std::iter::FromIterator;
+    use std::sync::Arc;
     use test_case::test_case;
+
     const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
 
     #[test_case(QueryExpression::VarName("Machine".to_string()), vec![
@@ -35,11 +38,14 @@ mod saving_transitionid_test {
             "E11".to_string()
             ]; "Conjunction save HalfAdm1 and HalfAdm2")]
     fn transition_save_id_checker(machineExpression: QueryExpression, transition_ids: Vec<String>) {
+        let threadpool = Arc::new(ThreadPool::default());
+
         let mock_model = Box::new(machineExpression);
         let mut expected_ids: HashSet<&String> = HashSet::from_iter(transition_ids.iter());
         let (_, system) = reachability_test_helper_functions::create_system_recipe_and_machine(
             *mock_model,
             FOLDER_PATH,
+            &threadpool,
         );
 
         let mut comp = combine_components(&system, PruningStrategy::NoPruning);

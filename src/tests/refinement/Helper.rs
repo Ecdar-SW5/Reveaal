@@ -2,9 +2,11 @@ use crate::logging::setup_logger;
 use crate::DataReader::component_loader::{JsonProjectLoader, XmlProjectLoader};
 use crate::DataReader::parse_queries;
 use crate::ModelObjects::queries::Query;
+use crate::ProtobufServer::threadpool::ThreadPool;
 use crate::System::executable_query::QueryResult;
 use crate::System::extract_system_rep::create_executable_query;
 use crate::System::refine::RefinementResult;
+use std::sync::Arc;
 
 fn try_setup_logging() {
     #[cfg(feature = "logging")]
@@ -33,6 +35,8 @@ pub fn json_refinement_check(PATH: &str, QUERY: &str) -> bool {
 }
 
 pub fn xml_run_query(PATH: &str, QUERY: &str) -> QueryResult {
+    let threadpool = Arc::new(ThreadPool::default());
+
     let project_path = String::from(PATH);
     let project_loader = XmlProjectLoader::new(project_path, crate::tests::TEST_SETTINGS);
     let query = parse_queries::parse_to_expression_tree(QUERY)
@@ -44,12 +48,14 @@ pub fn xml_run_query(PATH: &str, QUERY: &str) -> QueryResult {
     };
 
     let mut comp_loader = project_loader.to_comp_loader();
-    let query = create_executable_query(&q, &mut *comp_loader).unwrap();
+    let query = create_executable_query(&q, &mut *comp_loader, &threadpool).unwrap();
 
-    query.execute()
+    query.execute(&threadpool)
 }
 
 pub fn json_run_query(PATH: &str, QUERY: &str) -> QueryResult {
+    let threadpool = Arc::new(ThreadPool::default());
+
     let project_loader = JsonProjectLoader::new(String::from(PATH), crate::tests::TEST_SETTINGS);
     let query = parse_queries::parse_to_expression_tree(QUERY)
         .unwrap()
@@ -60,7 +66,7 @@ pub fn json_run_query(PATH: &str, QUERY: &str) -> QueryResult {
     };
 
     let mut comp_loader = project_loader.to_comp_loader();
-    let query = create_executable_query(&q, &mut *comp_loader).unwrap();
+    let query = create_executable_query(&q, &mut *comp_loader, &threadpool).unwrap();
 
-    query.execute()
+    query.execute(&threadpool)
 }

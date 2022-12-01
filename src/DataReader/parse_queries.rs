@@ -32,33 +32,38 @@ pub fn parse_to_expression_tree(edge_attribute_str: &str) -> Result<Vec<QueryExp
         Err(e) => return Err(format!("Could not parse as rule with error: {}", e)),
     };
     let pair = pairs.next().unwrap();
-    let mut queries = vec![];
     match pair.as_rule() {
         Rule::queries => {
-            build_queries(pair, &mut queries);
+            let queries = build_queries(pair);
             Ok(queries)
         }
         err => Err(format!("Unable to match query string as rule: {:?}", err)),
     }
 }
 
-pub fn build_queries(pair: pest::iterators::Pair<Rule>, list: &mut Vec<QueryExpression>) {
-    match pair.as_rule() {
-        Rule::queryList => {
-            for p in pair.into_inner() {
-                build_queries(p, list)
+pub fn build_queries(pair: pest::iterators::Pair<Rule>) -> Vec<QueryExpression> {
+    let mut list = vec![];
+    fn build(pair: pest::iterators::Pair<Rule>, list: &mut Vec<QueryExpression>) {
+        match pair.as_rule() {
+            Rule::queryList => {
+                for p in pair.into_inner() {
+                    build(p, list)
+                }
             }
-        }
-        Rule::queries => {
-            for p in pair.into_inner() {
-                build_queries(p, list)
+            Rule::queries => {
+                for p in pair.into_inner() {
+                    build(p, list)
+                }
             }
+            Rule::query => {
+                list.push(build_query_from_pair(pair));
+            }
+            _ => {}
         }
-        Rule::query => {
-            list.push(build_query_from_pair(pair));
-        }
-        _ => {}
     }
+
+    build(pair, &mut list);
+    list
 }
 
 pub fn build_query_from_pair(pair: pest::iterators::Pair<Rule>) -> QueryExpression {

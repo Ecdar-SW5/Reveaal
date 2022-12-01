@@ -12,17 +12,23 @@ use crate::TransitionSystems::transition_system::PrecheckResult;
 use crate::TransitionSystems::TransitionSystemPtr;
 use crate::TransitionSystems::{CompiledComponent, LocationTuple};
 
+use crate::ProtobufServer::threadpool::ThreadPool;
 use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 
 use super::save_component::PruningStrategy;
 
-pub fn prune_system(ts: TransitionSystemPtr, dim: ClockIndex) -> TransitionSystemPtr {
+pub fn prune_system(
+    ts: TransitionSystemPtr,
+    dim: ClockIndex,
+    threadpool: &Arc<ThreadPool>,
+) -> TransitionSystemPtr {
     let inputs = ts.get_input_actions();
     let outputs = ts.get_output_actions();
     let comp = combine_components(&ts, PruningStrategy::NoPruning);
 
     if let PrecheckResult::NotDeterministic(_, _) | PrecheckResult::NotConsistent(_) =
-        ts.precheck_sys_rep()
+        ts.precheck_sys_rep(threadpool)
     {
         panic!("Trying to prune transitions system which is not least consistent")
     }

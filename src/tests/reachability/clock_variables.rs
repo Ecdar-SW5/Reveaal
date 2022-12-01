@@ -1,10 +1,14 @@
 #[cfg(test)]
 mod reachability_parser_clock_variable_validation {
+    use crate::ProtobufServer::threadpool::ThreadPool;
     use crate::{
         tests::reachability::helper_functions::reachability_test_helper_functions,
         ModelObjects::representations::QueryExpression, System,
     };
+    use std::sync::Arc;
+    use std::thread::Thread;
     use test_case::test_case;
+
     const FOLDER_PATH: &str = "samples/json/EcdarUniversity";
     // These tests check that the parser only accepts clock variable arguments with existing clock variables.
     // i.e. check that the variables exist in the model.
@@ -16,11 +20,14 @@ mod reachability_parser_clock_variable_validation {
     #[test_case("uwu>2";
     "The clock variable uwu in the state does not exist in the model")]
     fn query_parser_checks_invalid_clock_variables(clock_str: &str) {
+        let threadpool = Arc::new(ThreadPool::default());
+
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
         let (machine, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(
                 *mock_model,
                 FOLDER_PATH,
+                &threadpool,
             );
 
         let mock_state = Box::new(QueryExpression::State(
@@ -38,11 +45,14 @@ mod reachability_parser_clock_variable_validation {
     #[test_case("y<1";
     "The clock variable y in state exists in the model")]
     fn query_parser_checks_valid_clock_variables(clock_str: &str) {
+        let threadpool = Arc::new(ThreadPool::default());
+
         let mock_model = Box::new(QueryExpression::VarName("Adm2".to_string()));
         let (machine, system) =
             reachability_test_helper_functions::create_system_recipe_and_machine(
                 *mock_model,
                 FOLDER_PATH,
+                &threadpool,
             );
 
         let mock_state = Box::new(QueryExpression::State(

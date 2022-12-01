@@ -20,6 +20,7 @@ use crate::ProtobufServer::services::{
     Disjunction as ProtobufDisjunction, Federation, Location, LocationTuple, QueryRequest,
     QueryResponse, SpecificComponent, State,
 };
+use crate::ProtobufServer::threadpool::ThreadPool;
 use crate::ProtobufServer::ConcreteEcdarBackend;
 use crate::System::executable_query::QueryResult;
 use crate::System::local_consistency::{ConsistencyFailure, ConsistencyResult, DeterminismResult};
@@ -34,6 +35,7 @@ impl ConcreteEcdarBackend {
     pub fn handle_send_query(
         query_request: QueryRequest,
         mut model_cache: ModelCache,
+        threadpool: &Arc<ThreadPool>,
     ) -> Result<QueryResponse, Status> {
         trace!("Received query: {:?}", query_request);
         let components_info = query_request.components_info.as_ref().unwrap();
@@ -66,17 +68,20 @@ impl ConcreteEcdarBackend {
             ));
         }
 
-        let executable_query =
-            match extract_system_rep::create_executable_query(&query, &mut component_container) {
-                Ok(query) => query,
-                Err(e) => {
-                    return Err(Status::invalid_argument(format!(
-                        "Creation of query failed: {}",
-                        e
-                    )))
-                }
-            };
-        let result = executable_query.execute();
+        let executable_query = match extract_system_rep::create_executable_query(
+            &query,
+            &mut component_container,
+            threadpool,
+        ) {
+            Ok(query) => query,
+            Err(e) => {
+                return Err(Status::invalid_argument(format!(
+                    "Creation of query failed: {}",
+                    e
+                )))
+            }
+        };
+        let result = executable_query.execute(threadpool);
 
         let reply = QueryResponse {
             query_id: query_request.query_id,

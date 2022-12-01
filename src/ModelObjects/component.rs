@@ -406,7 +406,7 @@ impl State {
         &self.decorated_locations
     }
 
-    pub fn extrapolate_max_bounds(&mut self, system: &dyn TransitionSystem) {
+    pub fn extrapolate_max_bounds(&mut self, system: &(impl TransitionSystem + ?Sized)) {
         let bounds = system.get_local_max_bounds(&self.decorated_locations);
         let zone = self.take_zone().extrapolate_max_bounds(&bounds);
         self.set_zone(zone);

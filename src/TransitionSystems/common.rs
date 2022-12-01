@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::sync::Arc;
 
 use dyn_clone::{clone_trait_object, DynClone};
 use edbm::{
@@ -8,10 +9,12 @@ use edbm::{
 use log::warn;
 
 use crate::TransitionSystems::CompositionType;
+use crate::ProtobufServer::threadpool::ThreadPool;
 use crate::{
     ModelObjects::component::{Declarations, State, Transition},
     System::local_consistency::{ConsistencyResult, DeterminismResult},
 };
+use crate::TransitionSystems::transition_system::PrecheckResult;
 
 use super::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 
@@ -50,12 +53,10 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
         }
     }
 
-    fn get_dim(&self) -> ClockIndex {
-        self.get_dim()
-    }
     fn next_transitions(&self, location: &LocationTuple, action: &str) -> Vec<Transition> {
         self.next_transitions(location, action)
     }
+
     fn get_input_actions(&self) -> HashSet<String> {
         self.get_input_actions()
     }
@@ -79,6 +80,56 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
         Some(LocationTuple::compose(&l, &r, self.get_composition_type()))
     }
 
+    fn get_decls(&self) -> Vec<&Declarations> {
+        let (left, right) = self.get_children();
+
+        let mut comps = left.get_decls();
+        comps.extend(right.get_decls());
+        comps
+    }
+
+    fn precheck_sys_rep(&self, threadpool: &Arc<ThreadPool>) -> PrecheckResult {
+        if let DeterminismResult::Failure(location, action) = self.is_deterministic(threadpool) {
+            warn!("Not deterministic");
+            return PrecheckResult::NotDeterministic(location, action);
+        }
+
+        if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {
+            warn!("Not consistent");
+            return PrecheckResult::NotConsistent(failure);
+        }
+        PrecheckResult::Success
+    }
+
+    fn is_deterministic(&self, threadpool: &Arc<ThreadPool>) -> DeterminismResult {
+        let (left, right) = self.get_children();
+        if let DeterminismResult::Success = left.is_deterministic(threadpool) {
+            if let DeterminismResult::Success = right.is_deterministic(threadpool) {
+                DeterminismResult::Success
+            } else {
+                right.is_deterministic(threadpool)
+            }
+        } else {
+            left.is_deterministic(threadpool)
+        }
+    }
+
+    fn get_initial_state(&self) -> Option<State> {
+        let init_loc = self.get_initial_location().unwrap();
+        let mut zone = OwnedFederation::init(self.get_dim());
+        zone = init_loc.apply_invariants(zone);
+        if zone.is_empty() {
+            warn!("Empty initial state");
+            return None;
+        }
+
+        Some(State::create(init_loc, zone))
+    }
+
+    fn get_dim(&self) -> ClockIndex {
+        self.get_dim()
+    }
+
     fn get_all_locations(&self) -> Vec<LocationTuple> {
         let (left, right) = self.get_children();
         let mut location_tuples = vec![];
@@ -96,42 +147,8 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
         location_tuples
     }
 
-    /// Returns the declarations of both children.
-    fn get_decls(&self) -> Vec<&Declarations> {
-        let (left, right) = self.get_children();
-
-        let mut comps = left.get_decls();
-        comps.extend(right.get_decls());
-        comps
-    }
-
-    fn is_deterministic(&self) -> DeterminismResult {
-        let (left, right) = self.get_children();
-        if let DeterminismResult::Success = left.is_deterministic() {
-            if let DeterminismResult::Success = right.is_deterministic() {
-                DeterminismResult::Success
-            } else {
-                right.is_deterministic()
-            }
-        } else {
-            left.is_deterministic()
-        }
-    }
-
     fn is_locally_consistent(&self) -> ConsistencyResult {
         self.is_locally_consistent()
-    }
-
-    fn get_initial_state(&self) -> Option<State> {
-        let init_loc = self.get_initial_location().unwrap();
-        let mut zone = OwnedFederation::init(self.get_dim());
-        zone = init_loc.apply_invariants(zone);
-        if zone.is_empty() {
-            warn!("Empty initial state");
-            return None;
-        }
-
-        Some(State::create(init_loc, zone))
     }
 
     fn get_children(&self) -> (&TransitionSystemPtr, &TransitionSystemPtr) {

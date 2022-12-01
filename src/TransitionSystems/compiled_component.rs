@@ -1,12 +1,16 @@
 use crate::ModelObjects::component::{
     Component, DeclarationProvider, Declarations, State, Transition,
 };
+use crate::ProtobufServer::threadpool::ThreadPool;
 use crate::System::local_consistency::{self, ConsistencyResult, DeterminismResult};
 use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
+use std::sync::Arc;
+use log::warn;
+use crate::TransitionSystems::transition_system::PrecheckResult;
 
 use super::{CompositionType, LocationID};
 
@@ -153,6 +157,19 @@ impl TransitionSystem for CompiledComponent {
         self.inputs.union(&self.outputs).cloned().collect()
     }
 
+    fn precheck_sys_rep(&self, threadpool: &Arc<ThreadPool>) -> PrecheckResult {
+        if let DeterminismResult::Failure(location, action) = self.is_deterministic(threadpool) {
+            warn!("Not deterministic");
+            return PrecheckResult::NotDeterministic(location, action);
+        }
+
+        if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {
+            warn!("Not consistent");
+            return PrecheckResult::NotConsistent(failure);
+        }
+        PrecheckResult::Success
+    }
+
     fn get_initial_location(&self) -> Option<LocationTuple> {
         self.initial_location.clone()
     }
@@ -165,8 +182,8 @@ impl TransitionSystem for CompiledComponent {
         vec![&self.comp_info.declarations]
     }
 
-    fn is_deterministic(&self) -> DeterminismResult {
-        local_consistency::is_deterministic(self)
+    fn is_deterministic(&self, threadpool: &Arc<ThreadPool>) -> DeterminismResult {
+        local_consistency::is_deterministic(Arc::new(Box::new(self.clone())), threadpool)
     }
 
     fn is_locally_consistent(&self) -> ConsistencyResult {

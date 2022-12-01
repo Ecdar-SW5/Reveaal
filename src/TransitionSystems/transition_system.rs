@@ -1,5 +1,6 @@
 use super::{CompositionType, LocationID, LocationTuple};
 use crate::EdgeEval::updater::CompiledUpdate;
+use crate::ProtobufServer::threadpool::ThreadPool;
 use crate::{
     ModelObjects::component::{Declarations, State, Transition},
     System::local_consistency::DeterminismResult,
@@ -10,6 +11,8 @@ use edbm::util::{bounds::Bounds, constraints::ClockIndex};
 use log::warn;
 use std::collections::hash_map::Entry;
 use std::collections::{hash_set::HashSet, HashMap};
+use std::sync::Arc;
+use std::thread::Thread;
 
 pub type TransitionSystemPtr = Box<dyn TransitionSystem>;
 pub type Action = String;
@@ -111,8 +114,8 @@ pub trait TransitionSystem: DynClone {
 
     fn get_decls(&self) -> Vec<&Declarations>;
 
-    fn precheck_sys_rep(&self) -> PrecheckResult {
-        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
+    fn precheck_sys_rep(&self, threadpool: &Arc<ThreadPool>) -> PrecheckResult {
+        if let DeterminismResult::Failure(location, action) = self.is_deterministic(threadpool) {
             warn!("Not deterministic");
             return PrecheckResult::NotDeterministic(location, action);
         }
@@ -135,7 +138,7 @@ pub trait TransitionSystem: DynClone {
         Declarations { ints, clocks }
     }
 
-    fn is_deterministic(&self) -> DeterminismResult;
+    fn is_deterministic(&self, threadpool: &Arc<ThreadPool>) -> DeterminismResult;
 
     fn is_locally_consistent(&self) -> ConsistencyResult;
 

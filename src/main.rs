@@ -4,12 +4,15 @@ use reveaal::logging::setup_logger;
 
 use reveaal::ProtobufServer::services::query_request::settings::ReduceClocksLevel;
 use reveaal::ProtobufServer::services::query_request::Settings;
+use reveaal::ProtobufServer::threadpool::ThreadPool;
 use reveaal::{
     extract_system_rep, parse_queries, start_grpc_server_with_tokio, xml_parser, ComponentLoader,
     JsonProjectLoader, ProjectLoader, Query, QueryResult, XmlProjectLoader, DEFAULT_SETTINGS,
 };
 use std::env;
 use std::str::FromStr;
+use std::sync::Arc;
+use std::thread::Thread;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "logging")]
@@ -41,13 +44,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn start_using_cli(matches: &clap::ArgMatches) {
     let (mut comp_loader, queries) = parse_args(matches);
 
+    let threadpool = Arc::new(ThreadPool::default());
+
     let mut results = vec![];
     for query in &queries {
         let executable_query = Box::new(
-            extract_system_rep::create_executable_query(query, &mut *comp_loader).unwrap(),
+            extract_system_rep::create_executable_query(query, &mut *comp_loader, &threadpool)
+                .unwrap(),
         );
 
-        let result = executable_query.execute();
+        let result = executable_query.execute(&threadpool);
 
         if let QueryResult::Error(err) = result {
             panic!("{}", err);
