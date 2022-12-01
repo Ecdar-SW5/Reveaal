@@ -199,14 +199,12 @@ pub fn create_step_request(
     let simulation_info = create_simulation_info_1(component_names, components_path, composition);
     let last_response = last_response.unwrap().into_inner();
     let source = last_response
-        .clone()
         .new_decision_points
         .first()
         .unwrap()
         .source
         .to_owned();
     let decision = last_response
-        .clone()
         .new_decision_points
         .first()
         .unwrap()
@@ -218,7 +216,7 @@ pub fn create_step_request(
     Request::new(SimulationStepRequest {
         simulation_info: Some(simulation_info),
         chosen_decision: Some(ProtoDecision {
-            source: source,
+            source,
             edge: Some(decision),
         }),
     })
@@ -230,7 +228,7 @@ fn create_simulation_info_1(
     composition: &str,
 ) -> ProtoSimulationInfo {
     let json_components: Vec<_> = component_names
-        .into_iter()
+        .iter()
         .map(|component_name| ProtoComponent {
             rep: Some(Rep::Json(
                 fs::read_to_string(format!(

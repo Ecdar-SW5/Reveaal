@@ -1173,11 +1173,9 @@ pub fn create_composition_start_request() -> Request<SimulationStartRequest> {
 
     let simulation_info = create_simulation_info(composition, components);
 
-    let simulation_start_request = Request::new(SimulationStartRequest {
+    Request::new(SimulationStartRequest {
         simulation_info: Some(simulation_info),
-    });
-
-    simulation_start_request
+    })
 }
 
 pub fn create_expected_response_to_composition_start_request(
