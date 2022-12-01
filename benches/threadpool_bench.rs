@@ -105,6 +105,27 @@ fn threadpool_cache(c: &mut Criterion) {
         &cheap_query,
         false,
     );
+
+    let bigJson = vec![
+        std::fs::read_to_string(format!("{}/Components/Administration.json", PATH)).unwrap(),
+        std::fs::read_to_string(format!("{}/Components/Researcher.json", PATH)).unwrap(),
+        std::fs::read_to_string(format!("{}/Components/Machine.json", PATH)).unwrap(),
+        std::fs::read_to_string(format!("{}/Components/Adm2.json", PATH)).unwrap(),
+        std::fs::read_to_string(format!("{}/Components/Machine1.json", PATH)).unwrap(),
+        std::fs::read_to_string(format!("{}/Components/Machine2.json", PATH)).unwrap(),
+        std::fs::read_to_string(format!("{}/Components/Machine3.json", PATH)).unwrap(),
+    ];
+
+    let very_expensive = String::from("determinism: Administration || Researcher || Machine || Adm2 || Machine1 || Machine2 || Machine3");
+
+    send_query_with_components(
+        String::from("Determinism multithread bench"),
+        c,
+        &bigJson,
+        &very_expensive,
+        true,
+    );
+
 }
 
 criterion_group! {
