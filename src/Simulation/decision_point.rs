@@ -71,17 +71,16 @@ mod test {
     use super::DecisionPoint;
 
     #[test]
-    fn DecisionPoint_from__initial_EcdarUniversity_Machine__returns_correct_DecisionPoint() {
+    fn from__initial_EcdarUniversity_Machine__returns_correct_DecisionPoint() {
         // Arrange
         let transition_decision_point = initial_transition_decision_point_EcdarUniversity_Machine();
 
         // Act
         let actual = DecisionPoint::from(&transition_decision_point);
-        let actual_edge_ids = actual.possible_decisions();
 
         // Assert
         assert_eq!(actual.possible_decisions.len(), 2);
-        assert!(actual_edge_ids.contains(&"E27".to_string()));
-        assert!(actual_edge_ids.contains(&"E29".to_string()));
+        assert!(actual.possible_decisions().contains(&"E27".to_string()));
+        assert!(actual.possible_decisions().contains(&"E29".to_string()));
     }
 }
