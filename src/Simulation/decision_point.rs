@@ -31,8 +31,9 @@ impl DecisionPoint {
         self.possible_decisions.as_ref()
     }
 
+    /// Returns the initial [`DecisionPoint`] in the given [`TransitionSystemPrt`].
     pub fn initial(system: &TransitionSystemPtr) -> Option<Self> {
-        TransitionDecisionPoint::initial(system).map(|i| DecisionPoint::from(&i))
+        TransitionDecisionPoint::initial(system).map(|initial| DecisionPoint::from(&initial))
     }
 }
 
