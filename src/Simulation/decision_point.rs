@@ -39,9 +39,9 @@ impl DecisionPoint {
 
 impl From<&TransitionDecisionPoint> for DecisionPoint {
     fn from(transition_decision_point: &TransitionDecisionPoint) -> Self {
-        fn is_hidden(x: &str) -> bool {
-            let is_hidden_regex = Regex::new("(input_).*").unwrap(); // `.unwrap()` always return `Some(...)` here
-            is_hidden_regex.is_match(x)
+        fn is_edge(x: &str) -> bool {
+            let is_not_edge_regex = Regex::new("(input_).*").unwrap(); // `.unwrap()` always return `Some(...)` here
+            !is_not_edge_regex.is_match(x)
         }
         let possible_decisions = transition_decision_point
             .possible_decisions()
@@ -54,7 +54,7 @@ impl From<&TransitionDecisionPoint> for DecisionPoint {
             })
             .unique()
             .sorted()
-            .filter(|x| !is_hidden(x))
+            .filter(|x| is_edge(x))
             .collect();
 
         DecisionPoint {
