@@ -68,7 +68,78 @@ mod tests {
         TransitionSystems::TransitionSystemPtr,
     };
 
-    fn assert__from__good_Decision__returns_correct_TransitionDecision(
+    #[test]
+    fn from__Determinism_NonDeterminismCom__returns_non_deterministic_answer() {
+        // Arrange
+        let path = "samples/json/Determinism";
+        let component = "NonDeterminismCom";
+        let system = create_system_from_path(path, component);
+        let component = read_json_component(path, component);
+
+        let decision = Decision::new(
+            system.get_initial_state().unwrap(),
+            component.get_edges().first().unwrap().to_owned(),
+        );
+
+        let expected_len = 1;
+
+        // Act
+        let actual = TransitionDecision::from(&decision, &system);
+
+        // Assert
+        assert_eq!(actual.len(), expected_len);
+    }
+
+    #[test]
+    fn from__edge_with_action_that_maps_to_single_transition__returns_correct_TransitionDecision() {
+        // Arrange
+        let system = create_EcdarUniversity_Machine_system();
+        let component = read_json_component("samples/json/EcdarUniversity", "Machine");
+        let initial = system.get_initial_state().unwrap();
+        let edge = component.get_edges()[4].clone();
+
+        let decision = Decision::new(initial.clone(), edge);
+
+        let expected = TransitionDecision {
+            source: initial.clone(),
+            decided: system
+                .next_transitions(initial.get_location(), "tea")
+                .first()
+                .unwrap()
+                .to_owned(),
+        };
+
+        // Act n Assert
+        act_and_assert__from__good_Decision__returns_correct_TransitionDecision(
+            system, decision, expected,
+        );
+    }
+
+    #[test]
+    fn from__edge_with_action_that_maps_to_multiple_transitions__returns_correct_TransitionDecision(
+    ) {
+        // Arrange
+        let system = create_Simulation_Machine_system();
+        let component = read_json_component("samples/json/Simulation", "SimMachine");
+        let initial = system.get_initial_state().unwrap();
+        let edges = component.get_edges().clone();
+
+        let decision = Decision::new(initial.clone(), edges[0].clone());
+
+        let edge_action = edges[0].get_sync();
+
+        let expected = TransitionDecision {
+            source: initial.clone(),
+            decided: system.next_transitions(initial.get_location(), edge_action)[0].clone(),
+        };
+
+        // Act n Assert
+        act_and_assert__from__good_Decision__returns_correct_TransitionDecision(
+            system, decision, expected,
+        );
+    }
+
+    fn act_and_assert__from__good_Decision__returns_correct_TransitionDecision(
         system: TransitionSystemPtr,
         decision: Decision,
         expected: TransitionDecision,
@@ -81,28 +152,7 @@ mod tests {
         assert_eq!(format!("{:?}", actual), format!("{:?}", expected))
     }
 
-    #[test]
-    fn from__Determinism_NonDeterminismCom__returns_ok() {
-        // Arrange
-        let path = "samples/json/Determinism";
-        let component = "NonDeterminismCom";
-        let system = create_system_from_path(path, component);
-        let component = read_json_component(path, component);
-
-        let decision = Decision::new(
-            system.get_initial_state().unwrap(),
-            component.get_edges().first().unwrap().to_owned(),
-        );
-
-        // Act
-        let actual = TransitionDecision::from(&decision, &system);
-
-        // Assert
-        let expected_len = 1;
-        assert_eq!(actual.len(), expected_len);
-    }
-
-    // Yes this test is stupid, no you will not remove it >:(
+    // Yes this test is stupid and bad, no you will not remove it >:(
     #[allow(unused_must_use)]
     #[test]
     fn resolve__EcdarUniversity_Machine__correct_TransitionDecisionPoint() {
@@ -149,48 +199,5 @@ mod tests {
         );
 
         expected_possible_decisions.map(|x| assert!(actual_possible_decisions.contains(&x)));
-    }
-
-    #[test]
-    fn from__edge_with_action_that_maps_to_single_transition__returns_correct_TransitionDecision() {
-        // Arrange
-        let system = create_EcdarUniversity_Machine_system();
-        let component = read_json_component("samples/json/EcdarUniversity", "Machine");
-        let initial = system.get_initial_state().unwrap();
-        let edge = component.get_edges()[4].clone();
-
-        let decision = Decision::new(initial.clone(), edge);
-
-        let expected = TransitionDecision {
-            source: initial.clone(),
-            decided: system
-                .next_transitions(initial.get_location(), "tea")
-                .first()
-                .unwrap()
-                .to_owned(),
-        };
-
-        assert__from__good_Decision__returns_correct_TransitionDecision(system, decision, expected);
-    }
-
-    #[test]
-    fn from__edge_with_action_that_maps_to_multiple_transitions__returns_correct_TransitionDecision(
-    ) {
-        // Arrange
-        let system = create_Simulation_Machine_system();
-        let component = read_json_component("samples/json/Simulation", "SimMachine");
-        let initial = system.get_initial_state().unwrap();
-        let edges = component.get_edges().clone();
-
-        let decision = Decision::new(initial.clone(), edges[0].clone());
-
-        let edge_action = edges[0].get_sync();
-
-        let expected = TransitionDecision {
-            source: initial.clone(),
-            decided: system.next_transitions(initial.get_location(), edge_action)[0].clone(),
-        };
-
-        assert__from__good_Decision__returns_correct_TransitionDecision(system, decision, expected);
     }
 }
