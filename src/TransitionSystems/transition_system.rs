@@ -25,28 +25,46 @@ pub enum PrecheckResult {
 
 #[derive(Clone, Copy)]
 /// Struct for determining the level for clock reduction
-pub struct Heights {
-    /// The level in the tree
-    pub(crate) tree: usize,
-    /// The level to reduce
-    pub(crate) target: usize,
+pub enum Heights {
+    Height { tree: usize, target: usize },
+    All,
+    None,
 }
 
 impl Heights {
     pub fn new(tree: usize, target: usize) -> Heights {
-        Heights { tree, target }
+        Heights::Height { tree, target }
     }
 
     /// Function to "go down" a level in the tree
     pub fn level_down(&self) -> Heights {
-        Heights {
-            tree: self.tree,
-            ..*self
+        match self {
+            Heights::Height { tree, target } => {
+                if tree - 1 == *target {
+                    Heights::All
+                } else {
+                    Heights::Height {
+                        tree: tree - 1,
+                        target: *target,
+                    }
+                }
+            }
+            Heights::All => Heights::All,
+            Heights::None => Heights::None,
         }
     }
 
+    /// Creates an empty `Heights` (ALl values are `0`)
     pub fn empty() -> Heights {
         Heights::new(0, 0)
+    }
+
+    fn is_above_target(&self) -> bool {
+        match self {
+            Heights::Height { target, tree } => tree > target,
+            Heights::All => false,
+            Heights::None => true,
+        }
     }
 }
 
@@ -217,7 +235,7 @@ pub trait TransitionSystem: DynClone {
     }
 
     fn find_redundant_clocks(&self, height: Heights) -> Vec<ClockReductionInstruction> {
-        if height.tree > height.target {
+        if height.is_above_target() {
             let (a, b) = self.get_children();
             let mut out = a.find_redundant_clocks(height.clone().level_down());
             out.extend(b.find_redundant_clocks(height.level_down()));
@@ -226,26 +244,6 @@ pub trait TransitionSystem: DynClone {
             let red = self.get_analysis_graph().find_clock_redundancies();
             red
         }
-    }
-}
-
-pub(crate) trait Intersect<T> {
-    fn intersect(&self, other: &[T]) -> Vec<T>;
-}
-
-impl Intersect<ClockReductionInstruction> for Vec<ClockReductionInstruction> {
-    // Prioritizes replacements over removals
-    fn intersect(&self, other: &[ClockReductionInstruction]) -> Vec<ClockReductionInstruction> {
-        self.iter()
-            .filter(|r| r.is_replace())
-            .chain(other.iter().filter(|r| r.is_replace()))
-            .chain(
-                self.iter()
-                    .filter(|r| !r.is_replace())
-                    .filter_map(|c| other.iter().filter(|r| !r.is_replace()).find(|rc| *rc == c)),
-            )
-            .cloned()
-            .collect()
     }
 }
 
@@ -268,7 +266,7 @@ impl ClockReductionInstruction {
         }
     }
 
-    fn is_replace(&self) -> bool {
+    pub(crate) fn is_replace(&self) -> bool {
         match self {
             ClockReductionInstruction::RemoveClock { .. } => false,
             ClockReductionInstruction::ReplaceClocks { .. } => true,

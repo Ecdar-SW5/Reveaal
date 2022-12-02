@@ -18,7 +18,6 @@ use log::info;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
-use std::ops::Range;
 
 /// The basic struct used to represent components read from either Json or xml
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq)]
@@ -339,11 +338,6 @@ impl Component {
         {
             *index -= decr;
         }
-    }
-
-    /// Gets the range of clock indices of this component
-    pub(crate) fn get_clock_range(&self) -> Option<Range<usize>> {
-        Some(*self.declarations.clocks.values().min()?..*self.declarations.clocks.values().max()?)
     }
 }
 pub fn contain(channels: &[Channel], channel: &str) -> bool {
@@ -915,6 +909,8 @@ impl Declarations {
         self.get_clocks().get(name)
     }
 
+    /// Gets the name of a given `ClockIndex`.
+    /// Returns `None` if it does not exist in the declarations
     pub fn get_clock_name_by_index(&self, index: ClockIndex) -> Option<&String> {
         self.clocks
             .iter()

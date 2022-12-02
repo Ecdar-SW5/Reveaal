@@ -12,6 +12,7 @@ pub mod test {
     use crate::ProtobufServer::services::query_request::Settings;
 
 
+    /// Reads and processes a component.
     pub fn read_json_component_and_process(
         project_path: &str,
         component_name: &str,
