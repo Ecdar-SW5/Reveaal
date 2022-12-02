@@ -220,14 +220,14 @@ mod tests {
     }
 
     #[test]
-    fn from__ProtoDecision_with_nonuniversal_ProtoFederation__returns_correct_Decision() {
+    fn proto_decision_to_decision__ProtoDecision_with_nonuniversal_ProtoFederation__returns_correct_Decision(
+    ) {
         // Arrange
-        let component = create_EcdarUniversity_Machine_component();
         let proto_decision = create_EcdarUniversity_Machine_with_nonempty_Federation_Decision();
         let system = create_EcdarUniversity_Machine_system();
 
+        let component = create_EcdarUniversity_Machine_component();
         let expected_edge = component.find_edge_from_id("E29").unwrap();
-
         let action = "tea";
         let mut expected_source = system.get_initial_state().unwrap();
         let transition =
@@ -236,17 +236,16 @@ mod tests {
             .first()
             .unwrap()
             .use_transition(&mut expected_source);
-
         let expected_decision = Decision::new(expected_source, expected_edge.to_owned());
 
         // Act
         let actual_decision = proto_decision_to_decision(proto_decision, &system, vec![component]);
 
-        let actual_decision = format!("{:?}", actual_decision);
-        let expected_decision = format!("{:?}", expected_decision);
-
         // Assert
-        assert_eq!(actual_decision, expected_decision);
+        assert_eq!(
+            format!("{:?}", actual_decision),
+            format!("{:?}", expected_decision)
+        );
     }
 
     #[test]
