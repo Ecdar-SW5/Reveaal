@@ -25,46 +25,29 @@ pub enum PrecheckResult {
 
 #[derive(Clone, Copy)]
 /// Struct for determining the level for clock reduction
-pub enum Heights {
-    Height { tree: usize, target: usize },
-    All,
-    None,
+pub struct Heights {
+    /// The level in the tree
+    pub(crate) tree: usize,
+    /// The level to reduce
+    pub(crate) target: usize,
 }
 
 impl Heights {
     pub fn new(tree: usize, target: usize) -> Heights {
-        Heights::Height { tree, target }
+        Heights { tree, target }
     }
 
     /// Function to "go down" a level in the tree
     pub fn level_down(&self) -> Heights {
-        match self {
-            Heights::Height { tree, target } => {
-                if tree - 1 == *target {
-                    Heights::All
-                } else {
-                    Heights::Height {
-                        tree: tree - 1,
-                        target: *target,
-                    }
-                }
-            }
-            Heights::All => Heights::All,
-            Heights::None => Heights::None,
+        Heights {
+            tree: self.tree - 1,
+            ..*self
         }
     }
 
     /// Creates an empty `Heights` (ALl values are `0`)
     pub fn empty() -> Heights {
         Heights::new(0, 0)
-    }
-
-    fn is_above_target(&self) -> bool {
-        match self {
-            Heights::Height { target, tree } => tree > target,
-            Heights::All => false,
-            Heights::None => true,
-        }
     }
 }
 
@@ -235,7 +218,7 @@ pub trait TransitionSystem: DynClone {
     }
 
     fn find_redundant_clocks(&self, height: Heights) -> Vec<ClockReductionInstruction> {
-        if height.is_above_target() {
+        if height.tree > height.target {
             let (a, b) = self.get_children();
             let mut out = a.find_redundant_clocks(height.clone().level_down());
             out.extend(b.find_redundant_clocks(height.level_down()));
