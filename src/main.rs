@@ -4,10 +4,7 @@ use reveaal::logging::setup_logger;
 
 use reveaal::ProtobufServer::services::query_request::settings::ReduceClocksLevel;
 use reveaal::ProtobufServer::services::query_request::Settings;
-use reveaal::{
-    extract_system_rep, parse_queries, start_grpc_server_with_tokio, xml_parser, ComponentLoader,
-    JsonProjectLoader, ProjectLoader, Query, QueryResult, XmlProjectLoader, DEFAULT_SETTINGS,
-};
+use reveaal::{extract_system_rep, parse_queries, start_grpc_server_with_tokio, xml_parser, ComponentLoader, JsonProjectLoader, ProjectLoader, Query, QueryResult, XmlProjectLoader, DEFAULT_SETTINGS, TEST_SETTINGS};
 use std::env;
 use std::str::FromStr;
 

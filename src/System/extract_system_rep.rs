@@ -8,7 +8,7 @@ use crate::System::executable_query::{
 };
 use crate::System::extract_state::get_state;
 use std::cmp::max;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::TransitionSystems::{
     CompiledComponent, Composition, Conjunction, Quotient, TransitionSystemPtr,
@@ -38,7 +38,8 @@ pub fn create_executable_query<'a>(
 
                 let mut left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
                 let mut right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
-                clock_reduction::clock_reduction_two_hands(&mut left, &mut right, component_loader.get_settings(), &mut dim)?;
+                clock_reduction::clock_reduction_two_hands(&mut left, &mut right, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
+
                 Ok(Box::new(RefinementExecutor {
                 sys1: left.compile(dim)?,
                 sys2: right.compile(dim)?,
@@ -73,26 +74,28 @@ pub fn create_executable_query<'a>(
                 }))
             },
             QueryExpression::Consistency(query_expression) => {
+                let mut quotient_index = None;
                 let mut recipe = get_system_recipe(
                     query_expression,
                     component_loader,
                     &mut dim,
-                    &mut None
+                    &mut quotient_index
                 );
-                clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim)?;
+                clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
                 Ok(Box::new(ConsistencyExecutor {
                     recipe,
                     dim
                 }))
             },
             QueryExpression::Determinism(query_expression) => {
+                let mut quotient_index = None;
                 let mut recipe = get_system_recipe(
                     query_expression,
                     component_loader,
                     &mut dim,
-                    &mut None
+                    &mut quotient_index
                 );
-                clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim)?;
+                clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
                 Ok(Box::new(DeterminismExecutor {
                     system: recipe.compile(dim)?,
                 }))
@@ -113,13 +116,14 @@ pub fn create_executable_query<'a>(
             ,
             QueryExpression::Prune(save_as_expression) => {
                 if let QueryExpression::SaveAs(query_expression, comp_name) = save_as_expression.as_ref() {
+                    let mut quotient_index = None;
                     let mut recipe = get_system_recipe(
                         query_expression,
                         component_loader,
                         &mut dim,
-                        &mut None
+                        &mut quotient_index
                     );
-                    clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim)?;
+                    clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
                     Ok(Box::new(
                         GetComponentExecutor {
                             system: pruning::prune_system(recipe.compile(dim)?, dim),
@@ -219,7 +223,6 @@ impl SystemRecipe {
                 }
             }
         }
-        Self::compress_component_decls(comps, omitting);
     }
 
     /// Gets all components in `SystemRecipe`
@@ -236,22 +239,19 @@ impl SystemRecipe {
         }
     }
 
-    fn compress_component_decls(
-        mut comps: Vec<&mut Component>,
-        omit: HashSet<(ClockIndex, usize)>,
-    ) {
-        let mut list: Vec<&(ClockIndex, usize)> = omit.iter().collect();
-        list.sort_by(|(c1, _), (c2, _)| c1.cmp(c2));
-
-        for (clock, size) in list.iter().rev() {
-            comps.iter_mut().for_each(|c| {
-                c.declarations
-                    .clocks
-                    .values_mut()
-                    .filter(|cl| **cl > *clock)
-                    .for_each(|cl| *cl -= size)
-            });
-            debug!("Moved all clocks with index over or equal to '{clock}' {size} back.")
+    fn change_quotient(&mut self, index: ClockIndex) {
+        match self {
+            SystemRecipe::Composition(l, r) |
+            SystemRecipe::Conjunction(l, r) => {
+                l.change_quotient(index);
+                r.change_quotient(index);
+            }
+            SystemRecipe::Quotient(l, r, q) => {
+                *q = index;
+                l.change_quotient(index);
+                r.change_quotient(index);
+            }
+            SystemRecipe::Component(_) => (),
         }
     }
 }
@@ -333,6 +333,7 @@ mod clock_reduction {
         rhs: &mut Box<SystemRecipe>,
         settings: &Settings,
         dim: &mut usize,
+        has_quotient: bool,
     ) -> Result<(), String> {
         let heights = match heights(
             &settings.reduce_clocks_level,
@@ -355,6 +356,12 @@ mod clock_reduction {
 
         lhs.reduce_clocks(clocks.clone());
         rhs.reduce_clocks(clocks);
+        compress_component_decls(lhs.get_components(), Some(rhs.get_components()));
+
+        if has_quotient {
+            lhs.change_quotient(*dim);
+            rhs.change_quotient(*dim);
+        }
         Ok(())
     }
 
@@ -362,6 +369,7 @@ mod clock_reduction {
         sys: &mut Box<SystemRecipe>,
         settings: &Settings,
         dim: &mut usize,
+        has_quotient: bool,
     ) -> Result<(), String> {
         let heights = match heights(&settings.reduce_clocks_level, sys.height())? {
             Some(h) => h,
@@ -376,6 +384,10 @@ mod clock_reduction {
         debug!("New dimension: {dim}");
 
         sys.reduce_clocks(clocks);
+        compress_component_decls(sys.get_components(), None);
+        if has_quotient {
+            sys.change_quotient(*dim);
+        }
         Ok(())
     }
 
@@ -402,5 +414,33 @@ mod clock_reduction {
             )
             .cloned()
             .collect()
+    }
+
+    fn compress_component_decls(
+        mut comps: Vec<&mut Component>,
+        other: Option<Vec<&mut Component>>,
+        //  omit: HashSet<(ClockIndex, usize)>,
+    ) {
+        let mut seen: HashMap<ClockIndex, ClockIndex> = HashMap::new(); // Key = current, value = Should be
+        let mut l: Vec<&mut ClockIndex> = comps
+            .iter_mut()
+            .flat_map(|c| c.declarations.clocks.values_mut())
+            .collect();
+        let mut temp = other.unwrap_or_default();
+        l.extend(
+            temp.iter_mut()
+                .flat_map(|c| c.declarations.clocks.values_mut()),
+        );
+        l.sort();
+        let mut index = 1; //**l.first().unwrap_or_else(|| panic!("No clocks"));
+        for clock in l {
+            if let Some(val) = seen.get(clock) {
+                *clock = *val;
+            } else {
+                seen.insert(*clock, index);
+                *clock = index;
+                index += 1;
+            }
+        }
     }
 }

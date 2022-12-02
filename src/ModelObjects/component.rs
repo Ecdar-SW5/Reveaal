@@ -325,7 +325,10 @@ impl Component {
             let old = *index;
             *index = global_index;
             // TODO: Maybe log the global clock name instead of index
-            info!("Replaced Clock '{name}' (index {old}) with {global_index} in component {}", self.name); // Should be changed in the future to be the information logger
+            info!(
+                "Replaced Clock '{name}' (index {old}) with {global_index} in component {}",
+                self.name
+            ); // Should be changed in the future to be the information logger
         }
     }
 }
