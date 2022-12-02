@@ -171,43 +171,6 @@ mod tests {
     };
     use test_case::test_case;
 
-    #[test]
-    fn decision_point_to_proto_decision_point__initial_DecisionPoint_EcdarUniversity_Administration_par_Machine_par_Researcher__returns_correct_ProtoDecisionPoint(
-    ) {
-        // Arrange
-        let project_path = "samples/json/EcdarUniversity";
-
-        let administration = read_json_component(project_path, "Administration");
-        let machine = read_json_component(project_path, "Machine");
-        let researcher = read_json_component(project_path, "Researcher");
-
-        let combined = vec![administration, machine, researcher];
-        let composition = "(Administration || Machine || Researcher)";
-
-        let system = components_to_transition_system(combined, composition);
-
-        let decision_point = DecisionPoint::new(
-            system.get_initial_state().unwrap(),
-            vec![
-                "E11".to_string(),
-                "E16".to_string(),
-                "E29".to_string(),
-                "E44".to_string(),
-            ],
-        );
-
-        let binding = get_composition_response_Administration_Machine_Researcher()
-            .unwrap()
-            .into_inner();
-        let expected = binding.new_decision_points.first().unwrap();
-
-        // Act
-        let actual = decision_point_to_proto_decision_point(&decision_point, &system);
-
-        // Assert
-        assert_eq!(format!("{:?}", actual), format!("{:?}", expected))
-    }
-
     #[test_case(
         vec![
             read_json_component("samples/json/EcdarUniversity", "Machine"),
@@ -279,6 +242,43 @@ mod tests {
                 proto_state_to_state(state_to_proto_state(&initial, &system), &system)
             )
         );
+    }
+
+    #[test]
+    fn decision_point_to_proto_decision_point__initial_DecisionPoint_EcdarUniversity_Administration_par_Machine_par_Researcher__returns_correct_ProtoDecisionPoint(
+    ) {
+        // Arrange
+        let project_path = "samples/json/EcdarUniversity";
+
+        let administration = read_json_component(project_path, "Administration");
+        let machine = read_json_component(project_path, "Machine");
+        let researcher = read_json_component(project_path, "Researcher");
+
+        let combined = vec![administration, machine, researcher];
+        let composition = "(Administration || Machine || Researcher)";
+
+        let system = components_to_transition_system(combined, composition);
+
+        let decision_point = DecisionPoint::new(
+            system.get_initial_state().unwrap(),
+            vec![
+                "E11".to_string(),
+                "E16".to_string(),
+                "E29".to_string(),
+                "E44".to_string(),
+            ],
+        );
+
+        let binding = get_composition_response_Administration_Machine_Researcher()
+            .unwrap()
+            .into_inner();
+        let expected = binding.new_decision_points.first().unwrap();
+
+        // Act
+        let actual = decision_point_to_proto_decision_point(&decision_point, &system);
+
+        // Assert
+        assert_eq!(format!("{:?}", actual), format!("{:?}", expected))
     }
 
     #[test]
