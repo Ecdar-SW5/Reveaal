@@ -62,18 +62,15 @@ fn send_determinism_query_with_components(c: &mut Criterion)
     c.bench_function("Determinism multithread bench", |b| {
         b.to_async(FuturesExecutor).iter(|| async {
             let backend = ConcreteEcdarBackend::default();
-            let responses = (0..1)
-                .map(|hash| {
-                    let request = create_query_request(
-                        &big_model,
-                        &very_expensive,
-                        hash,
-                    );
-                    backend.send_query(request)
-                })
-                .collect::<FuturesUnordered<_>>();
-
-            _ = black_box(responses.collect::<Vec<_>>().await);
+            for _ in 0..NUM_OF_REQUESTS {
+                let request = create_query_request(
+                    &big_model,
+                    &very_expensive,
+                    0,
+                );
+                let request = backend.send_query(request);
+                _ = black_box(request.await);
+            }
         });
     });
 }
