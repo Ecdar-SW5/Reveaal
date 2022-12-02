@@ -226,7 +226,7 @@ impl SystemRecipe {
     }
 
     ///Applies the clock-reduction
-    pub(crate) fn reduce_clocks(&mut self, clock_instruction: Vec<ClockReductionInstruction>) {
+    pub fn reduce_clocks(&mut self, clock_instruction: Vec<ClockReductionInstruction>) {
         let mut comps = self.get_components();
         let mut omitting = HashSet::new();
         for redundant in clock_instruction {
