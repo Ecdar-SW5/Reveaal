@@ -306,7 +306,7 @@ mod tests {
     }
 
     #[test]
-    fn from__initial_DecisionPoint_EcdarUniversity_Machine_after_tea__returns_correct_ProtoDecisionPoint(
+    fn decision_point_to_proto_decision_point__initial_DecisionPoint_EcdarUniversity_Machine_after_tea__returns_correct_ProtoDecisionPoint(
     ) {
         // Arrange
         let system = create_EcdarUniversity_Machine_system();
@@ -319,12 +319,12 @@ mod tests {
         let decisionPoint =
             DecisionPoint::new(after_tea, vec!["E27".to_string(), "E29".to_string()]);
 
+        let expected = create_decision_point_after_taking_E5();
+
         // Act
         let actual = decision_point_to_proto_decision_point(&decisionPoint, &system);
 
         // Assert
-        let expected = create_decision_point_after_taking_E5();
-
         assert_eq!(actual.source, expected.source);
         assert_eq!(actual.edges.len(), 2);
         assert!(actual.edges.contains(&expected.edges[0]));
