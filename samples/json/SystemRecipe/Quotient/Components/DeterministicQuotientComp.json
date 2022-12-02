@@ -88,18 +88,11 @@
       "targetLocation": "L71",
       "status": "OUTPUT",
       "select": "",
-      "guard": "u\u003c\u003d2",
+      "guard": "",
       "update": "",
-      "sync": "Output1",
+      "sync": "Output2",
       "isLocked": false,
       "nails": [
-        {
-          "x": 270.0,
-          "y": 270.0,
-          "propertyType": "GUARD",
-          "propertyX": 10.0,
-          "propertyY": 0.0
-        },
         {
           "x": 322.5,
           "y": 243.66666666666663,
@@ -116,18 +109,11 @@
       "targetLocation": "L72",
       "status": "OUTPUT",
       "select": "",
-      "guard": "u\u003e2",
+      "guard": "",
       "update": "",
       "sync": "Output1",
       "isLocked": false,
       "nails": [
-        {
-          "x": 260.0,
-          "y": 320.0,
-          "propertyType": "GUARD",
-          "propertyX": 10.0,
-          "propertyY": -20.0
-        },
         {
           "x": 307.8333333333333,
           "y": 346.66666666666663,
