@@ -55,16 +55,13 @@ pub(crate) mod tests {
     fn initial__EcdarUniversity_Machine__return_correct_state() {
         // Arrange
         let system = create_EcdarUniversity_Machine_system();
+        let expected = system.get_initial_state().unwrap();
 
         // Act
-        let actual = format!(
-            "{:?}",
-            TransitionDecisionPoint::initial(&system).unwrap().source
-        );
+        let actual = TransitionDecisionPoint::initial(&system).unwrap().source;
 
         // Assert
-        let expected = format!("{:?}", system.get_initial_state().unwrap());
-        assert_eq!(actual, expected)
+        assert_eq!(format!("{:?}", actual), format!("{:?}", expected))
     }
 
     #[test]
