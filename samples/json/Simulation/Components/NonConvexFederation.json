@@ -1,0 +1,28 @@
+{
+    "name": "NonConvexFederation",
+    "declarations": "clock x;",
+    "locations": [
+        {
+            "id": "L4",
+            "nickname": "",
+            "invariant": "x < 2 || x > 4",
+            "type": "INITIAL",
+            "urgency": "NORMAL",
+            "x": 0,
+            "y": 0,
+            "color": "0",
+            "nicknameX": 0,
+            "nicknameY": 0,
+            "invariantX": 0,
+            "invariantY": 0
+        }
+    ],
+    "edges": [],
+    "description": "",
+    "x": 0,
+    "y": 0,
+    "width": 0,
+    "height": 0,
+    "color": "0",
+    "includeInPeriodicCheck": false
+}
