@@ -197,7 +197,7 @@ impl SystemRecipe {
     }
 
     ///Applies the clock-reduction
-    pub(crate) fn reduce_clocks(&mut self, clock_instruction: Vec<ClockReductionInstruction>) {
+    fn reduce_clocks(&mut self, clock_instruction: Vec<ClockReductionInstruction>) {
         let mut comps = self.get_components();
         let mut omitting = HashSet::new();
         for redundant in clock_instruction {
@@ -241,8 +241,7 @@ impl SystemRecipe {
 
     fn change_quotient(&mut self, index: ClockIndex) {
         match self {
-            SystemRecipe::Composition(l, r) |
-            SystemRecipe::Conjunction(l, r) => {
+            SystemRecipe::Composition(l, r) | SystemRecipe::Conjunction(l, r) => {
                 l.change_quotient(index);
                 r.change_quotient(index);
             }
