@@ -25,11 +25,14 @@ impl Decision {
         &self.decided
     }
 
+    /// Resolves a [`Decision`]: use the `decided` [`Edge`] and returns a [`Vec`] of the [`DecisionPoint`]s of the destination [`State`]s.
+    ///
+    /// Some `decided` [`Edge`]s lead to ambiguity ie. they correspond to multiple [`Transition`]s. Thus one [`Edge`] can lead to multiple [`State`]s.  
     pub fn resolve(&self, system: &TransitionSystemPtr) -> Vec<DecisionPoint> {
         TransitionDecision::from(self, system)
             .into_iter()
-            .filter_map(|decision| decision.resolve(system))
-            .map(|decision_point| DecisionPoint::from(&decision_point))
+            .filter_map(|transition_decision| transition_decision.resolve(system))
+            .map(|transition_decision_point| DecisionPoint::from(&transition_decision_point))
             .collect()
     }
 }
