@@ -996,7 +996,7 @@ pub fn get_conjunction_response_HalfAdm1_HalfAdm2_after_E37(
 pub fn create_good_request() -> tonic::Request<SimulationStepRequest> {
     let simulation_info =
         create_simulation_info_from(String::from("Machine"), create_sample_json_component());
-    let initial_decision_point = create_initialdecision_point();
+    let initial_decision_point = create_initial_decision_point();
     let chosen_source = initial_decision_point.source.clone().unwrap();
     let chosen_edge = initial_decision_point.edges[1].clone();
 
@@ -1151,7 +1151,7 @@ pub fn create_good_start_request() -> Request<SimulationStartRequest> {
 pub fn create_expected_response_to_good_start_request(
 ) -> Result<Response<SimulationStepResponse>, Status> {
     Ok(Response::new(SimulationStepResponse {
-        new_decision_points: vec![create_initialdecision_point()],
+        new_decision_points: vec![create_initial_decision_point()],
     }))
 }
 
@@ -1221,7 +1221,7 @@ pub fn create_edges_from_L5() -> Vec<ProtoEdge> {
 //          /
 // (L5, universe)-------tea! E5----->
 //
-pub fn create_initialdecision_point() -> ProtoDecisionPoint {
+pub fn create_initial_decision_point() -> ProtoDecisionPoint {
     ProtoDecisionPoint {
         source: Some(ProtoState {
             location_tuple: Some(ProtoLocationTuple {

@@ -161,7 +161,7 @@ mod tests {
     use crate::component::Component;
     use crate::tests::Simulation::test_data::{
         create_EcdarUniversity_Machine_system, create_decision_point_after_taking_E5,
-        create_initialdecision_point, get_composition_response_Administration_Machine_Researcher,
+        create_initial_decision_point, get_composition_response_Administration_Machine_Researcher,
         initial_transition_decision_point_EcdarUniversity_Machine,
     };
     use crate::DataReader::proto_reader::proto_state_to_state;
@@ -282,10 +282,10 @@ mod tests {
     }
 
     #[test]
-    fn from__initial_DecisionPoint_EcdarUniversity_Machine__returns_correct_ProtoDecisionPoint() {
+    fn decision_point_to_proto_decision_point__initial_DecisionPoint_EcdarUniversity_Machine__returns_correct_ProtoDecisionPoint(
+    ) {
         // Arrange
         let transitionDecisionPoint = initial_transition_decision_point_EcdarUniversity_Machine();
-
         let system = create_EcdarUniversity_Machine_system();
 
         let decisionPoint = DecisionPoint::new(
@@ -293,12 +293,12 @@ mod tests {
             vec!["E27".to_string(), "E29".to_string()],
         );
 
+        let expected = create_initial_decision_point();
+
         // Act
         let actual = decision_point_to_proto_decision_point(&decisionPoint, &system);
 
         // Assert
-        let expected = create_initialdecision_point();
-
         assert_eq!(actual.source, expected.source);
         assert_eq!(actual.edges.len(), 2);
         assert!(actual.edges.contains(&expected.edges[0]));
