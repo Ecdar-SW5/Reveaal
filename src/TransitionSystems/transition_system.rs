@@ -361,19 +361,29 @@ impl ClockAnalysisGraph {
 
         for edge in &self.edges {
             //First the clocks which are equivalent in this edge are found. This is defined by every
-            //clock in their respective group are set to the same value. This is done through a
-            //HashMap with the value being key and the group of clocks being the value
+            //clock in their respective group are set to the same value. This is done in a HashMap
+            //where each clock group has their own unique u32, the clock indices
+            //with the same value are in the same group
             let mut locally_equivalent_clock_groups: HashMap<ClockIndex, u32> =
                 HashMap::new();
 
+            //Then we create the groups in the hashmap
             for update in edge.updates.iter() {
                 locally_equivalent_clock_groups.insert(update.clock_index, update.value as u32);
             }
 
+            //Then the locally equivalent clock groups will be combined with the globally equivalent
+            //clock groups to identify the new globally equivalent clocks
             let mut new_groups: HashMap<usize, HashSet<ClockIndex>> = HashMap::new();
             let mut group_offset: usize = u32::MAX as usize;
             let mut old_group_index: usize = 0;
 
+            //For each of the existing clock groups we will remove the clocks from the groups
+            //that are locally equivalent, this means that each global group will now be
+            //updated to uphold the loop invariant.
+            //This is done by giving each globally equivalent clock group a group offset
+            //So all groups in the locally equivalent clock groups will be partitioned
+            //by the group they are in, in their globally equivalent group
             for equivalent_clock_group in &mut equivalent_clock_groups {
                 for clock in equivalent_clock_group.iter() {
                     if let Some(groupId) = locally_equivalent_clock_groups.get(&clock) {
@@ -385,8 +395,12 @@ impl ClockAnalysisGraph {
                 group_offset += (u32::MAX as usize) * 2;
                 old_group_index += 1;
             }
-            //Then we use the new groups which uphold the loop invariant
-            equivalent_clock_groups = new_groups.into_iter().map(|pair| pair.1).filter(|group| group.len() > 1).collect();
+
+            //Then we just have to take each of the values in the map and collect them into a vec
+            equivalent_clock_groups = new_groups.into_iter()
+                .map(|pair| pair.1)
+                .filter(|group| group.len() > 1)
+                .collect();
         }
         equivalent_clock_groups
     }
