@@ -38,7 +38,7 @@ pub fn create_executable_query<'a>(
 
                 let mut left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
                 let mut right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
-                clock_reduction::clock_reduction_two_hands(&mut left, &mut right, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
+                clock_reduction::clock_reduce(&mut left, Some(&mut right), component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
 
                 Ok(Box::new(RefinementExecutor {
                 sys1: left.compile(dim)?,
@@ -81,7 +81,7 @@ pub fn create_executable_query<'a>(
                     &mut dim,
                     &mut quotient_index
                 );
-                clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
+                clock_reduction::clock_reduce(&mut recipe, None, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
                 Ok(Box::new(ConsistencyExecutor {
                     recipe,
                     dim
@@ -95,7 +95,7 @@ pub fn create_executable_query<'a>(
                     &mut dim,
                     &mut quotient_index
                 );
-                clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
+                clock_reduction::clock_reduce(&mut recipe, None, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
                 Ok(Box::new(DeterminismExecutor {
                     system: recipe.compile(dim)?,
                 }))
@@ -123,7 +123,7 @@ pub fn create_executable_query<'a>(
                         &mut dim,
                         &mut quotient_index
                     );
-                    clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
+                    clock_reduction::clock_reduce(&mut recipe, None, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
                     Ok(Box::new(
                         GetComponentExecutor {
                             system: pruning::prune_system(recipe.compile(dim)?, dim),
@@ -323,54 +323,29 @@ fn validate_reachability_input(
 mod clock_reduction {
     use super::*;
 
-    pub fn clock_reduction_two_hands(
+    pub fn clock_reduce(
         lhs: &mut Box<SystemRecipe>,
-        rhs: &mut Box<SystemRecipe>,
+        mut rhs: Option<&mut Box<SystemRecipe>>,
         settings: &Settings,
         dim: &mut usize,
         has_quotient: bool,
     ) -> Result<(), String> {
         let heights = match heights(
             &settings.reduce_clocks_level,
-            max(lhs.height(), rhs.height()),
+            max(lhs.height(), rhs.as_ref().map(|s| s.height()).unwrap_or(0)),
         )? {
             Some(h) => h,
             None => return Ok(()),
         };
 
-        let clocks = intersect(
-            lhs.clone().compile(*dim)?.find_redundant_clocks(heights),
-            rhs.clone().compile(*dim)?.find_redundant_clocks(heights),
-        );
-
-        debug!("Clocks to be reduced: {clocks:?}");
-        *dim -= clocks
-            .iter()
-            .fold(0, |acc, c| acc + c.clocks_removed_count());
-        debug!("New dimension: {dim}");
-
-        lhs.reduce_clocks(clocks.clone());
-        rhs.reduce_clocks(clocks);
-        compress_component_decls(lhs.get_components(), Some(rhs.get_components()));
-
-        if has_quotient {
-            lhs.change_quotient(*dim);
-            rhs.change_quotient(*dim);
-        }
-        Ok(())
-    }
-
-    pub fn clock_reduce(
-        sys: &mut Box<SystemRecipe>,
-        settings: &Settings,
-        dim: &mut usize,
-        has_quotient: bool,
-    ) -> Result<(), String> {
-        let heights = match heights(&settings.reduce_clocks_level, sys.height())? {
-            Some(h) => h,
-            None => return Ok(()),
+        let clocks = if let Some(ref mut r) = rhs {
+            intersect(
+                lhs.clone().compile(*dim)?.find_redundant_clocks(heights),
+                r.clone().compile(*dim)?.find_redundant_clocks(heights),
+            )
+        } else {
+            lhs.clone().compile(*dim)?.find_redundant_clocks(heights)
         };
-        let clocks = sys.clone().compile(*dim)?.find_redundant_clocks(heights);
 
         debug!("Clocks to be reduced: {clocks:?}");
         *dim -= clocks
@@ -378,10 +353,20 @@ mod clock_reduction {
             .fold(0, |acc, c| acc + c.clocks_removed_count());
         debug!("New dimension: {dim}");
 
-        sys.reduce_clocks(clocks);
-        compress_component_decls(sys.get_components(), None);
-        if has_quotient {
-            sys.change_quotient(*dim);
+        if let Some(r) = rhs {
+            r.reduce_clocks(clocks.clone());
+            lhs.reduce_clocks(clocks);
+            compress_component_decls(lhs.get_components(), Some(r.get_components()));
+            if has_quotient {
+                lhs.change_quotient(*dim);
+                r.change_quotient(*dim);
+            }
+        } else {
+            lhs.reduce_clocks(clocks);
+            compress_component_decls(lhs.get_components(), None);
+            if has_quotient {
+                lhs.change_quotient(*dim);
+            }
         }
         Ok(())
     }
