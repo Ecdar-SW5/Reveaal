@@ -201,15 +201,16 @@ impl SystemRecipe {
         let mut comps = self.get_components();
         for redundant in clock_instruction {
             match redundant {
-                ClockReductionInstruction::RemoveClock { clock_index } => {
-                    match comps
-                        .iter_mut()
-                        .find(|c| c.declarations.clocks.values().any(|ci| *ci == clock_index))
-                    {
-                        Some(c) => c.remove_clock(clock_index),
-                        None => continue,
-                    }
-                }
+                ClockReductionInstruction::RemoveClock { clock_index } => comps
+                    .iter_mut()
+                    .find(|c| c.declarations.clocks.values().any(|ci| *ci == clock_index))
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "A component could not be found for clock index {}",
+                            clock_index
+                        )
+                    })
+                    .remove_clock(clock_index),
                 ClockReductionInstruction::ReplaceClocks {
                     clock_indices,
                     clock_index,
