@@ -211,10 +211,6 @@ mod tests {
         assert_eq!(format!("{:?}", actual), format!("{:?}", expected))
     }
 
-    // let project_path = "samples/json/EcdarUniversity";
-
-    // let machine = read_json_component(project_path, "Machine");
-
     #[test_case(
         vec![
             read_json_component("samples/json/EcdarUniversity", "Machine"),
