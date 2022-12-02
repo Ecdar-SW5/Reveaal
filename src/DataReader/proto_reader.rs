@@ -249,7 +249,8 @@ mod tests {
     }
 
     #[test]
-    fn from__ProtoDecision_with_composite_components__returns_correct_Decision() {
+    fn proto_decision_to_decision__ProtoDecision_with_conjunction_of_components__returns_correct_Decision(
+    ) {
         // Arrange
         let machine3 = read_json_component("samples/json/EcdarUniversity", "Machine3");
         let machine = read_json_component("samples/json/EcdarUniversity", "Machine");
@@ -259,18 +260,16 @@ mod tests {
             create_EcdarUniversity_Machine3and1_with_nonempty_Federation_Decision();
 
         let expected_edge = machine.find_edge_from_id("E29").unwrap();
-
         let expected_source = system.get_initial_state().unwrap();
-
         let expected_decision = Decision::new(expected_source, expected_edge.to_owned());
 
         // Act
         let actual_decision = proto_decision_to_decision(proto_decision, &system, components);
 
-        let actual_decision = format!("{:?}", actual_decision);
-        let expected_decision = format!("{:?}", expected_decision);
-
         // Assert
-        assert_eq!(actual_decision, expected_decision);
+        assert_eq!(
+            format!("{:?}", actual_decision),
+            format!("{:?}", expected_decision)
+        );
     }
 }
