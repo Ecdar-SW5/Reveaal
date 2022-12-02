@@ -167,15 +167,12 @@ mod tests {
     use crate::DataReader::proto_reader::proto_state_to_state;
     use crate::TransitionSystems::transition_system::components_to_transition_system;
     use crate::{
-        DataReader::json_reader::read_json_component,
-        ProtobufServer::services::SimulationStepResponse,
-        Simulation::decision_point::DecisionPoint,
+        DataReader::json_reader::read_json_component, Simulation::decision_point::DecisionPoint,
     };
     use test_case::test_case;
-    use tonic::Response;
 
     #[test]
-    fn from__initial_DecisionPoint_EcdarUniversity_Administration_par_Machine_par_Researcher__returns_correct_ProtoDecisionPoint(
+    fn decision_point_to_proto_decision_point__initial_DecisionPoint_EcdarUniversity_Administration_par_Machine_par_Researcher__returns_correct_ProtoDecisionPoint(
     ) {
         // Arrange
         let project_path = "samples/json/EcdarUniversity";
@@ -199,15 +196,15 @@ mod tests {
             ],
         );
 
+        let binding = get_composition_response_Administration_Machine_Researcher()
+            .unwrap()
+            .into_inner();
+        let expected = binding.new_decision_points.first().unwrap();
+
         // Act
         let actual = decision_point_to_proto_decision_point(&decision_point, &system);
-        let actual = Response::new(SimulationStepResponse {
-            new_decision_points: vec![actual],
-        });
 
         // Assert
-        let expected = get_composition_response_Administration_Machine_Researcher().unwrap();
-
         assert_eq!(format!("{:?}", actual), format!("{:?}", expected))
     }
 
