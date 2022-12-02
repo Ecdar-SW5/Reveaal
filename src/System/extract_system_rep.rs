@@ -213,11 +213,9 @@ impl SystemRecipe {
                 ClockReductionInstruction::ReplaceClocks {
                     clock_indices,
                     clock_index,
-                } => {
-                    comps
-                        .iter_mut()
-                        .for_each(|c| c.replace_clock(clock_index, &clock_indices));
-                }
+                } => comps
+                    .iter_mut()
+                    .for_each(|c| c.replace_clock(clock_index, &clock_indices)),
             }
         }
     }
