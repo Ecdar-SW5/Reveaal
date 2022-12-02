@@ -238,6 +238,13 @@ mod tests {
         "(HalfAdm1 && HalfAdm2)";
         "(HalfAdm1 && HalfAdm2)"
     )]
+    #[test_case(
+        vec![
+            read_json_component("samples/json/Simulation", "NonConvexFederation"),
+            ],
+        "(NonConvexFederation)";
+        "(NonConvexFederation)"
+    )]
     fn state_to_proto_state_to_state_is_same_state(components: Vec<Component>, composition: &str) {
         let system = components_to_transition_system(components, composition);
         let initial = system.get_initial_state().unwrap();
