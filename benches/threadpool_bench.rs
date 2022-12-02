@@ -46,8 +46,7 @@ fn send_query_with_components(
     });
 }
 
-fn send_determinism_query_with_components(c: &mut Criterion)
-{
+fn send_determinism_query_with_components(c: &mut Criterion) {
     let big_model = vec![
         std::fs::read_to_string(format!("{}/Components/Administration.json", PATH)).unwrap(),
         std::fs::read_to_string(format!("{}/Components/Researcher.json", PATH)).unwrap(),
@@ -57,17 +56,15 @@ fn send_determinism_query_with_components(c: &mut Criterion)
         std::fs::read_to_string(format!("{}/Components/Machine3.json", PATH)).unwrap(),
     ];
 
-    let very_expensive = String::from("determinism: Administration || Researcher || Machine || Adm2 || Machine2 || Machine3");
+    let very_expensive = String::from(
+        "determinism: Administration || Researcher || Machine || Adm2 || Machine2 || Machine3",
+    );
 
     c.bench_function("Determinism multithread bench", |b| {
         b.to_async(FuturesExecutor).iter(|| async {
             let backend = ConcreteEcdarBackend::default();
             for _ in 0..NUM_OF_REQUESTS {
-                let request = create_query_request(
-                    &big_model,
-                    &very_expensive,
-                    0,
-                );
+                let request = create_query_request(&big_model, &very_expensive, 0);
                 let request = backend.send_query(request);
                 _ = black_box(request.await);
             }
@@ -134,8 +131,6 @@ fn threadpool_cache(c: &mut Criterion) {
         &cheap_query,
         false,
     );
-
-
 }
 
 criterion_group! {
