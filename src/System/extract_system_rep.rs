@@ -17,7 +17,7 @@ use crate::TransitionSystems::{
 use crate::component::State;
 use crate::ProtobufServer::services::query_request::{settings::ReduceClocksLevel, Settings};
 use crate::System::pruning;
-use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Heights, Intersect};
+use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Heights};
 use edbm::util::constraints::ClockIndex;
 use log::debug;
 use simple_error::bail;
@@ -38,7 +38,7 @@ pub fn create_executable_query<'a>(
 
                 let mut left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
                 let mut right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
-                clock_reduction(&mut left, &mut right, component_loader.get_settings(), &mut dim)?;
+                clock_reduction::clock_reduction_two_hands(&mut left, &mut right, component_loader.get_settings(), &mut dim)?;
                 Ok(Box::new(RefinementExecutor {
                 sys1: left.compile(dim)?,
                 sys2: right.compile(dim)?,
@@ -72,23 +72,29 @@ pub fn create_executable_query<'a>(
                     end_state,
                 }))
             },
-            QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
-                recipe: get_system_recipe(
+            QueryExpression::Consistency(query_expression) => {
+                let mut recipe = get_system_recipe(
                     query_expression,
                     component_loader,
                     &mut dim,
                     &mut None
-                ),
-                dim
-            })),
+                );
+                clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim)?;
+                Ok(Box::new(ConsistencyExecutor {
+                    recipe,
+                    dim
+                }))
+            },
             QueryExpression::Determinism(query_expression) => {
+                let mut recipe = get_system_recipe(
+                    query_expression,
+                    component_loader,
+                    &mut dim,
+                    &mut None
+                );
+                clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim)?;
                 Ok(Box::new(DeterminismExecutor {
-                    system: get_system_recipe(
-                        query_expression,
-                        component_loader,
-                        &mut dim,
-                        &mut None,
-                    ).compile(dim)?,
+                    system: recipe.compile(dim)?,
                 }))
             },
             QueryExpression::GetComponent(save_as_expression) => {
@@ -107,9 +113,16 @@ pub fn create_executable_query<'a>(
             ,
             QueryExpression::Prune(save_as_expression) => {
                 if let QueryExpression::SaveAs(query_expression, comp_name) = save_as_expression.as_ref() {
+                    let mut recipe = get_system_recipe(
+                        query_expression,
+                        component_loader,
+                        &mut dim,
+                        &mut None
+                    );
+                    clock_reduction::clock_reduce(&mut recipe, component_loader.get_settings(), &mut dim)?;
                     Ok(Box::new(
                         GetComponentExecutor {
-                            system: pruning::prune_system(get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim)?, dim),
+                            system: pruning::prune_system(recipe.compile(dim)?, dim),
                             comp_name: comp_name.clone(),
                             component_loader
                         }
@@ -124,52 +137,6 @@ pub fn create_executable_query<'a>(
         }
     } else {
         bail!("No query was supplied for extraction")
-    }
-}
-
-fn clock_reduction(
-    left: &mut Box<SystemRecipe>,
-    right: &mut Box<SystemRecipe>,
-    set: &Settings,
-    dim: &mut usize,
-) -> Result<(), String> {
-    let height = max(left.height(), right.height());
-    let heights = match set.reduce_clocks_level.to_owned().ok_or_else(|| "No clock reduction level specified".to_string())? {
-            ReduceClocksLevel::Level(y) if y >= 0 => Heights::new(height, y as usize),
-            ReduceClocksLevel::All(true) => Heights::new(height, height),
-            ReduceClocksLevel::All(false) => return Ok(()),
-            ReduceClocksLevel::Level(err) => return Err(format!("Clock reduction error: Couldn't parse argument correctly. Got {err}, expected a value above")),
-        };
-
-    let clocks = left
-        .clone()
-        .compile(*dim)?
-        .find_redundant_clocks(heights)
-        .intersect(&right.clone().compile(*dim)?.find_redundant_clocks(heights));
-
-    debug!("Clocks to be reduced: {clocks:?}");
-    *dim -= clocks
-        .iter()
-        .fold(0, |acc, c| acc + c.clocks_removed_count());
-    debug!("New dimension: {dim}");
-
-    left.reduce_clocks(clocks.clone());
-    right.reduce_clocks(clocks);
-    Ok(())
-}
-
-fn clean_component_decls(mut comps: Vec<&mut Component>, omit: HashSet<(ClockIndex, usize)>) {
-    let mut list: Vec<&(ClockIndex, usize)> = omit.iter().collect();
-    list.sort_by(|(c1, _), (c2, _)| c1.cmp(c2));
-
-    for (clock, size) in list.iter().rev() {
-        comps.iter_mut().for_each(|c| {
-            c.declarations
-                .clocks
-                .values_mut()
-                .filter(|cl| **cl > *clock)
-                .for_each(|cl| *cl -= size)
-        });
     }
 }
 
@@ -252,7 +219,7 @@ impl SystemRecipe {
                 }
             }
         }
-        clean_component_decls(comps, omitting);
+        Self::compress_component_decls(comps, omitting);
     }
 
     /// Gets all components in `SystemRecipe`
@@ -266,6 +233,21 @@ impl SystemRecipe {
                 o
             }
             SystemRecipe::Component(c) => vec![c],
+        }
+    }
+
+    fn compress_component_decls(mut comps: Vec<&mut Component>, omit: HashSet<(ClockIndex, usize)>) {
+        let mut list: Vec<&(ClockIndex, usize)> = omit.iter().collect();
+        list.sort_by(|(c1, _), (c2, _)| c1.cmp(c2));
+
+        for (clock, size) in list.iter().rev() {
+            comps.iter_mut().for_each(|c| {
+                c.declarations
+                    .clocks
+                    .values_mut()
+                    .filter(|cl| **cl > *clock)
+                    .for_each(|cl| *cl -= size)
+            });
         }
     }
 }
@@ -337,4 +319,78 @@ fn validate_reachability_input(
     }
 
     Ok(())
+}
+
+mod clock_reduction {
+    use super::*;
+
+    pub fn clock_reduction_two_hands(
+        lhs: &mut Box<SystemRecipe>,
+        rhs: &mut Box<SystemRecipe>,
+        settings: &Settings,
+        dim: &mut usize,
+    ) -> Result<(), String> {
+        let heights = heights(
+            &settings.reduce_clocks_level,
+            max(lhs.height(), rhs.height()),
+        )?;
+
+        let clocks = intersect(
+            lhs.clone().compile(*dim)?.find_redundant_clocks(heights),
+            rhs.clone().compile(*dim)?.find_redundant_clocks(heights),
+        );
+
+        debug!("Clocks to be reduced: {clocks:?}");
+        *dim -= clocks
+            .iter()
+            .fold(0, |acc, c| acc + c.clocks_removed_count());
+        debug!("New dimension: {dim}");
+
+        lhs.reduce_clocks(clocks.clone());
+        rhs.reduce_clocks(clocks);
+        Ok(())
+    }
+
+    pub fn clock_reduce(
+        sys: &mut Box<SystemRecipe>,
+        settings: &Settings,
+        dim: &mut usize,
+    ) -> Result<(), String> {
+        let heights = heights(&settings.reduce_clocks_level, sys.height())?;
+        let clocks = sys.clone().compile(*dim)?.find_redundant_clocks(heights);
+
+        debug!("Clocks to be reduced: {clocks:?}");
+        *dim -= clocks
+            .iter()
+            .fold(0, |acc, c| acc + c.clocks_removed_count());
+        debug!("New dimension: {dim}");
+
+        sys.reduce_clocks(clocks);
+        Ok(())
+    }
+
+    fn heights(lvl: &Option<ReduceClocksLevel>, height: usize) -> Result<Heights, String> {
+        match lvl.to_owned().ok_or_else(|| "No clock reduction level specified".to_string())? {
+            ReduceClocksLevel::Level(y) if y >= 0 => Ok(Heights::new(height, y as usize)),
+            ReduceClocksLevel::All(true) => Ok(Heights::All),
+            ReduceClocksLevel::All(false) => Ok(Heights::None),
+            ReduceClocksLevel::Level(err) => Err(format!("Clock reduction error: Couldn't parse argument correctly. Got {err}, expected a value above")),
+        }
+    }
+
+    fn intersect(
+        lhs: Vec<ClockReductionInstruction>,
+        rhs: Vec<ClockReductionInstruction>,
+    ) -> Vec<ClockReductionInstruction> {
+        lhs.iter()
+            .filter(|r| r.is_replace())
+            .chain(rhs.iter().filter(|r| r.is_replace()))
+            .chain(
+                lhs.iter()
+                    .filter(|r| !r.is_replace())
+                    .filter_map(|c| rhs.iter().filter(|r| !r.is_replace()).find(|rc| *rc == c)),
+            )
+            .cloned()
+            .collect()
+    }
 }
