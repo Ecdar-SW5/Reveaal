@@ -64,6 +64,7 @@ pub(crate) mod tests {
         assert_eq!(format!("{:?}", actual), format!("{:?}", expected))
     }
 
+    // TODO this test is confusing
     #[test]
     fn initial__EcdarUniversity_Machine__correct_transitions() {
         // Arrange
@@ -95,6 +96,7 @@ pub(crate) mod tests {
         assert!(actual.contains(expected_coin_transition));
     }
 
+    // TODO this test is confusing
     #[test]
     fn initial__EcdarUniversity_Machine4__correct_transitions() {
         // Arrange
