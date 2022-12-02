@@ -2,6 +2,7 @@
 
 mod test {
     use crate::{
+        extract_system_rep::SystemRecipeFailure,
         tests::refinement::Helper::json_run_query,
         QueryResult,
         System::local_consistency::{ConsistencyFailure, ConsistencyResult},
@@ -18,6 +19,19 @@ mod test {
                 ..
             )))
         ))
+    }
+
+    #[test]
+    fn quotient1_fails_with_correct_actions() {
+        let expected_actions = vec!["Output1".to_string()];
+        if let QueryResult::Consistency(ConsistencyResult::Failure(
+            ConsistencyFailure::NotDisjoint(SystemRecipeFailure { actions, .. }),
+        )) = json_run_query(PATH, "consistency: LeftQuotient1 // RightQuotient1")
+        {
+            assert_eq!(actions, expected_actions);
+        } else {
+            panic!("Models in saples/action have been changed, REVERT!");
+        }
     }
 
     #[test]
