@@ -302,7 +302,7 @@ impl Component {
                 }
             });
         info!(
-            "Removed Clock '{name}' has been removed from component {}",
+            "Removed Clock '{name}' (index {index}) has been removed from component {}",
             self.name
         ); // Should be changed in the future to be the information logger
     }
@@ -322,21 +322,10 @@ impl Component {
             .iter_mut()
             .filter(|(_, c)| indices.contains(c))
         {
+            let old = *index;
             *index = global_index;
             // TODO: Maybe log the global clock name instead of index
-            info!("Replaced Clock {name} with {global_index}"); // Should be changed in the future to be the information logger
-        }
-    }
-
-    /// Decrements the indices of the clocks to decrement the DBM
-    pub(crate) fn decrement_dim(&mut self, decr: usize, omit: Vec<ClockIndex>) {
-        for index in self
-            .declarations
-            .clocks
-            .values_mut()
-            .filter(|i| !omit.contains(i))
-        {
-            *index -= decr;
+            info!("Replaced Clock '{name}' (index {old}) with {global_index} in component {}", self.name); // Should be changed in the future to be the information logger
         }
     }
 }

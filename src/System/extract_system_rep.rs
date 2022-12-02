@@ -236,7 +236,10 @@ impl SystemRecipe {
         }
     }
 
-    fn compress_component_decls(mut comps: Vec<&mut Component>, omit: HashSet<(ClockIndex, usize)>) {
+    fn compress_component_decls(
+        mut comps: Vec<&mut Component>,
+        omit: HashSet<(ClockIndex, usize)>,
+    ) {
         let mut list: Vec<&(ClockIndex, usize)> = omit.iter().collect();
         list.sort_by(|(c1, _), (c2, _)| c1.cmp(c2));
 
@@ -248,6 +251,7 @@ impl SystemRecipe {
                     .filter(|cl| **cl > *clock)
                     .for_each(|cl| *cl -= size)
             });
+            debug!("Moved all clocks with index over or equal to '{clock}' {size} back.")
         }
     }
 }
@@ -330,10 +334,13 @@ mod clock_reduction {
         settings: &Settings,
         dim: &mut usize,
     ) -> Result<(), String> {
-        let heights = heights(
+        let heights = match heights(
             &settings.reduce_clocks_level,
             max(lhs.height(), rhs.height()),
-        )?;
+        )? {
+            Some(h) => h,
+            None => return Ok(()),
+        };
 
         let clocks = intersect(
             lhs.clone().compile(*dim)?.find_redundant_clocks(heights),
@@ -356,7 +363,10 @@ mod clock_reduction {
         settings: &Settings,
         dim: &mut usize,
     ) -> Result<(), String> {
-        let heights = heights(&settings.reduce_clocks_level, sys.height())?;
+        let heights = match heights(&settings.reduce_clocks_level, sys.height())? {
+            Some(h) => h,
+            None => return Ok(()),
+        };
         let clocks = sys.clone().compile(*dim)?.find_redundant_clocks(heights);
 
         debug!("Clocks to be reduced: {clocks:?}");
@@ -369,11 +379,11 @@ mod clock_reduction {
         Ok(())
     }
 
-    fn heights(lvl: &Option<ReduceClocksLevel>, height: usize) -> Result<Heights, String> {
+    fn heights(lvl: &Option<ReduceClocksLevel>, height: usize) -> Result<Option<Heights>, String> {
         match lvl.to_owned().ok_or_else(|| "No clock reduction level specified".to_string())? {
-            ReduceClocksLevel::Level(y) if y >= 0 => Ok(Heights::new(height, y as usize)),
-            ReduceClocksLevel::All(true) => Ok(Heights::All),
-            ReduceClocksLevel::All(false) => Ok(Heights::None),
+            ReduceClocksLevel::Level(y) if y >= 0 => Ok(Some(Heights::new(height, y as usize))),
+            ReduceClocksLevel::All(true) => Ok(Some(Heights::new(height, height))),
+            ReduceClocksLevel::All(false) => Ok(None),
             ReduceClocksLevel::Level(err) => Err(format!("Clock reduction error: Couldn't parse argument correctly. Got {err}, expected a value above")),
         }
     }
