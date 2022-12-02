@@ -1,9 +1,9 @@
 #[cfg(test)]
 pub mod test {
-    use crate::{component, JsonProjectLoader};
+    use crate::{component, DEFAULT_SETTINGS, JsonProjectLoader, ProtobufServer};
     use crate::component::{Edge, SyncType};
     use crate::DataReader::json_reader::read_json_component;
-    use crate::TransitionSystems::transition_system::ClockReductionInstruction;
+    use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Heights};
     use edbm::util::constraints::ClockIndex;
     use std::collections::{HashMap, HashSet};
     use std::path::Path;
@@ -78,9 +78,7 @@ pub mod test {
     }
 
     pub(crate) fn get_conjunction_system_recipe(path: &Path, comp1: &str, comp2: &str) -> (ClockIndex, SystemRecipe) {
-        let project_loader = JsonProjectLoader::new(path.to_string_lossy().to_string(), Settings {
-            reduce_clocks_level: Some(All(true)),
-        });
+        let project_loader = JsonProjectLoader::new(path.to_string_lossy().to_string(), DEFAULT_SETTINGS);
 
         let mut component_loader = project_loader.to_comp_loader();
 
@@ -102,9 +100,7 @@ pub mod test {
     }
 
     pub(crate) fn get_composition_transition_system(path: &Path, comp1: &str, comp2: &str) -> TransitionSystemPtr {
-        let project_loader = JsonProjectLoader::new(path.to_string_lossy().to_string(), Settings {
-            reduce_clocks_level: Some(All(true)),
-        });
+        let project_loader = JsonProjectLoader::new(path.to_string_lossy().to_string(), DEFAULT_SETTINGS);
 
         let mut component_loader = project_loader.to_comp_loader();
 
