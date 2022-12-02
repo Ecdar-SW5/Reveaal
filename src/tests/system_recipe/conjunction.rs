@@ -1,6 +1,8 @@
 #[cfg(test)]
 
 mod test {
+    use log::info;
+
     use crate::{
         extract_system_rep::SystemRecipeFailure,
         tests::refinement::Helper::json_run_query,
@@ -80,20 +82,5 @@ mod test {
         } else {
             panic!("Models in saples/action have been changed, REVERT!");
         }
-    }
-
-    #[test]
-    fn empty_conjunction_fails_correctly() {
-        let actual = json_run_query(
-            PATH,
-            "consistency: LeftConjunctionEmpty && RightConjunctionEmpty",
-        );
-        // TODO: Determine why this fails
-        assert!(matches!(
-            actual,
-            QueryResult::Consistency(ConsistencyResult::Failure(ConsistencyFailure::NotDisjoint(
-                ..
-            )))
-        ));
     }
 }
