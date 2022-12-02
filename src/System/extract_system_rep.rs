@@ -399,9 +399,8 @@ mod clock_reduction {
     fn compress_component_decls(
         mut comps: Vec<&mut Component>,
         other: Option<Vec<&mut Component>>,
-        //  omit: HashSet<(ClockIndex, usize)>,
     ) {
-        let mut seen: HashMap<ClockIndex, ClockIndex> = HashMap::new(); // Key = current, value = Should be
+        let mut seen: HashMap<ClockIndex, ClockIndex> = HashMap::new();
         let mut l: Vec<&mut ClockIndex> = comps
             .iter_mut()
             .flat_map(|c| c.declarations.clocks.values_mut())
@@ -412,7 +411,7 @@ mod clock_reduction {
                 .flat_map(|c| c.declarations.clocks.values_mut()),
         );
         l.sort();
-        let mut index = 1; //**l.first().unwrap_or_else(|| panic!("No clocks"));
+        let mut index = 1;
         for clock in l {
             if let Some(val) = seen.get(clock) {
                 *clock = *val;
