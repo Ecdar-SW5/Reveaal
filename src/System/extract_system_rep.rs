@@ -8,7 +8,7 @@ use crate::System::executable_query::{
 };
 use crate::System::extract_state::get_state;
 use std::cmp::max;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use crate::TransitionSystems::{
     CompiledComponent, Composition, Conjunction, Quotient, TransitionSystemPtr,
@@ -199,7 +199,6 @@ impl SystemRecipe {
     ///Applies the clock-reduction
     fn reduce_clocks(&mut self, clock_instruction: Vec<ClockReductionInstruction>) {
         let mut comps = self.get_components();
-        let mut omitting = HashSet::new();
         for redundant in clock_instruction {
             match redundant {
                 ClockReductionInstruction::RemoveClock { clock_index } => {
@@ -210,7 +209,6 @@ impl SystemRecipe {
                         Some(c) => c.remove_clock(clock_index),
                         None => continue,
                     }
-                    omitting.insert((clock_index, 1));
                 }
                 ClockReductionInstruction::ReplaceClocks {
                     clock_indices,
@@ -219,7 +217,6 @@ impl SystemRecipe {
                     comps
                         .iter_mut()
                         .for_each(|c| c.replace_clock(clock_index, &clock_indices));
-                    omitting.insert((clock_index, clock_indices.len()));
                 }
             }
         }
