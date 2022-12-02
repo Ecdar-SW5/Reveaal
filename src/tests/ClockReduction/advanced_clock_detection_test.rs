@@ -2,7 +2,14 @@
 pub mod test {
     use crate::component::Component;
     use crate::extract_system_rep::SystemRecipe;
-    use crate::tests::ClockReduction::helper::test::{assert_duplicate_clock_in_clock_reduction_instruction_vec, assert_unused_clock_in_clock_reduction_instruction_vec, read_json_component_and_process};
+    use crate::tests::ClockReduction::helper::test::{
+        assert_duplicate_clock_in_clock_reduction_instruction_vec,
+        assert_unused_clock_in_clock_reduction_instruction_vec,
+        create_clock_name_to_index,
+        get_composition_transition_system,
+        get_conjunction_transition_system,
+        read_json_component_and_process
+    };
     use crate::DataReader::json_reader::read_json_component;
     use crate::System::save_component::{combine_components, PruningStrategy};
     use crate::TransitionSystems::{CompiledComponent, TransitionSystemPtr};
@@ -14,74 +21,8 @@ pub mod test {
     use crate::ProtobufServer::services::query_request::Settings;
     use crate::System::executable_query::QueryResult;
     use crate::ProtobufServer::services::query_request::settings::ReduceClocksLevel::All;
-    use crate::TransitionSystems::transition_system::ClockReductionInstruction::ReplaceClocks;
 
     const ADVANCED_CLOCK_REDUCTION_PATH: &str = "samples/json/ClockReductionTest/AdvancedClockReduction";
-
-    fn get_conjunction_transition_system(path: &Path, comp1: &str, comp2: &str) -> TransitionSystemPtr {
-        let project_loader = JsonProjectLoader::new(path.to_string_lossy().to_string(), Settings {
-            reduce_clocks_level: Some(All(true)),
-        });
-
-        let mut component_loader = project_loader.to_comp_loader();
-
-        let mut next_clock_index: usize = 0;
-        let mut component1 = component_loader.get_component(comp1).clone();
-        let mut component2 = component_loader.get_component(comp2).clone();
-
-
-        component1.set_clock_indices(&mut next_clock_index);
-        component2.set_clock_indices(&mut next_clock_index);
-
-        let dimensions = component1.declarations.clocks.len() + component2.declarations.clocks.len();
-
-        let sr_component1 = Box::new(SystemRecipe::Component(Box::new(component1)));
-        let sr_component2 = Box::new(SystemRecipe::Component(Box::new(component2)));
-
-        let conjunction = SystemRecipe::Conjunction(sr_component1, sr_component2);
-
-        conjunction
-            .compile(dimensions)
-            .unwrap()
-    }
-
-    fn get_composition_transition_system(path: &Path, comp1: &str, comp2: &str) -> TransitionSystemPtr {
-        let project_loader = JsonProjectLoader::new(path.to_string_lossy().to_string(), Settings {
-            reduce_clocks_level: Some(All(true)),
-        });
-
-        let mut component_loader = project_loader.to_comp_loader();
-
-        let mut next_clock_index: usize = 0;
-        let mut component1 = component_loader.get_component(comp1).clone();
-        let mut component2 = component_loader.get_component(comp2).clone();
-
-
-        component1.set_clock_indices(&mut next_clock_index);
-        component2.set_clock_indices(&mut next_clock_index);
-
-        let dimensions = component1.declarations.clocks.len() + component2.declarations.clocks.len();
-
-        let sr_component1 = Box::new(SystemRecipe::Component(Box::new(component1)));
-        let sr_component2 = Box::new(SystemRecipe::Component(Box::new(component2)));
-
-        let conjunction = SystemRecipe::Composition(sr_component1, sr_component2);
-
-        conjunction
-            .compile(dimensions)
-            .unwrap()
-    }
-
-    fn create_clock_name_to_index(transition_system: &TransitionSystemPtr) -> HashMap<String, ClockIndex> {
-        let mut clock_name_to_index: HashMap<String, ClockIndex> = HashMap::new();
-
-        for (i, declaration) in (&transition_system.get_decls()).iter().enumerate() {
-            for (clock_name, clock_index) in &declaration.clocks {
-                clock_name_to_index.insert(format!("component{}:{}", i, clock_name), *clock_index);
-            }
-        }
-        return clock_name_to_index;
-    }
 
     #[test]
     fn test_advanced_clock_detection() {
