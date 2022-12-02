@@ -45,7 +45,7 @@ impl TransitionDecisionPoint {
 }
 
 #[cfg(test)]
-pub(crate) mod tests {
+mod tests {
     use super::TransitionDecisionPoint;
     use crate::tests::Simulation::test_data::{
         create_EcdarUniversity_Machine4_system, create_EcdarUniversity_Machine_system,
