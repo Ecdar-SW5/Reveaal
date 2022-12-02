@@ -22,9 +22,16 @@ pub use ModelObjects::queries;
 pub use ProtobufServer::start_grpc_server_with_tokio;
 pub use System::executable_query::QueryResult;
 
+/// The default settings
 pub const DEFAULT_SETTINGS: ProtobufServer::services::query_request::Settings =
     ProtobufServer::services::query_request::Settings {
         reduce_clocks_level: Some(All(true)),
+    };
+
+/// The default settings for Testing
+pub const TEST_SETTINGS: ProtobufServer::services::query_request::Settings =
+    ProtobufServer::services::query_request::Settings {
+        reduce_clocks_level: Some(All(false)),
     };
 
 #[macro_use]

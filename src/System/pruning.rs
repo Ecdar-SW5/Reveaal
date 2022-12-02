@@ -155,7 +155,7 @@ pub fn prune(
 
     match CompiledComponent::compile_with_actions(new_comp, inputs, outputs, dim) {
         Ok(comp) => Ok(comp),
-        Err(e) => Err(format!("Pruning failed: {}", e.to_string())),
+        Err(e) => Err(format!("Pruning failed: {}", e)),
     }
 }
 

@@ -1,0 +1,20 @@
+{
+  "name": "System1",
+  "description": "",
+  "x": 182.0,
+  "y": 94.0,
+  "width": 600.0,
+  "height": 600.0,
+  "color": "4",
+  "systemRootX": 267.2,
+  "componentInstances": [
+    {
+      "id": 1,
+      "componentName": "Component1",
+      "x": 162.66666666666666,
+      "y": 250.0
+    }
+  ],
+  "operators": [],
+  "edges": []
+}

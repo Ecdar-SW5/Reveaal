@@ -7,17 +7,20 @@ use crate::System::executable_query::{
     ReachabilityExecutor, RefinementExecutor,
 };
 use crate::System::extract_state::get_state;
+use std::cmp::max;
+use std::collections::HashSet;
 
 use crate::TransitionSystems::{
     CompiledComponent, Composition, Conjunction, Quotient, TransitionSystemPtr,
 };
 
 use crate::component::State;
+use crate::ProtobufServer::services::query_request::{settings::ReduceClocksLevel, Settings};
 use crate::System::pruning;
+use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Heights, Intersect};
 use edbm::util::constraints::ClockIndex;
 use log::debug;
 use simple_error::bail;
-
 use std::error::Error;
 
 pub struct SystemRecipeFailure {
@@ -26,6 +29,13 @@ pub struct SystemRecipeFailure {
     pub right_name: Option<String>,
     pub actions: Vec<String>,
 }
+
+impl From<SystemRecipeFailure> for String {
+    fn from(failure: SystemRecipeFailure) -> Self {
+        failure.reason
+    }
+}
+
 impl std::fmt::Display for SystemRecipeFailure {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "SystemRecipeFailure: {}", self.reason)
@@ -89,8 +99,10 @@ pub fn create_executable_query<'a>(
         match query {
             QueryExpression::Refinement(left_side, right_side) => {
                 let mut quotient_index = None;
-                let left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
-                let right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
+
+                let mut left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
+                let mut right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
+                clock_reduction(&mut left, &mut right, component_loader.get_settings(), &mut dim)?;
                 Ok(Box::new(RefinementExecutor {
                 sys1: left.compile(dim)?,
                 sys2: right.compile(dim)?,
@@ -133,14 +145,16 @@ pub fn create_executable_query<'a>(
                 ),
                 dim
             })),
-            QueryExpression::Determinism(query_expression) => Ok(Box::new(DeterminismExecutor {
-                system: get_system_recipe(
-                    query_expression,
-                    component_loader,
-                    &mut dim,
-                    &mut None
-                ).compile(dim)?,
-            })),
+            QueryExpression::Determinism(query_expression) => {
+                Ok(Box::new(DeterminismExecutor {
+                    system: get_system_recipe(
+                        query_expression,
+                        component_loader,
+                        &mut dim,
+                        &mut None,
+                    ).compile(dim)?,
+                }))
+            },
             QueryExpression::GetComponent(save_as_expression) => {
                 if let QueryExpression::SaveAs(query_expression, comp_name) = save_as_expression.as_ref() {
                     Ok(Box::new(
@@ -177,6 +191,52 @@ pub fn create_executable_query<'a>(
     }
 }
 
+fn clock_reduction(
+    left: &mut Box<SystemRecipe>,
+    right: &mut Box<SystemRecipe>,
+    set: &Settings,
+    dim: &mut usize,
+) -> Result<(), String> {
+    let height = max(left.height(), right.height());
+    let heights = match set.reduce_clocks_level.to_owned().ok_or_else(|| "No clock reduction level specified".to_string())? {
+            ReduceClocksLevel::Level(y) if y >= 0 => Heights::new(height, y as usize),
+            ReduceClocksLevel::All(true) => Heights::new(height, height),
+            ReduceClocksLevel::All(false) => return Ok(()),
+            ReduceClocksLevel::Level(err) => return Err(format!("Clock reduction error: Couldn't parse argument correctly. Got {err}, expected a value above")),
+        };
+
+    let clocks = left
+        .clone()
+        .compile(*dim)?
+        .find_redundant_clocks(heights)
+        .intersect(&right.clone().compile(*dim)?.find_redundant_clocks(heights));
+
+    debug!("Clocks to be reduced: {clocks:?}");
+    *dim -= clocks
+        .iter()
+        .fold(0, |acc, c| acc + c.clocks_removed_count());
+    debug!("New dimension: {dim}");
+
+    left.reduce_clocks(clocks.clone());
+    right.reduce_clocks(clocks);
+    Ok(())
+}
+
+fn clean_component_decls(mut comps: Vec<&mut Component>, omit: HashSet<(ClockIndex, usize)>) {
+    let mut list: Vec<&(ClockIndex, usize)> = omit.iter().collect();
+    list.sort_by(|(c1, _), (c2, _)| c1.cmp(c2));
+
+    for (clock, size) in list.iter().rev() {
+        comps.iter_mut().for_each(|c| {
+            c.declarations
+                .clocks
+                .values_mut()
+                .filter(|cl| **cl > *clock)
+                .for_each(|cl| *cl -= size)
+        });
+    }
+}
+
 #[derive(Clone)]
 pub enum SystemRecipe {
     Composition(Box<SystemRecipe>, Box<SystemRecipe>),
@@ -204,6 +264,72 @@ impl SystemRecipe {
                 Ok(comp) => Ok(comp),
                 Err(err) => Err(err),
             },
+        }
+    }
+
+    /// Gets the height of the `SystemRecipe` tree
+    fn height(&self) -> usize {
+        match self {
+            SystemRecipe::Composition(l, r)
+            | SystemRecipe::Conjunction(l, r)
+            | SystemRecipe::Quotient(l, r, _) => 1 + max(l.height(), r.height()),
+            SystemRecipe::Component(_) => 1,
+        }
+    }
+
+    /// Gets the count `Components`s in the `SystemRecipe`
+    pub fn count_component(&self) -> usize {
+        match self {
+            SystemRecipe::Composition(left, right)
+            | SystemRecipe::Conjunction(left, right)
+            | SystemRecipe::Quotient(left, right, _) => {
+                left.count_component() + right.count_component()
+            }
+            SystemRecipe::Component(_) => 1,
+        }
+    }
+
+    ///Applies the clock-reduction
+    pub(crate) fn reduce_clocks(&mut self, clock_instruction: Vec<ClockReductionInstruction>) {
+        let mut comps = self.get_components();
+        let mut omitting = HashSet::new();
+        for redundant in clock_instruction {
+            match redundant {
+                ClockReductionInstruction::RemoveClock { clock_index } => {
+                    match comps
+                        .iter_mut()
+                        .find(|c| c.declarations.clocks.values().any(|ci| *ci == clock_index))
+                    {
+                        Some(c) => c.remove_clock(clock_index),
+                        None => continue,
+                    }
+                    omitting.insert((clock_index, 1));
+                }
+                ClockReductionInstruction::ReplaceClocks {
+                    clock_indices,
+                    clock_index,
+                } => {
+                    comps
+                        .iter_mut()
+                        .for_each(|c| c.replace_clock(clock_index, &clock_indices));
+                    omitting.insert((clock_index, clock_indices.len()));
+                }
+            }
+        }
+        clean_component_decls(comps, omitting);
+    }
+
+    /// Gets all components in `SystemRecipe`
+    fn get_components(&mut self) -> Vec<&mut Component> {
+        match self {
+            SystemRecipe::Composition(left, right)
+            | SystemRecipe::Conjunction(left, right)
+            | SystemRecipe::Quotient(left, right, _) => {
+                let mut o = left.get_components();
+                o.extend(right.get_components());
+                o
+            }
+            SystemRecipe::Component(c) => vec![c],
         }
     }
 }
@@ -262,7 +388,7 @@ fn validate_reachability_input(
     state: &QueryExpression,
 ) -> Result<(), String> {
     if let QueryExpression::State(loc_names, _) = state {
-        if loc_names.len() != count_component(machine) {
+        if loc_names.len() != machine.count_component() {
             return Err(
                 "The number of automata does not match the number of locations".to_string(),
             );
@@ -275,13 +401,4 @@ fn validate_reachability_input(
     }
 
     Ok(())
-}
-
-fn count_component(system: &SystemRecipe) -> usize {
-    match system {
-        SystemRecipe::Composition(left, right) => count_component(left) + count_component(right),
-        SystemRecipe::Conjunction(left, right) => count_component(left) + count_component(right),
-        SystemRecipe::Quotient(left, right, _) => count_component(left) + count_component(right),
-        SystemRecipe::Component(_) => 1,
-    }
 }

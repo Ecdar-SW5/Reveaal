@@ -7,6 +7,7 @@ mod refinements {
     use crate::ProtobufServer::services::ComponentsInfo;
     use crate::ProtobufServer::services::QueryRequest;
     use crate::ProtobufServer::ConcreteEcdarBackend;
+    use crate::TEST_SETTINGS;
     use tonic::Request;
 
     //static CONJUN: &str = "samples/xml/conjun.xml";
@@ -75,7 +76,7 @@ mod refinements {
                 components_hash: 0,
             }),
             ignored_input_outputs: None,
-            settings: None,
+            settings: Some(TEST_SETTINGS),
         })
     }
 }

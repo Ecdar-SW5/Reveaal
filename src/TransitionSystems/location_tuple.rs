@@ -7,7 +7,7 @@ use crate::{
 
 use super::LocationID;
 
-#[derive(Debug, Clone, std::cmp::PartialEq, Eq, Hash, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum CompositionType {
     Conjunction,
     Composition,
@@ -17,7 +17,8 @@ pub enum CompositionType {
 #[derive(Clone, Debug)]
 pub struct LocationTuple {
     pub id: LocationID,
-    invariant: Option<OwnedFederation>,
+    /// The invariant for the `Location`
+    pub invariant: Option<OwnedFederation>,
     pub loc_type: LocationType,
     left: Option<Box<LocationTuple>>,
     right: Option<Box<LocationTuple>>,

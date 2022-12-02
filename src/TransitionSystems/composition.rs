@@ -126,6 +126,10 @@ impl ComposedTransitionSystem for Composition {
         (&self.left, &self.right)
     }
 
+    fn get_children_mut(&mut self) -> (&mut TransitionSystemPtr, &mut TransitionSystemPtr) {
+        (&mut self.left, &mut self.right)
+    }
+
     fn get_composition_type(&self) -> CompositionType {
         CompositionType::Composition
     }

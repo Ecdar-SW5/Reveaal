@@ -1,12 +1,12 @@
 use edbm::util::constraints::ClockIndex;
 use edbm::zones::OwnedFederation;
-use log::{debug, warn};
+use log::debug;
 
 use crate::extract_system_rep::SystemRecipeFailure;
 use crate::EdgeEval::updater::CompiledUpdate;
 use crate::ModelObjects::component::Declarations;
 use crate::ModelObjects::component::{Location, LocationType, State, Transition};
-use crate::System::local_consistency::{ConsistencyResult, DeterminismFailure, DeterminismResult};
+use crate::System::local_consistency::{ConsistencyResult, DeterminismResult};
 use crate::TransitionSystems::common::CollectionOperation;
 use crate::TransitionSystems::transition_system::PrecheckResult;
 use edbm::util::bounds::Bounds;
@@ -413,23 +413,6 @@ impl TransitionSystem for Quotient {
         comps.extend(self.S.get_decls());
         comps.push(&self.decls);
         comps
-    }
-
-    fn precheck_sys_rep(&self) -> PrecheckResult {
-        if let DeterminismResult::Failure(DeterminismFailure::NotDeterministicFrom(
-            location,
-            action,
-        )) = self.is_deterministic()
-        {
-            warn!("Not deterministic");
-            return PrecheckResult::NotDeterministic(location, action);
-        }
-
-        if let ConsistencyResult::Failure(failure) = self.is_locally_consistent() {
-            warn!("Not consistent");
-            return PrecheckResult::NotConsistent(failure);
-        }
-        PrecheckResult::Success
     }
 
     fn is_deterministic(&self) -> DeterminismResult {
