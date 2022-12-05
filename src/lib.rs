@@ -23,10 +23,9 @@ pub use ProtobufServer::start_grpc_server_with_tokio;
 pub use System::executable_query::QueryResult;
 
 /// The default settings
-pub const DEFAULT_SETTINGS: Settings =
-    Settings {
-        disable_clock_reduction: true,
-    };
+pub const DEFAULT_SETTINGS: Settings = Settings {
+    disable_clock_reduction: false,
+};
 
 #[macro_use]
 extern crate pest_derive;

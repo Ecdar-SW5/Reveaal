@@ -190,7 +190,7 @@ pub trait TransitionSystem: DynClone {
     }
 
     fn find_redundant_clocks(&self) -> Vec<ClockReductionInstruction> {
-            self.get_analysis_graph().find_clock_redundancies()
+        self.get_analysis_graph().find_clock_redundancies()
     }
 }
 

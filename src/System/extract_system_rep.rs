@@ -15,7 +15,7 @@ use crate::TransitionSystems::{
 
 use crate::component::State;
 use crate::System::pruning;
-use crate::TransitionSystems::transition_system::{ClockReductionInstruction};
+use crate::TransitionSystems::transition_system::ClockReductionInstruction;
 use edbm::util::constraints::ClockIndex;
 use log::debug;
 use simple_error::bail;
@@ -37,7 +37,7 @@ pub fn create_executable_query<'a>(
                 let mut left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
                 let mut right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
 
-                if component_loader.get_settings().disable_clock_reduction {
+                if !component_loader.get_settings().disable_clock_reduction {
                     clock_reduction::clock_reduce(&mut left, Some(&mut right), &mut dim, quotient_index.is_some())?;
                 }
 
@@ -83,7 +83,7 @@ pub fn create_executable_query<'a>(
                     &mut quotient_index
                 );
 
-                if component_loader.get_settings().disable_clock_reduction {
+                if !component_loader.get_settings().disable_clock_reduction {
                     clock_reduction::clock_reduce(&mut recipe, None, &mut dim, quotient_index.is_some())?;
                 }
 
@@ -101,7 +101,7 @@ pub fn create_executable_query<'a>(
                     &mut quotient_index
                 );
 
-                if component_loader.get_settings().disable_clock_reduction {
+                if !component_loader.get_settings().disable_clock_reduction {
                     clock_reduction::clock_reduce(&mut recipe, None, &mut dim, quotient_index.is_some())?;
                 }
 
@@ -133,7 +133,7 @@ pub fn create_executable_query<'a>(
                         &mut quotient_index
                     );
 
-                    if component_loader.get_settings().disable_clock_reduction {
+                    if !component_loader.get_settings().disable_clock_reduction {
                         clock_reduction::clock_reduce(&mut recipe, None, &mut dim, quotient_index.is_some())?;
                     }
 
