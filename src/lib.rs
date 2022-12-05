@@ -25,7 +25,7 @@ pub use System::executable_query::QueryResult;
 /// The default settings
 pub const DEFAULT_SETTINGS: Settings =
     Settings {
-        disable_clocks_level: true,
+        disable_clock_reduction: true,
     };
 
 #[macro_use]

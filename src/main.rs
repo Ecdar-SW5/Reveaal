@@ -64,8 +64,8 @@ fn parse_args(matches: &clap::ArgMatches) -> (Box<dyn ComponentLoader>, Vec<Quer
     let folder_path = matches.value_of("folder").unwrap_or("");
     let query = matches.value_of("query").unwrap_or("");
     let settings = Settings {
-        disable_clocks_level: matches
-            .value_of("clock-reduction-level").is_none() && (DEFAULT_SETTINGS.disable_clocks_level),
+        disable_clock_reduction: matches
+            .value_of("clock-reduction-level").is_none() && (DEFAULT_SETTINGS.disable_clock_reduction),
     };
 
     let project_loader = get_project_loader(folder_path.to_string(), settings);

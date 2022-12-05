@@ -12,5 +12,5 @@ pub mod save_component;
 /// The default settings for Testing
 
 pub const TEST_SETTINGS: Settings = Settings {
-    disable_clocks_level: false,
+    disable_clock_reduction: false,
 };
