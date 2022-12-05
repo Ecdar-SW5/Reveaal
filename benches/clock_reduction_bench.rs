@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use reveaal::extract_system_rep::create_executable_query;
 use reveaal::parse_queries::parse_to_query;
 use reveaal::{JsonProjectLoader, DEFAULT_SETTINGS, TEST_SETTINGS};
@@ -11,10 +11,10 @@ fn bench_clock_reduced_refinement(c: &mut Criterion) {
     // Set up the bench.
     let mut group = c.benchmark_group("Clock Reduction");
     group.bench_function("Refinement check - No reduction", |b| {
-        b.iter(|| black_box(normal_refinement()));
+        b.iter(normal_refinement);
     });
     group.bench_function("Refinement check - With reduction", |b| {
-        b.iter(|| black_box(clock_reduced_refinement()));
+        b.iter(clock_reduced_refinement);
     });
     group.finish();
 }
