@@ -1,15 +1,21 @@
 #[cfg(test)]
 pub mod test {
-    const ADVANCED_CLOCK_REDUCTION_PATH: &str = "samples/json/ClockReductionTest/AdvancedClockReduction";
+    const ADVANCED_CLOCK_REDUCTION_PATH: &str =
+        "samples/json/ClockReductionTest/AdvancedClockReduction";
 
-    use std::collections::HashSet;
-    use std::path::Path;
-    use crate::tests::ClockReduction::helper::test::{assert_duplicate_clock_in_clock_reduction_instruction_vec, assert_unused_clock_in_clock_reduction_instruction_vec, create_clock_name_to_index, get_composition_transition_system, get_conjunction_system_recipe, get_conjunction_transition_system, read_json_component_and_process};
+    use crate::extract_system_rep::SystemRecipe;
+    use crate::tests::ClockReduction::helper::test::{
+        assert_duplicate_clock_in_clock_reduction_instruction_vec,
+        assert_unused_clock_in_clock_reduction_instruction_vec, create_clock_name_to_index,
+        get_composition_transition_system, get_conjunction_system_recipe,
+        get_conjunction_transition_system, read_json_component_and_process,
+    };
+    use crate::ProtobufServer::services::query_request::settings::ReduceClocksLevel::All;
+    use crate::ProtobufServer::services::query_request::Settings;
     use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Heights};
     use crate::TransitionSystems::TransitionSystem;
-    use crate::extract_system_rep::SystemRecipe;
-    use crate::ProtobufServer::services::query_request::Settings;
-    use crate::ProtobufServer::services::query_request::settings::ReduceClocksLevel::All;
+    use std::collections::HashSet;
+    use std::path::Path;
 
     #[test]
     fn test_advanced_clock_removal() {
@@ -20,7 +26,6 @@ pub mod test {
         );
 
         let system_recipe_copy = system_recipe.clone();
-
 
         let clock_reduction_instruction = system_recipe_copy
             .compile(dimensions)
@@ -46,17 +51,17 @@ pub mod test {
                     assert_eq!(edge.guard_dependencies.len(), 2, "edge (Component1.L0&&Component2.L4)->(Component1.L1&&Component2.L5) should only have 1 guard dependency");
                     assert!(edge.guard_dependencies.is_subset(&HashSet::from([0, 1])));
                     assert_eq!(edge.updates.len(), 0, "(Component1.L0&&Component2.L4)->(Component1.L1&&Component2.L5) should have no updates");
-                },
+                }
                 "(Component1.L1&&Component2.L5)->(Component1.L2&&Component2.L6)" => {
                     assert_eq!(edge.guard_dependencies.len(), 0, "edge (Component1.L0&&Component2.L4)->(Component1.L1&&Component2.L5) should only have 2 guard dependency");
                     for update in &edge.updates {
                         assert_eq!(update.clock_index, 1, "edge (Component1.L0&&Component2.L4)->(Component1.L1&&Component2.L5) should only update clock 1");
                     }
-                },
+                }
                 "(Component1.L2&&Component2.L6)->(Component1.L3&&Component2.L7)" => {
                     assert_eq!(edge.guard_dependencies.len(), 0, "edge (Component1.L0&&Component2.L4)->(Component1.L1&&Component2.L5) should only have 1 guard dependency");
                     assert_eq!(edge.updates.len(), 0, "(Component1.L2&&Component2.L6)->(Component1.L3&&Component2.L7) should have no updates");
-                },
+                }
                 _ => assert!(false, "unknown edge"),
             }
         }

@@ -1,5 +1,6 @@
 use super::{CompositionType, LocationID, LocationTuple};
 use crate::EdgeEval::updater::CompiledUpdate;
+use crate::ModelObjects::representations::Clock;
 use crate::{
     ModelObjects::component::{Declarations, State, Transition},
     System::local_consistency::DeterminismResult,
@@ -12,7 +13,6 @@ use std::collections::hash_map::Entry;
 use std::collections::{hash_set::HashSet, HashMap};
 use std::hash::Hash;
 use std::ops::Range;
-use crate::ModelObjects::representations::Clock;
 pub type TransitionSystemPtr = Box<dyn TransitionSystem>;
 pub type Action = String;
 pub type EdgeTuple = (Action, Transition);
@@ -212,7 +212,10 @@ pub trait TransitionSystem: DynClone {
 
                 //Calls itself on the transitions target location if the location is not already in
                 //represented as a node in the graph.
-                if !graph.nodes.contains_key(&transition.target_locations.id.get_unique_string()) {
+                if !graph
+                    .nodes
+                    .contains_key(&transition.target_locations.id.get_unique_string())
+                {
                     self.find_edges_and_nodes(&transition.target_locations, actions, graph);
                 }
             }
@@ -364,8 +367,7 @@ impl ClockAnalysisGraph {
             //clock in their respective group are set to the same value. This is done in a HashMap
             //where each clock group has their own unique u32, the clock indices
             //with the same value are in the same group
-            let mut locally_equivalent_clock_groups: HashMap<ClockIndex, u32> =
-                HashMap::new();
+            let mut locally_equivalent_clock_groups: HashMap<ClockIndex, u32> = HashMap::new();
 
             //Then we create the groups in the hashmap
             for update in edge.updates.iter() {
@@ -387,9 +389,14 @@ impl ClockAnalysisGraph {
             for equivalent_clock_group in &mut equivalent_clock_groups {
                 for clock in equivalent_clock_group.iter() {
                     if let Some(groupId) = locally_equivalent_clock_groups.get(&clock) {
-                        ClockAnalysisGraph::get_or_insert(&mut new_groups, group_offset + ((*groupId) as usize)).insert(*clock);
+                        ClockAnalysisGraph::get_or_insert(
+                            &mut new_groups,
+                            group_offset + ((*groupId) as usize),
+                        )
+                        .insert(*clock);
                     } else {
-                        ClockAnalysisGraph::get_or_insert(&mut new_groups, old_group_index).insert(*clock);
+                        ClockAnalysisGraph::get_or_insert(&mut new_groups, old_group_index)
+                            .insert(*clock);
                     }
                 }
                 group_offset += (u32::MAX as usize) * 2;
@@ -397,7 +404,8 @@ impl ClockAnalysisGraph {
             }
 
             //Then we just have to take each of the values in the map and collect them into a vec
-            equivalent_clock_groups = new_groups.into_iter()
+            equivalent_clock_groups = new_groups
+                .into_iter()
                 .map(|pair| pair.1)
                 .filter(|group| group.len() > 1)
                 .collect();
@@ -405,11 +413,14 @@ impl ClockAnalysisGraph {
         equivalent_clock_groups
     }
 
-    fn get_or_insert<'a, K: Eq + Hash, V: Default>(map: &'a mut HashMap<K, V>, key: K) -> &'a mut V {
-            match map.entry(key) {
-                Entry::Occupied(o) => o.into_mut(),
-                Entry::Vacant(v) => v.insert(V::default()),
-            }
+    fn get_or_insert<'a, K: Eq + Hash, V: Default>(
+        map: &'a mut HashMap<K, V>,
+        key: K,
+    ) -> &'a mut V {
+        match map.entry(key) {
+            Entry::Occupied(o) => o.into_mut(),
+            Entry::Vacant(v) => v.insert(V::default()),
+        }
     }
 }
 
