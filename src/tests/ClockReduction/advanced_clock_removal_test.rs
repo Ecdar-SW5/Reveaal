@@ -5,7 +5,6 @@ pub mod test {
 
     use crate::extract_system_rep::clock_reduction;
     use crate::tests::ClockReduction::helper::test::get_conjunction_system_recipe;
-    use crate::DEFAULT_SETTINGS;
     use std::collections::HashSet;
     use std::path::Path;
 
@@ -17,12 +16,11 @@ pub mod test {
             "Component2",
         );
 
-        let mut system_recipe_copy = Box::new(system_recipe.clone());
+        let mut system_recipe_copy = Box::new(system_recipe);
 
         clock_reduction::clock_reduce(
             &mut system_recipe_copy,
             Option::None,
-            &DEFAULT_SETTINGS,
             &mut dimensions,
             false,
         )

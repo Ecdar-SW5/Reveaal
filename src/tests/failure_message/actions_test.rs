@@ -3,6 +3,7 @@
 mod test {
 
     use crate::tests::refinement::Helper::json_run_query;
+    use crate::System::local_consistency::DeterminismFailure;
     use crate::System::{
         executable_query::QueryResult,
         local_consistency::{ConsistencyFailure, ConsistencyResult, DeterminismResult},
@@ -20,8 +21,7 @@ mod test {
             component_id: Some(String::from("NonDeterminismCom")),
         };
         if let QueryResult::Determinism(DeterminismResult::Failure(
-            actual_location,
-            actual_action,
+            DeterminismFailure::NotDeterministicFrom(actual_location, actual_action),
         )) = json_run_query(PATH, "determinism: NonDeterministic1")
         {
             assert_eq!(
