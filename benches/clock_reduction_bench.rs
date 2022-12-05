@@ -11,10 +11,10 @@ fn bench_clock_reduced_refinement(c: &mut Criterion) {
     // Set up the bench.
     let mut group = c.benchmark_group("Clock Reduction");
     group.bench_function("Refinement check - No reduction", |b| {
-        b.iter(|| black_box(normal_refinement()))
+        b.iter(|| black_box(normal_refinement))
     });
     group.bench_function("Refinement check - With reduction", |b| {
-        b.iter(|| black_box(clock_reduced_refinement()))
+        b.iter(|| black_box(clock_reduced_refinement))
     });
     group.finish();
 }
