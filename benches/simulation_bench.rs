@@ -33,7 +33,7 @@ fn create_step_request(
         components_path,
         composition,
         ConcreteEcdarBackend::handle_start_simulation(last_response.clone(), cache)
-            .map(|x| Response::new(x)),
+            .map(Response::new),
     )
     .into_inner()
 }
