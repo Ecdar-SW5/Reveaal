@@ -62,7 +62,7 @@ impl LocationID {
         }
     }
 
-    pub fn get_unique_string(&self) -> String {
+    pub(crate) fn get_unique_string(&self) -> String {
         match self {
             LocationID::Composition(a, b) => {
                 format!("({}||{})", a.get_unique_string(), b.get_unique_string())
