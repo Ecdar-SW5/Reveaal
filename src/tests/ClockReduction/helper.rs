@@ -1,11 +1,14 @@
 #[cfg(test)]
 pub mod test {
-    use crate::component;
     use crate::component::{Edge, SyncType};
+    use crate::extract_system_rep::SystemRecipe;
     use crate::DataReader::json_reader::read_json_component;
     use crate::TransitionSystems::transition_system::ClockReductionInstruction;
+    use crate::TransitionSystems::TransitionSystemPtr;
+    use crate::{component, JsonProjectLoader, DEFAULT_SETTINGS};
     use edbm::util::constraints::ClockIndex;
-    use std::collections::HashSet;
+    use std::collections::{HashMap, HashSet};
+    use std::path::Path;
 
     /// Reads and processes a component.
     pub fn read_json_component_and_process(
@@ -63,5 +66,82 @@ pub mod test {
                     *clock_index == clock && clock_indices == clocks
                 }
             }));
+    }
+
+    pub(crate) fn get_conjunction_transition_system(
+        path: &Path,
+        comp1: &str,
+        comp2: &str,
+    ) -> TransitionSystemPtr {
+        let (dim, system_recipe) = get_conjunction_system_recipe(path, comp1, comp2);
+        system_recipe.compile(dim).unwrap()
+    }
+
+    pub(crate) fn get_conjunction_system_recipe(
+        path: &Path,
+        comp1: &str,
+        comp2: &str,
+    ) -> (ClockIndex, SystemRecipe) {
+        let project_loader =
+            JsonProjectLoader::new(path.to_string_lossy().to_string(), DEFAULT_SETTINGS);
+
+        let mut component_loader = project_loader.to_comp_loader();
+
+        let mut next_clock_index: usize = 0;
+        let mut component1 = component_loader.get_component(comp1).clone();
+        let mut component2 = component_loader.get_component(comp2).clone();
+
+        component1.set_clock_indices(&mut next_clock_index);
+        component2.set_clock_indices(&mut next_clock_index);
+
+        let dimensions =
+            component1.declarations.clocks.len() + component2.declarations.clocks.len();
+
+        let sr_component1 = Box::new(SystemRecipe::Component(Box::new(component1)));
+        let sr_component2 = Box::new(SystemRecipe::Component(Box::new(component2)));
+
+        let conjunction = SystemRecipe::Conjunction(sr_component1, sr_component2);
+        (dimensions, conjunction)
+    }
+
+    pub(crate) fn get_composition_transition_system(
+        path: &Path,
+        comp1: &str,
+        comp2: &str,
+    ) -> TransitionSystemPtr {
+        let project_loader =
+            JsonProjectLoader::new(path.to_string_lossy().to_string(), DEFAULT_SETTINGS);
+
+        let mut component_loader = project_loader.to_comp_loader();
+
+        let mut next_clock_index: usize = 0;
+        let mut component1 = component_loader.get_component(comp1).clone();
+        let mut component2 = component_loader.get_component(comp2).clone();
+
+        component1.set_clock_indices(&mut next_clock_index);
+        component2.set_clock_indices(&mut next_clock_index);
+
+        let dimensions =
+            component1.declarations.clocks.len() + component2.declarations.clocks.len();
+
+        let sr_component1 = Box::new(SystemRecipe::Component(Box::new(component1)));
+        let sr_component2 = Box::new(SystemRecipe::Component(Box::new(component2)));
+
+        let conjunction = SystemRecipe::Composition(sr_component1, sr_component2);
+
+        conjunction.compile(dimensions).unwrap()
+    }
+
+    pub(crate) fn create_clock_name_to_index(
+        transition_system: &TransitionSystemPtr,
+    ) -> HashMap<String, ClockIndex> {
+        let mut clock_name_to_index: HashMap<String, ClockIndex> = HashMap::new();
+
+        for (i, declaration) in (&transition_system.get_decls()).iter().enumerate() {
+            for (clock_name, clock_index) in &declaration.clocks {
+                clock_name_to_index.insert(format!("component{}:{}", i, clock_name), *clock_index);
+            }
+        }
+        return clock_name_to_index;
     }
 }

@@ -1,0 +1,127 @@
+{
+  "name": "Component2",
+  "declarations": "clock z;",
+  "locations": [
+    {
+      "id": "L3",
+      "nickname": "",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 105.0,
+      "y": 270.0,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L4",
+      "nickname": "",
+      "invariant": "z \u003c 10",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 330.00001,
+      "y": 253.66666666666669,
+      "color": "4",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "E4",
+      "group": "",
+      "sourceLocation": "L3",
+      "targetLocation": "L4",
+      "status": "INPUT",
+      "select": "",
+      "guard": "z \u003e 2",
+      "update": "",
+      "sync": "repair",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 160.0,
+          "y": 220.0,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        },
+        {
+          "x": 237.6,
+          "y": 205.26666666666665,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E5",
+      "group": "",
+      "sourceLocation": "L4",
+      "targetLocation": "L3",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "z \u003d 0",
+      "sync": "salary",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 267.6,
+          "y": 285.26666666666665,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        },
+        {
+          "x": 190.0,
+          "y": 290.0,
+          "propertyType": "UPDATE",
+          "propertyX": 0.0,
+          "propertyY": 20.0
+        }
+      ]
+    },
+    {
+      "id": "E6",
+      "group": "",
+      "sourceLocation": "L4",
+      "targetLocation": "L4",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "z \u003d 0",
+      "sync": "next",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 288.3333333333333,
+          "y": 138.4,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        },
+        {
+          "x": 390.0,
+          "y": 160.0,
+          "propertyType": "UPDATE",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "x": 209.0,
+  "y": 106.0,
+  "width": 450.0,
+  "height": 600.0,
+  "color": "4",
+  "includeInPeriodicCheck": true
+}

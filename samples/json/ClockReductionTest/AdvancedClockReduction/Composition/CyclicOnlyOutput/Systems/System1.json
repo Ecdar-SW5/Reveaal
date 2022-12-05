@@ -1,0 +1,46 @@
+{
+  "name": "System1",
+  "description": "",
+  "x": 134.0,
+  "y": 106.0,
+  "width": 600.0,
+  "height": 600.0,
+  "color": "0",
+  "systemRootX": 270.0,
+  "componentInstances": [
+    {
+      "id": 1,
+      "componentName": "Component1",
+      "x": 40.0,
+      "y": 200.0
+    },
+    {
+      "id": 2,
+      "componentName": "Component2",
+      "x": 350.0,
+      "y": 200.0
+    }
+  ],
+  "operators": [
+    {
+      "id": 3,
+      "type": "composition",
+      "x": 280.0,
+      "y": 120.0
+    }
+  ],
+  "edges": [
+    {
+      "child": 1,
+      "parent": 3
+    },
+    {
+      "child": 2,
+      "parent": 3
+    },
+    {
+      "child": 3,
+      "parent": 0
+    }
+  ]
+}

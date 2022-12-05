@@ -237,7 +237,6 @@ impl SystemRecipe {
             SystemRecipe::Component(c) => vec![c],
         }
     }
-
     fn change_quotient(&mut self, index: ClockIndex) {
         match self {
             SystemRecipe::Composition(l, r) | SystemRecipe::Conjunction(l, r) => {
@@ -323,7 +322,7 @@ fn validate_reachability_input(
     Ok(())
 }
 
-mod clock_reduction {
+pub(crate) mod clock_reduction {
     use super::*;
 
     pub fn clock_reduce(
@@ -346,7 +345,6 @@ mod clock_reduction {
             .iter()
             .fold(0, |acc, c| acc + c.clocks_removed_count());
         debug!("New dimension: {dim}");
-
         if let Some(r) = rhs {
             r.reduce_clocks(clocks.clone());
             lhs.reduce_clocks(clocks);
