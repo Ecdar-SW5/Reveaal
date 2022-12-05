@@ -66,8 +66,8 @@ impl Conjunction {
             .collect();
 
         let ts = Box::new(Conjunction {
-            left: left.clone(),
-            right: right.clone(),
+            left,
+            right,
             inputs,
             outputs,
             dim,
@@ -75,8 +75,8 @@ impl Conjunction {
         if let ConsistencyResult::Failure(_) = local_consistency::is_least_consistent(ts.as_ref()) {
             return Err(SystemRecipeFailure::new(
                 "Invalid conjunction, not least consistent".to_string(),
-                left,
-                right,
+                ts.left,
+                ts.right,
                 vec![],
             ));
         }
