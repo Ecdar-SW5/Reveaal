@@ -1,23 +1,10 @@
 #[cfg(test)]
 pub mod test {
-    use crate::component::Component;
-    use crate::extract_system_rep::SystemRecipe;
     use crate::tests::ClockReduction::helper::test::{
-        assert_duplicate_clock_in_clock_reduction_instruction_vec,
-        assert_unused_clock_in_clock_reduction_instruction_vec, create_clock_name_to_index,
-        get_composition_transition_system, get_conjunction_transition_system,
-        read_json_component_and_process,
+        create_clock_name_to_index, get_composition_transition_system,
+        get_conjunction_transition_system,
     };
-    use crate::DataReader::json_reader::read_json_component;
-    use crate::JsonProjectLoader;
-    use crate::ProtobufServer::services::query_request::settings::ReduceClocksLevel::All;
-    use crate::ProtobufServer::services::query_request::Settings;
-    use crate::System::executable_query::QueryResult;
-    use crate::System::save_component::{combine_components, PruningStrategy};
     use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Heights};
-    use crate::TransitionSystems::{CompiledComponent, TransitionSystemPtr};
-    use edbm::util::constraints::ClockIndex;
-    use std::collections::{HashMap, HashSet};
     use std::path::Path;
 
     const ADVANCED_CLOCK_REDUCTION_PATH: &str =
@@ -25,7 +12,7 @@ pub mod test {
 
     #[test]
     fn test_advanced_clock_detection() {
-        let mut transition_system = get_conjunction_transition_system(
+        let transition_system = get_conjunction_transition_system(
             &Path::new(ADVANCED_CLOCK_REDUCTION_PATH).join("Conjunction/Example1"),
             "Component1",
             "Component2",
@@ -41,7 +28,7 @@ pub mod test {
             "Only one instruction needed"
         );
         assert!(
-            match (&clock_reduction_instruction[0]) {
+            match &clock_reduction_instruction[0] {
                 ClockReductionInstruction::RemoveClock { .. } => false,
                 ClockReductionInstruction::ReplaceClocks {
                     clock_index,
@@ -66,7 +53,7 @@ pub mod test {
 
     #[test]
     fn test_advanced_same_component_clock_detection() {
-        let mut transition_system = get_conjunction_transition_system(
+        let transition_system = get_conjunction_transition_system(
             &Path::new(ADVANCED_CLOCK_REDUCTION_PATH).join("Conjunction/SameComponent"),
             "Component1",
             "Component1",
@@ -82,7 +69,7 @@ pub mod test {
             "Only one instruction needed"
         );
         assert!(
-            match (&clock_reduction_instruction[0]) {
+            match &clock_reduction_instruction[0] {
                 ClockReductionInstruction::RemoveClock { .. } => false,
                 ClockReductionInstruction::ReplaceClocks {
                     clock_index,
@@ -107,7 +94,7 @@ pub mod test {
 
     #[test]
     fn test_conjunction_of_cyclical_component() {
-        let mut transition_system = get_conjunction_transition_system(
+        let transition_system = get_conjunction_transition_system(
             &Path::new(ADVANCED_CLOCK_REDUCTION_PATH).join("Conjunction/ConjunctionCyclic"),
             "Component1",
             "Component2",
@@ -123,7 +110,7 @@ pub mod test {
             "Only one instruction needed"
         );
         assert!(
-            match (&clock_reduction_instruction[0]) {
+            match &clock_reduction_instruction[0] {
                 ClockReductionInstruction::RemoveClock { .. } => false,
                 ClockReductionInstruction::ReplaceClocks {
                     clock_index,
@@ -148,7 +135,7 @@ pub mod test {
 
     #[test]
     fn test_composition_of_cyclical_component() {
-        let mut transition_system = get_composition_transition_system(
+        let transition_system = get_composition_transition_system(
             &Path::new(ADVANCED_CLOCK_REDUCTION_PATH).join("Composition/CyclicOnlyOutput"),
             "Component1",
             "Component2",
@@ -165,7 +152,7 @@ pub mod test {
 
     #[test]
     fn test_composition_of_component() {
-        let mut transition_system = get_composition_transition_system(
+        let transition_system = get_composition_transition_system(
             &Path::new(ADVANCED_CLOCK_REDUCTION_PATH).join("Composition/CyclicOnlyOutput"),
             "Component1",
             "Component2",

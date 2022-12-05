@@ -3,10 +3,9 @@ pub mod test {
     use crate::component::{Edge, SyncType};
     use crate::extract_system_rep::SystemRecipe;
     use crate::DataReader::json_reader::read_json_component;
-    use crate::ProtobufServer::services::query_request::Settings;
-    use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Heights};
+    use crate::TransitionSystems::transition_system::ClockReductionInstruction;
     use crate::TransitionSystems::TransitionSystemPtr;
-    use crate::{component, JsonProjectLoader, ProtobufServer, DEFAULT_SETTINGS};
+    use crate::{component, JsonProjectLoader, DEFAULT_SETTINGS};
     use edbm::util::constraints::ClockIndex;
     use std::collections::{HashMap, HashSet};
     use std::path::Path;

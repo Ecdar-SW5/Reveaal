@@ -1,6 +1,5 @@
 use super::{CompositionType, LocationID, LocationTuple};
 use crate::EdgeEval::updater::CompiledUpdate;
-use crate::ModelObjects::representations::Clock;
 use crate::{
     ModelObjects::component::{Declarations, State, Transition},
     System::local_consistency::DeterminismResult,
@@ -12,7 +11,6 @@ use log::warn;
 use std::collections::hash_map::Entry;
 use std::collections::{hash_set::HashSet, HashMap};
 use std::hash::Hash;
-use std::ops::Range;
 pub type TransitionSystemPtr = Box<dyn TransitionSystem>;
 pub type Action = String;
 pub type EdgeTuple = (Action, Transition);
