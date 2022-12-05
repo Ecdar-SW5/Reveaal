@@ -1,11 +1,12 @@
 use edbm::util::constraints::ClockIndex;
 
+use crate::extract_system_rep::SystemRecipeFailure;
 use crate::ModelObjects::component::Transition;
 use crate::System::local_consistency::ConsistencyResult;
 use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use std::collections::hash_set::HashSet;
 
-use super::common::ComposedTransitionSystem;
+use super::common::{CollectionOperation, ComposedTransitionSystem};
 use super::CompositionType;
 
 #[derive(Clone)]
@@ -27,7 +28,7 @@ impl Composition {
         left: TransitionSystemPtr,
         right: TransitionSystemPtr,
         dim: ClockIndex,
-    ) -> Result<TransitionSystemPtr, String> {
+    ) -> Result<TransitionSystemPtr, SystemRecipeFailure> {
         let left_in = left.get_input_actions();
         let left_out = left.get_output_actions();
         let left_actions = left_in.union(&left_out).cloned().collect::<HashSet<_>>();
@@ -36,8 +37,13 @@ impl Composition {
         let right_out = right.get_output_actions();
         let right_actions = right_in.union(&right_out).cloned().collect::<HashSet<_>>();
 
-        if !left_out.is_disjoint(&right_out) {
-            return Err("Invalid parallel composition, outputs are not disjoint".to_string());
+        if let Err(actions) = left_out.is_disjoint_action(&right_out) {
+            return Err(SystemRecipeFailure::new(
+                "Invalid parallel composition, outputs are not disjoint".to_string(),
+                left,
+                right,
+                actions,
+            ));
         }
 
         // Act_i = Act1_i \ Act2_o ∪ Act2_i \ Act1_o

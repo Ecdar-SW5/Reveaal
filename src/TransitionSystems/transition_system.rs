@@ -1,6 +1,7 @@
 use super::{CompositionType, LocationID, LocationTuple};
 use crate::DataReader::parse_queries::Rule;
 use crate::EdgeEval::updater::CompiledUpdate;
+use crate::System::local_consistency::DeterminismFailure;
 use crate::{
     component::Component,
     extract_system_rep::get_system_recipe,
@@ -64,7 +65,6 @@ impl Heights {
 
 pub trait TransitionSystem: DynClone {
     fn get_local_max_bounds(&self, loc: &LocationTuple) -> Bounds;
-
     fn get_dim(&self) -> ClockIndex;
 
     fn next_transitions_if_available(
@@ -123,7 +123,11 @@ pub trait TransitionSystem: DynClone {
     fn get_decls(&self) -> Vec<&Declarations>;
 
     fn precheck_sys_rep(&self) -> PrecheckResult {
-        if let DeterminismResult::Failure(location, action) = self.is_deterministic() {
+        if let DeterminismResult::Failure(DeterminismFailure::NotDeterministicFrom(
+            location,
+            action,
+        )) = self.is_deterministic()
+        {
             warn!("Not deterministic");
             return PrecheckResult::NotDeterministic(location, action);
         }

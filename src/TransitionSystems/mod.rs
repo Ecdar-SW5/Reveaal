@@ -1,5 +1,5 @@
 #[macro_use]
-mod common;
+pub(crate) mod common;
 mod compiled_component;
 mod composition;
 mod conjunction;

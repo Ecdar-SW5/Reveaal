@@ -1,6 +1,7 @@
 #[cfg(test)]
 
 mod test {
+    use crate::extract_system_rep::SystemRecipeFailure;
     use crate::System::refine::{RefinementFailure, RefinementResult};
     use crate::{tests::refinement::Helper::json_run_query, System::executable_query::QueryResult};
 
@@ -59,7 +60,7 @@ mod test {
         assert!(matches!(
             actual,
             QueryResult::Refinement(RefinementResult::Failure(
-                RefinementFailure::NotDisjointAndNotSubset
+                RefinementFailure::NotDisjointAndNotSubset(_)
             ))
         ));
     }
@@ -78,7 +79,14 @@ mod test {
         let actual = json_run_query(PATH, "refinement: disJoint2 <= disJoint1");
         assert!(matches!(
             actual,
-            QueryResult::Refinement(RefinementResult::Failure(RefinementFailure::NotDisjoint))
+            QueryResult::Refinement(RefinementResult::Failure(RefinementFailure::NotDisjoint(
+                SystemRecipeFailure {
+                    reason: _,
+                    left_name: _,
+                    right_name: _,
+                    actions: _
+                }
+            ))),
         ));
     }
 }

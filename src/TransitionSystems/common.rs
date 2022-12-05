@@ -142,3 +142,21 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
         self.get_composition_type()
     }
 }
+
+pub trait CollectionOperation {
+    fn is_disjoint_action(&self, other: &HashSet<String>) -> Result<bool, Vec<String>>;
+}
+impl CollectionOperation for HashSet<String> {
+    fn is_disjoint_action(&self, other: &HashSet<String>) -> Result<bool, Vec<String>> {
+        let mut reason: Vec<String> = vec![];
+        for action in other {
+            if self.contains(action) {
+                reason.push(String::from(action));
+            }
+        }
+        if !reason.is_empty() {
+            return Err(reason);
+        }
+        Ok(true)
+    }
+}
