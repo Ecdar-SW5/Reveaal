@@ -227,8 +227,7 @@ pub trait TransitionSystem: DynClone {
             out.extend(b.find_redundant_clocks(height.level_down()));
             out
         } else {
-            let red = self.get_analysis_graph().find_clock_redundancies();
-            red
+            self.get_analysis_graph().find_clock_redundancies()
         }
     }
 }
@@ -351,14 +350,13 @@ impl ClockAnalysisGraph {
         if used_clocks.len() < 2 || self.edges.is_empty() {
             return Vec::new();
         }
-        let mut equivalent_clock_groups: Vec<HashSet<ClockIndex>> = Vec::new();
 
         //This function works by maintaining the loop invariant that equivalent_clock_groups contains
         //groups containing clocks where all clocks contained are equivalent in all edges we have iterated
         //through. We also have to make sure that each clock are only present in one group at a time.
         //This means that for the first iteration all clocks are equivalent. We do not include
         //unused clocks since they are all equivalent and will removed completely in another stage.
-        equivalent_clock_groups.push(used_clocks.clone());
+        let mut equivalent_clock_groups: Vec<HashSet<ClockIndex>> = vec![used_clocks.clone()];
 
         for edge in &self.edges {
             //First the clocks which are equivalent in this edge are found. This is defined by every
@@ -376,7 +374,6 @@ impl ClockAnalysisGraph {
             //clock groups to identify the new globally equivalent clocks
             let mut new_groups: HashMap<usize, HashSet<ClockIndex>> = HashMap::new();
             let mut group_offset: usize = u32::MAX as usize;
-            let mut old_group_index: usize = 0;
 
             //For each of the existing clock groups we will remove the clocks from the groups
             //that are locally equivalent, this means that each global group will now be
@@ -384,9 +381,9 @@ impl ClockAnalysisGraph {
             //This is done by giving each globally equivalent clock group a group offset
             //So all groups in the locally equivalent clock groups will be partitioned
             //by the group they are in, in their globally equivalent group
-            for equivalent_clock_group in &mut equivalent_clock_groups {
+            for (old_group_index, equivalent_clock_group) in equivalent_clock_groups.iter_mut().enumerate() {
                 for clock in equivalent_clock_group.iter() {
-                    if let Some(groupId) = locally_equivalent_clock_groups.get(&clock) {
+                    if let Some(groupId) = locally_equivalent_clock_groups.get(clock) {
                         ClockAnalysisGraph::get_or_insert(
                             &mut new_groups,
                             group_offset + ((*groupId) as usize),
@@ -398,7 +395,6 @@ impl ClockAnalysisGraph {
                     }
                 }
                 group_offset += (u32::MAX as usize) * 2;
-                old_group_index += 1;
             }
 
             //Then we just have to take each of the values in the map and collect them into a vec
@@ -411,10 +407,10 @@ impl ClockAnalysisGraph {
         equivalent_clock_groups
     }
 
-    fn get_or_insert<'a, K: Eq + Hash, V: Default>(
-        map: &'a mut HashMap<K, V>,
+    fn get_or_insert<K: Eq + Hash, V: Default>(
+        map: &'_ mut HashMap<K, V>,
         key: K,
-    ) -> &'a mut V {
+    ) -> &'_ mut V {
         match map.entry(key) {
             Entry::Occupied(o) => o.into_mut(),
             Entry::Vacant(v) => v.insert(V::default()),
