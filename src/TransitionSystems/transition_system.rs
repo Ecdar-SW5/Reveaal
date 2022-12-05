@@ -229,26 +229,6 @@ pub trait TransitionSystem: DynClone {
     }
 }
 
-pub(crate) trait Intersect<T> {
-    fn intersect(&self, other: &[T]) -> Vec<T>;
-}
-
-impl Intersect<ClockReductionInstruction> for Vec<ClockReductionInstruction> {
-    // Prioritizes replacements over removals
-    fn intersect(&self, other: &[ClockReductionInstruction]) -> Vec<ClockReductionInstruction> {
-        self.iter()
-            .filter(|r| r.is_replace())
-            .chain(other.iter().filter(|r| r.is_replace()))
-            .chain(
-                self.iter()
-                    .filter(|r| !r.is_replace())
-                    .filter_map(|c| other.iter().filter(|r| !r.is_replace()).find(|rc| *rc == c)),
-            )
-            .cloned()
-            .collect()
-    }
-}
-
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ClockReductionInstruction {
     RemoveClock {
@@ -268,7 +248,7 @@ impl ClockReductionInstruction {
         }
     }
 
-    fn is_replace(&self) -> bool {
+    pub(crate) fn is_replace(&self) -> bool {
         match self {
             ClockReductionInstruction::RemoveClock { .. } => false,
             ClockReductionInstruction::ReplaceClocks { .. } => true,

@@ -27,7 +27,7 @@ args:
           long: save-relation
           required: false
           takes_value: false
-    - omit-clock-reduction:
+    - clock-reduction:
           long: clock-reduction-level
           required: false
           takes_value: true
