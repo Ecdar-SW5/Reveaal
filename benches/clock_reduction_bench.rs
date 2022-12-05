@@ -38,8 +38,8 @@ fn normal_refinement() {
 }
 
 criterion_group! {
-    name = benches;
+    name = clock_reduction_bench;
     config = Criterion::default().sample_size(10);
     targets = bench_clock_reduced_refinement
 }
-criterion_main!(benches);
+criterion_main!(clock_reduction_bench);
