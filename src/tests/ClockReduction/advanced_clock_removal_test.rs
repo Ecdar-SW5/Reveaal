@@ -3,7 +3,7 @@ pub mod test {
     const ADVANCED_CLOCK_REDUCTION_PATH: &str =
         "samples/json/ClockReductionTest/AdvancedClockReduction";
 
-    use crate::extract_system_rep::{SystemRecipe, clock_reduction};
+    use crate::extract_system_rep::{clock_reduction, SystemRecipe};
     use crate::tests::ClockReduction::helper::test::{
         assert_duplicate_clock_in_clock_reduction_instruction_vec,
         assert_unused_clock_in_clock_reduction_instruction_vec, create_clock_name_to_index,
@@ -14,9 +14,9 @@ pub mod test {
     use crate::ProtobufServer::services::query_request::Settings;
     use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Heights};
     use crate::TransitionSystems::TransitionSystem;
+    use crate::DEFAULT_SETTINGS;
     use std::collections::HashSet;
     use std::path::Path;
-    use crate::DEFAULT_SETTINGS;
 
     #[test]
     fn test_advanced_clock_removal() {
@@ -38,8 +38,9 @@ pub mod test {
             Option::None,
             &DEFAULT_SETTINGS,
             &mut dimensions,
-            false
-        ).unwrap();
+            false,
+        )
+        .unwrap();
 
         //We let it use the unreduced amount of dimensions so we can catch the error
         //If a clock is not reduced
