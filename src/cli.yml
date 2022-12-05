@@ -28,9 +28,9 @@ args:
           required: false
           takes_value: false
     - clock-reduction:
-          long: clock-reduction-level
+          long: disable-clock-reduction
           required: false
-          takes_value: true
+          takes_value: false
     - cache-size:
           short: cs
           long: cache-size

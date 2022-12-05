@@ -7,7 +7,6 @@ use crate::System::executable_query::{
     ReachabilityExecutor, RefinementExecutor,
 };
 use crate::System::extract_state::get_state;
-use std::cmp::max;
 use std::collections::HashMap;
 
 use crate::TransitionSystems::{
@@ -15,9 +14,8 @@ use crate::TransitionSystems::{
 };
 
 use crate::component::State;
-use crate::ProtobufServer::services::query_request::{settings::ReduceClocksLevel, Settings};
 use crate::System::pruning;
-use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Heights};
+use crate::TransitionSystems::transition_system::{ClockReductionInstruction};
 use edbm::util::constraints::ClockIndex;
 use log::debug;
 use simple_error::bail;
@@ -38,7 +36,10 @@ pub fn create_executable_query<'a>(
 
                 let mut left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
                 let mut right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
-                clock_reduction::clock_reduce(&mut left, Some(&mut right), component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
+
+                if component_loader.get_settings().disable_clocks_level {
+                    clock_reduction::clock_reduce(&mut left, Some(&mut right), &mut dim, quotient_index.is_some())?;
+                }
 
                 Ok(Box::new(RefinementExecutor {
                 sys1: left.compile(dim)?,
@@ -81,7 +82,11 @@ pub fn create_executable_query<'a>(
                     &mut dim,
                     &mut quotient_index
                 );
-                clock_reduction::clock_reduce(&mut recipe, None, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
+
+                if component_loader.get_settings().disable_clocks_level {
+                    clock_reduction::clock_reduce(&mut recipe, None, &mut dim, quotient_index.is_some())?;
+                }
+
                 Ok(Box::new(ConsistencyExecutor {
                     recipe,
                     dim
@@ -95,7 +100,11 @@ pub fn create_executable_query<'a>(
                     &mut dim,
                     &mut quotient_index
                 );
-                clock_reduction::clock_reduce(&mut recipe, None, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
+
+                if component_loader.get_settings().disable_clocks_level {
+                    clock_reduction::clock_reduce(&mut recipe, None, &mut dim, quotient_index.is_some())?;
+                }
+
                 Ok(Box::new(DeterminismExecutor {
                     system: recipe.compile(dim)?,
                 }))
@@ -123,7 +132,11 @@ pub fn create_executable_query<'a>(
                         &mut dim,
                         &mut quotient_index
                     );
-                    clock_reduction::clock_reduce(&mut recipe, None, component_loader.get_settings(), &mut dim, quotient_index.is_some())?;
+
+                    if component_loader.get_settings().disable_clocks_level {
+                        clock_reduction::clock_reduce(&mut recipe, None, &mut dim, quotient_index.is_some())?;
+                    }
+
                     Ok(Box::new(
                         GetComponentExecutor {
                             system: pruning::prune_system(recipe.compile(dim)?, dim),
@@ -171,16 +184,6 @@ impl SystemRecipe {
                 Ok(comp) => Ok(comp),
                 Err(err) => Err(err),
             },
-        }
-    }
-
-    /// Gets the height of the `SystemRecipe` tree
-    fn height(&self) -> usize {
-        match self {
-            SystemRecipe::Composition(l, r)
-            | SystemRecipe::Conjunction(l, r)
-            | SystemRecipe::Quotient(l, r, _) => 1 + max(l.height(), r.height()),
-            SystemRecipe::Component(_) => 1,
         }
     }
 
@@ -326,25 +329,16 @@ mod clock_reduction {
     pub fn clock_reduce(
         lhs: &mut Box<SystemRecipe>,
         mut rhs: Option<&mut Box<SystemRecipe>>,
-        settings: &Settings,
         dim: &mut usize,
         has_quotient: bool,
     ) -> Result<(), String> {
-        let heights = match heights(
-            &settings.reduce_clocks_level,
-            max(lhs.height(), rhs.as_ref().map(|s| s.height()).unwrap_or(0)),
-        )? {
-            Some(h) => h,
-            None => return Ok(()),
-        };
-
         let clocks = if let Some(ref mut r) = rhs {
             intersect(
-                lhs.clone().compile(*dim)?.find_redundant_clocks(heights),
-                r.clone().compile(*dim)?.find_redundant_clocks(heights),
+                lhs.clone().compile(*dim)?.find_redundant_clocks(),
+                r.clone().compile(*dim)?.find_redundant_clocks(),
             )
         } else {
-            lhs.clone().compile(*dim)?.find_redundant_clocks(heights)
+            lhs.clone().compile(*dim)?.find_redundant_clocks()
         };
 
         debug!("Clocks to be reduced: {clocks:?}");
@@ -369,15 +363,6 @@ mod clock_reduction {
             }
         }
         Ok(())
-    }
-
-    fn heights(lvl: &Option<ReduceClocksLevel>, height: usize) -> Result<Option<Heights>, String> {
-        match lvl.to_owned().ok_or_else(|| "No clock reduction level specified".to_string())? {
-            ReduceClocksLevel::Level(y) if y >= 0 => Ok(Some(Heights::new(height, y as usize))),
-            ReduceClocksLevel::All(true) => Ok(Some(Heights::new(height, height))),
-            ReduceClocksLevel::All(false) => Ok(None),
-            ReduceClocksLevel::Level(err) => Err(format!("Clock reduction error: Couldn't parse argument correctly. Got {err}, expected a value above")),
-        }
     }
 
     fn intersect(
