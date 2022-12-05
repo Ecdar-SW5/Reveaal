@@ -3,7 +3,7 @@ pub mod test {
     const ADVANCED_CLOCK_REDUCTION_PATH: &str =
         "samples/json/ClockReductionTest/AdvancedClockReduction";
 
-    use crate::extract_system_rep::SystemRecipe;
+    use crate::extract_system_rep::{SystemRecipe, clock_reduction};
     use crate::tests::ClockReduction::helper::test::{
         assert_duplicate_clock_in_clock_reduction_instruction_vec,
         assert_unused_clock_in_clock_reduction_instruction_vec, create_clock_name_to_index,
@@ -16,27 +16,34 @@ pub mod test {
     use crate::TransitionSystems::TransitionSystem;
     use std::collections::HashSet;
     use std::path::Path;
+    use crate::DEFAULT_SETTINGS;
 
     #[test]
     fn test_advanced_clock_removal() {
-        let (dimensions, mut system_recipe) = get_conjunction_system_recipe(
+        let (mut dimensions, mut system_recipe) = get_conjunction_system_recipe(
             &Path::new(ADVANCED_CLOCK_REDUCTION_PATH).join("Conjunction/Example1"),
             "Component1",
             "Component2",
         );
 
-        let system_recipe_copy = system_recipe.clone();
+        let mut system_recipe_copy = Box::new(system_recipe.clone());
 
-        let clock_reduction_instruction = system_recipe_copy
+        let clock_reduction_instruction = system_recipe
             .compile(dimensions)
             .unwrap()
             .find_redundant_clocks(Heights::empty());
 
-        system_recipe.reduce_clocks(clock_reduction_instruction);
+        clock_reduction::clock_reduce(
+            &mut system_recipe_copy,
+            Option::None,
+            &DEFAULT_SETTINGS,
+            &mut dimensions,
+            false
+        ).unwrap();
 
         //We let it use the unreduced amount of dimensions so we can catch the error
         //If a clock is not reduced
-        let compiled = system_recipe.compile(dimensions).unwrap();
+        let compiled = system_recipe_copy.compile(dimensions).unwrap();
 
         let clock_name_to_index = create_clock_name_to_index(&compiled);
 
