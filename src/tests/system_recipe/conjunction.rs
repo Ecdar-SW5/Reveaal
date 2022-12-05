@@ -1,7 +1,6 @@
 #[cfg(test)]
 
 mod test {
-    use log::info;
 
     use crate::{
         extract_system_rep::SystemRecipeFailure,
