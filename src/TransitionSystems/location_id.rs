@@ -79,7 +79,7 @@ impl LocationID {
                 component_id,
             } => format!(
                 "{}.{}",
-                component_id.clone().unwrap_or_else( || "(None)".to_string()),
+                component_id.clone().unwrap_or_else(|| "(None)".to_string()),
                 location_id
             ),
         }

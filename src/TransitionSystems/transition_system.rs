@@ -381,7 +381,9 @@ impl ClockAnalysisGraph {
             //This is done by giving each globally equivalent clock group a group offset
             //So all groups in the locally equivalent clock groups will be partitioned
             //by the group they are in, in their globally equivalent group
-            for (old_group_index, equivalent_clock_group) in equivalent_clock_groups.iter_mut().enumerate() {
+            for (old_group_index, equivalent_clock_group) in
+                equivalent_clock_groups.iter_mut().enumerate()
+            {
                 for clock in equivalent_clock_group.iter() {
                     if let Some(groupId) = locally_equivalent_clock_groups.get(clock) {
                         ClockAnalysisGraph::get_or_insert(
@@ -407,10 +409,7 @@ impl ClockAnalysisGraph {
         equivalent_clock_groups
     }
 
-    fn get_or_insert<K: Eq + Hash, V: Default>(
-        map: &'_ mut HashMap<K, V>,
-        key: K,
-    ) -> &'_ mut V {
+    fn get_or_insert<K: Eq + Hash, V: Default>(map: &'_ mut HashMap<K, V>, key: K) -> &'_ mut V {
         match map.entry(key) {
             Entry::Occupied(o) => o.into_mut(),
             Entry::Vacant(v) => v.insert(V::default()),
