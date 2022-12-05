@@ -183,11 +183,11 @@ pub fn create_start_request(
     component_names: &[&str],
     components_path: &str,
     composition: &str,
-) -> Request<SimulationStartRequest> {
+) -> SimulationStartRequest {
     let simulation_info = create_simulation_info_1(component_names, components_path, composition);
-    Request::new(SimulationStartRequest {
+    SimulationStartRequest {
         simulation_info: Some(simulation_info),
-    })
+    }
 }
 
 pub fn create_step_request(
@@ -195,7 +195,7 @@ pub fn create_step_request(
     components_path: &str,
     composition: &str,
     last_response: Result<Response<SimulationStepResponse>, Status>,
-) -> Request<SimulationStepRequest> {
+) -> SimulationStepRequest {
     let simulation_info = create_simulation_info_1(component_names, components_path, composition);
     let last_response = last_response.unwrap().into_inner();
     let source = last_response
@@ -213,13 +213,13 @@ pub fn create_step_request(
         .unwrap()
         .to_owned();
 
-    Request::new(SimulationStepRequest {
+    SimulationStepRequest {
         simulation_info: Some(simulation_info),
         chosen_decision: Some(ProtoDecision {
             source,
             edge: Some(decision),
         }),
-    })
+    }
 }
 
 fn create_simulation_info_1(

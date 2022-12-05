@@ -13,14 +13,6 @@ use tonic::Response;
 
 static PATH: &str = "samples/json/EcdarUniversity";
 
-fn create_start_request(
-    component_names: &[&str],
-    components_path: &str,
-    composition: &str,
-) -> SimulationStartRequest {
-    helper::create_start_request(component_names, components_path, composition).into_inner()
-}
-
 fn create_step_request(
     component_names: &[&str],
     components_path: &str,
@@ -35,7 +27,6 @@ fn create_step_request(
         ConcreteEcdarBackend::handle_start_simulation(last_response.clone(), cache)
             .map(Response::new),
     )
-    .into_inner()
 }
 
 fn start_simulation(c: &mut Criterion, id: &str, request: SimulationStartRequest) {
@@ -53,15 +44,15 @@ fn take_simulation_step(c: &mut Criterion, id: &str, request: SimulationStepRequ
 }
 
 fn simulation(c: &mut Criterion) {
-    let start_request_1 = create_start_request(&["Machine"], PATH, "(Machine)");
+    let start_request_1 = helper::create_start_request(&["Machine"], PATH, "(Machine)");
     let start_request_2 =
-        create_start_request(&["HalfAdm1", "HalfAdm2"], PATH, "(HalfAdm1 && HalfAdm2)");
-    let start_request_3 = create_start_request(
+        helper::create_start_request(&["HalfAdm1", "HalfAdm2"], PATH, "(HalfAdm1 && HalfAdm2)");
+    let start_request_3 = helper::create_start_request(
         &["Administration", "Machine", "Researcher"],
         PATH,
         "(Administration || Machine || Researcher)",
     );
-    let start_request_4 = create_start_request(
+    let start_request_4 = helper::create_start_request(
         &["HalfAdm1", "HalfAdm2", "Machine", "Researcher"],
         "samples/json/EcdarUniversity",
         "((HalfAdm1 && HalfAdm2) || Machine || Researcher)",

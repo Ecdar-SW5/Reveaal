@@ -5,6 +5,7 @@ mod tests {
         ProtobufServer::{self, services::ecdar_backend_server::EcdarBackend},
     };
     use test_case::test_case;
+    use tonic::Request;
 
     #[test_case(
         &["Machine"],
@@ -34,13 +35,22 @@ mod tests {
     ) {
         // Arrange
         let backend = ProtobufServer::ConcreteEcdarBackend::default();
-        let request = create_start_request(component_names, components_path, composition);
+        let request = Request::new(create_start_request(
+            component_names,
+            components_path,
+            composition,
+        ));
 
         // Act
         let response = backend.start_simulation(request).await;
 
         // Arrange
-        let request = create_step_request(component_names, components_path, composition, response);
+        let request = Request::new(create_step_request(
+            component_names,
+            components_path,
+            composition,
+            response,
+        ));
 
         // Act
         let response = backend.take_simulation_step(request).await;
