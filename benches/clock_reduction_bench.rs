@@ -5,7 +5,6 @@ use reveaal::{JsonProjectLoader, DEFAULT_SETTINGS, TEST_SETTINGS};
 
 const QUERY: &str = "refinement: (((((Adm2 && HalfAdm1 && HalfAdm2) || Machine || Researcher) && ((Adm2 && HalfAdm1) || Machine || Researcher) && ((Adm2 && HalfAdm2) || Machine || Researcher) && ((HalfAdm1 && HalfAdm2) || Machine || Researcher) && (Adm2 || Machine || Researcher)) // (Adm2 && HalfAdm1 && HalfAdm2)) // Researcher) <= (((((Adm2 && HalfAdm1 && HalfAdm2) || Machine || Researcher) && ((Adm2 && HalfAdm1) || Machine || Researcher) && ((Adm2 && HalfAdm2) || Machine || Researcher) && ((HalfAdm1 && HalfAdm2) || Machine || Researcher) && (Adm2 || Machine || Researcher)) // (Adm2 && HalfAdm1 && HalfAdm2)) // Researcher)";
 
-
 /// This bench runs `QUERY` with and without clock reduction such that you can compare the results.
 /// The bench takes about 40 min on my machine, so grab some coffee.
 fn bench_clock_reduced_refinement(c: &mut Criterion) {
