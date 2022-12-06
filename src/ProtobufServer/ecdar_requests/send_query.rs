@@ -8,6 +8,7 @@ use crate::DataReader::json_reader::json_to_component;
 use crate::DataReader::json_writer::component_to_json;
 use crate::DataReader::parse_queries;
 use crate::ModelObjects::queries::Query;
+use crate::ModelObjects::statepair::StatePair;
 use crate::ProtobufServer::services::component::Rep;
 use crate::ProtobufServer::services::query_response::{
     ComponentResult, ConsistencyResult as ProtobufConsistencyResult,
@@ -22,11 +23,12 @@ use crate::ProtobufServer::services::{
 };
 use crate::ProtobufServer::ConcreteEcdarBackend;
 use crate::System::executable_query::QueryResult;
-use crate::System::local_consistency::{ConsistencyFailure, ConsistencyResult, DeterminismResult};
+use crate::System::local_consistency::{
+    ConsistencyFailure, ConsistencyResult, DeterminismFailure, DeterminismResult,
+};
 use crate::System::refine::{self, RefinementFailure};
 use crate::System::{extract_system_rep, input_enabler};
 use crate::TransitionSystems::{self, LocationID, TransitionID};
-use edbm::util::constraints::Disjunction;
 use log::trace;
 use tonic::Status;
 
@@ -153,7 +155,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     reason: "".to_string(),
                     relation: vec![],
                     state: None,
-                    action: "".to_string(), // Empty string is used, when no failing action is available.
+                    action: vec![], // Empty vec![] is used, when no failing action is available.
                 }))
             }
             refine::RefinementResult::Failure(failure) => convert_refinement_failure(failure),
@@ -212,7 +214,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     success: true,
                     reason: "".to_string(),
                     state: None,
-                    action: "".to_string(),
+                    action: vec![],
                 }))
             }
             ConsistencyResult::Failure(failure) => match failure {
@@ -221,7 +223,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         success: false,
                         reason: failure.to_string(),
                         state: None,
-                        action: "".to_string(),
+                        action: vec![],
                     }))
                 }
                 ConsistencyFailure::NotConsistentFrom(location_id, action)
@@ -241,7 +243,15 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                             }),
                             federation: None,
                         }),
-                        action: action.to_string(),
+                        action: vec![action.to_string()],
+                    }))
+                }
+                ConsistencyFailure::NotDisjoint(srf) => {
+                    Some(ProtobufResult::Consistency(ProtobufConsistencyResult {
+                        success: false,
+                        reason: srf.reason.to_string(),
+                        state: None,
+                        action: srf.actions.clone(),
                     }))
                 }
             },
@@ -252,38 +262,55 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     success: true,
                     reason: "".to_string(),
                     state: None,
-                    action: "".to_string(),
+                    action: vec![],
                 }))
             }
-            DeterminismResult::Failure(location_id, action) => {
+            DeterminismResult::Failure(DeterminismFailure::NotDeterministicFrom(
+                location_id,
+                action,
+            )) => Some(ProtobufResult::Determinism(ProtobufDeterminismResult {
+                success: false,
+                reason: "Not deterministic From Location".to_string(),
+                state: Some(State {
+                    location_tuple: Some(LocationTuple {
+                        locations: vec![Location {
+                            id: location_id.to_string(),
+                            specific_component: Some(SpecificComponent {
+                                component_name: location_id.get_component_id().unwrap(),
+                                component_index: 0,
+                            }),
+                        }],
+                    }),
+                    federation: None,
+                }),
+                action: vec![action.to_string()],
+            })),
+            DeterminismResult::Failure(DeterminismFailure::NotDisjoint(srf)) => {
                 Some(ProtobufResult::Determinism(ProtobufDeterminismResult {
                     success: false,
-                    reason: "Not deterministic From Location".to_string(),
-                    state: Some(State {
-                        location_tuple: Some(LocationTuple {
-                            locations: vec![Location {
-                                id: location_id.to_string(),
-                                specific_component: Some(SpecificComponent {
-                                    component_name: location_id.get_component_id().unwrap(),
-                                    component_index: 0,
-                                }),
-                            }],
-                        }),
-                        federation: None,
-                    }),
-                    action: action.to_string(),
+                    reason: srf.reason.to_string(),
+                    state: None,
+                    action: srf.actions.clone(),
                 }))
             }
         },
+
         QueryResult::Error(message) => Some(ProtobufResult::Error(message.clone())),
     }
 }
 
 fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufResult> {
     match failure {
-        RefinementFailure::NotDisjointAndNotSubset
-        | RefinementFailure::NotDisjoint
-        | RefinementFailure::NotSubset
+        RefinementFailure::NotDisjointAndNotSubset(srf) => {
+            Some(ProtobufResult::Refinement(RefinementResult {
+                success: false,
+                reason: "Not Disjoint and Not Subset".to_string(),
+                relation: vec![],
+                state: None,
+                action: srf.actions.clone(),
+            }))
+        }
+        RefinementFailure::NotSubset
         | RefinementFailure::EmptySpecification
         | RefinementFailure::EmptyImplementation => {
             Some(ProtobufResult::Refinement(RefinementResult {
@@ -291,7 +318,16 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                 relation: vec![],
                 state: None,
                 reason: failure.to_string(),
-                action: "".to_string(),
+                action: vec![],
+            }))
+        }
+        RefinementFailure::NotDisjoint(sysRecipeFailure) => {
+            Some(ProtobufResult::Refinement(RefinementResult {
+                success: false,
+                relation: vec![],
+                state: None,
+                reason: sysRecipeFailure.reason.clone(),
+                action: sysRecipeFailure.actions.clone(),
             }))
         }
         RefinementFailure::CutsDelaySolutions(state_pair)
@@ -302,7 +338,7 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                 success: false,
                 relation: vec![],
                 state: Some(State {
-                    federation: make_proto_zone(state_pair.ref_zone().minimal_constraints()),
+                    federation: make_proto_zone(state_pair),
                     location_tuple: Some(LocationTuple {
                         locations: make_location_vec(
                             state_pair.get_locations1(),
@@ -311,7 +347,7 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                     }),
                 }),
                 reason: failure.to_string(),
-                action: "".to_string(),
+                action: vec![],
             }))
         }
         RefinementFailure::ConsistencyFailure(location_id, action)
@@ -323,19 +359,18 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                     location_tuple: Some(LocationTuple {
                         locations: vec![Location {
                             id: value_in_location(location_id),
-                            specific_component: value_in_component(location_id),
+                            specific_component: value_in_component(location_id.as_ref()),
                         }],
                     }),
                     federation: None,
                 }),
-                action: value_in_action(action),
+                action: vec![value_in_action(action)],
                 relation: vec![],
             }))
         }
     }
 }
 
-/// CAREFUL: sets specific_component to None
 fn make_location_vec(
     locations1: &TransitionSystems::LocationTuple,
     locations2: &TransitionSystems::LocationTuple,
@@ -343,29 +378,35 @@ fn make_location_vec(
     let loc_vec: Vec<Location> = vec![
         Location {
             id: locations1.id.to_string(),
-            specific_component: None,
+            specific_component: Some(SpecificComponent {
+                component_name: locations1.id.get_component_id().unwrap(),
+                component_index: 0,
+            }),
         },
         Location {
             id: locations2.id.to_string(),
-            specific_component: None,
+            specific_component: Some(SpecificComponent {
+                component_name: locations2.id.get_component_id().unwrap(),
+                component_index: 0,
+            }),
         },
     ];
     loc_vec
 }
 
-/// CAREFUL: sets specific_component to None for ComponentClocks
-fn make_proto_zone(disjunction: Disjunction) -> Option<Federation> {
+fn make_proto_zone(state_pair: &StatePair) -> Option<Federation> {
+    let disjunction = state_pair.ref_zone().minimal_constraints();
     let mut conjunctions: Vec<ProtobufConjunction> = vec![];
     for conjunction in disjunction.conjunctions.iter() {
         let mut constraints: Vec<ProtobufConstraint> = vec![];
         for constraint in conjunction.constraints.iter() {
             constraints.push(ProtobufConstraint {
                 x: Some(ProtobufComponentClock {
-                    specific_component: None,
+                    specific_component: value_in_component(Some(&state_pair.locations1.id)),
                     clock_name: constraint.i.to_string(),
                 }),
                 y: Some(ProtobufComponentClock {
-                    specific_component: None,
+                    specific_component: value_in_component(Some(&state_pair.locations1.id)),
                     clock_name: constraint.j.to_string(),
                 }),
                 strict: constraint.ineq().is_strict(),
@@ -386,13 +427,11 @@ fn value_in_location(maybe_location: &Option<LocationID>) -> String {
     }
 }
 
-fn value_in_component(maybe_location: &Option<LocationID>) -> Option<SpecificComponent> {
-    maybe_location
-        .as_ref()
-        .map(|location_id| SpecificComponent {
-            component_name: location_id.get_component_id().unwrap(),
-            component_index: 0,
-        })
+fn value_in_component(maybe_location: Option<&LocationID>) -> Option<SpecificComponent> {
+    maybe_location.map(|location_id| SpecificComponent {
+        component_name: location_id.get_component_id().unwrap(),
+        component_index: 0,
+    })
 }
 
 fn value_in_action(maybe_action: &Option<String>) -> String {

@@ -44,7 +44,7 @@ pub mod util {
         };
 
         let new_comp = new_system.compile(dim);
-
+        //TODO:: Return the SystemRecipeFailure if new_comp is a failure
         if new_comp.is_err() {
             return;
         }
@@ -53,6 +53,7 @@ pub mod util {
         let new_comp = SystemRecipe::Component(Box::new(new_comp))
             .compile(dim)
             .unwrap();
+        //TODO:: if it can fail unwrap should be replaced.
         let base_system = base_system.compile(dim).unwrap();
 
         let base_precheck = base_system.precheck_sys_rep();

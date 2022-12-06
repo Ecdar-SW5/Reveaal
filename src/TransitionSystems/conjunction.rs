@@ -1,5 +1,6 @@
 use edbm::util::constraints::ClockIndex;
 
+use crate::extract_system_rep::SystemRecipeFailure;
 use crate::ModelObjects::component::Transition;
 use crate::System::local_consistency::{self, ConsistencyResult};
 use crate::TransitionSystems::{
@@ -7,7 +8,7 @@ use crate::TransitionSystems::{
 };
 use std::collections::hash_set::HashSet;
 
-use super::common::ComposedTransitionSystem;
+use super::common::{CollectionOperation, ComposedTransitionSystem};
 
 #[derive(Clone)]
 pub struct Conjunction {
@@ -24,15 +25,32 @@ impl Conjunction {
         left: TransitionSystemPtr,
         right: TransitionSystemPtr,
         dim: ClockIndex,
-    ) -> Result<TransitionSystemPtr, String> {
+    ) -> Result<TransitionSystemPtr, SystemRecipeFailure> {
         let left_in = left.get_input_actions();
         let left_out = left.get_output_actions();
 
         let right_in = right.get_input_actions();
         let right_out = right.get_output_actions();
 
-        if !(left_in.is_disjoint(&right_out) && left_out.is_disjoint(&right_in)) {
-            return Err("Invalid conjunction, outputs and inputs are not disjoint".to_string());
+        let mut is_disjoint = true;
+        let mut actions = vec![];
+
+        if let Err(actions1) = left_in.is_disjoint_action(&right_out) {
+            is_disjoint = false;
+            actions.extend(actions1);
+        }
+        if let Err(actions2) = left_out.is_disjoint_action(&right_in) {
+            is_disjoint = false;
+            actions.extend(actions2);
+        }
+
+        if !(is_disjoint) {
+            return Err(SystemRecipeFailure::new(
+                "Invalid conjunction, outputs and inputs are not disjoint".to_string(),
+                left,
+                right,
+                actions,
+            ));
         }
 
         let outputs = left
@@ -55,7 +73,12 @@ impl Conjunction {
             dim,
         });
         if let ConsistencyResult::Failure(_) = local_consistency::is_least_consistent(ts.as_ref()) {
-            return Err("Conjunction is empty after pruning".to_string());
+            return Err(SystemRecipeFailure::new(
+                "Invalid conjunction, not least consistent".to_string(),
+                ts.left,
+                ts.right,
+                vec![],
+            ));
         }
         Ok(ts)
     }
