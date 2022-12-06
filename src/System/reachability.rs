@@ -83,10 +83,10 @@ pub fn find_path(
         });
     }
 
-    Ok(search_algorithm(&start_state, &end_state, system))
+    Ok(reachability_search(&start_state, &end_state, system))
 }
 
-fn search_algorithm(start_state: &State, end_state: &State, system: &dyn TransitionSystem) -> Path {
+fn reachability_search(start_state: &State, end_state: &State, system: &dyn TransitionSystem) -> Path {
     // Apply the invariant of the start state to the start state
     let mut start_clone = start_state.clone();
     let start_zone = start_clone.take_zone();
@@ -115,7 +115,7 @@ fn search_algorithm(start_state: &State, end_state: &State, system: &dyn Transit
         transition: None,
     }));
 
-    // Take the first state from the frontier and exprore it
+    // Take the first state from the frontier and explore it
     while let Some(sub_path) = frontier_states.pop() {
         if reached_end_state(&sub_path.destination_state, end_state) {
             return make_path(sub_path);
