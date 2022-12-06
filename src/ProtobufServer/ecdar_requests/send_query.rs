@@ -252,13 +252,22 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         reason: srf.reason.to_string(),
                         state: Some(State {
                             location_tuple: Some(LocationTuple {
-                                locations: vec![Location {
-                                    id: "".to_string(),
-                                    specific_component: Some(SpecificComponent {
-                                        component_name: srf.left_name.clone().unwrap(),
-                                        component_index: 0,
-                                    }),
-                                }],
+                                locations: vec![
+                                    Location {
+                                        id: "".to_string(),
+                                        specific_component: Some(SpecificComponent {
+                                            component_name: srf.left_name.clone()?,
+                                            component_index: 0,
+                                        }),
+                                    },
+                                    Location {
+                                        id: "".to_string(),
+                                        specific_component: Some(SpecificComponent {
+                                            component_name: srf.right_name.clone()?,
+                                            component_index: 1,
+                                        }),
+                                    },
+                                ],
                             }),
                             federation: None,
                         }),
@@ -300,7 +309,27 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                 Some(ProtobufResult::Determinism(ProtobufDeterminismResult {
                     success: false,
                     reason: srf.reason.to_string(),
-                    state: None,
+                    state: Some(State {
+                        location_tuple: Some(LocationTuple {
+                            locations: vec![
+                                Location {
+                                    id: "".to_string(),
+                                    specific_component: Some(SpecificComponent {
+                                        component_name: srf.left_name.clone()?,
+                                        component_index: 0,
+                                    }),
+                                },
+                                Location {
+                                    id: "".to_string(),
+                                    specific_component: Some(SpecificComponent {
+                                        component_name: srf.right_name.clone()?,
+                                        component_index: 1,
+                                    }),
+                                },
+                            ],
+                        }),
+                        federation: None,
+                    }),
                     action: srf.actions.clone(),
                 }))
             }
@@ -319,13 +348,22 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                 relation: vec![],
                 state: Some(State {
                     location_tuple: Some(LocationTuple {
-                        locations: vec![Location {
-                            id: "".to_string(),
-                            specific_component: Some(SpecificComponent {
-                                component_name: srf.left_name.clone().unwrap(),
-                                component_index: 0,
-                            }),
-                        }],
+                        locations: vec![
+                            Location {
+                                id: "".to_string(),
+                                specific_component: Some(SpecificComponent {
+                                    component_name: srf.left_name.clone()?,
+                                    component_index: 0,
+                                }),
+                            },
+                            Location {
+                                id: "".to_string(),
+                                specific_component: Some(SpecificComponent {
+                                    component_name: srf.right_name.clone()?,
+                                    component_index: 1,
+                                }),
+                            },
+                        ],
                     }),
                     federation: None,
                 }),
@@ -348,13 +386,22 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
             relation: vec![],
             state: Some(State {
                 location_tuple: Some(LocationTuple {
-                    locations: vec![Location {
-                        id: "".to_string(),
-                        specific_component: Some(SpecificComponent {
-                            component_name: srf.left_name.clone().unwrap(),
-                            component_index: 0,
-                        }),
-                    }],
+                    locations: vec![
+                        Location {
+                            id: "".to_string(),
+                            specific_component: Some(SpecificComponent {
+                                component_name: srf.left_name.clone()?,
+                                component_index: 0,
+                            }),
+                        },
+                        Location {
+                            id: "".to_string(),
+                            specific_component: Some(SpecificComponent {
+                                component_name: srf.right_name.clone()?,
+                                component_index: 1,
+                            }),
+                        },
+                    ],
                 }),
                 federation: None,
             }),
