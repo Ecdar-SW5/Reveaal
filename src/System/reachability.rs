@@ -90,7 +90,11 @@ pub fn find_path(
 /// BFS is preferable to a DFS, as it reduces the chance of "Mistakes", meaning
 /// having to revisit a state with a larger zone, forcing it to be readded ot the frontier.
 /// Inspired from http://link.springer.com/10.1007/978-3-319-22975-1_9, see article for possible optimizations and more explanation.
-fn reachability_search(start_state: &State, end_state: &State, system: &dyn TransitionSystem) -> Path {
+fn reachability_search(
+    start_state: &State,
+    end_state: &State,
+    system: &dyn TransitionSystem,
+) -> Path {
     // Apply the invariant of the start state to the start state
     let mut start_clone = start_state.clone();
     let start_zone = start_clone.take_zone();
