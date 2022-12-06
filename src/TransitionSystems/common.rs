@@ -143,20 +143,17 @@ impl<T: ComposedTransitionSystem> TransitionSystem for T {
     }
 }
 
-pub trait CollectionOperation {
-    fn is_disjoint_action(&self, other: &HashSet<String>) -> Result<bool, Vec<String>>;
+pub trait CollectionOperation<T: Eq + std::hash::Hash> {
+    fn is_disjoint_action(&self, other: &HashSet<T>) -> Result<bool, Vec<String>>;
 }
-impl CollectionOperation for HashSet<String> {
+
+impl CollectionOperation<String> for HashSet<String> {
     fn is_disjoint_action(&self, other: &HashSet<String>) -> Result<bool, Vec<String>> {
-        let mut reason: Vec<String> = vec![];
-        for action in other {
-            if self.contains(action) {
-                reason.push(String::from(action));
-            }
+        let out = self.intersection(other).cloned().collect::<Vec<String>>();
+        if !out.is_empty() {
+            Err(out)
+        } else {
+            Ok(true)
         }
-        if !reason.is_empty() {
-            return Err(reason);
-        }
-        Ok(true)
     }
 }

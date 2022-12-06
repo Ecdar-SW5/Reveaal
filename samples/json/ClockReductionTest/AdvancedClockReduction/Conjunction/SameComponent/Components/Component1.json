@@ -1,0 +1,113 @@
+{
+  "name": "Component1",
+  "declarations": "clock x;",
+  "locations": [
+    {
+      "id": "L0",
+      "nickname": "",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 75.0,
+      "y": 260.0,
+      "color": "6",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L1",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 210.46154846153843,
+      "y": 261.2307692307692,
+      "color": "6",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L2",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 350.00001,
+      "y": 256.1538461538462,
+      "color": "6",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "E0",
+      "group": "",
+      "sourceLocation": "L0",
+      "targetLocation": "L1",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "x \u003e 2",
+      "update": "",
+      "sync": "o1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 110.0,
+          "y": 260.0,
+          "propertyType": "GUARD",
+          "propertyX": -10.0,
+          "propertyY": -40.0
+        },
+        {
+          "x": 153.84615384615384,
+          "y": 258.7692307692308,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": -10.0,
+          "propertyY": -49.99999999999999
+        }
+      ]
+    },
+    {
+      "id": "E1",
+      "group": "",
+      "sourceLocation": "L1",
+      "targetLocation": "L2",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "x \u003d 0",
+      "sync": "o2",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 246.61538461538464,
+          "y": 259.84615384615387,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": -20.0,
+          "propertyY": -60.0
+        },
+        {
+          "x": 290.0,
+          "y": 260.0,
+          "propertyType": "UPDATE",
+          "propertyX": -10.0,
+          "propertyY": -60.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "x": 209.0,
+  "y": 106.0,
+  "width": 450.0,
+  "height": 600.0,
+  "color": "6",
+  "includeInPeriodicCheck": true
+}

@@ -61,6 +61,29 @@ impl LocationID {
             None
         }
     }
+
+    pub(super) fn get_unique_string(&self) -> String {
+        match self {
+            LocationID::Composition(a, b) => {
+                format!("({}||{})", a.get_unique_string(), b.get_unique_string())
+            }
+            LocationID::Conjunction(a, b) => {
+                format!("({}&&{})", a.get_unique_string(), b.get_unique_string())
+            }
+            LocationID::Quotient(a, b) => {
+                format!("({}\\{})", a.get_unique_string(), b.get_unique_string())
+            }
+            LocationID::AnyLocation() => "_".to_string(),
+            LocationID::Simple {
+                location_id,
+                component_id,
+            } => format!(
+                "{}.{}",
+                component_id.clone().unwrap_or_else(|| "(None)".to_string()),
+                location_id
+            ),
+        }
+    }
 }
 
 impl From<QueryExpression> for LocationID {

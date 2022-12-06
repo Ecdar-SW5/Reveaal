@@ -47,8 +47,8 @@ impl Quotient {
         dim: ClockIndex,
     ) -> Result<TransitionSystemPtr, SystemRecipeFailure> {
         if let Err(actions) = S
-            .get_input_actions()
-            .is_disjoint_action(&T.get_output_actions())
+            .get_output_actions()
+            .is_disjoint_action(&T.get_input_actions())
         {
             return Err(SystemRecipeFailure::new(
                 "s_out and t_in not disjoint in quotient!".to_string(),
@@ -177,6 +177,10 @@ impl TransitionSystem for Quotient {
             bounds_l.add_upper(self.quotient_clock_index, 0);
             bounds_l
         }
+    }
+
+    fn get_dim(&self) -> ClockIndex {
+        self.dim
     }
 
     fn next_transitions(&self, location: &LocationTuple, action: &str) -> Vec<Transition> {
@@ -368,6 +372,22 @@ impl TransitionSystem for Quotient {
             .filter(|e| !e.guard_zone.is_empty())
             .collect()
     }
+    fn get_input_actions(&self) -> HashSet<String> {
+        self.inputs.clone()
+    }
+    fn get_output_actions(&self) -> HashSet<String> {
+        self.outputs.clone()
+    }
+    fn get_actions(&self) -> HashSet<String> {
+        self.inputs.union(&self.outputs).cloned().collect()
+    }
+    fn get_initial_location(&self) -> Option<LocationTuple> {
+        let (t, s) = self.get_children();
+        Some(merge(
+            &t.get_initial_location()?,
+            &s.get_initial_location()?,
+        ))
+    }
 
     fn get_all_locations(&self) -> Vec<LocationTuple> {
         let mut location_tuples = vec![];
@@ -390,22 +410,6 @@ impl TransitionSystem for Quotient {
         location_tuples.push(universal);
 
         location_tuples
-    }
-    fn get_input_actions(&self) -> HashSet<String> {
-        self.inputs.clone()
-    }
-    fn get_output_actions(&self) -> HashSet<String> {
-        self.outputs.clone()
-    }
-    fn get_actions(&self) -> HashSet<String> {
-        self.inputs.union(&self.outputs).cloned().collect()
-    }
-    fn get_initial_location(&self) -> Option<LocationTuple> {
-        let (t, s) = self.get_children();
-        Some(merge(
-            &t.get_initial_location()?,
-            &s.get_initial_location()?,
-        ))
     }
 
     fn get_decls(&self) -> Vec<&Declarations> {
@@ -451,10 +455,6 @@ impl TransitionSystem for Quotient {
 
     fn get_composition_type(&self) -> CompositionType {
         CompositionType::Quotient
-    }
-
-    fn get_dim(&self) -> ClockIndex {
-        self.dim
     }
 }
 
