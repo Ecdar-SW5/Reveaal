@@ -175,9 +175,21 @@ pub fn create_executable_query<'a>(
             },
             QueryExpression::GetComponent(save_as_expression) => {
                 if let QueryExpression::SaveAs(query_expression, comp_name) = save_as_expression.as_ref() {
+                    let mut quotient_index = None;
+                    let mut recipe = get_system_recipe(
+                        query_expression,
+                        component_loader,
+                        &mut dim,
+                        &mut quotient_index
+                    );
+
+                    if !component_loader.get_settings().disable_clock_reduction {
+                        clock_reduction::clock_reduce(&mut recipe, None, &mut dim, quotient_index.is_some())?;
+                    }
+
                     Ok(Box::new(
                         GetComponentExecutor {
-                            system: get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim)?,
+                            system: recipe.compile(dim)?,
                             comp_name: comp_name.clone(),
                             component_loader,
                         }
