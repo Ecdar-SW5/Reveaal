@@ -1,0 +1,134 @@
+{
+  "name": "NotDeterministicQuotientComp",
+  "declarations": "",
+  "locations": [
+    {
+      "id": "L65",
+      "nickname": "",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 100.0,
+      "y": 290.0,
+      "color": "7",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L66",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 243.75000999999997,
+      "y": 290.75,
+      "color": "7",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L67",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 370.00001,
+      "y": 234.83333333333331,
+      "color": "7",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L68",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 370.00001,
+      "y": 346.66666666666663,
+      "color": "7",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "E46",
+      "group": "",
+      "sourceLocation": "L65",
+      "targetLocation": "L66",
+      "status": "INPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "Input1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 169.5,
+          "y": 290.16666666666663,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E47",
+      "group": "",
+      "sourceLocation": "L66",
+      "targetLocation": "L67",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "Output1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 301.3333333333333,
+          "y": 261.91666666666663,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E48",
+      "group": "",
+      "sourceLocation": "L66",
+      "targetLocation": "L68",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "Output1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 301.3333333333333,
+          "y": 318.41666666666663,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "x": 257.0,
+  "y": 43.0,
+  "width": 450.0,
+  "height": 600.0,
+  "color": "7",
+  "includeInPeriodicCheck": true
+}

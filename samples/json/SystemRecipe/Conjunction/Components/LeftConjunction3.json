@@ -1,0 +1,99 @@
+{
+  "name": "LeftConjunction3",
+  "declarations": "",
+  "locations": [
+    {
+      "id": "L41",
+      "nickname": "",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 55.00000000000003,
+      "y": 300.0,
+      "color": "1",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L53",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 190.00000999999997,
+      "y": 300.75,
+      "color": "1",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L54",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 340.00001,
+      "y": 299.5833333333333,
+      "color": "1",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "E38",
+      "group": "",
+      "sourceLocation": "L41",
+      "targetLocation": "L53",
+      "status": "INPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "Input1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 113.0,
+          "y": 291.91666666666663,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E39",
+      "group": "",
+      "sourceLocation": "L53",
+      "targetLocation": "L54",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "Output1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 244.83333333333331,
+          "y": 291.91666666666663,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "x": 257.0,
+  "y": 43.0,
+  "width": 450.0,
+  "height": 600.0,
+  "color": "1",
+  "includeInPeriodicCheck": true
+}

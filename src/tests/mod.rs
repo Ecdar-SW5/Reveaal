@@ -11,6 +11,7 @@ pub mod reachability;
 pub mod refinement;
 pub mod sample;
 pub mod save_component;
+pub mod system_recipe;
 pub const TEST_SETTINGS: Settings = Settings {
     reduce_clocks_level: Some(All(false)),
 };

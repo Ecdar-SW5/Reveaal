@@ -1,0 +1,4 @@
+{
+    "name": "System Declarations",
+    "declarations": "system DeterministicQuotientComp, LeftQuotient1, NotDeterministicQuotientComp, RightQuotient1;\n"
+  }
