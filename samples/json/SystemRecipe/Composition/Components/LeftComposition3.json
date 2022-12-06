@@ -1,0 +1,169 @@
+{
+  "name": "LeftComposition3",
+  "declarations": "",
+  "locations": [
+    {
+      "id": "L29",
+      "nickname": "",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "x": 85.00000000000003,
+      "y": 300.0,
+      "color": "3",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L30",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 223.75001,
+      "y": 301.3333333333333,
+      "color": "3",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L31",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 380.0,
+      "y": 301.3333333333333,
+      "color": "3",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L32",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 220.00001,
+      "y": 425.5,
+      "color": "3",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L33",
+      "nickname": "",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "x": 380.00001,
+      "y": 425.5,
+      "color": "3",
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "id": "E22",
+      "group": "",
+      "sourceLocation": "L29",
+      "targetLocation": "L30",
+      "status": "INPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "Input1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 150.66666666666666,
+          "y": 291.91666666666663,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E23",
+      "group": "",
+      "sourceLocation": "L30",
+      "targetLocation": "L31",
+      "status": "INPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "Input2",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 306.66666666666663,
+          "y": 300.75,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E24",
+      "group": "",
+      "sourceLocation": "L30",
+      "targetLocation": "L32",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "Output1",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 216.58333333333331,
+          "y": 357.8333333333333,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    },
+    {
+      "id": "E25",
+      "group": "",
+      "sourceLocation": "L31",
+      "targetLocation": "L33",
+      "status": "OUTPUT",
+      "select": "",
+      "guard": "",
+      "update": "",
+      "sync": "Output2",
+      "isLocked": false,
+      "nails": [
+        {
+          "x": 376.66666666666663,
+          "y": 357.8333333333333,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": 0.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "x": 257.0,
+  "y": 43.0,
+  "width": 450.0,
+  "height": 600.0,
+  "color": "3",
+  "includeInPeriodicCheck": true
+}
