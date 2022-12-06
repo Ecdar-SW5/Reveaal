@@ -27,10 +27,10 @@ args:
           long: save-relation
           required: false
           takes_value: false
-    - omit-clock-reduction:
-          long: clock-reduction-level
+    - clock-reduction:
+          long: disable-clock-reduction
           required: false
-          takes_value: true
+          takes_value: false
     - cache-size:
           short: cs
           long: cache-size

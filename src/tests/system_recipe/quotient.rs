@@ -23,14 +23,14 @@ mod test {
 
     #[test]
     fn quotient1_fails_with_correct_actions() {
-        let expected_actions = vec!["Output1".to_string()];
+        let expected_actions = vec!["Input1".to_string()];
         if let QueryResult::Consistency(ConsistencyResult::Failure(
             ConsistencyFailure::NotDisjoint(SystemRecipeFailure { actions, .. }),
         )) = json_run_query(PATH, "consistency: LeftQuotient1 // RightQuotient1")
         {
             assert_eq!(actions, expected_actions);
         } else {
-            panic!("Models in saples/action have been changed, REVERT!");
+            panic!("Models in samples/action have been changed, REVERT!");
         }
     }
 

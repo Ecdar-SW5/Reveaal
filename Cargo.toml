@@ -73,5 +73,9 @@ name = "threadpool_bench"
 harness = false
 
 [[bench]]
+name = "clock_reduction_bench"
+harness = false
+
+[[bench]]
 name = "simulation_bench"
 harness = false

@@ -1,0 +1,93 @@
+{
+  "name": "CombinedComponent",
+  "declarations": "clock x, y;",
+  "locations": [
+    {
+      "id": "L0&&L2",
+      "invariant": "",
+      "type": "INITIAL",
+      "urgency": "NORMAL",
+      "nickname": "",
+      "x": 267.02057,
+      "y": 215.80824,
+      "color": 8,
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    },
+    {
+      "id": "L1&&L3",
+      "invariant": "",
+      "type": "NORMAL",
+      "urgency": "NORMAL",
+      "nickname": "",
+      "x": 195.60718,
+      "y": 104.82407,
+      "color": 8,
+      "nicknameX": 30.0,
+      "nicknameY": -10.0,
+      "invariantX": 30.0,
+      "invariantY": 10.0
+    }
+  ],
+  "edges": [
+    {
+      "sourceLocation": "L0&&L2",
+      "targetLocation": "L1&&L3",
+      "status": "OUTPUT",
+      "guard": "x<3 && y<3",
+      "update": "",
+      "sync": "o1",
+      "select": "",
+      "nails": [
+        {
+          "x": 412.61923,
+          "y": 155.14648,
+          "propertyType": "GUARD",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 344.95874,
+          "y": 50.0,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    },
+    {
+      "sourceLocation": "L1&&L3",
+      "targetLocation": "L0&&L2",
+      "status": "OUTPUT",
+      "guard": "",
+      "update": "x=0, y=0",
+      "sync": "o2",
+      "select": "",
+      "nails": [
+        {
+          "x": 50.0,
+          "y": 165.46838,
+          "propertyType": "UPDATE",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        },
+        {
+          "x": 117.65569,
+          "y": 270.6171,
+          "propertyType": "SYNCHRONIZATION",
+          "propertyX": 10.0,
+          "propertyY": -10.0
+        }
+      ]
+    }
+  ],
+  "description": "",
+  "includeInPeriodicCheck": false,
+  "color": "8",
+  "x": -231.30962,
+  "y": -160.30855,
+  "width": 462.61923,
+  "height": 320.6171
+}

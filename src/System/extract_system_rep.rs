@@ -7,17 +7,15 @@ use crate::System::executable_query::{
     ReachabilityExecutor, RefinementExecutor,
 };
 use crate::System::extract_state::get_state;
-use std::cmp::max;
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 use crate::TransitionSystems::{
     CompiledComponent, Composition, Conjunction, Quotient, TransitionSystemPtr,
 };
 
 use crate::component::State;
-use crate::ProtobufServer::services::query_request::{settings::ReduceClocksLevel, Settings};
 use crate::System::pruning;
-use crate::TransitionSystems::transition_system::{ClockReductionInstruction, Heights, Intersect};
+use crate::TransitionSystems::transition_system::ClockReductionInstruction;
 use edbm::util::constraints::ClockIndex;
 use log::debug;
 use simple_error::bail;
@@ -47,7 +45,7 @@ impl std::fmt::Debug for SystemRecipeFailure {
         write!(f, "SystemRecipeFailure: {}", self.reason)
     }
 }
-impl std::error::Error for SystemRecipeFailure {
+impl Error for SystemRecipeFailure {
     fn description(&self) -> &str {
         &self.reason
     }
@@ -102,7 +100,11 @@ pub fn create_executable_query<'a>(
 
                 let mut left = get_system_recipe(left_side, component_loader, &mut dim, &mut quotient_index);
                 let mut right = get_system_recipe(right_side, component_loader, &mut dim, &mut quotient_index);
-                clock_reduction(&mut left, &mut right, component_loader.get_settings(), &mut dim)?;
+
+                if !component_loader.get_settings().disable_clock_reduction {
+                    clock_reduction::clock_reduce(&mut left, Some(&mut right), &mut dim, quotient_index.is_some())?;
+                }
+
                 Ok(Box::new(RefinementExecutor {
                 sys1: left.compile(dim)?,
                 sys2: right.compile(dim)?,
@@ -136,23 +138,39 @@ pub fn create_executable_query<'a>(
                     end_state,
                 }))
             },
-            QueryExpression::Consistency(query_expression) => Ok(Box::new(ConsistencyExecutor {
-                recipe: get_system_recipe(
+            QueryExpression::Consistency(query_expression) => {
+                let mut quotient_index = None;
+                let mut recipe = get_system_recipe(
                     query_expression,
                     component_loader,
                     &mut dim,
-                    &mut None
-                ),
-                dim
-            })),
+                    &mut quotient_index
+                );
+
+                if !component_loader.get_settings().disable_clock_reduction {
+                    clock_reduction::clock_reduce(&mut recipe, None, &mut dim, quotient_index.is_some())?;
+                }
+
+                Ok(Box::new(ConsistencyExecutor {
+                    recipe,
+                    dim
+                }))
+            },
             QueryExpression::Determinism(query_expression) => {
+                let mut quotient_index = None;
+                let mut recipe = get_system_recipe(
+                    query_expression,
+                    component_loader,
+                    &mut dim,
+                    &mut quotient_index
+                );
+
+                if !component_loader.get_settings().disable_clock_reduction {
+                    clock_reduction::clock_reduce(&mut recipe, None, &mut dim, quotient_index.is_some())?;
+                }
+
                 Ok(Box::new(DeterminismExecutor {
-                    system: get_system_recipe(
-                        query_expression,
-                        component_loader,
-                        &mut dim,
-                        &mut None,
-                    ).compile(dim)?,
+                    system: recipe.compile(dim)?,
                 }))
             },
             QueryExpression::GetComponent(save_as_expression) => {
@@ -171,9 +189,21 @@ pub fn create_executable_query<'a>(
             ,
             QueryExpression::Prune(save_as_expression) => {
                 if let QueryExpression::SaveAs(query_expression, comp_name) = save_as_expression.as_ref() {
+                    let mut quotient_index = None;
+                    let mut recipe = get_system_recipe(
+                        query_expression,
+                        component_loader,
+                        &mut dim,
+                        &mut quotient_index
+                    );
+
+                    if !component_loader.get_settings().disable_clock_reduction {
+                        clock_reduction::clock_reduce(&mut recipe, None, &mut dim, quotient_index.is_some())?;
+                    }
+
                     Ok(Box::new(
                         GetComponentExecutor {
-                            system: pruning::prune_system(get_system_recipe(query_expression, component_loader, &mut dim, &mut None).compile(dim)?, dim),
+                            system: pruning::prune_system(recipe.compile(dim)?, dim),
                             comp_name: comp_name.clone(),
                             component_loader
                         }
@@ -188,52 +218,6 @@ pub fn create_executable_query<'a>(
         }
     } else {
         bail!("No query was supplied for extraction")
-    }
-}
-
-fn clock_reduction(
-    left: &mut Box<SystemRecipe>,
-    right: &mut Box<SystemRecipe>,
-    set: &Settings,
-    dim: &mut usize,
-) -> Result<(), String> {
-    let height = max(left.height(), right.height());
-    let heights = match set.reduce_clocks_level.to_owned().ok_or_else(|| "No clock reduction level specified".to_string())? {
-            ReduceClocksLevel::Level(y) if y >= 0 => Heights::new(height, y as usize),
-            ReduceClocksLevel::All(true) => Heights::new(height, height),
-            ReduceClocksLevel::All(false) => return Ok(()),
-            ReduceClocksLevel::Level(err) => return Err(format!("Clock reduction error: Couldn't parse argument correctly. Got {err}, expected a value above")),
-        };
-
-    let clocks = left
-        .clone()
-        .compile(*dim)?
-        .find_redundant_clocks(heights)
-        .intersect(&right.clone().compile(*dim)?.find_redundant_clocks(heights));
-
-    debug!("Clocks to be reduced: {clocks:?}");
-    *dim -= clocks
-        .iter()
-        .fold(0, |acc, c| acc + c.clocks_removed_count());
-    debug!("New dimension: {dim}");
-
-    left.reduce_clocks(clocks.clone());
-    right.reduce_clocks(clocks);
-    Ok(())
-}
-
-fn clean_component_decls(mut comps: Vec<&mut Component>, omit: HashSet<(ClockIndex, usize)>) {
-    let mut list: Vec<&(ClockIndex, usize)> = omit.iter().collect();
-    list.sort_by(|(c1, _), (c2, _)| c1.cmp(c2));
-
-    for (clock, size) in list.iter().rev() {
-        comps.iter_mut().for_each(|c| {
-            c.declarations
-                .clocks
-                .values_mut()
-                .filter(|cl| **cl > *clock)
-                .for_each(|cl| *cl -= size)
-        });
     }
 }
 
@@ -267,16 +251,6 @@ impl SystemRecipe {
         }
     }
 
-    /// Gets the height of the `SystemRecipe` tree
-    fn height(&self) -> usize {
-        match self {
-            SystemRecipe::Composition(l, r)
-            | SystemRecipe::Conjunction(l, r)
-            | SystemRecipe::Quotient(l, r, _) => 1 + max(l.height(), r.height()),
-            SystemRecipe::Component(_) => 1,
-        }
-    }
-
     /// Gets the count `Components`s in the `SystemRecipe`
     pub fn count_component(&self) -> usize {
         match self {
@@ -290,33 +264,28 @@ impl SystemRecipe {
     }
 
     ///Applies the clock-reduction
-    pub(crate) fn reduce_clocks(&mut self, clock_instruction: Vec<ClockReductionInstruction>) {
+    fn reduce_clocks(&mut self, clock_instruction: Vec<ClockReductionInstruction>) {
         let mut comps = self.get_components();
-        let mut omitting = HashSet::new();
         for redundant in clock_instruction {
             match redundant {
-                ClockReductionInstruction::RemoveClock { clock_index } => {
-                    match comps
-                        .iter_mut()
-                        .find(|c| c.declarations.clocks.values().any(|ci| *ci == clock_index))
-                    {
-                        Some(c) => c.remove_clock(clock_index),
-                        None => continue,
-                    }
-                    omitting.insert((clock_index, 1));
-                }
+                ClockReductionInstruction::RemoveClock { clock_index } => comps
+                    .iter_mut()
+                    .find(|c| c.declarations.clocks.values().any(|ci| *ci == clock_index))
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "A component could not be found for clock index {}",
+                            clock_index
+                        )
+                    })
+                    .remove_clock(clock_index),
                 ClockReductionInstruction::ReplaceClocks {
                     clock_indices,
                     clock_index,
-                } => {
-                    comps
-                        .iter_mut()
-                        .for_each(|c| c.replace_clock(clock_index, &clock_indices));
-                    omitting.insert((clock_index, clock_indices.len()));
-                }
+                } => comps
+                    .iter_mut()
+                    .for_each(|c| c.replace_clock(clock_index, &clock_indices)),
             }
         }
-        clean_component_decls(comps, omitting);
     }
 
     /// Gets all components in `SystemRecipe`
@@ -330,6 +299,20 @@ impl SystemRecipe {
                 o
             }
             SystemRecipe::Component(c) => vec![c],
+        }
+    }
+    fn change_quotient(&mut self, index: ClockIndex) {
+        match self {
+            SystemRecipe::Composition(l, r) | SystemRecipe::Conjunction(l, r) => {
+                l.change_quotient(index);
+                r.change_quotient(index);
+            }
+            SystemRecipe::Quotient(l, r, q) => {
+                *q = index;
+                l.change_quotient(index);
+                r.change_quotient(index);
+            }
+            SystemRecipe::Component(_) => (),
         }
     }
 }
@@ -401,4 +384,98 @@ fn validate_reachability_input(
     }
 
     Ok(())
+}
+
+/// Module containing a "safer" function for clock reduction, along with some helper functions
+pub(crate) mod clock_reduction {
+    use super::*;
+
+    /// Function for a "safer" clock reduction that handles both the dimension of the DBM and the quotient index if needed be
+    /// # Arguments
+    /// `lhs`: The (main) `SystemRecipe` to clock reduce\n
+    /// `rhs`: An optional `SystemRecipe` used for multiple operands (Refinement)\n
+    /// `dim`: A mutable reference to the DBMs dimension for updating\n
+    /// `has_quotient`: A boolean to indicate if there is a quotient clock to update
+    /// # Returns
+    /// A `Result` used if the `SystemRecipe`(s) fail during compilation
+    pub fn clock_reduce(
+        lhs: &mut Box<SystemRecipe>,
+        mut rhs: Option<&mut Box<SystemRecipe>>,
+        dim: &mut usize,
+        has_quotient: bool,
+    ) -> Result<(), String> {
+        let clocks = if let Some(ref mut r) = rhs {
+            intersect(
+                lhs.clone().compile(*dim)?.find_redundant_clocks(),
+                r.clone().compile(*dim)?.find_redundant_clocks(),
+            )
+        } else {
+            lhs.clone().compile(*dim)?.find_redundant_clocks()
+        };
+
+        debug!("Clocks to be reduced: {clocks:?}");
+        *dim -= clocks
+            .iter()
+            .fold(0, |acc, c| acc + c.clocks_removed_count());
+        debug!("New dimension: {dim}");
+        if let Some(r) = rhs {
+            r.reduce_clocks(clocks.clone());
+            lhs.reduce_clocks(clocks);
+            compress_component_decls(lhs.get_components(), Some(r.get_components()));
+            if has_quotient {
+                lhs.change_quotient(*dim);
+                r.change_quotient(*dim);
+            }
+        } else {
+            lhs.reduce_clocks(clocks);
+            compress_component_decls(lhs.get_components(), None);
+            if has_quotient {
+                lhs.change_quotient(*dim);
+            }
+        }
+        Ok(())
+    }
+
+    fn intersect(
+        lhs: Vec<ClockReductionInstruction>,
+        rhs: Vec<ClockReductionInstruction>,
+    ) -> Vec<ClockReductionInstruction> {
+        lhs.iter()
+            .filter(|r| r.is_replace())
+            .chain(rhs.iter().filter(|r| r.is_replace()))
+            .chain(
+                lhs.iter()
+                    .filter(|r| !r.is_replace())
+                    .filter_map(|c| rhs.iter().filter(|r| !r.is_replace()).find(|rc| *rc == c)),
+            )
+            .cloned()
+            .collect()
+    }
+
+    fn compress_component_decls(
+        mut comps: Vec<&mut Component>,
+        other: Option<Vec<&mut Component>>,
+    ) {
+        let mut seen: HashMap<ClockIndex, ClockIndex> = HashMap::new();
+        let mut l: Vec<&mut ClockIndex> = comps
+            .iter_mut()
+            .flat_map(|c| c.declarations.clocks.values_mut())
+            .collect();
+        let mut temp = other.unwrap_or_default();
+        l.extend(
+            temp.iter_mut()
+                .flat_map(|c| c.declarations.clocks.values_mut()),
+        );
+        l.sort();
+        let mut index = 1;
+        for clock in l {
+            if let Some(val) = seen.get(clock) {
+                *clock = *val;
+            } else {
+                seen.insert(*clock, index);
+                *clock = index;
+                index += 1;
+            }
+        }
+    }
 }
