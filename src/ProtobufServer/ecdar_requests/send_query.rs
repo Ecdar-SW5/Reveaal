@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::component::Component;
+use crate::extract_system_rep::SystemRecipeFailure;
 use crate::xml_parser::parse_xml_from_str;
 use crate::DataReader::component_loader::ModelCache;
 use crate::DataReader::json_reader::json_to_component;
@@ -236,7 +237,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                                 locations: vec![Location {
                                     id: location_id.to_string(),
                                     specific_component: Some(SpecificComponent {
-                                        component_name: location_id.get_component_id().unwrap(),
+                                        component_name: location_id.get_component_id()?,
                                         component_index: 0,
                                     }),
                                 }],
@@ -251,24 +252,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         success: false,
                         reason: srf.reason.to_string(),
                         state: Some(State {
-                            location_tuple: Some(LocationTuple {
-                                locations: vec![
-                                    Location {
-                                        id: "".to_string(),
-                                        specific_component: Some(SpecificComponent {
-                                            component_name: srf.left_name.clone()?,
-                                            component_index: 0,
-                                        }),
-                                    },
-                                    Location {
-                                        id: "".to_string(),
-                                        specific_component: Some(SpecificComponent {
-                                            component_name: srf.right_name.clone()?,
-                                            component_index: 1,
-                                        }),
-                                    },
-                                ],
-                            }),
+                            location_tuple: Some(make_location_vec_from_srf(srf))?,
                             federation: None,
                         }),
                         action: srf.actions.clone(),
@@ -296,7 +280,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                         locations: vec![Location {
                             id: location_id.to_string(),
                             specific_component: Some(SpecificComponent {
-                                component_name: location_id.get_component_id().unwrap(),
+                                component_name: location_id.get_component_id()?,
                                 component_index: 0,
                             }),
                         }],
@@ -310,24 +294,7 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     success: false,
                     reason: srf.reason.to_string(),
                     state: Some(State {
-                        location_tuple: Some(LocationTuple {
-                            locations: vec![
-                                Location {
-                                    id: "".to_string(),
-                                    specific_component: Some(SpecificComponent {
-                                        component_name: srf.left_name.clone()?,
-                                        component_index: 0,
-                                    }),
-                                },
-                                Location {
-                                    id: "".to_string(),
-                                    specific_component: Some(SpecificComponent {
-                                        component_name: srf.right_name.clone()?,
-                                        component_index: 1,
-                                    }),
-                                },
-                            ],
-                        }),
+                        location_tuple: Some(make_location_vec_from_srf(srf))?,
                         federation: None,
                     }),
                     action: srf.actions.clone(),
@@ -347,24 +314,7 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                 reason: "Not Disjoint and Not Subset".to_string(),
                 relation: vec![],
                 state: Some(State {
-                    location_tuple: Some(LocationTuple {
-                        locations: vec![
-                            Location {
-                                id: "".to_string(),
-                                specific_component: Some(SpecificComponent {
-                                    component_name: srf.left_name.clone()?,
-                                    component_index: 0,
-                                }),
-                            },
-                            Location {
-                                id: "".to_string(),
-                                specific_component: Some(SpecificComponent {
-                                    component_name: srf.right_name.clone()?,
-                                    component_index: 1,
-                                }),
-                            },
-                        ],
-                    }),
+                    location_tuple: Some(make_location_vec_from_srf(srf))?,
                     federation: None,
                 }),
                 action: srf.actions.clone(),
@@ -385,24 +335,7 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
             success: false,
             relation: vec![],
             state: Some(State {
-                location_tuple: Some(LocationTuple {
-                    locations: vec![
-                        Location {
-                            id: "".to_string(),
-                            specific_component: Some(SpecificComponent {
-                                component_name: srf.left_name.clone()?,
-                                component_index: 0,
-                            }),
-                        },
-                        Location {
-                            id: "".to_string(),
-                            specific_component: Some(SpecificComponent {
-                                component_name: srf.right_name.clone()?,
-                                component_index: 1,
-                            }),
-                        },
-                    ],
-                }),
+                location_tuple: Some(make_location_vec_from_srf(srf))?,
                 federation: None,
             }),
             reason: srf.reason.clone(),
@@ -447,6 +380,26 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
             }))
         }
     }
+}
+
+fn make_location_vec_from_srf(srf: &SystemRecipeFailure) -> Option<LocationTuple> {
+    let a = vec![
+        Location {
+            id: "".to_string(),
+            specific_component: Some(SpecificComponent {
+                component_name: srf.left_name.clone()?,
+                component_index: 0,
+            }),
+        },
+        Location {
+            id: "".to_string(),
+            specific_component: Some(SpecificComponent {
+                component_name: srf.right_name.clone()?,
+                component_index: 1,
+            }),
+        },
+    ];
+    Some(LocationTuple { locations: a })
 }
 
 fn make_location_vec(
