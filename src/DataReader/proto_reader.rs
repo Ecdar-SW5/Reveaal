@@ -100,10 +100,8 @@ fn proto_location_tuple_to_location_tuple(
         .into_iter()
         .map(|tuple| (tuple.id.clone(), tuple))
         .map(|(id, tuple)| (id.inorder_vec_tranform(), tuple))
-        .filter(|(id, _)| id.iter().eq(id_looking_for.iter()))
-        .collect::<Vec<_>>()
-        .first()
-        .map(|(_, tuple)| tuple.to_owned())
+        .find(|(id, _)| id.iter().eq(id_looking_for.iter()))
+        .map(|(_, tuple)| tuple)
 }
 
 fn proto_edge_to_edge(proto_edge: ProtoEdge, components: Vec<Component>) -> Edge {
