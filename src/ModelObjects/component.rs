@@ -524,6 +524,15 @@ impl Transition {
         false
     }
 
+    /// Returns the resulting [`State`] when using a transition in the given [`State`]
+    pub fn use_transition_alt(&self, state: &State) -> Option<State> {
+        let mut state = state.to_owned();
+        match self.use_transition(&mut state) {
+            true => Some(state),
+            false => None,
+        }
+    }
+
     pub fn combinations(
         left: &Vec<Transition>,
         right: &Vec<Transition>,
