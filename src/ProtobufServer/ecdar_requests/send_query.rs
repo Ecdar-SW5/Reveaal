@@ -250,7 +250,18 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                     Some(ProtobufResult::Consistency(ProtobufConsistencyResult {
                         success: false,
                         reason: srf.reason.to_string(),
-                        state: None,
+                        state: Some(State {
+                            location_tuple: Some(LocationTuple {
+                                locations: vec![Location {
+                                    id: "".to_string(),
+                                    specific_component: Some(SpecificComponent {
+                                        component_name: srf.left_name.clone().unwrap().to_string(),
+                                        component_index: 0,
+                                    }),
+                                }],
+                            }),
+                            federation: None,
+                        }),
                         action: srf.actions.clone(),
                     }))
                 }
@@ -289,7 +300,18 @@ fn convert_ecdar_result(query_result: &QueryResult) -> Option<ProtobufResult> {
                 Some(ProtobufResult::Determinism(ProtobufDeterminismResult {
                     success: false,
                     reason: srf.reason.to_string(),
-                    state: None,
+                    state: Some(State {
+                        location_tuple: Some(LocationTuple {
+                            locations: vec![Location {
+                                id: "".to_string(),
+                                specific_component: Some(SpecificComponent {
+                                    component_name: srf.left_name.clone().unwrap().to_string(),
+                                    component_index: 0,
+                                }),
+                            }],
+                        }),
+                        federation: None,
+                    }),
                     action: srf.actions.clone(),
                 }))
             }
@@ -306,7 +328,18 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                 success: false,
                 reason: "Not Disjoint and Not Subset".to_string(),
                 relation: vec![],
-                state: None,
+                state: Some(State {
+                    location_tuple: Some(LocationTuple {
+                        locations: vec![Location {
+                            id: "".to_string(),
+                            specific_component: Some(SpecificComponent {
+                                component_name: srf.left_name.clone().unwrap().to_string(),
+                                component_index: 0,
+                            }),
+                        }],
+                    }),
+                    federation: None,
+                }),
                 action: srf.actions.clone(),
             }))
         }
@@ -321,15 +354,24 @@ fn convert_refinement_failure(failure: &RefinementFailure) -> Option<ProtobufRes
                 action: vec![],
             }))
         }
-        RefinementFailure::NotDisjoint(sysRecipeFailure) => {
-            Some(ProtobufResult::Refinement(RefinementResult {
-                success: false,
-                relation: vec![],
-                state: None,
-                reason: sysRecipeFailure.reason.clone(),
-                action: sysRecipeFailure.actions.clone(),
-            }))
-        }
+        RefinementFailure::NotDisjoint(srf) => Some(ProtobufResult::Refinement(RefinementResult {
+            success: false,
+            relation: vec![],
+            state: Some(State {
+                location_tuple: Some(LocationTuple {
+                    locations: vec![Location {
+                        id: "".to_string(),
+                        specific_component: Some(SpecificComponent {
+                            component_name: srf.left_name.clone().unwrap().to_string(),
+                            component_index: 0,
+                        }),
+                    }],
+                }),
+                federation: None,
+            }),
+            reason: srf.reason.clone(),
+            action: srf.actions.clone(),
+        })),
         RefinementFailure::CutsDelaySolutions(state_pair)
         | RefinementFailure::InitialState(state_pair)
         | RefinementFailure::EmptyTransition2s(state_pair)

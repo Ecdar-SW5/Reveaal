@@ -47,8 +47,8 @@ impl Quotient {
         dim: ClockIndex,
     ) -> Result<TransitionSystemPtr, SystemRecipeFailure> {
         if let Err(actions) = S
-            .get_input_actions()
-            .is_disjoint_action(&T.get_output_actions())
+            .get_output_actions()
+            .is_disjoint_action(&T.get_input_actions())
         {
             return Err(SystemRecipeFailure::new(
                 "s_out and t_in not disjoint in quotient!".to_string(),
