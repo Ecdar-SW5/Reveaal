@@ -2,14 +2,12 @@
 use clap::{load_yaml, App};
 use reveaal::logging::setup_logger;
 
-use reveaal::ProtobufServer::services::query_request::settings::ReduceClocksLevel;
 use reveaal::ProtobufServer::services::query_request::Settings;
 use reveaal::{
     extract_system_rep, parse_queries, start_grpc_server_with_tokio, xml_parser, ComponentLoader,
-    JsonProjectLoader, ProjectLoader, Query, QueryResult, XmlProjectLoader, DEFAULT_SETTINGS,
+    JsonProjectLoader, ProjectLoader, Query, QueryResult, XmlProjectLoader,
 };
 use std::env;
-use std::str::FromStr;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "logging")]
@@ -65,18 +63,7 @@ fn parse_args(matches: &clap::ArgMatches) -> (Box<dyn ComponentLoader>, Vec<Quer
     let folder_path = matches.value_of("folder").unwrap_or("");
     let query = matches.value_of("query").unwrap_or("");
     let settings = Settings {
-        reduce_clocks_level: matches
-            .value_of("clock-reduction-level")
-            .map(|v| {
-                let lvl = i32::from_str(v)
-                    .unwrap_or_else(|e| panic!("Argument {} could not be parsed", e));
-                if lvl < 0 {
-                    ReduceClocksLevel::All(false)
-                } else {
-                    ReduceClocksLevel::Level(lvl)
-                }
-            })
-            .or(DEFAULT_SETTINGS.reduce_clocks_level),
+        disable_clock_reduction: matches.is_present("clock-reduction"),
     };
 
     let project_loader = get_project_loader(folder_path.to_string(), settings);

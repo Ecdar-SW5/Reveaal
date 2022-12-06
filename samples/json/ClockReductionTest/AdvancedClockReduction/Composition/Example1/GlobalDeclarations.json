@@ -1,0 +1,4 @@
+{
+  "name": "Global Declarations",
+  "declarations": "broadcast chan input, output, error, fix, repair, next, salary;"
+}

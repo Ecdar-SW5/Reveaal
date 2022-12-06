@@ -1,7 +1,6 @@
 #[cfg(test)]
 
 mod test {
-
     use crate::{
         extract_system_rep::SystemRecipeFailure,
         tests::refinement::Helper::json_run_query,
