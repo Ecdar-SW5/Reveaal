@@ -3,7 +3,7 @@ use edbm::zones::OwnedFederation;
 use crate::component::LocationType;
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::rc::Rc;
 
 /// This holds the result of a reachability query
@@ -86,6 +86,10 @@ pub fn find_path(
     Ok(reachability_search(&start_state, &end_state, system))
 }
 
+/// Currently runs a BFS search on the transition system.
+/// BFS is preferable to a DFS, as it reduces the chance of "Mistakes", meaning
+/// having to revisit a state with a larger zone, forcing it to be readded ot the frontier.
+/// Inspired from http://link.springer.com/10.1007/978-3-319-22975-1_9, see article for possible optimizations and more explanation.
 fn reachability_search(start_state: &State, end_state: &State, system: &dyn TransitionSystem) -> Path {
     // Apply the invariant of the start state to the start state
     let mut start_clone = start_state.clone();
@@ -97,7 +101,7 @@ fn reachability_search(start_state: &State, end_state: &State, system: &dyn Tran
     let mut visited_states: HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
 
     // List of states that are to be visited
-    let mut frontier_states: Vec<Rc<SubPath>> = Vec::new();
+    let mut frontier_states: VecDeque<Rc<SubPath>> = VecDeque::new();
 
     let mut actions: Vec<String> = system.get_actions().into_iter().collect();
     actions.sort();
@@ -109,14 +113,14 @@ fn reachability_search(start_state: &State, end_state: &State, system: &dyn Tran
     );
 
     // Push state state to frontier
-    frontier_states.push(Rc::new(SubPath {
+    frontier_states.push_back(Rc::new(SubPath {
         previous_sub_path: None,
         destination_state: start_clone,
         transition: None,
     }));
 
     // Take the first state from the frontier and explore it
-    while let Some(sub_path) = frontier_states.pop() {
+    while let Some(sub_path) = frontier_states.pop_front() {
         if reached_end_state(&sub_path.destination_state, end_state) {
             return make_path(sub_path);
         }
@@ -152,7 +156,7 @@ fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
 fn take_transition(
     sub_path: &Rc<SubPath>,
     transition: &Transition,
-    frontier_states: &mut Vec<Rc<SubPath>>,
+    frontier_states: &mut VecDeque<Rc<SubPath>>,
     visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>,
     system: &dyn TransitionSystem,
 ) {
@@ -171,7 +175,7 @@ fn take_transition(
                 .unwrap()
                 .push(new_state.zone_ref().clone());
             // Add the new state to the frontier
-            frontier_states.push(Rc::new(SubPath {
+            frontier_states.push_back(Rc::new(SubPath {
                 previous_sub_path: Some(Rc::clone(sub_path)),
                 destination_state: new_state,
                 transition: Some(transition.clone()),
