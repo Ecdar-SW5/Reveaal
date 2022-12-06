@@ -3,15 +3,15 @@ use edbm::zones::OwnedFederation;
 use crate::component::LocationType;
 use crate::ModelObjects::component::{State, Transition};
 use crate::TransitionSystems::{LocationID, TransitionSystem};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::rc::Rc;
 
-/// This hold the result of a reachability query
+/// This holds the result of a reachability query
 pub struct Path {
     pub path: Option<Vec<Transition>>,
     pub was_reachable: bool,
 }
-
+// This holds which transition from which state (the destination_state of the previous_sub_path) we took to reach this state
 struct SubPath {
     previous_sub_path: Option<Rc<SubPath>>,
     destination_state: State,
@@ -19,12 +19,14 @@ struct SubPath {
 }
 
 fn is_trivially_unreachable(start_state: &State, end_state: &State) -> bool {
+    // If the end location has invariants and these do not have an intersection (overlap) with the zone of the end state of the query
     if let Some(invariants) = end_state.get_location().get_invariants() {
         if !end_state.zone_ref().has_intersection(invariants) {
             return true;
         }
     }
-
+    // If the start state is a universal or inconsistent location and the end state isn't
+    // Since universal and inconsistent locations cannot reach other locations
     if matches!(
         start_state.decorated_locations.loc_type,
         LocationType::Universal | LocationType::Inconsistent
@@ -81,10 +83,18 @@ pub fn find_path(
         });
     }
 
-    Ok(search_algorithm(&start_state, &end_state, system))
+    Ok(reachability_search(&start_state, &end_state, system))
 }
 
-fn search_algorithm(start_state: &State, end_state: &State, system: &dyn TransitionSystem) -> Path {
+/// Currently runs a BFS search on the transition system.
+/// BFS is preferable to a DFS, as it reduces the chance of "Mistakes", meaning
+/// having to revisit a state with a larger zone, forcing it to be readded ot the frontier.
+/// Inspired from http://link.springer.com/10.1007/978-3-319-22975-1_9, see article for possible optimizations and more explanation.
+fn reachability_search(
+    start_state: &State,
+    end_state: &State,
+    system: &dyn TransitionSystem,
+) -> Path {
     // Apply the invariant of the start state to the start state
     let mut start_clone = start_state.clone();
     let start_zone = start_clone.take_zone();
@@ -95,23 +105,26 @@ fn search_algorithm(start_state: &State, end_state: &State, system: &dyn Transit
     let mut visited_states: HashMap<LocationID, Vec<OwnedFederation>> = HashMap::new();
 
     // List of states that are to be visited
-    let mut frontier_states: Vec<Rc<SubPath>> = Vec::new();
+    let mut frontier_states: VecDeque<Rc<SubPath>> = VecDeque::new();
 
     let mut actions: Vec<String> = system.get_actions().into_iter().collect();
     actions.sort();
 
+    // Push start state to visited state
     visited_states.insert(
         start_clone.get_location().id.clone(),
         vec![start_clone.zone_ref().clone()],
     );
 
-    frontier_states.push(Rc::new(SubPath {
+    // Push state state to frontier
+    frontier_states.push_back(Rc::new(SubPath {
         previous_sub_path: None,
         destination_state: start_clone,
         transition: None,
     }));
 
-    while let Some(sub_path) = frontier_states.pop() {
+    // Take the first state from the frontier and explore it
+    while let Some(sub_path) = frontier_states.pop_front() {
         if reached_end_state(&sub_path.destination_state, end_state) {
             return make_path(sub_path);
         }
@@ -147,7 +160,7 @@ fn reached_end_state(cur_state: &State, end_state: &State) -> bool {
 fn take_transition(
     sub_path: &Rc<SubPath>,
     transition: &Transition,
-    frontier_states: &mut Vec<Rc<SubPath>>,
+    frontier_states: &mut VecDeque<Rc<SubPath>>,
     visited_states: &mut HashMap<LocationID, Vec<OwnedFederation>>,
     system: &dyn TransitionSystem,
 ) {
@@ -156,16 +169,17 @@ fn take_transition(
         new_state.extrapolate_max_bounds(system); // Ensures the bounds cant grow infinitely, avoiding infinite loops in an edge case TODO: does not take end state zone into account, leading to a very rare edge case
         let new_location_id = &new_state.get_location().id;
         let existing_zones = visited_states.entry(new_location_id.clone()).or_default();
-
+        // If this location has not already been reached (explored) with a larger zone
         if !zone_subset_of_existing_zones(new_state.zone_ref(), existing_zones) {
+            // Remove the smaller zones for this location in visited_states
             remove_existing_subsets_of_zone(new_state.zone_ref(), existing_zones);
-
+            // Add the new zone to the list of zones for this location in visited_states
             visited_states
                 .get_mut(new_location_id)
                 .unwrap()
                 .push(new_state.zone_ref().clone());
-
-            frontier_states.push(Rc::new(SubPath {
+            // Add the new state to the frontier
+            frontier_states.push_back(Rc::new(SubPath {
                 previous_sub_path: Some(Rc::clone(sub_path)),
                 destination_state: new_state,
                 transition: Some(transition.clone()),
@@ -197,12 +211,12 @@ fn remove_existing_subsets_of_zone(
 /// Makes the path from the last subpath
 fn make_path(mut sub_path: Rc<SubPath>) -> Path {
     let mut path: Vec<Transition> = Vec::new();
-
+    // Traverse the subpaths to make the path (from end location to start location)
     while sub_path.previous_sub_path.is_some() {
         path.push(sub_path.transition.clone().unwrap());
         sub_path = Rc::clone(sub_path.previous_sub_path.as_ref().unwrap());
     }
-
+    // Reverse the path since the transitions are in reverse order (now from start location to end location)
     path.reverse();
 
     Path {
