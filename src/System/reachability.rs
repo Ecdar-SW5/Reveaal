@@ -216,7 +216,7 @@ fn make_path(mut sub_path: Rc<SubPath>) -> Path {
         path.push(sub_path.transition.clone().unwrap());
         sub_path = Rc::clone(sub_path.previous_sub_path.as_ref().unwrap());
     }
-    // Revese the path since the transitions are in reverse order (now from start location to end location)
+    // Reverse the path since the transitions are in reverse order (now from start location to end location)
     path.reverse();
 
     Path {
