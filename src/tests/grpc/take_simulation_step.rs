@@ -57,7 +57,7 @@ mod test {
         "given a request with a malformed composition, responds with invalid argument"
     )]
     #[tokio::test]
-    async fn start_simulation__bad_data__responds_with_error(
+    async fn take_simulation_step__bad_data__responds_with_error(
         request: Request<SimulationStepRequest>,
     ) {
         // Arrange
