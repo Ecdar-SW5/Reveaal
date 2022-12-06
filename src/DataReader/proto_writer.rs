@@ -115,7 +115,7 @@ fn constraint_to_proto_constraint(
     system: &TransitionSystemPtr,
 ) -> ProtoConstraint {
     fn clock_name(clock_name_and_component: Option<&(String, String)>) -> String {
-        let ZERO_CLOCK_NAME = "0";
+        const ZERO_CLOCK_NAME: &str = "0";
         match clock_name_and_component {
             Some((clock_name, _)) => clock_name.to_string(),
             // If an index does not correspond to an index we assume it's the zero clock
