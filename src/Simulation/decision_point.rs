@@ -53,8 +53,8 @@ impl From<&TransitionDecisionPoint> for DecisionPoint {
                 _ => panic!("transition_id should not be other than Simple(_) and None"),
             })
             .unique()
-            .sorted()
             .filter(|x| is_edge(x))
+            .sorted()
             .collect();
 
         DecisionPoint {
