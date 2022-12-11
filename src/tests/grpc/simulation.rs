@@ -58,4 +58,42 @@ mod tests {
         // Assert
         assert!(response.is_ok())
     }
+
+    #[ignore = "fails for some reason related to get_leaves_helper"]
+    #[test_case(
+        &["Spec", "Researcher" ,"Machine"],
+        "samples/json/EcdarUniversity",
+        "(Spec // Researcher // Machine)"
+    )]
+    #[tokio::test]
+    async fn start_simulation_then_take_simulation_step__duplicate_for_ignore(
+        component_names: &[&str],
+        components_path: &str,
+        composition: &str,
+    ) {
+        // Arrange
+        let backend = ProtobufServer::ConcreteEcdarBackend::default();
+        let request = Request::new(create_start_request(
+            component_names,
+            components_path,
+            composition,
+        ));
+
+        // Act
+        let response = backend.start_simulation(request).await;
+
+        // Arrange
+        let request = Request::new(create_step_request(
+            component_names,
+            components_path,
+            composition,
+            response,
+        ));
+
+        // Act
+        let response = backend.take_simulation_step(request).await;
+
+        // Assert
+        assert!(response.is_ok())
+    }
 }
