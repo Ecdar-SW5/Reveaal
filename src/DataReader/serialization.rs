@@ -33,6 +33,7 @@ impl DummyNail {
 
 #[derive(Serialize)]
 pub struct DummyEdge {
+    pub id: String,
     #[serde(rename = "sourceLocation")]
     pub source_location: String,
     #[serde(rename = "targetLocation")]
@@ -77,6 +78,7 @@ impl From<Edge> for DummyEdge {
         }
 
         DummyEdge {
+            id: item.id,
             source_location: item.source_location,
             target_location: item.target_location,
             sync_type: item.sync_type,
