@@ -48,29 +48,14 @@ fn is_trivially_unreachable(start_state: &State, end_state: &State) -> bool {
 ///
 /// If it is not reachable, it returns None.
 ///
-/// The start state can be omitted with None to use the start state of the transition system.
-///
 ///## Checking if a state can reach another:
 /// ```ignore
-/// let is_reachable: bool = match find_path(Some(start_state), end_state, transition_system) {
-///    Ok(result) => match result {
-///        Some(path) => true,
-///        None => false,
+/// let is_reachable: bool = match find_path(start_state, end_state, transition_system) {
+///    Ok(result) => {
+///        result.was_reachable
 ///    },
 ///    Err(string) => panic!(string),
 /// };
-/// ```
-///
-///## Omitting start state:
-/// ```ignore
-/// let is_reachable: bool = match find_path(None, end_state, transition_system) {
-///    Ok(result) => match result {
-///        Some(path) => true,
-///        None => false,
-///    },
-///    Err(string) => panic!(string),
-/// };
-/// ```
 pub fn find_path(
     start_state: State,
     end_state: State,
