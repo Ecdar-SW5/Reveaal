@@ -3,14 +3,14 @@ use crate::ModelObjects::component::{
 };
 use crate::ProtobufServer::threadpool::ThreadPool;
 use crate::System::local_consistency::{self, ConsistencyResult, DeterminismResult};
+use crate::TransitionSystems::transition_system::PrecheckResult;
 use crate::TransitionSystems::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 use edbm::util::bounds::Bounds;
 use edbm::util::constraints::ClockIndex;
+use log::warn;
 use std::collections::hash_set::HashSet;
 use std::collections::HashMap;
 use std::sync::Arc;
-use log::warn;
-use crate::TransitionSystems::transition_system::PrecheckResult;
 
 use super::{CompositionType, LocationID};
 

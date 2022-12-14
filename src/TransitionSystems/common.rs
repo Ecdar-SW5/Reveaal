@@ -8,13 +8,13 @@ use edbm::{
 };
 use log::warn;
 
-use crate::TransitionSystems::CompositionType;
 use crate::ProtobufServer::threadpool::ThreadPool;
+use crate::TransitionSystems::transition_system::PrecheckResult;
+use crate::TransitionSystems::CompositionType;
 use crate::{
     ModelObjects::component::{Declarations, State, Transition},
     System::local_consistency::{ConsistencyResult, DeterminismResult},
 };
-use crate::TransitionSystems::transition_system::PrecheckResult;
 
 use super::{LocationTuple, TransitionSystem, TransitionSystemPtr};
 

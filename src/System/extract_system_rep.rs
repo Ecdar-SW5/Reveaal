@@ -151,7 +151,12 @@ fn clock_reduction(
         .clone()
         .compile(*dim, threadpool)?
         .find_redundant_clocks(heights)
-        .intersect(&right.clone().compile(*dim, threadpool)?.find_redundant_clocks(heights));
+        .intersect(
+            &right
+                .clone()
+                .compile(*dim, threadpool)?
+                .find_redundant_clocks(heights),
+        );
 
     debug!("Clocks to be reduced: {clocks:?}");
     *dim -= clocks

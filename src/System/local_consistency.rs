@@ -115,11 +115,10 @@ pub fn is_deterministic(
     let mut state = state.unwrap();
     state.set_zone(OwnedFederation::universe(system.get_dim()));
 
-    // This is broken on single core setups and cannot be fixed!
-    // We need some way to pause execution on a thread in the threadpool and let it run another task
-    // and come back to the other one later.
+    // This is broken on single core setups!
+    // It can also deadlock sometimes see issue #133
     let passed = Arc::new(Mutex::new(vec![]));
-    let failure_thing: Arc<RwLock<Option<DeterminismResult>>> = Arc::new(RwLock::new(None));
+    let failure_container: Arc<RwLock<Option<DeterminismResult>>> = Arc::new(RwLock::new(None));
     let (sender, receiver) = unbounded();
     let (state_sender, state_receiver) = unbounded();
     let threads = num_cpus::get() - 1;
@@ -130,18 +129,18 @@ pub fn is_deterministic(
             let thread_receiver = receiver.clone();
             let thread_state_sender = state_sender.clone();
             let thread_state_receiver = state_receiver.clone();
-            let thread_failure_thing = failure_thing.clone();
+            let thread_failure_container = failure_container.clone();
             let thread_system = system.clone();
             let thread_passed = passed.clone();
             let thread_pending_work = pending_work.clone();
             threadpool.enqueue(move |_| {
-                thingamagic(
+                determinism_loop(
                     threads,
                     thread_sender,
                     thread_receiver,
                     thread_state_sender,
                     thread_state_receiver,
-                    thread_failure_thing,
+                    thread_failure_container,
                     thread_system,
                     thread_passed,
                     thread_pending_work,
@@ -152,13 +151,13 @@ pub fn is_deterministic(
 
     sender.send(state).unwrap();
 
-    thingamagic(
+    determinism_loop(
         threads,
         sender,
         receiver,
         state_sender,
         state_receiver,
-        failure_thing.clone(),
+        failure_container.clone(),
         system,
         passed,
         pending_work,
@@ -173,18 +172,20 @@ pub fn is_deterministic(
         }
     }
 
-    let result = failure_thing.write().unwrap().take();
+    let result = failure_container.write().unwrap().take();
     let result = result.unwrap_or_else(|| DeterminismResult::Success);
     result
 }
 
-fn thingamagic(
+// Receives states and handles them.
+// Quits when the system is not deterministic or when there is no more states.
+fn determinism_loop(
     num_threads: usize,
     sender: Sender<State>,
     receiver: Receiver<State>,
     state_sender: Sender<()>,
     state_receiver: Receiver<()>,
-    failure_thing: Arc<RwLock<Option<DeterminismResult>>>,
+    failure_container: Arc<RwLock<Option<DeterminismResult>>>,
     system: Arc<Box<dyn TransitionSystem + Send + Sync>>,
     passed: Arc<Mutex<Vec<State>>>,
     pending_work: Arc<AtomicUsize>,
@@ -192,7 +193,7 @@ fn thingamagic(
     loop {
         select! {
             recv(state_receiver) -> _ => return,
-            recv(receiver) -> state => is_deterministic_helper(num_threads + 1, &failure_thing, state.unwrap(), &passed, &system, &sender, &pending_work, &state_sender),
+            recv(receiver) -> state => is_deterministic_helper(num_threads + 1, &failure_container, state.unwrap(), &passed, &system, &sender, &pending_work, &state_sender),
         }
 
         // Exit when done
