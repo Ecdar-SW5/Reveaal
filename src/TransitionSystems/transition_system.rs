@@ -176,14 +176,12 @@ pub trait TransitionSystem: DynClone {
         let clock_to_index = binding.into_iter().map(|decl| decl.clocks.to_owned());
 
         zip(component_names, clock_to_index)
-            .map(|x| {
+            .flat_map(|x| {
                 x.1.iter()
                     .map(|y| ((y.0.to_owned(), x.0.to_string()), y.1.to_owned()))
                     .collect::<HashMap<(String, String), usize>>()
             })
-            .fold(HashMap::new(), |accumulator, head| {
-                accumulator.into_iter().chain(head).collect()
-            })
+            .collect()
     }
 
     ///Constructs a [CLockAnalysisGraph],
