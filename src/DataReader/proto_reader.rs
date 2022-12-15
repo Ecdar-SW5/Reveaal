@@ -107,10 +107,7 @@ fn proto_location_tuple_to_location_tuple(
 fn proto_edge_to_edge(proto_edge: ProtoEdge, components: Vec<Component>) -> Edge {
     components
         .into_iter()
-        .map(|c| c.get_edges().to_owned())
-        .reduce(|acc, es| acc.into_iter().chain(es.into_iter()).collect())
-        .unwrap()
-        .into_iter()
+        .flat_map(|c| c.get_edges().to_owned())
         .find(|e| e.id == proto_edge.id)
         .unwrap()
 }
